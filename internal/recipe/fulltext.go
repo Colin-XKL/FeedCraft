@@ -2,22 +2,66 @@ package recipe
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/go-shiori/go-readability"
 	"github.com/gorilla/feeds"
 	"github.com/mmcdole/gofeed"
 	"github.com/samber/lo"
+	"github.com/sirupsen/logrus"
+	"log"
 	"time"
 )
 
-func convertEnclosure(item *gofeed.Enclosure, index int) feeds.Enclosure {
-	return feeds.Enclosure{
-		Url:    item.URL,
-		Length: item.Length,
-		Type:   item.Type,
+const DefaultTimeout = 30 * time.Second
+
+func extract(item *gofeed.Item, index int) *feeds.Item {
+
+	updatedTimePointer := item.UpdatedParsed
+	updatedTime := time.Now()
+	if updatedTimePointer != nil {
+		updatedTime = *updatedTimePointer
 	}
+
+	publishedTimePointer := item.PublishedParsed
+	publishedTime := time.Now()
+	if publishedTimePointer != nil {
+		publishedTime = *publishedTimePointer
+	}
+	url := item.Link
+	log.Printf("extract fulltext for url %s", url)
+	article, err := readability.FromURL(url, DefaultTimeout)
+	//articleContent := "extract fulltext failed."
+
+	if err != nil {
+		logrus.Warning("failed to parse %s, %v\n", url, err)
+	}
+	//else {
+	//	articleContent = article.Content
+	//}
+
+	retItem := feeds.Item{
+		Title: item.Title,
+		Link: &feeds.Link{
+			Href: item.Link,
+		},
+		Description: item.Description,
+		Id:          item.GUID,
+		Updated:     updatedTime,
+		Created:     publishedTime,
+		Content:     article.Content,
+	}
+
+	if item.Author != nil {
+		retItem.Author = &feeds.Author{
+			Name:  item.Author.Name,
+			Email: item.Author.Email,
+		}
+	}
+	return &retItem
+
 }
 
-func ProxyFeed(c *gin.Context) {
-	// Handle request for version 2 of users route
+func ExtractFulltextForFeed(c *gin.Context) {
+
 	fp := gofeed.NewParser()
 	feedUrl, ok := c.GetQuery("input_url")
 	if !ok || len(feedUrl) == 0 {
@@ -25,6 +69,7 @@ func ProxyFeed(c *gin.Context) {
 		return
 	}
 	parsedFeed, _ := fp.ParseURL(feedUrl)
+
 	updatedTimePointer := parsedFeed.UpdatedParsed
 	updatedTime := time.Now()
 	if updatedTimePointer != nil {
@@ -46,40 +91,8 @@ func ProxyFeed(c *gin.Context) {
 		Updated:     updatedTime,
 		Created:     publishedTime,
 		Id:          parsedFeed.FeedLink,
-		Items: lo.Map(parsedFeed.Items, func(item *gofeed.Item, index int) *feeds.Item {
-
-			updatedTimePointer := item.UpdatedParsed
-			updatedTime := time.Now()
-			if updatedTimePointer != nil {
-				updatedTime = *updatedTimePointer
-			}
-
-			publishedTimePointer := item.PublishedParsed
-			publishedTime := time.Now()
-			if publishedTimePointer != nil {
-				publishedTime = *publishedTimePointer
-			}
-			retItem := feeds.Item{
-				Title: item.Title,
-				Link: &feeds.Link{
-					Href: item.Link,
-				},
-				Description: item.Description,
-				Id:          item.GUID,
-				Updated:     updatedTime,
-				Created:     publishedTime,
-				Content:     item.Content,
-			}
-			if item.Author != nil {
-				retItem.Author = &feeds.Author{
-					Name:  item.Author.Name,
-					Email: item.Author.Email,
-				}
-			}
-			return &retItem
-
-		}),
-		Copyright: parsedFeed.Copyright,
+		Items:       lo.Map(parsedFeed.Items, extract),
+		Copyright:   parsedFeed.Copyright,
 	}
 	if parsedFeed.Author != nil {
 		ret.Author = &feeds.Author{

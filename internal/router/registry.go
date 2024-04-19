@@ -11,5 +11,6 @@ func RegisterRouters(router *gin.Engine) {
 	public := router.Group("/craft")
 	{
 		public.GET("/proxy", recipe.ProxyFeed)
+		public.GET("/fulltext", recipe.ExtractFulltextForFeed)
 	}
 }
