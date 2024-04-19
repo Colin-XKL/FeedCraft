@@ -13,7 +13,7 @@ RUN go mod download
 COPY . .
 
 # compile application
-RUN go build -o /feed_craft
+RUN go build -o /feed_craft /app/cmd/main.go
 
 ##
 ## STEP 2 - DEPLOY
