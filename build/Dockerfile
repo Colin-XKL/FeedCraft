@@ -11,7 +11,7 @@ RUN go mod download
 
 # copy directory files i.e all files ending with .go
 COPY . .
-
+ENV GIN_MODE=release
 # compile application
 RUN go build -o /feed_craft /app/cmd/main.go
 
