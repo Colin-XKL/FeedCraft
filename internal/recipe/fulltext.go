@@ -1,6 +1,9 @@
 package recipe
 
 import (
+	"FeedCraft/internal/constant"
+	"FeedCraft/internal/util"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-shiori/go-readability"
 	"github.com/gorilla/feeds"
@@ -12,6 +15,10 @@ import (
 )
 
 const DefaultTimeout = 30 * time.Second
+
+func GetCacheKeyForWebContent(url string) string {
+	return fmt.Sprintf("%s_%s", constant.PrefixWebContent, url)
+}
 
 func extract(item *gofeed.Item, index int) *feeds.Item {
 
@@ -26,14 +33,28 @@ func extract(item *gofeed.Item, index int) *feeds.Item {
 	if publishedTimePointer != nil {
 		publishedTime = *publishedTimePointer
 	}
+
 	url := item.Link
 	log.Printf("extract fulltext for url %s", url)
-	article, err := readability.FromURL(url, DefaultTimeout)
-	//articleContent := "extract fulltext failed."
 
-	if err != nil {
-		logrus.Warning("failed to parse %s, %v\n", url, err)
+	articleContent := ""
+
+	content, err := util.CacheGetString(GetCacheKeyForWebContent(url))
+	if err != nil || content == "" {
+		article, err := readability.FromURL(url, DefaultTimeout)
+		if err != nil {
+			logrus.Warning("failed to parse %s, %v\n", url, err)
+		} else {
+			articleContent = article.Content
+			cacheErr := util.CacheSetString(GetCacheKeyForWebContent(url), article.Content, constant.WebContentExpire)
+			if cacheErr != nil {
+				logrus.Warnf("failed to cache %s, %v\n", url, cacheErr)
+			}
+		}
+	} else {
+		articleContent = content
 	}
+
 	//else {
 	//	articleContent = article.Content
 	//}
@@ -47,7 +68,7 @@ func extract(item *gofeed.Item, index int) *feeds.Item {
 		Id:          item.GUID,
 		Updated:     updatedTime,
 		Created:     publishedTime,
-		Content:     article.Content,
+		Content:     articleContent,
 	}
 
 	if item.Author != nil {
@@ -61,7 +82,6 @@ func extract(item *gofeed.Item, index int) *feeds.Item {
 }
 
 func ExtractFulltextForFeed(c *gin.Context) {
-
 	fp := gofeed.NewParser()
 	feedUrl, ok := c.GetQuery("input_url")
 	if !ok || len(feedUrl) == 0 {

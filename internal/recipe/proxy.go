@@ -47,7 +47,6 @@ func ProxyFeed(c *gin.Context) {
 		Created:     publishedTime,
 		Id:          parsedFeed.FeedLink,
 		Items: lo.Map(parsedFeed.Items, func(item *gofeed.Item, index int) *feeds.Item {
-
 			updatedTimePointer := item.UpdatedParsed
 			updatedTime := time.Now()
 			if updatedTimePointer != nil {
