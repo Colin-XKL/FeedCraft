@@ -3,7 +3,6 @@ package recipe
 import (
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/util"
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-shiori/go-readability"
 	"github.com/mmcdole/gofeed"
@@ -12,34 +11,39 @@ import (
 	"time"
 )
 
-const DefaultTimeout = 30 * time.Second
+type FulltextExtractor func(url string, timeout time.Duration) (string, error)
 
-func GetCacheKeyForWebContent(url string) string {
-	return fmt.Sprintf("%s_%s", constant.PrefixWebContent, url)
+func trivialExtractor(url string, timeout time.Duration) (string, error) {
+	article, err := readability.FromURL(url, timeout)
+	return article.Content, err
 }
 
-func extractFulltext(item *gofeed.Item) string {
-	url := item.Link
-	log.Printf("extract fulltext for url %s", url)
+func GetFulltextExtractor(extractor FulltextExtractor) ContentTransformFunc {
+	extractFunc := func(item *gofeed.Item) string {
+		url := item.Link
+		log.Printf("extract fulltext for url %s", url)
 
-	articleContent := ""
+		articleContent := ""
 
-	content, err := util.CacheGetString(GetCacheKeyForWebContent(url))
-	if err != nil || content == "" {
-		article, err := readability.FromURL(url, DefaultTimeout)
-		if err != nil {
-			logrus.Warning("failed to parse %s, %v\n", url, err)
-		} else {
-			articleContent = article.Content
-			cacheErr := util.CacheSetString(GetCacheKeyForWebContent(url), article.Content, constant.WebContentExpire)
-			if cacheErr != nil {
-				logrus.Warnf("failed to cache %s, %v\n", url, cacheErr)
+		content, err := util.CacheGetString(GetCacheKeyForWebContent(url))
+		if err != nil || content == "" {
+			articleStr, err := extractor(url, DefaultTimeout)
+			if err != nil {
+				logrus.Warnf("failed to parse %s, %v\n", url, err)
+			} else {
+				articleContent = articleStr
+				cacheErr := util.CacheSetString(GetCacheKeyForWebContent(url), articleStr, constant.WebContentExpire)
+				if cacheErr != nil {
+					logrus.Warnf("failed to cache %s, %v\n", url, cacheErr)
+				}
 			}
+		} else {
+			articleContent = content
 		}
-	} else {
-		articleContent = content
+		return articleContent
 	}
-	return articleContent
+	return extractFunc
+
 }
 
 func ExtractFulltextForFeed(c *gin.Context) {
@@ -51,7 +55,7 @@ func ExtractFulltextForFeed(c *gin.Context) {
 	fp := gofeed.NewParser()
 	parsedFeed, _ := fp.ParseURL(feedUrl)
 
-	ret := TransformFeed(parsedFeed, extractFulltext)
+	ret := TransformFeed(parsedFeed, GetFulltextExtractor(trivialExtractor))
 
 	rssStr, err := ret.ToRss()
 	if err != nil {

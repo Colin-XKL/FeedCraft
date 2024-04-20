@@ -1,13 +1,23 @@
 package recipe
 
 import (
+	"FeedCraft/internal/constant"
+	"fmt"
 	"github.com/gorilla/feeds"
 	"github.com/mmcdole/gofeed"
 	"github.com/samber/lo"
 	"time"
 )
 
-func TransformFeed(parsedFeed *gofeed.Feed, transFunc func(item *gofeed.Item) string) feeds.Feed {
+const DefaultTimeout = 30 * time.Second
+
+func GetCacheKeyForWebContent(url string) string {
+	return fmt.Sprintf("%s_%s", constant.PrefixWebContent, url)
+}
+
+type ContentTransformFunc func(item *gofeed.Item) string
+
+func TransformFeed(parsedFeed *gofeed.Feed, transFunc ContentTransformFunc) feeds.Feed {
 	updatedTimePointer := parsedFeed.UpdatedParsed
 	updatedTime := time.Now()
 	if updatedTimePointer != nil {
