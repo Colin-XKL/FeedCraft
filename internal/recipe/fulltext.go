@@ -25,8 +25,8 @@ func GetFulltextExtractor(extractor FulltextExtractor) ContentTransformFunc {
 
 		articleContent := ""
 
-		content, err := util.CacheGetString(GetCacheKeyForWebContent(url))
-		if err != nil || content == "" {
+		cachedContent, err := util.CacheGetString(GetCacheKeyForWebContent(url))
+		if err != nil || cachedContent == "" {
 			articleStr, err := extractor(url, DefaultTimeout)
 			if err != nil {
 				logrus.Warnf("failed to parse %s, %v\n", url, err)
@@ -38,7 +38,7 @@ func GetFulltextExtractor(extractor FulltextExtractor) ContentTransformFunc {
 				}
 			}
 		} else {
-			articleContent = content
+			articleContent = cachedContent
 		}
 		return articleContent
 	}

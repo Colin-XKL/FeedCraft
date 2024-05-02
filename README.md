@@ -10,3 +10,6 @@ available recipe:
 - proxy: access remote rss via feed craft service
 - fulltext: get fulltext rss feed
 - fulltext-plus: same as fulltext, but use headless browser to render the page
+
+demo site:
+https://feed-craft.colinx.one
