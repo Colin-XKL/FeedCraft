@@ -19,11 +19,11 @@ RUN go build -o /feed_craft /app/cmd/main.go
 ##
 FROM alpine
 
-WORKDIR /
+WORKDIR /app
 
-COPY --from=build /feed_craft /feed_craft
-
+COPY --from=build /feed_craft /app/feed_craft
+COPY /web /app/web
 ENV GIN_MODE=release
 EXPOSE 8080
 
-ENTRYPOINT ["/feed_craft"]
+ENTRYPOINT ["/app/feed_craft"]
