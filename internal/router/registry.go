@@ -26,5 +26,7 @@ func RegisterRouters(router *gin.Engine) {
 	{
 		public.GET("/proxy", recipe.ProxyFeed)
 		public.GET("/fulltext", recipe.ExtractFulltextForFeed)
+		public.GET("/fulltext-plus", recipe.ExtractFulltextPlusForFeed)
+		public.GET("/introduction", recipe.AddIntroductionForFeed)
 	}
 }
