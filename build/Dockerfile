@@ -11,7 +11,6 @@ RUN go mod download
 
 # copy directory files i.e all files ending with .go
 COPY . .
-ENV GIN_MODE=release
 # compile application
 RUN go build -o /feed_craft /app/cmd/main.go
 
@@ -24,6 +23,7 @@ WORKDIR /
 
 COPY --from=build /feed_craft /feed_craft
 
+ENV GIN_MODE=release
 EXPOSE 8080
 
 ENTRYPOINT ["/feed_craft"]
