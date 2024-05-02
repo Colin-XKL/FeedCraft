@@ -43,13 +43,12 @@ func GetFulltextExtractor(extractor FulltextExtractor) ContentTransformFunc {
 		return articleContent
 	}
 	return extractFunc
-
 }
 
 func ExtractFulltextForFeed(c *gin.Context) {
 	feedUrl, ok := c.GetQuery("input_url")
 	if !ok || len(feedUrl) == 0 {
-		c.String(500, "empty feed url")
+		c.String(400, "empty feed url")
 		return
 	}
 	fp := gofeed.NewParser()
