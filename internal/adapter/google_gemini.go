@@ -4,6 +4,8 @@ import (
 	"FeedCraft/internal/util"
 	"fmt"
 	"github.com/go-resty/resty/v2"
+	"github.com/sirupsen/logrus"
+	"log"
 )
 
 const geminiBaseUrl = "https://generativelanguage.googleapis.com/v1/models/"
@@ -21,17 +23,19 @@ type GeminiClient struct {
 
 func NewGeminiClient() (*GeminiClient, error) {
 	envClient := util.GetEnvClient()
+	if envClient == nil {
+		log.Fatalf("get env client error.")
+	}
 	geminiKey := envClient.GetString("GEMINI_SECRET_KEY")
 	if geminiKey == "" {
-		return nil, fmt.Errorf("GEMINI_SECRET_KEY not found in env")
+		return nil, fmt.Errorf("gemini secret key not found in env")
 	}
 
-	client := resty.New().SetBaseURL(geminiBaseUrl)
 	headers := map[string]string{
 		"Cache-Control": "no-cache",
 		"Content-Type":  "application/json",
 	}
-	client.SetBaseURL(geminiBaseUrl).SetQueryParam("key", geminiKey).SetHeaders(headers)
+	client := resty.New().SetBaseURL(geminiBaseUrl).SetQueryParam("key", geminiKey).SetHeaders(headers)
 
 	return &GeminiClient{
 		conf:   &GeminiConf{baseUrl: geminiBaseUrl, secretKey: geminiKey, defaultModel: "gemini-pro"},
@@ -40,17 +44,19 @@ func NewGeminiClient() (*GeminiClient, error) {
 }
 
 func (gemini *GeminiClient) GenerateContent(payload GeminiReqPayload) (string, error) {
-	apiPath := fmt.Sprintf("%s:generateContent", gemini.conf.defaultModel)
+	apiPath := fmt.Sprintf("/%s:generateContent", gemini.conf.defaultModel)
 	result := &GeminiResp{}
 
-	resp, err := gemini.client.R().SetBody(payload).Post(apiPath)
+	resp, err := gemini.client.R().SetBody(payload).SetResult(result).Post(apiPath)
 	if err != nil {
 		return "", err
 	}
 	if resp.StatusCode() != 200 {
+		logrus.Info(resp.String())
 		return "", fmt.Errorf("GeminiResp status code not 200: %d", resp.StatusCode())
 	}
 	if (len(result.Candidates) == 0) || result.Candidates[0].Content == nil || len(result.Candidates[0].Content.Parts) == 0 {
+		logrus.Info(resp.String())
 		return "", fmt.Errorf("unexpected empty result")
 	}
 	return *result.Candidates[0].Content.Parts[0].Text, nil
