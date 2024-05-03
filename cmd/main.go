@@ -4,6 +4,7 @@ import (
 	"FeedCraft/internal/router"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -16,5 +17,6 @@ func main() {
 			"message": "pong",
 		})
 	})
-	_ = r.Run() // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
+	listenAddr := os.Getenv("LISTEN_ADDR")
+	_ = r.Run(listenAddr) // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
