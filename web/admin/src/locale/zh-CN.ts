@@ -19,6 +19,7 @@ export default {
   'menu.user': '个人中心',
   'menu.arcoWebsite': 'Arco Design',
   'menu.faq': '常见问题',
+  'menu.repo': '项目地址',
   'navbar.docs': '文档中心',
   'navbar.action.locale': '切换为中文',
   ...localeSettings,

@@ -1,8 +1,8 @@
 export default {
-  path: 'https://arco.design/vue/docs/pro/faq',
+  path: 'https://github.com/Colin-XKL/FeedCraft',
   name: 'faq',
   meta: {
-    locale: 'menu.faq',
+    locale: 'menu.repo',
     icon: 'icon-question-circle',
     requiresAuth: true,
     order: 9,
