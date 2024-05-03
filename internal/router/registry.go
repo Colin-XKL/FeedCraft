@@ -1,6 +1,8 @@
 package router
 
 import (
+	"FeedCraft/internal/admin"
+	"FeedCraft/internal/middleware"
 	"FeedCraft/internal/recipe"
 	"FeedCraft/internal/util"
 	"github.com/gin-gonic/gin"
@@ -22,11 +24,29 @@ func RegisterRouters(router *gin.Engine) {
 	})
 
 	// Public routes
-	public := router.Group("/craft")
+	public := router.Group("/api")
 	{
-		public.GET("/proxy", recipe.ProxyFeed)
-		public.GET("/fulltext", recipe.ExtractFulltextForFeed)
-		public.GET("/fulltext-plus", recipe.ExtractFulltextPlusForFeed)
-		public.GET("/introduction", recipe.AddIntroductionForFeed)
+		public.POST("/login", admin.LoginAuth)
 	}
+
+	craftRouters := router.Group("/craft")
+	{
+		craftRouters.GET("/proxy", recipe.ProxyFeed)
+		craftRouters.GET("/fulltext", recipe.ExtractFulltextForFeed)
+		craftRouters.GET("/fulltext-plus", recipe.ExtractFulltextPlusForFeed)
+		craftRouters.GET("/introduction", recipe.AddIntroductionForFeed)
+	}
+
+	// admin api
+	adminApi := router.Group("/api/admin")
+	adminApi.Use(middleware.JwtAuthMiddleware())
+	{
+		adminApi.GET("/admin-login-test", adminLoginTest)
+	}
+}
+func adminLoginTest(c *gin.Context) {
+	ret := map[string]string{
+		"success": "ok",
+	}
+	c.JSON(http.StatusOK, ret)
 }
