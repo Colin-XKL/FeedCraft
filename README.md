@@ -28,13 +28,13 @@ Gemini来生成文章摘要、通过自然语言筛选文章等
 ## 快速开始
 
 访问以下URL 即可快速调用FeedCraft对输入的RSS源进行指定的处理
-/craft/{choose_recipe}?input_url={input_rss_url}
+/craft/{choose_craft_option}?input_url={input_rss_url}
 
 FeedCraft中的几个核心概念:
 
 - Craft(工艺),指要如何处理一个rss源, 比如是要进行翻译,还是提取正文,还是AI生成摘要等
 
-目前可用的几个选项:
+目前可用的几个选项(craft option):
 
 - proxy: 简易RSS代理, 不作任何处理
 - fulltext: 获取全文
