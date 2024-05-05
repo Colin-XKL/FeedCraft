@@ -6,10 +6,13 @@ Craft all your feed in one place!
 
 ![author](https://img.shields.io/badge/author-Colin-blue)
 ![GitHub License](https://img.shields.io/github/license/Colin-XKL/FeedCraft)
-![Open Source Love](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Colin-XKL/FeedCraft/:workflow?branch=main)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Colin-XKL/FeedCraft/docker-publish.yml)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/Colin-XKL/FeedCraft)
 ![GitHub Release](https://img.shields.io/github/v/release/Colin-XKL/FeedCraft)
+![GitHub Discussions](https://img.shields.io/github/discussions/Colin-XKL/FeedCraft?link=https%3A%2F%2Fgithub.com%2FColin-XKL%2FFeedCraft%2Fdiscussions)
+![Container Image Size On GHCR](https://ghcr-badge.egpl.dev/colin-xkl/feedcraft/size?color=%2344cc11&tag=latest&label=image+size)
+![Static Badge](https://img.shields.io/badge/arch-amd64|arm64|armv7-blue)
+![Open Source Love](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)
 
 Doc: English(WIP) | 简体中文 | 繁体中文(WIP)
 
@@ -43,7 +46,7 @@ https://feed-craft.colinx.one
 
 *注意:Demo站点仅供体验使用
 
-# 部署
+## 部署
 
 你可以通过docker快速自行部署一个FeedCraft实例,以获得更好的使用体验.
 下面为一个最小docker compose 示例:
@@ -90,3 +93,11 @@ services:
     restart: unless-stopped
 ```
 
+## 关于FeedCraft
+
+FeedCraft 的名称和Logo参考并致敬两款游戏: MineCraft和塞尔达, 初衷和愿景是做一个简单易用、同时足够灵活, 能够有更多可能性的RSS工具.
+使用问题、建议等欢迎在Discussion区讨论交流
+
+## 许可
+
+GPLv3
