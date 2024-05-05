@@ -81,7 +81,7 @@
   const userStore = useUserStore();
 
   const loginConfig = useStorage('login-config', {
-    rememberPassword: true,
+    rememberPassword: false,
     username: 'admin', // 演示默认值
     password: 'admin', // demo default value
   });
