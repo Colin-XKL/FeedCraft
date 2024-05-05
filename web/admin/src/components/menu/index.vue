@@ -103,7 +103,9 @@
                     key={element?.name}
                     v-slots={{
                       icon,
-                      title: () => h(compile(t(element?.meta?.locale || ''))),
+                      title: () =>
+                        element?.meta?.title ??
+                        h(compile(t(element?.meta?.locale || ''))),
                     }}
                   >
                     {travel(element?.children)}
@@ -114,7 +116,7 @@
                     v-slots={{ icon }}
                     onClick={() => goto(element)}
                   >
-                    {t(element?.meta?.locale || '')}
+                    {element?.meta?.title ?? t(element?.meta?.locale || '')}
                   </a-menu-item>
                 );
               nodes.push(node as never);
@@ -122,6 +124,7 @@
           }
           return nodes;
         }
+
         return travel(menuTree.value);
       };
 
@@ -151,6 +154,7 @@
       display: flex;
       align-items: center;
     }
+
     .arco-icon {
       &:not(.arco-icon-down) {
         font-size: 18px;
