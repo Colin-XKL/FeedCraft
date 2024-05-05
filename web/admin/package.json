@@ -23,7 +23,6 @@
       "eslint --fix"
     ],
     "*.{less,css}": [
-      "stylelint --fix",
       "prettier --write"
     ]
   },
@@ -55,6 +54,7 @@
     "@vitejs/plugin-vue": "^3.1.2",
     "@vitejs/plugin-vue-jsx": "^2.0.1",
     "@vue/babel-plugin-jsx": "^1.1.1",
+    "code-inspector-plugin": "^0.13.0",
     "consola": "^2.15.3",
     "cross-env": "^7.0.3",
     "eslint": "^8.25.0",
