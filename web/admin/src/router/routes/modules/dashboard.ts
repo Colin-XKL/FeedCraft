@@ -22,6 +22,15 @@ const DASHBOARD: AppRouteRecordRaw = {
       },
     },
     {
+      path: 'viewer',
+      name: 'FeedViewer',
+      component: () => import('@/views/dashboard/feed-viewer/feed_viewer.vue'),
+      meta: {
+        title: 'FeedViewer',
+        requiresAuth: false,
+      },
+    },
+    {
       path: 'workplace',
       name: 'Workplace',
       component: () => import('@/views/dashboard/workplace/index.vue'),
