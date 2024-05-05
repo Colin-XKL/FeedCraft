@@ -14,33 +14,7 @@
     </a-card>
     <a-card title="结果预览" class="my-4" :loading="isLoading">
       <div v-if="feedContent">
-        <h2>{{ feedContent.title }}</h2>
-        <a-descriptions
-          style="margin-top: 20px"
-          :data="feedMetaList"
-          title="Feed Info"
-          :column="1"
-        />
-
-        <ul>
-          <li v-for="item in feedContent.items?.slice(0, 5)" :key="item.guid">
-            <a-card class="my-2">
-              <a-space>
-                <h3 class="font-bold">{{ item.title }}</h3>
-                <p>{{ dayjs(item.isoDate).format('YYYY-MM-DD hh:mm:ss') }}</p>
-              </a-space>
-              <a-typography-paragraph
-                :ellipsis="{
-                  rows: 3,
-                  showTooltip: false,
-                  expandable: true,
-                }"
-              >
-                {{ item.contentSnippet }}
-              </a-typography-paragraph>
-            </a-card>
-          </li>
-        </ul>
+        <FeedViewContainer :feed-data="feedContent" />
       </div>
       <a-empty v-else />
     </a-card>
@@ -50,18 +24,9 @@
 <script lang="ts" setup>
   import { computed, ref } from 'vue';
   import Parser from 'rss-parser';
-  import dayjs from 'dayjs';
   import { Message } from '@arco-design/web-vue';
+  import FeedViewContainer from '@/views/dashboard/feed-viewer/feed_view_container.vue';
 
-  const feedMetaList = computed(() => {
-    return Object.keys(feedContent.value).map((key) => {
-      const item = feedContent.value[key];
-      return {
-        label: key,
-        value: item,
-      };
-    });
-  });
   const feedUrl = ref('');
   const feedContent = ref<any>(null);
   const isLoading = ref(false);
