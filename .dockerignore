@@ -1,0 +1,5 @@
+.github
+web/admin/node_modules
+
+.idea
+.vscode

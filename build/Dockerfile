@@ -22,7 +22,7 @@ FROM alpine
 WORKDIR /app
 
 COPY --from=build /feed_craft /app/feed_craft
-COPY /web /app/web
+COPY /web/index.html /web/favicon.ico /app/web/
 ENV GIN_MODE=release
 EXPOSE 8080
 
