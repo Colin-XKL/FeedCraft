@@ -55,7 +55,7 @@ https://feed-craft.colinx.one
 version: "3"
 services:
   app.feedcraft:
-    image: ghcr.io/colin-xkl/feedcraft
+    image: ghcr.io/colin-xkl/feed-craft
     container_name: feedcraft
     restart: always
     ports:
@@ -72,7 +72,7 @@ services:
 version: "3"
 services:
   app.feedcraft:
-    image: ghcr.io/colin-xkl/feedcraft
+    image: ghcr.io/colin-xkl/feed-craft
     container_name: feedcraft
     restart: always
     ports:
