@@ -5,7 +5,9 @@ import (
 	"FeedCraft/internal/middleware"
 	"FeedCraft/internal/recipe"
 	"FeedCraft/internal/util"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+
 	"log"
 	"net/http"
 )
@@ -23,6 +25,14 @@ func RegisterRouters(router *gin.Engine) {
 		})
 	})
 
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowCredentials = true
+	corsConfig.AllowAllOrigins = true
+	corsConfig.AllowHeaders = []string{"*"}
+	corsMiddleware := cors.New(corsConfig)
+	//corsMiddleware := cors.Default()
+	router.Use(corsMiddleware)
+
 	// Public routes
 	public := router.Group("/api")
 	{
@@ -39,7 +49,7 @@ func RegisterRouters(router *gin.Engine) {
 
 	// admin api
 	adminApi := router.Group("/api/admin")
-	adminApi.Use(middleware.JwtAuthMiddleware())
+	adminApi.Use(middleware.JwtAuthMiddleware(), corsMiddleware)
 	{
 		adminApi.GET("/admin-login-test", adminLoginTest)
 	}
