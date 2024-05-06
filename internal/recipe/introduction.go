@@ -17,22 +17,7 @@ add introduction for article,powered by google gemini
 */
 
 func getIntroductionForArticle(prompt, article string) (string, error) {
-	gemini, err := adapter.NewGeminiClient()
-	if err != nil {
-		return "", err
-	}
-	text := fmt.Sprintf("%s\n```%s```", prompt, article)
-	req := adapter.GeminiReqPayload{Contents: []adapter.Content{
-		{
-			Parts: []adapter.Part{{Text: &text}},
-			Role:  nil,
-		},
-	}}
-	content, err := gemini.GenerateContent(req)
-	if err != nil {
-		return "", err
-	}
-	return content, nil
+	return adapter.CallGemini(prompt, article)
 }
 
 func getMD5Hash(text string) string {

@@ -13,7 +13,7 @@ import (
 
 type FulltextExtractor func(url string, timeout time.Duration) (string, error)
 
-func trivialExtractor(url string, timeout time.Duration) (string, error) {
+func TrivialExtractor(url string, timeout time.Duration) (string, error) {
 	article, err := readability.FromURL(url, timeout)
 	return article.Content, err
 }
@@ -54,7 +54,7 @@ func ExtractFulltextForFeed(c *gin.Context) {
 	fp := gofeed.NewParser()
 	parsedFeed, _ := fp.ParseURL(feedUrl)
 
-	ret := TransformFeed(parsedFeed, GetFulltextExtractor(trivialExtractor))
+	ret := TransformFeed(parsedFeed, GetFulltextExtractor(TrivialExtractor))
 
 	rssStr, err := ret.ToRss()
 	if err != nil {
