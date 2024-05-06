@@ -3,6 +3,7 @@ package recipe
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/mmcdole/gofeed"
+	"net/http"
 	"strings"
 )
 
@@ -17,12 +18,14 @@ func ProxyFeed(c *gin.Context) {
 		return
 	}
 
-	fp := gofeed.NewParser()
-	parsedFeed, _ := fp.ParseURL(feedUrl)
+	ret, err := NewCraftedFeedFromUrl(feedUrl)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		c.Abort()
+		return
+	}
 
-	ret := TransformFeed(parsedFeed, byPass)
-
-	rssStr, err := ret.ToRss()
+	rssStr, err := ret.OutputFeed.ToRss()
 	if err != nil {
 		c.String(500, err.Error())
 		return
