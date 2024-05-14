@@ -66,14 +66,15 @@ func IgnoreAdvertorialArticle(c *gin.Context) {
 }
 
 type CheckIfAdvertorialDebugReq struct {
-	Url string `json:"url"`
+	Url string `json:"url"`  // article url
 }
 type CheckIfAdvertorialDebugResp struct {
-	Url           string `json:"url"`
-	FeedContent   string `json:"feed_content"`
+	Url           string `json:"url"` // url for orignial article
+	ArticleContent   string `json:"article_content"`  
 	IsAdvertorial bool   `json:"is_advertorial"`
 }
 
+// input: article url, output: article content text and a bool represent if this article is marked as ad
 func DebugCheckIfAdvertorial(c *gin.Context) {
 	reqBody := &CheckIfAdvertorialDebugReq{}
 	err := c.ShouldBindJSON(reqBody)
@@ -90,7 +91,7 @@ func DebugCheckIfAdvertorial(c *gin.Context) {
 	ret := CheckIfAdvertorialDebugResp{
 		Url:           reqBody.Url,
 		IsAdvertorial: result,
-		FeedContent:   webContent,
+		ArticleContent:   webContent,
 	}
 	c.JSON(http.StatusOK, util.APIResponse[any]{Data: ret})
 }
