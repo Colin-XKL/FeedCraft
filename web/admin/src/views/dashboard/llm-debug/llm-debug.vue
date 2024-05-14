@@ -30,19 +30,15 @@ const articleUrl = ref('');
 const articleContent = ref('');
 const isAdvertorial = ref(false);
 
+import axios from 'axios';
+
 async function fetchArticle() {
-  const requestUrl = `${baseUrl}/craft-debug/advertorial`;
   try {
-    const resp = await fetch(requestUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ url: articleUrl.value }),
+    const resp = await axios.post(`${baseUrl}/craft-debug/advertorial`, {
+      url: articleUrl.value,
     });
-    const data = await resp.json();
-    articleContent.value = data.article_content;
-    isAdvertorial.value = data.is_advertorial;
+    articleContent.value = resp.data.article_content;
+    isAdvertorial.value = resp.data.is_advertorial;
   } catch (error) {
     Message.warning(error?.toString() ?? 'Unknown Error');
     console.error(error);
