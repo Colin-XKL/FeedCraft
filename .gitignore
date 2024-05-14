@@ -181,3 +181,4 @@ yarn-error.log
 .vscode
 web/admin/.idea
 web/admin/dist
+.aider*
