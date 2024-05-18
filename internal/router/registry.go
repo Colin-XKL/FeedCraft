@@ -46,6 +46,8 @@ func RegisterRouters(router *gin.Engine) {
 		craftRouters.GET("/fulltext-plus", recipe.ExtractFulltextPlusForFeed)
 		craftRouters.GET("/introduction", recipe.AddIntroductionForFeed)
 		craftRouters.GET("/ignore-advertorial", recipe.IgnoreAdvertorialArticle)
+		craftRouters.GET("/translate-title", recipe.GetTranslateTitleHandler())
+		craftRouters.GET("/translate-content", recipe.GetTranslateArticleContentHandler())
 	}
 
 	// admin api

@@ -38,3 +38,43 @@ func NewCraftedFeedFromUrl(feedUrl string, options ...CraftOption) (FeedCraftIng
 	ingredient.OutputFeed = &outputFeed
 	return ingredient, nil
 }
+
+// TransFunc common transform func, such as translate the article content or title
+type TransFunc func(item *feeds.Item) (string, error)
+
+func GetArticleContentProcessor(transFunc TransFunc) FeedItemProcessor {
+	return func(item *feeds.Item) error {
+		transformed, err := transFunc(item)
+		if err != nil {
+			return err
+		}
+		item.Content = transformed
+		return nil
+	}
+}
+
+func GetArticleTitleProcessor(transFunc TransFunc) FeedItemProcessor {
+	return func(item *feeds.Item) error {
+		transformed, err := transFunc(item)
+		if err != nil {
+			return err
+		}
+		item.Title = transformed
+		return nil
+	}
+}
+
+type FeedItemProcessor func(feedItem *feeds.Item) error // 对每个feed item要执行的操作
+
+// OptionTransformFeedItem 通用的feed item 处理
+func OptionTransformFeedItem(processor FeedItemProcessor) CraftOption {
+	return func(feed *feeds.Feed) error {
+		for _, itemPointer := range feed.Items {
+			err := processor(itemPointer)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+}

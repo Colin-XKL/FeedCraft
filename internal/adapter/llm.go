@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func CallGemini(prompt string, article string) (string, error) {
+func CallGeminiUsingArticleContext(prompt string, article string) (string, error) {
 	gemini, err := NewGeminiClient()
 	if err != nil {
 		return "", err
@@ -21,4 +21,10 @@ func CallGemini(prompt string, article string) (string, error) {
 		return "", err
 	}
 	return content, nil
+}
+
+// CallLLMUsingContext using openai compatible api
+func CallLLMUsingContext(prompt, context string) (string, error) {
+	finalPrompt := fmt.Sprintf("%s \n `%s`", prompt, context)
+	return SimpleLLMCall(USE_DEFAULT_MODEL, finalPrompt)
 }

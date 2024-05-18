@@ -9,9 +9,12 @@ import (
 	"log"
 )
 
-/**
+/*
+*
 Handle LLM calling and processing, support OpenAI and all compatible services.
 */
+
+const USE_DEFAULT_MODEL = ""
 
 func SimpleLLMCall(model string, promptInput string) (string, error) {
 	envClient := util.GetEnvClient()
@@ -21,6 +24,11 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 
 	openAIEndpoint := envClient.GetString("OPENAI_ENDPOINT")
 	openAIAuthKey := envClient.GetString("OPENAI_AUTH_KEY")
+	openAIModel := model
+	if openAIModel == "" {
+		openAIModel = envClient.GetString("OPENAI_DEFAULT_MODEL")
+		logrus.Info("model not specified, using default model from env:", openAIModel)
+	}
 
 	conf := openai.DefaultConfig(openAIAuthKey)
 	if openAIEndpoint != "" {
@@ -39,7 +47,7 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 	resp, err := client.CreateChatCompletion(
 		context.Background(),
 		openai.ChatCompletionRequest{
-			Model: model,
+			Model: openAIModel,
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleUser,

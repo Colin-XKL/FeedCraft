@@ -98,6 +98,17 @@ services:
 FeedCraft 的名称和Logo参考并致敬两款游戏: MineCraft和塞尔达, 初衷和愿景是做一个简单易用、同时足够灵活, 能够有更多可能性的RSS工具.
 使用问题、建议等欢迎在Discussion区讨论交流
 
+
+## RoadMap
+
+- [x] common openai api calling 
+- [x] translate article and title
+- [ ] feed combination support
+- [ ] feed limit support
+- [ ] feed custom keyword filter support
+- [ ] feed natural language filter support
+
+
 ## 许可
 
 GPLv3

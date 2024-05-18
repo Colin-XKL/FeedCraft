@@ -17,7 +17,7 @@ add introduction for article,powered by google gemini
 */
 
 func getIntroductionForArticle(prompt, article string) (string, error) {
-	return adapter.CallGemini(prompt, article)
+	return adapter.CallGeminiUsingArticleContext(prompt, article)
 }
 
 func getMD5Hash(text string) string {
@@ -32,7 +32,6 @@ func addIntroductionUsingGemini(item *gofeed.Item) string {
 	finalArticleContent := ""
 	originalContent := item.Content
 	originalTitle := item.Title
-	logrus.Infof("generate introduction using gemini for article [%s]", originalTitle)
 	if len(originalContent) == 0 {
 		if len(item.Description) == 0 {
 			logrus.Warnf("empty content , both content as description field have no value. title [%s]", originalTitle)
@@ -40,6 +39,8 @@ func addIntroductionUsingGemini(item *gofeed.Item) string {
 		originalContent = item.Description
 		logrus.Warnf("empty content, use description field val as fallback")
 	}
+	logrus.Infof("generate introduction using gemini for article [%s]", originalTitle)
+
 	hashVal := getMD5Hash(originalContent)
 	cachedIntroduction, err := util.CacheGetString(GetCacheKeyForWebContent(hashVal))
 
