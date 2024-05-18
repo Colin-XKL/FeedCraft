@@ -40,6 +40,15 @@ const DASHBOARD: AppRouteRecordRaw = {
         roles: ['*'],
       },
     },
+    {
+      path: 'llm-debug',
+      name: 'LLMDebug',
+      component: () => import('@/views/dashboard/llm-debug/llm-debug.vue'),
+      meta: {
+        title: 'LLM Debug',
+        requiresAuth: true,
+      },
+    },
   ],
 };
 
