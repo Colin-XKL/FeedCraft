@@ -2,6 +2,7 @@ package router
 
 import (
 	"FeedCraft/internal/admin"
+	"FeedCraft/internal/controller"
 	"FeedCraft/internal/craft"
 	"FeedCraft/internal/middleware"
 	"FeedCraft/internal/util"
@@ -58,6 +59,13 @@ func RegisterRouters(router *gin.Engine) {
 		adminApi.GET("/admin-login-test", adminLoginTest)
 		adminApi.POST("/craft-debug/advertorial", craft.DebugCheckIfAdvertorial)
 		adminApi.POST("/craft-debug/common-llm-call-test", admin.LLMDebug)
+
+		adminApi.POST("/recipes", controller.CreateCustomRecipe)
+		adminApi.GET("/recipes", controller.ListCustomRecipe)
+		adminApi.GET("/recipes/:id", controller.GetCustomRecipe)
+		adminApi.PUT("/recipes/:id", controller.UpdateCustomRecipe)
+		adminApi.DELETE("/recipes/:id", controller.DeleteCustomRecipe)
+
 	}
 }
 func adminLoginTest(c *gin.Context) {

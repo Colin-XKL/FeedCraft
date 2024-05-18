@@ -58,6 +58,16 @@ const DASHBOARD: AppRouteRecordRaw = {
         requiresAuth: true,
       },
     },
+    {
+      path: 'custom_recipe',
+      name: 'custom_recipe',
+      component: () =>
+        import('@/views/dashboard/custom_recipe/custom_recipe.vue'),
+      meta: {
+        requiresAuth: true,
+        title: 'CustomRecipe',
+      },
+    },
   ],
 };
 

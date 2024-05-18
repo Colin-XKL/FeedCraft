@@ -1,6 +1,7 @@
 package main
 
 import (
+	"FeedCraft/internal/dao"
 	"FeedCraft/internal/router"
 	"fmt"
 	"github.com/getsentry/sentry-go"
@@ -41,6 +42,10 @@ func main() {
 			"message": "pong",
 		})
 	})
+
+	// Migrate the schema
+	dao.MigrateDatabases()
+
 	listenAddr := os.Getenv("LISTEN_ADDR")
 	_ = r.Run(listenAddr) // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
