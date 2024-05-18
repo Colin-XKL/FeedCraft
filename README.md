@@ -40,6 +40,8 @@ FeedCraft中的几个核心概念:
 - fulltext: 获取全文
 - fulltext-plus: 获取全文,但是会模拟浏览器渲染网页,适用于常规模式无法获取到文章内容,动态渲染内容的站点
 - introduction: 调用AI为文章生成摘要,附加在原文开头
+- translate-title: 调用AI翻译文章标题
+- translate-content: 调用AI翻译文章标题
 
 你可以使用提供的demo站点快速开始体验 :
 https://feed-craft.colinx.one
@@ -54,16 +56,18 @@ https://feed-craft.colinx.one
 ```yaml
 version: "3"
 services:
-  app.feedcraft:
+  app.feed-craft:
     image: ghcr.io/colin-xkl/feed-craft
-    container_name: feedcraft
+    container_name: feed-craft
     restart: always
     ports:
       - 10088:8080  # 10088可替换为任何你想使用的端口
     environment:
       FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000 # 替换为你自己的 browserless 或其他浏览器实例地址
       FC_REDIS_URI: redis://service.redis:6379/ # 替换为你自己的redis 实例地址
-      FC_GEMINI_SECRET_KEY: <your-google-gemini-key-here> # 使用你自己的google gemini key
+      FC_OPENAI_AUTH_KEY: skxxxxxx # 鉴权的key
+      FC_OPENAI_DEFAULT_MODEL: gemini-pro/chatgpt-3.5/... # 默认使用的模型
+      FC_OPENAI_ENDPOINT: https://xxxxxx # OPENAI API 或兼容平台的API接口路径
 ```
 
 你也可以直接在一个compose文件中把redis等附加组件也一起部署好:
@@ -71,16 +75,18 @@ services:
 ```yaml
 version: "3"
 services:
-  app.feedcraft:
+  app.feed-craft:
     image: ghcr.io/colin-xkl/feed-craft
-    container_name: feedcraft
+    container_name: feed-craft
     restart: always
     ports:
       - 10088:8080  # 10088可替换为任何你想使用的端口
     environment:
       FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000 # 替换为你自己的 browserless 或其他浏览器实例地址
       FC_REDIS_URI: redis://service.redis:6379/ # 替换为你自己的redis 实例地址
-      FC_GEMINI_SECRET_KEY: <your-google-gemini-key-here> # 使用你自己的google gemini key
+      FC_OPENAI_AUTH_KEY: skxxxxxx # 鉴权的key
+      FC_OPENAI_DEFAULT_MODEL: gemini-pro/chatgpt-3.5/... # 默认使用的模型
+      FC_OPENAI_ENDPOINT: https://xxxxxx # OPENAI API 或兼容平台的API接口路径
   service.redis:
     image: redis:6-alpine
     container_name: feedcraft_redis
