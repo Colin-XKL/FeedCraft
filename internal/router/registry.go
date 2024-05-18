@@ -54,6 +54,7 @@ func RegisterRouters(router *gin.Engine) {
 	{
 		adminApi.GET("/admin-login-test", adminLoginTest)
 		adminApi.POST("/craft-debug/advertorial", recipe.DebugCheckIfAdvertorial)
+		adminApi.POST("/craft-debug/common-llm-call-test", admin.LLMDebug)
 	}
 }
 func adminLoginTest(c *gin.Context) {
