@@ -83,11 +83,10 @@
   const loginConfig = useStorage('login-config', {
     rememberPassword: false,
     username: 'admin', // 演示默认值
-    password: 'admin', // demo default value
   });
   const userInfo = reactive({
     username: loginConfig.value.username,
-    password: loginConfig.value.password,
+    password: loginConfig.value.password ?? '',
   });
 
   const handleSubmit = async ({

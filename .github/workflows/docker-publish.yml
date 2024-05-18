@@ -69,8 +69,9 @@ jobs:
           tags: |
             # set latest tag for default branch
             type=raw,value=latest,enable={{is_default_branch}}
-            type=schedule,pattern=nightly
-            type=pep440,pattern={{version}}
+            type=edge,branch=dev
+            type=pep440,pattern={{major}}.{{minor}},enable={{is_default_branch}}
+            type=pep440,pattern={{version}},enable={{is_default_branch}}
           flavor: latest=false
 
       # Build and push Docker image with Buildx (don't push on PR)
