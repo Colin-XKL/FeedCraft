@@ -1,4 +1,4 @@
-package recipe
+package craft
 
 import (
 	"github.com/gin-gonic/gin"

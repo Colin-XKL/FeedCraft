@@ -2,8 +2,8 @@ package router
 
 import (
 	"FeedCraft/internal/admin"
+	"FeedCraft/internal/craft"
 	"FeedCraft/internal/middleware"
-	"FeedCraft/internal/recipe"
 	"FeedCraft/internal/util"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -41,14 +41,14 @@ func RegisterRouters(router *gin.Engine) {
 
 	craftRouters := router.Group("/craft")
 	{
-		craftRouters.GET("/proxy", recipe.ProxyFeed)
-		craftRouters.GET("/limit", recipe.GetLimitHandler())
-		craftRouters.GET("/fulltext", recipe.ExtractFulltextForFeed)
-		craftRouters.GET("/fulltext-plus", recipe.ExtractFulltextPlusForFeed)
-		craftRouters.GET("/introduction", recipe.AddIntroductionForFeed)
-		craftRouters.GET("/ignore-advertorial", recipe.IgnoreAdvertorialArticle)
-		craftRouters.GET("/translate-title", recipe.GetTranslateTitleHandler())
-		craftRouters.GET("/translate-content", recipe.GetTranslateArticleContentHandler())
+		craftRouters.GET("/proxy", craft.ProxyFeed)
+		craftRouters.GET("/limit", craft.GetLimitHandler())
+		craftRouters.GET("/fulltext", craft.ExtractFulltextForFeed)
+		craftRouters.GET("/fulltext-plus", craft.ExtractFulltextPlusForFeed)
+		craftRouters.GET("/introduction", craft.AddIntroductionForFeed)
+		craftRouters.GET("/ignore-advertorial", craft.IgnoreAdvertorialArticle)
+		craftRouters.GET("/translate-title", craft.GetTranslateTitleHandler())
+		craftRouters.GET("/translate-content", craft.GetTranslateArticleContentHandler())
 	}
 
 	// admin api
@@ -56,7 +56,7 @@ func RegisterRouters(router *gin.Engine) {
 	adminApi.Use(middleware.JwtAuthMiddleware(), corsMiddleware)
 	{
 		adminApi.GET("/admin-login-test", adminLoginTest)
-		adminApi.POST("/craft-debug/advertorial", recipe.DebugCheckIfAdvertorial)
+		adminApi.POST("/craft-debug/advertorial", craft.DebugCheckIfAdvertorial)
 		adminApi.POST("/craft-debug/common-llm-call-test", admin.LLMDebug)
 	}
 }
