@@ -42,7 +42,8 @@ func addIntroductionUsingGemini(item *gofeed.Item) string {
 	logrus.Infof("generate introduction using gemini for article [%s]", originalTitle)
 
 	hashVal := getMD5Hash(originalContent)
-	cachedIntroduction, err := util.CacheGetString(GetCacheKeyForWebContent(hashVal))
+	craftName := "introduction"
+	cachedIntroduction, err := util.CacheGetString(getCacheKey(craftName, hashVal))
 
 	combineIntroductionAndArticle := func(article, intro string) string {
 		//TODO use html template rendering
@@ -56,7 +57,7 @@ func addIntroductionUsingGemini(item *gofeed.Item) string {
 			logrus.Warnf("failed to generate introduction for article [%s], %v\n", originalTitle, err)
 		} else {
 			finalArticleContent = combineIntroductionAndArticle(originalContent, introduction)
-			cacheErr := util.CacheSetString(GetCacheKeyForWebContent(hashVal), introduction, constant.WebContentExpire)
+			cacheErr := util.CacheSetString(getCacheKey(craftName, hashVal), introduction, constant.WebContentExpire)
 			if cacheErr != nil {
 				logrus.Warnf("failed to cache generated introduction for article [%s], %v\n", originalTitle, cacheErr)
 			}

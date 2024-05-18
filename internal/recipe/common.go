@@ -15,8 +15,12 @@ import (
 
 const DefaultTimeout = 30 * time.Second
 
-func GetCacheKeyForWebContent(url string) string {
-	return fmt.Sprintf("%s_%s", constant.PrefixWebContent, url)
+//	func GetCacheKeyForWebContent(url string) string {
+//		return fmt.Sprintf("%s_%s", constant.PrefixWebContent, url)
+//	}
+
+func getCacheKey(namespace, id string) string {
+	return fmt.Sprintf("%s_%s_%s", constant.PrefixWebContent, namespace, id)
 }
 
 type ContentTransformFunc func(item *gofeed.Item) string
@@ -99,8 +103,7 @@ func GetCommonCachedTransformer(cacheKeyGenerator ContentCacheKeyGenerator, rawT
 		final := ""
 		hashVal, _ := cacheKeyGenerator(item)
 
-		cached, err := util.CacheGetString(GetCacheKeyForWebContent(hashVal))
-
+		cached, err := util.CacheGetString(getCacheKey(craftName, hashVal))
 		if err != nil || cached == "" {
 			translated, err := rawTransformer(item)
 			if err != nil {
@@ -108,7 +111,7 @@ func GetCommonCachedTransformer(cacheKeyGenerator ContentCacheKeyGenerator, rawT
 				return "", err
 			} else {
 				final = translated
-				cacheErr := util.CacheSetString(GetCacheKeyForWebContent(hashVal), translated, constant.WebContentExpire)
+				cacheErr := util.CacheSetString(getCacheKey(craftName, hashVal), translated, constant.WebContentExpire)
 				if cacheErr != nil {
 					logrus.Warnf("failed to cache result of craft [%s] for article [%s], %v\n", craftName,
 						originalTitle, cacheErr)

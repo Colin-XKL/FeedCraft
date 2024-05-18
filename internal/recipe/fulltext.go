@@ -24,15 +24,16 @@ func GetFulltextExtractor(extractor FulltextExtractor) ContentTransformFunc {
 		log.Printf("extract fulltext for url %s", url)
 
 		articleContent := ""
+		craftName := "fulltext"
 
-		cachedContent, err := util.CacheGetString(GetCacheKeyForWebContent(url))
+		cachedContent, err := util.CacheGetString(getCacheKey(craftName, url))
 		if err != nil || cachedContent == "" {
 			articleStr, err := extractor(url, DefaultTimeout)
 			if err != nil {
 				logrus.Warnf("failed to parse %s, %v\n", url, err)
 			} else {
 				articleContent = articleStr
-				cacheErr := util.CacheSetString(GetCacheKeyForWebContent(url), articleStr, constant.WebContentExpire)
+				cacheErr := util.CacheSetString(getCacheKey(craftName, url), articleStr, constant.WebContentExpire)
 				if cacheErr != nil {
 					logrus.Warnf("failed to cache %s, %v\n", url, cacheErr)
 				}
