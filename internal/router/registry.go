@@ -42,6 +42,7 @@ func RegisterRouters(router *gin.Engine) {
 	craftRouters := router.Group("/craft")
 	{
 		craftRouters.GET("/proxy", recipe.ProxyFeed)
+		craftRouters.GET("/limit", recipe.GetLimitHandler())
 		craftRouters.GET("/fulltext", recipe.ExtractFulltextForFeed)
 		craftRouters.GET("/fulltext-plus", recipe.ExtractFulltextPlusForFeed)
 		craftRouters.GET("/introduction", recipe.AddIntroductionForFeed)
