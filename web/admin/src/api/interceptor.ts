@@ -39,7 +39,6 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   (response: AxiosResponse<HttpResponse>) => {
     const res = response.data;
-    // if the custom code is not 20000, it is judged as an error.
     if (res.code !== 0) {
       Message.error({
         content: res.msg || 'Error',
@@ -68,8 +67,9 @@ axios.interceptors.response.use(
     return res;
   },
   (error) => {
+    const respMsg = error?.response?.data?.msg;
     Message.error({
-      content: error.msg || 'Request Error',
+      content: respMsg || error.message || 'Request Error',
       duration: 5 * 1000,
     });
     return Promise.reject(error);
