@@ -24,7 +24,8 @@ func CheckIfAdvertorial(content string) bool {
 	if len(strings.TrimSpace(content)) < MinContentLength {
 		return false
 	}
-	result, err := adapter.CallGeminiUsingArticleContext(prompt, content)
+	//result, err := adapter.CallGeminiUsingArticleContext(prompt, content)
+	result, err := adapter.CallLLMUsingContext(prompt, content)
 	if err != nil {
 		logrus.Errorf("Error checking advertorial: %v", err)
 		return false

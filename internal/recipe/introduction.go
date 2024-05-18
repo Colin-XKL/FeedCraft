@@ -4,8 +4,6 @@ import (
 	"FeedCraft/internal/adapter"
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/util"
-	"crypto/md5"
-	"encoding/hex"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/mmcdole/gofeed"
@@ -17,13 +15,7 @@ add introduction for article,powered by google gemini
 */
 
 func getIntroductionForArticle(prompt, article string) (string, error) {
-	return adapter.CallGeminiUsingArticleContext(prompt, article)
-}
-
-func getMD5Hash(text string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(text))
-	return hex.EncodeToString(hasher.Sum(nil))
+	return adapter.CallLLMUsingContext(prompt, article)
 }
 
 const promptGenerateIntroduction = "请阅读下面的文章并写一篇不超过200字的摘要,使得读者可以快速知道文章的主题和主要结论."

@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// CallGeminiUsingArticleContext @deprecated
 func CallGeminiUsingArticleContext(prompt string, article string) (string, error) {
 	gemini, err := NewGeminiClient()
 	if err != nil {
