@@ -33,6 +33,5 @@ func CacheSetString(key string, value string, ttl time.Duration) error {
 }
 func CacheGetString(key string) (string, error) {
 	rdb := GetRedisClient()
-	ret := rdb.Get(context.Background(), key)
-	return ret.String(), ret.Err()
+	return rdb.Get(context.Background(), key).Result()
 }
