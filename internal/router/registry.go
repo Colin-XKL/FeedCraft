@@ -46,6 +46,8 @@ func RegisterRouters(router *gin.Engine) {
 		craftRouters.GET("/fulltext-plus", recipe.ExtractFulltextPlusForFeed)
 		craftRouters.GET("/introduction", recipe.AddIntroductionForFeed)
 		craftRouters.GET("/ignore-advertorial", recipe.IgnoreAdvertorialArticle)
+		craftRouters.GET("/translate-title", recipe.GetTranslateTitleHandler())
+		craftRouters.GET("/translate-content", recipe.GetTranslateArticleContentHandler())
 	}
 
 	// admin api
@@ -54,6 +56,7 @@ func RegisterRouters(router *gin.Engine) {
 	{
 		adminApi.GET("/admin-login-test", adminLoginTest)
 		adminApi.POST("/craft-debug/advertorial", recipe.DebugCheckIfAdvertorial)
+		adminApi.POST("/craft-debug/common-llm-call-test", admin.LLMDebug)
 	}
 }
 func adminLoginTest(c *gin.Context) {

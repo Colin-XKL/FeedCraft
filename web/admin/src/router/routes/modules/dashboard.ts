@@ -41,9 +41,18 @@ const DASHBOARD: AppRouteRecordRaw = {
       },
     },
     {
+      path: 'ad-check-debug',
+      name: 'AdCheckDebug',
+      component: () => import('@/views/dashboard/llm-debug/ad-check-debug.vue'),
+      meta: {
+        title: 'Ad Check Debug',
+        requiresAuth: true,
+      },
+    },
+    {
       path: 'llm-debug',
-      name: 'LLMDebug',
-      component: () => import('@/views/dashboard/llm-debug/llm-debug.vue'),
+      name: 'llm-debug',
+      component: () => import('@/views/dashboard/llm-debug/llm-test.vue'),
       meta: {
         title: 'LLM Debug',
         requiresAuth: true,

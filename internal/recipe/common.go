@@ -2,17 +2,27 @@ package recipe
 
 import (
 	"FeedCraft/internal/constant"
+	"FeedCraft/internal/util"
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/feeds"
 	"github.com/mmcdole/gofeed"
 	"github.com/samber/lo"
+	"github.com/sirupsen/logrus"
+	"net/http"
 	"time"
 )
 
 const DefaultTimeout = 30 * time.Second
 
-func GetCacheKeyForWebContent(url string) string {
-	return fmt.Sprintf("%s_%s", constant.PrefixWebContent, url)
+//	func GetCacheKeyForWebContent(url string) string {
+//		return fmt.Sprintf("%s_%s", constant.PrefixWebContent, url)
+//	}
+
+func getCacheKey(namespace, id string) string {
+	return fmt.Sprintf("%s_%s_%s", constant.PrefixWebContent, namespace, id)
 }
 
 type ContentTransformFunc func(item *gofeed.Item) string
@@ -31,7 +41,7 @@ func TransformFeed(parsedFeed *gofeed.Feed, transFunc ContentTransformFunc) feed
 	}
 
 	extractIterator := func(item *gofeed.Item, index int) *feeds.Item {
-		return TransformFeedItem(item, transFunc)
+		return TransformArticleContent(item, transFunc)
 	}
 
 	ret := feeds.Feed{
@@ -62,7 +72,62 @@ func TransformFeed(parsedFeed *gofeed.Feed, transFunc ContentTransformFunc) feed
 	return ret
 }
 
-func TransformFeedItem(item *gofeed.Item, transFunc func(item *gofeed.Item) string) *feeds.Item {
+func CommonCraftHandlerUsingCraftOptionList(c *gin.Context, optionList []CraftOption) {
+	feedUrl, ok := c.GetQuery("input_url")
+	if !ok || len(feedUrl) == 0 {
+		c.String(400, "empty feed url")
+		return
+	}
+
+	craftedFeed, err := NewCraftedFeedFromUrl(feedUrl,
+		optionList...,
+	)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	rssStr, err := craftedFeed.OutputFeed.ToRss()
+	if err != nil {
+		c.String(500, err.Error())
+		return
+	}
+	c.Header("Content-Type", "application/xml")
+	c.String(200, rssStr)
+}
+
+type RawTransformer func(item *feeds.Item) (string, error)
+
+func GetCommonCachedTransformer(cacheKeyGenerator ContentCacheKeyGenerator, rawTransformer TransFunc, craftName string) TransFunc {
+	ret := func(item *feeds.Item) (string, error) {
+		originalTitle := item.Title
+		logrus.Info("applying craft [%s] to article %s", craftName, originalTitle)
+
+		final := ""
+		hashVal, _ := cacheKeyGenerator(item)
+
+		cached, err := util.CacheGetString(getCacheKey(craftName, hashVal))
+		if err != nil || cached == "" {
+			translated, err := rawTransformer(item)
+			if err != nil {
+				logrus.Warnf("failed to apply craft [%s] for article [%s], %v\n", craftName, originalTitle, err)
+				return "", err
+			} else {
+				final = translated
+				cacheErr := util.CacheSetString(getCacheKey(craftName, hashVal), translated, constant.WebContentExpire)
+				if cacheErr != nil {
+					logrus.Warnf("failed to cache result of craft [%s] for article [%s], %v\n", craftName,
+						originalTitle, cacheErr)
+				}
+			}
+		} else {
+			final = cached
+		}
+		return final, nil
+	}
+	return ret
+}
+
+func TransformArticleContent(item *gofeed.Item, transFunc func(item *gofeed.Item) string) *feeds.Item {
 	updatedTimePointer := item.UpdatedParsed
 	updatedTime := time.Now()
 	if updatedTimePointer != nil {
@@ -82,7 +147,7 @@ func TransformFeedItem(item *gofeed.Item, transFunc func(item *gofeed.Item) stri
 		Link: &feeds.Link{
 			Href: item.Link,
 		},
-		Description: item.Description,
+		Description: articleContent,
 		Id:          item.GUID,
 		Updated:     updatedTime,
 		Created:     publishedTime,
@@ -96,4 +161,10 @@ func TransformFeedItem(item *gofeed.Item, transFunc func(item *gofeed.Item) stri
 		}
 	}
 	return &retItem
+}
+
+func getMD5Hash(text string) string {
+	hasher := md5.New()
+	hasher.Write([]byte(text))
+	return hex.EncodeToString(hasher.Sum(nil))
 }
