@@ -7,7 +7,6 @@ import (
 	"github.com/go-shiori/go-readability"
 	"github.com/mmcdole/gofeed"
 	"github.com/sirupsen/logrus"
-	"log"
 	"time"
 )
 
@@ -21,14 +20,14 @@ func TrivialExtractor(url string, timeout time.Duration) (string, error) {
 func GetFulltextExtractor(extractor FulltextExtractor) ContentTransformFunc {
 	extractFunc := func(item *gofeed.Item) string {
 		url := item.Link
-		log.Printf("extract fulltext for url %s", url)
+		logrus.Infof("extract fulltext for url %s", url)
 
 		articleContent := ""
 		craftName := "fulltext"
 
 		cachedContent, err := util.CacheGetString(getCacheKey(craftName, url))
 		if err != nil || cachedContent == "" {
-			articleStr, err := extractor(url, DefaultTimeout)
+			articleStr, err := extractor(url, DefaultExtractFulltextTimeout)
 			if err != nil {
 				logrus.Warnf("failed to parse %s, %v\n", url, err)
 			} else {

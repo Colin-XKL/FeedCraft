@@ -110,8 +110,8 @@ FeedCraft 的名称和Logo参考并致敬两款游戏: MineCraft和塞尔达, �
 
 - [x] common openai api calling 
 - [x] translate article and title
-- [ ] feed combination support
-- [ ] feed limit support
+- [ ] feed merge support
+- [x] feed limit support
 - [ ] feed custom keyword filter support
 - [ ] feed natural language filter support
 

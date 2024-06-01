@@ -43,7 +43,7 @@ func addIntroductionUsingGemini(item *gofeed.Item) string {
 	}
 
 	if err != nil || cachedIntroduction == "" {
-		//articleStr, err := extractor(url, DefaultTimeout)
+		//articleStr, err := extractor(url, DefaultExtractFulltextTimeout)
 		introduction, err := getIntroductionForArticle(promptGenerateIntroduction, originalContent)
 		if err != nil {
 			logrus.Warnf("failed to generate introduction for article [%s], %v\n", originalTitle, err)
