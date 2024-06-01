@@ -15,6 +15,7 @@
           placeholder="Enter article URL"
           class="w-full"
         />
+        <a-checkbox v-model="useEnhanceMode">启用增强模式</a-checkbox>
         <a-button :loading="isLoading" @click="fetchArticle">Submit</a-button>
       </a-space>
     </a-card>
@@ -38,6 +39,7 @@
   import XHeader from '@/components/header/x-header.vue';
 
   const articleUrl = ref('');
+  const useEnhanceMode = ref(false);
   const articleContent = ref('');
   const isAdvertorial = ref(false);
   const isLoading = ref(false);
@@ -47,6 +49,7 @@
     try {
       const resp = await axios.post(`/api/admin/craft-debug/advertorial`, {
         url: articleUrl.value,
+        enhance_mode: useEnhanceMode.value,
       });
       articleContent.value = resp.data.article_content;
       isAdvertorial.value = resp.data.is_advertorial;

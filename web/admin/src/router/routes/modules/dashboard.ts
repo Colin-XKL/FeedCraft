@@ -12,15 +12,15 @@ const DASHBOARD: AppRouteRecordRaw = {
     order: 0,
   },
   children: [
-    {
-      path: 'welcome',
-      name: 'Welcome',
-      component: () => import('@/views/dashboard/welcome/welcome.vue'),
-      meta: {
-        title: '欢迎使用',
-        requiresAuth: true,
-      },
-    },
+    // {
+    //   path: 'welcome',
+    //   name: 'Welcome',
+    //   component: () => import('@/views/dashboard/welcome/welcome.vue'),
+    //   meta: {
+    //     title: '欢迎使用',
+    //     requiresAuth: true,
+    //   },
+    // },
     {
       path: 'viewer',
       name: 'FeedViewer',
@@ -33,7 +33,7 @@ const DASHBOARD: AppRouteRecordRaw = {
     {
       path: 'workplace',
       name: 'Workplace',
-      component: () => import('@/views/dashboard/workplace/index.vue'),
+      component: () => import('@/views/dashboard/welcome/welcome.vue'),
       meta: {
         locale: 'menu.dashboard.workplace',
         requiresAuth: true,

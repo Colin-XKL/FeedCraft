@@ -12,8 +12,8 @@ For debug use
 */
 
 type llmDebugReq struct {
-	Model string `json:"model" binding:"required"`
-	Input string `json:"input" binding:"required"`
+	Model string `json:"model" binding:"required,min=1"`
+	Input string `json:"input" binding:"required,min=1"`
 }
 
 type llmDebugResp struct {

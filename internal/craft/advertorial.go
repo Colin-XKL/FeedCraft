@@ -67,7 +67,8 @@ func IgnoreAdvertorialArticle(c *gin.Context) {
 }
 
 type CheckIfAdvertorialDebugReq struct {
-	Url string `json:"url"` // article url
+	Url         string `json:"url"  binding:"required,url" ` // article url
+	EnhanceMode bool   `json:"enhance_mode"`
 }
 type CheckIfAdvertorialDebugResp struct {
 	Url            string `json:"url"` // url for orignial article
@@ -83,9 +84,18 @@ func DebugCheckIfAdvertorial(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
-	webContent, err := TrivialExtractor(reqBody.Url, 1*time.Minute)
+	var webContent string
+	if reqBody.EnhanceMode {
+		webContent, err = getRenderedHTML2(reqBody.Url, 1*time.Minute)
+	} else {
+		webContent, err = TrivialExtractor(reqBody.Url, 1*time.Minute)
+	}
 	if err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
+		return
+	}
+	if webContent == "" {
+		c.JSON(http.StatusExpectationFailed, util.APIResponse[any]{Msg: "extract article content failed"})
 		return
 	}
 	result := CheckIfAdvertorial(webContent)

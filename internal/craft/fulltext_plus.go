@@ -66,7 +66,7 @@ func getRenderedHTML2(websiteUrl string, timeout time.Duration) (string, error) 
 	envClient := util.GetEnvClient()
 	browserURI := envClient.GetString("PUPPETEER_HTTP_ENDPOINT")
 	if browserURI == "" {
-		log.Fatalf("puppeteer websocket endpoint not found in env")
+		log.Fatalf("puppeteer websocket endpoint PUPPETEER_HTTP_ENDPOINT not found in env")
 	}
 	parseUrl, err := url.Parse(websiteUrl)
 	if err != nil {

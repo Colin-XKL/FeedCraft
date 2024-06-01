@@ -1,6 +1,6 @@
 <template>
   <div class="py-8 px-16">
-    <x-header title="LLM Debug" description="大模型测试"> </x-header>
+    <x-header title="LLM Debug" description="大模型测试"></x-header>
 
     <a-space direction="vertical" class="w-full">
       <a-card class="my-2 w-full" title="输入参数">
