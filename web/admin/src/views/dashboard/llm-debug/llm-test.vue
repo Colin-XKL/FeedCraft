@@ -1,7 +1,7 @@
 <template>
   <div class="py-8 px-16">
-    <h1 class="text-3xl font-bold">LLM Debug Page</h1>
-    <p>大模型测试</p>
+    <x-header title="LLM Debug" description="大模型测试"> </x-header>
+
     <a-space direction="vertical" class="w-full">
       <a-card class="my-2 w-full" title="输入参数">
         <a-space direction="horizontal" class="w-full">
@@ -18,8 +18,8 @@
             auto-size
           ></a-textarea>
           <a-button :loading="isLoading" type="primary" @click="onSubmit"
-            >Submit</a-button
-          >
+            >Submit
+          </a-button>
         </a-space>
       </a-card>
       <a-card title="response" :loading="isLoading" class="w-full">
@@ -36,6 +36,7 @@
   import { ref } from 'vue';
   import { Message } from '@arco-design/web-vue';
   import axios from 'axios';
+  import XHeader from '@/components/header/x-header.vue';
 
   const model = ref('chatgpt-3.5');
   const prompt = ref('what is rss and how to use it?');

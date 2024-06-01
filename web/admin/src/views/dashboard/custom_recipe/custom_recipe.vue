@@ -1,5 +1,8 @@
 <template>
-  <div class="p-6">
+  <div class="py-8 px-16">
+    <x-header title="Custom Recipe" description="自定义rss, 以及要使用的craft">
+    </x-header>
+
     <a-space direction="horizontal" class="mb-4">
       <a-button type="primary" :loading="isLoading" @click="listCustomRecipes">
         List
@@ -24,19 +27,21 @@
       :loading="isLoading"
     >
       <template #actions="{ record }">
-        <a-button
-          type="primary"
-          class="mr-4"
-          @click="
-            () => {
-              isUpdating = true;
-              showEditModal(record);
-            }
-          "
-        >
-          Edit
-        </a-button>
-        <a-button @click="deleteRecipe(record.id)"> Delete</a-button>
+        <a-space direction="horizontal">
+          <a-button
+            type="primary"
+            @click="
+              () => {
+                isUpdating = true;
+                showEditModal(record);
+              }
+            "
+          >
+            Edit
+          </a-button>
+          <a-button @click="deleteRecipe(record.id)">Delete</a-button>
+          <a-link :href="`/recipe/${record?.id}`">Link</a-link>
+        </a-space>
       </template>
     </a-table>
 
@@ -87,6 +92,7 @@
     getCustomRecipes,
     updateCustomRecipe,
   } from '@/api/custom_recipe';
+  import XHeader from '@/components/header/x-header.vue';
 
   const recipes = ref<CustomRecipe[]>([]);
   const showModal = ref(false);

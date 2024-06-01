@@ -1,7 +1,11 @@
 <template>
   <div class="py-8 px-16">
-    <h1 class="text-3xl font-bold">LLM Debug Page - Check If Advertorial</h1>
-    <p>通过大模型能力,检测一个文章是不是广告或是推广的软文</p>
+    <x-header
+      title="LLM Debug Page - Check If Advertorial"
+      description="通过大模型能力,检测一个文章是不是广告或是推广的软文"
+    >
+    </x-header>
+
     <a-card class="my-2" title="输入链接">
       <p>输入要预览的文章链接</p>
       <a-space>
@@ -31,6 +35,7 @@
   import { Message } from '@arco-design/web-vue';
 
   import axios from 'axios';
+  import XHeader from '@/components/header/x-header.vue';
 
   const articleUrl = ref('');
   const articleContent = ref('');
