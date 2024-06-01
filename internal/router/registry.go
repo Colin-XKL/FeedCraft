@@ -5,6 +5,7 @@ import (
 	"FeedCraft/internal/controller"
 	"FeedCraft/internal/craft"
 	"FeedCraft/internal/middleware"
+	"FeedCraft/internal/recipe"
 	"FeedCraft/internal/util"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -51,6 +52,10 @@ func RegisterRouters(router *gin.Engine) {
 		craftRouters.GET("/translate-title", craft.GetTranslateTitleHandler())
 		craftRouters.GET("/translate-content", craft.GetTranslateArticleContentHandler())
 	}
+	recipeRoutes := router.Group("/recipe")
+	{
+		recipeRoutes.GET("/:id", recipe.CustomRecipe)
+	}
 
 	// admin api
 	adminApi := router.Group("/api/admin")
@@ -67,6 +72,7 @@ func RegisterRouters(router *gin.Engine) {
 		adminApi.DELETE("/recipes/:id", controller.DeleteCustomRecipe)
 
 	}
+
 }
 func adminLoginTest(c *gin.Context) {
 	ret := map[string]string{
