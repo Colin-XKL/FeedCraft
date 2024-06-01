@@ -147,7 +147,8 @@
             :size="32"
             :style="{ marginRight: '8px', cursor: 'pointer' }"
           >
-            <img alt="avatar" :src="avatar" />
+            {{ userName.charAt(0).toUpperCase() }}
+            <!--            <img alt="avatar" :src="avatar" />-->
           </a-avatar>
           <template #content>
             <a-doption>
@@ -199,6 +200,7 @@
   import useUser from '@/hooks/user';
   import Menu from '@/components/menu/index.vue';
   import logo from '@/assets/logo.png';
+  // import user from '@/store/modules/user';
   import MessageBox from '../message-box/index.vue';
 
   const appStore = useAppStore();
@@ -207,8 +209,11 @@
   const { changeLocale, currentLocale } = useLocale();
   const { isFullscreen, toggle: toggleFullScreen } = useFullscreen();
   const locales = [...LOCALE_OPTIONS];
-  const avatar = computed(() => {
-    return userStore.avatar;
+  // const avatar = computed(() => {
+  //   return userStore.avatar;
+  // });
+  const userName = computed(() => {
+    return userStore.name ?? 'Unknown User';
   });
   const theme = computed(() => {
     return appStore.theme;
