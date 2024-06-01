@@ -68,6 +68,15 @@ const DASHBOARD: AppRouteRecordRaw = {
         title: 'CustomRecipe',
       },
     },
+    {
+      path: 'craft_flow',
+      name: 'craft_flow',
+      component: () => import('@/views/dashboard/craft_flow/craft_flow.vue'),
+      meta: {
+        requiresAuth: true,
+        title: 'Craft Flow',
+      },
+    },
   ],
 };
 

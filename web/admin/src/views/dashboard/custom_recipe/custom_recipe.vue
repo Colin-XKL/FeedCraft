@@ -29,7 +29,7 @@
       <template #actions="{ record }">
         <a-space direction="horizontal">
           <a-button
-            type="primary"
+            type="outline"
             @click="
               () => {
                 isUpdating = true;
