@@ -37,7 +37,6 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 	} else {
 		logrus.Info("using default openai endpoint ")
 	}
-	//conf.HTTPClient=http.Client{}.
 
 	client := openai.NewClientWithConfig(conf)
 	if client == nil {

@@ -37,6 +37,7 @@ FeedCraft中的几个核心概念:
 目前可用的几个选项(craft option):
 
 - proxy: 简易RSS代理, 不作任何处理
+- limit: 限制文章个数, 默认最新10个
 - fulltext: 获取全文
 - fulltext-plus: 获取全文,但是会模拟浏览器渲染网页,适用于常规模式无法获取到文章内容,动态渲染内容的站点
 - introduction: 调用AI为文章生成摘要,附加在原文开头
