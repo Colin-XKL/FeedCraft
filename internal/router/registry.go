@@ -9,7 +9,6 @@ import (
 	"FeedCraft/internal/util"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-
 	"log"
 	"net/http"
 )
@@ -19,13 +18,13 @@ func RegisterRouters(router *gin.Engine) {
 	if envClient == nil {
 		log.Fatalf("get env client error.")
 	}
-	siteBaseUrl := envClient.GetString("SITE_BASE_URL")
-	router.LoadHTMLFiles("web/index.html")
-	router.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", gin.H{
-			"SiteBaseUrl": siteBaseUrl,
-		})
-	})
+	//siteBaseUrl := envClient.GetString("SITE_BASE_URL")
+	//router.LoadHTMLFiles("web/index.html")
+	//router.GET("/", func(c *gin.Context) {
+	//	c.HTML(http.StatusOK, "index.html", gin.H{
+	//		"SiteBaseUrl": siteBaseUrl,
+	//	})
+	//})
 
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowCredentials = true
@@ -34,6 +33,12 @@ func RegisterRouters(router *gin.Engine) {
 	corsMiddleware := cors.New(corsConfig)
 	//corsMiddleware := cors.Default()
 	router.Use(corsMiddleware)
+
+	router.Static("/assets", "./web/assets")
+	router.StaticFile("/start.html","./web/start.html")
+	router.NoRoute(func(c *gin.Context) {
+		c.File("./web/index.html")
+	})
 
 	// Public routes
 	public := router.Group("/api")
@@ -54,7 +59,8 @@ func RegisterRouters(router *gin.Engine) {
 	adminApi := router.Group("/api/admin")
 	adminApi.Use(middleware.JwtAuthMiddleware(), corsMiddleware)
 	{
-		adminApi.GET("/admin-login-test", adminLoginTest)
+		adminApi.POST("/user/info", AdminUserInfoHandler)
+
 		adminApi.POST("/craft-debug/advertorial", craft.DebugCheckIfAdvertorial)
 		adminApi.POST("/craft-debug/common-llm-call-test", admin.LLMDebug)
 
@@ -73,9 +79,11 @@ func RegisterRouters(router *gin.Engine) {
 	}
 
 }
-func adminLoginTest(c *gin.Context) {
-	ret := map[string]string{
-		"success": "ok",
+
+func AdminUserInfoHandler(c *gin.Context) {
+	resp := map[string]string{
+		"name": "admin",
+		"role": "admin",
 	}
-	c.JSON(http.StatusOK, ret)
+	c.JSON(http.StatusOK, util.APIResponse[any]{Data: resp})
 }

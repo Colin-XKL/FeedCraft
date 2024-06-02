@@ -80,7 +80,7 @@
   const { loading, setLoading } = useLoading();
   const userStore = useUserStore();
 
-  const loginConfig = useStorage('login-config', {
+  const loginConfig: any = useStorage('login-config', {
     rememberPassword: false,
     username: 'admin', // 演示默认值
   });
