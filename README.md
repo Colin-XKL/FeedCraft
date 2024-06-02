@@ -11,7 +11,7 @@ Craft all your feed in one place!
 ![GitHub Release](https://img.shields.io/github/v/release/Colin-XKL/FeedCraft)
 ![GitHub Discussions](https://img.shields.io/github/discussions/Colin-XKL/FeedCraft?link=https%3A%2F%2Fgithub.com%2FColin-XKL%2FFeedCraft%2Fdiscussions)
 ![Container Image Size On GHCR](https://ghcr-badge.egpl.dev/colin-xkl/feed-craft/size?color=%2344cc11&tag=latest&label=image+size)
-![Static Badge](https://img.shields.io/badge/arch-amd64|arm64|armv7-blue)
+![Arch Badge](https://img.shields.io/badge/arch-amd64|arm64-blue)
 ![Open Source Love](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)
 
 Doc: English(WIP) | 简体中文 | 繁体中文(WIP)
