@@ -12,7 +12,7 @@ RUN go mod download
 # copy directory files i.e all files ending with .go
 COPY . .
 # compile application
-RUN go build -o /feed_craft /app/cmd/main.go
+RUN go build -o /feed-craft /app/cmd/main.go
 
 ##
 ## STEP 2 - DEPLOY
@@ -20,10 +20,12 @@ RUN go build -o /feed_craft /app/cmd/main.go
 FROM alpine
 
 WORKDIR /app
+ENV FC_DB_SQLITE_PATH=/usr/local/feed-craft/db/
+RUN mkdir -p /usr/local/feed-craft/db/
 
-COPY --from=build /feed_craft /app/feed_craft
+COPY --from=build /feed-craft /app/feed-craft
 COPY /web/index.html /web/favicon.ico /app/web/
 ENV GIN_MODE=release
 EXPOSE 8080
 
-ENTRYPOINT ["/app/feed_craft"]
+ENTRYPOINT ["/app/feed-craft"]

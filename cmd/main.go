@@ -1,7 +1,9 @@
 package main
 
 import (
+	"FeedCraft/internal/dao"
 	"FeedCraft/internal/router"
+	"FeedCraft/internal/util"
 	"fmt"
 	"github.com/getsentry/sentry-go"
 	sentrygin "github.com/getsentry/sentry-go/gin"
@@ -16,15 +18,18 @@ func main() {
 	if len(sentryDsn) > 0 {
 		logrus.Info("initializing sentry...")
 		// To initialize Sentry's handler, you need to initialize Sentry itself beforehand
-		if err := sentry.Init(sentry.ClientOptions{
+		err := sentry.Init(sentry.ClientOptions{
 			Dsn:           sentryDsn,
 			EnableTracing: true,
 			// Set TracesSampleRate to 1.0 to capture 100%
 			// of transactions for performance monitoring.
 			// We recommend adjusting this value in production,
 			TracesSampleRate: 1.0,
-		}); err != nil {
-			fmt.Printf("Sentry initialization failed: %v\n", err)
+		})
+		if err != nil {
+			logrus.Warnf("sentry initialization failed: %v\n", err)
+		} else {
+			logrus.Info("sentry initialized.")
 		}
 	}
 
@@ -41,6 +46,13 @@ func main() {
 			"message": "pong",
 		})
 	})
+
+	// Migrate the schema
+	dao.MigrateDatabases()
+	localDefaultPort := util.GetLocalPort()
 	listenAddr := os.Getenv("LISTEN_ADDR")
+	go func() {
+		_ = r.Run(fmt.Sprintf("localhost:%d", localDefaultPort))
+	}()
 	_ = r.Run(listenAddr) // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }

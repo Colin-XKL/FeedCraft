@@ -2,6 +2,8 @@ package router
 
 import (
 	"FeedCraft/internal/admin"
+	"FeedCraft/internal/controller"
+	"FeedCraft/internal/craft"
 	"FeedCraft/internal/middleware"
 	"FeedCraft/internal/recipe"
 	"FeedCraft/internal/util"
@@ -41,14 +43,11 @@ func RegisterRouters(router *gin.Engine) {
 
 	craftRouters := router.Group("/craft")
 	{
-		craftRouters.GET("/proxy", recipe.ProxyFeed)
-		craftRouters.GET("/limit", recipe.GetLimitHandler())
-		craftRouters.GET("/fulltext", recipe.ExtractFulltextForFeed)
-		craftRouters.GET("/fulltext-plus", recipe.ExtractFulltextPlusForFeed)
-		craftRouters.GET("/introduction", recipe.AddIntroductionForFeed)
-		craftRouters.GET("/ignore-advertorial", recipe.IgnoreAdvertorialArticle)
-		craftRouters.GET("/translate-title", recipe.GetTranslateTitleHandler())
-		craftRouters.GET("/translate-content", recipe.GetTranslateArticleContentHandler())
+		craftRouters.GET("/:craft-name", craft.Entry)
+	}
+	recipeRoutes := router.Group("/recipe")
+	{
+		recipeRoutes.GET("/:id", recipe.CustomRecipe)
 	}
 
 	// admin api
@@ -56,9 +55,23 @@ func RegisterRouters(router *gin.Engine) {
 	adminApi.Use(middleware.JwtAuthMiddleware(), corsMiddleware)
 	{
 		adminApi.GET("/admin-login-test", adminLoginTest)
-		adminApi.POST("/craft-debug/advertorial", recipe.DebugCheckIfAdvertorial)
+		adminApi.POST("/craft-debug/advertorial", craft.DebugCheckIfAdvertorial)
 		adminApi.POST("/craft-debug/common-llm-call-test", admin.LLMDebug)
+
+		adminApi.POST("/recipes", controller.CreateCustomRecipe)
+		adminApi.GET("/recipes", controller.ListCustomRecipe)
+		adminApi.GET("/recipes/:id", controller.GetCustomRecipe)
+		adminApi.PUT("/recipes/:id", controller.UpdateCustomRecipe)
+		adminApi.DELETE("/recipes/:id", controller.DeleteCustomRecipe)
+
+		adminApi.GET("/craft-flows", controller.ListCraftFlows)
+		adminApi.POST("/craft-flows", controller.CreateCraftFlow)
+		adminApi.GET("/craft-flows/:name", controller.GetCraftFlow)
+		adminApi.PUT("/craft-flows/:name", controller.UpdateCraftFlow)
+		adminApi.DELETE("/craft-flows/:name", controller.DeleteCraftFlow)
+
 	}
+
 }
 func adminLoginTest(c *gin.Context) {
 	ret := map[string]string{

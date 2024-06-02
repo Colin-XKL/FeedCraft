@@ -1,6 +1,8 @@
 <template>
   <div class="py-8 px-16">
-    <h1 class="text-3xl font-bold">RSS Feed Preview</h1>
+    <x-header title="RSS Feed Preview" description="RSS Feed Preview">
+    </x-header>
+
     <a-card class="my-2" title="输入链接">
       <p>输入要预览的RSS源地址 支持RSS/ATOM</p>
       <a-space>
@@ -26,6 +28,7 @@
   import Parser from 'rss-parser';
   import { Message } from '@arco-design/web-vue';
   import FeedViewContainer from '@/views/dashboard/feed-viewer/feed_view_container.vue';
+  import XHeader from '@/components/header/x-header.vue';
 
   const feedUrl = ref('');
   const feedContent = ref<any>(null);

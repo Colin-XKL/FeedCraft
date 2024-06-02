@@ -32,7 +32,11 @@ Gemini来生成文章摘要、通过自然语言筛选文章等
 
 FeedCraft中的几个核心概念:
 
-- Craft(工艺),指要如何处理一个rss源, 比如是要进行翻译,还是提取正文,还是AI生成摘要等
+- Craft(工艺), 指要如何处理一个rss源, 比如是要进行翻译,还是提取正文,还是AI生成摘要等
+- CraftFlow(工艺组合), 多个craft组成的序列, 比如你可以定义一个新的名叫 clean-article 的 craft flow,
+  将提取全文、AI筛选文章、AI摘要组合到一起,
+- Recipe(食谱), 记录了以什么样的craft 或 craft flow对某个指定的rss源进行处理, 比如你可以指定一个名叫my-zhihu-daliy的recipe,
+  对知乎日报的rss自动进行AI生成摘要的操作, 这个recipe对应一个新的rss地址, 你可以直接订阅这个地址得到带摘要版本的知乎日报
 
 目前可用的几个选项(craft option):
 
@@ -105,15 +109,15 @@ services:
 FeedCraft 的名称和Logo参考并致敬两款游戏: MineCraft和塞尔达, 初衷和愿景是做一个简单易用、同时足够灵活, 能够有更多可能性的RSS工具.
 使用问题、建议等欢迎在Discussion区讨论交流
 
-
 ## RoadMap
 
-- [x] common openai api calling 
+- [x] common openai api calling
 - [x] translate article and title
-- [ ] feed combination support
-- [ ] feed limit support
+- [ ] feed merge support
+- [x] feed limit support
 - [ ] feed custom keyword filter support
-- [ ] feed natural language filter support
+- [x] feed natural language filter support
+- [x] craft flow
 
 
 ## 许可

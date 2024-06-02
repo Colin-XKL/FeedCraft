@@ -1,7 +1,6 @@
-package recipe
+package craft
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/gorilla/feeds"
 	"github.com/samber/lo"
 )
@@ -17,11 +16,9 @@ func OptionLimit(n int) CraftOption {
 	}
 }
 
-func GetLimitHandler() func(c *gin.Context) {
+func GetLimitCraftOption() []CraftOption {
 	craftOptions := []CraftOption{
 		OptionLimit(defaultLimit),
 	}
-	return func(c *gin.Context) {
-		CommonCraftHandlerUsingCraftOptionList(c, craftOptions)
-	}
+	return craftOptions
 }

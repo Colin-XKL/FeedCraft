@@ -12,15 +12,15 @@ const DASHBOARD: AppRouteRecordRaw = {
     order: 0,
   },
   children: [
-    {
-      path: 'welcome',
-      name: 'Welcome',
-      component: () => import('@/views/dashboard/welcome/welcome.vue'),
-      meta: {
-        title: '欢迎使用',
-        requiresAuth: true,
-      },
-    },
+    // {
+    //   path: 'welcome',
+    //   name: 'Welcome',
+    //   component: () => import('@/views/dashboard/welcome/welcome.vue'),
+    //   meta: {
+    //     title: '欢迎使用',
+    //     requiresAuth: true,
+    //   },
+    // },
     {
       path: 'viewer',
       name: 'FeedViewer',
@@ -33,7 +33,7 @@ const DASHBOARD: AppRouteRecordRaw = {
     {
       path: 'workplace',
       name: 'Workplace',
-      component: () => import('@/views/dashboard/workplace/index.vue'),
+      component: () => import('@/views/dashboard/welcome/welcome.vue'),
       meta: {
         locale: 'menu.dashboard.workplace',
         requiresAuth: true,
@@ -56,6 +56,25 @@ const DASHBOARD: AppRouteRecordRaw = {
       meta: {
         title: 'LLM Debug',
         requiresAuth: true,
+      },
+    },
+    {
+      path: 'custom_recipe',
+      name: 'custom_recipe',
+      component: () =>
+        import('@/views/dashboard/custom_recipe/custom_recipe.vue'),
+      meta: {
+        requiresAuth: true,
+        title: 'CustomRecipe',
+      },
+    },
+    {
+      path: 'craft_flow',
+      name: 'craft_flow',
+      component: () => import('@/views/dashboard/craft_flow/craft_flow.vue'),
+      meta: {
+        requiresAuth: true,
+        title: 'Craft Flow',
       },
     },
   ],

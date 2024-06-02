@@ -1,4 +1,4 @@
-package recipe
+package craft
 
 import (
 	"FeedCraft/internal/constant"
@@ -15,7 +15,7 @@ import (
 	"time"
 )
 
-const DefaultTimeout = 30 * time.Second
+const DefaultExtractFulltextTimeout = 30 * time.Second
 
 //	func GetCacheKeyForWebContent(url string) string {
 //		return fmt.Sprintf("%s_%s", constant.PrefixWebContent, url)
@@ -100,7 +100,7 @@ type RawTransformer func(item *feeds.Item) (string, error)
 func GetCommonCachedTransformer(cacheKeyGenerator ContentCacheKeyGenerator, rawTransformer TransFunc, craftName string) TransFunc {
 	ret := func(item *feeds.Item) (string, error) {
 		originalTitle := item.Title
-		logrus.Info("applying craft [%s] to article %s", craftName, originalTitle)
+		logrus.Infof("applying craft [%s] to article [%s]", craftName, originalTitle)
 
 		final := ""
 		hashVal, _ := cacheKeyGenerator(item)
@@ -164,7 +164,7 @@ func TransformArticleContent(item *gofeed.Item, transFunc func(item *gofeed.Item
 }
 
 func getMD5Hash(text string) string {
-	hasher := md5.New()
-	hasher.Write([]byte(text))
-	return hex.EncodeToString(hasher.Sum(nil))
+	h := md5.New()
+	h.Write([]byte(text))
+	return hex.EncodeToString(h.Sum(nil))
 }

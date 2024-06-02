@@ -1,11 +1,10 @@
-package recipe
+package craft
 
 import (
 	"FeedCraft/internal/util"
-	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
 	"github.com/go-shiori/go-readability"
-	"github.com/mmcdole/gofeed"
+	"github.com/gorilla/feeds"
 	"github.com/sirupsen/logrus"
 	"log"
 	"net/url"
@@ -66,7 +65,7 @@ func getRenderedHTML2(websiteUrl string, timeout time.Duration) (string, error) 
 	envClient := util.GetEnvClient()
 	browserURI := envClient.GetString("PUPPETEER_HTTP_ENDPOINT")
 	if browserURI == "" {
-		log.Fatalf("puppeteer websocket endpoint not found in env")
+		log.Fatalf("puppeteer websocket endpoint PUPPETEER_HTTP_ENDPOINT not found in env")
 	}
 	parseUrl, err := url.Parse(websiteUrl)
 	if err != nil {
@@ -100,22 +99,14 @@ func getRenderedHTML2(websiteUrl string, timeout time.Duration) (string, error) 
 	return response.String(), nil
 }
 
-func ExtractFulltextPlusForFeed(c *gin.Context) {
-	feedUrl, ok := c.GetQuery("input_url")
-	if !ok || len(feedUrl) == 0 {
-		c.String(400, "empty feed url")
-		return
+func GetFulltextPlusCraftOptions() []CraftOption {
+	transFunc := func(item *feeds.Item) (string, error) {
+		link := item.Link.Href
+		return getRenderedHTML2(link, DefaultExtractFulltextTimeout)
 	}
-	fp := gofeed.NewParser()
-	parsedFeed, _ := fp.ParseURL(feedUrl)
-
-	ret := TransformFeed(parsedFeed, GetFulltextExtractor(getRenderedHTML2))
-
-	rssStr, err := ret.ToRss()
-	if err != nil {
-		c.String(500, err.Error())
-		return
+	cachedTransFunc := GetCommonCachedTransformer(cacheKeyForArticleTitle, transFunc, "extract fulltext plus")
+	craftOptions := []CraftOption{
+		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransFunc)),
 	}
-	c.Header("Content-Type", "application/xml")
-	c.String(200, rssStr)
+	return craftOptions
 }

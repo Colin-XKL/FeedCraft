@@ -1,8 +1,7 @@
-package recipe
+package craft
 
 import (
 	"FeedCraft/internal/adapter"
-	"github.com/gin-gonic/gin"
 	"github.com/gorilla/feeds"
 )
 
@@ -26,7 +25,8 @@ func cacheKeyForArticleContent(item *feeds.Item) (string, error) {
 	return getMD5Hash(item.Description + item.Description), nil
 }
 
-func GetTranslateTitleHandler() func(c *gin.Context) {
+// GetTranslateTitleCraftOptions translate title
+func GetTranslateTitleCraftOptions() []CraftOption {
 	transFunc := func(item *feeds.Item) (string, error) {
 		return translateArticleTitle(item.Title)
 	}
@@ -36,12 +36,11 @@ func GetTranslateTitleHandler() func(c *gin.Context) {
 			GetArticleTitleProcessor(transformer),
 		),
 	}
-	return func(c *gin.Context) {
-		CommonCraftHandlerUsingCraftOptionList(c, craftOption)
-	}
+	return craftOption
 }
 
-func GetTranslateArticleContentHandler() func(c *gin.Context) {
+// GetTranslateContentCraftOptions translate article content
+func GetTranslateContentCraftOptions() []CraftOption {
 	transFunc := func(item *feeds.Item) (string, error) {
 		return translateArticleContent(item.Content) // TODO handle feed item content correctly
 	}
@@ -50,7 +49,5 @@ func GetTranslateArticleContentHandler() func(c *gin.Context) {
 	craftOption := []CraftOption{
 		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransformer)),
 	}
-	return func(c *gin.Context) {
-		CommonCraftHandlerUsingCraftOptionList(c, craftOption)
-	}
+	return craftOption
 }

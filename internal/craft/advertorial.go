@@ -1,4 +1,4 @@
-package recipe
+package craft
 
 import (
 	"FeedCraft/internal/adapter"
@@ -34,6 +34,14 @@ func CheckIfAdvertorial(content string) bool {
 	return result == "true"
 }
 
+func GetIgnoreAdvertorialCraftOptions() []CraftOption {
+	craftOptions := []CraftOption{
+		OptionIgnoreAdvertorial(),
+	}
+	return craftOptions
+}
+
+// OptionIgnoreAdvertorial option  判断一篇文章是不是推广软文和广告等
 func OptionIgnoreAdvertorial() CraftOption {
 	return func(feed *feeds.Feed) error {
 		items := feed.Items
@@ -46,28 +54,9 @@ func OptionIgnoreAdvertorial() CraftOption {
 	}
 }
 
-func IgnoreAdvertorialArticle(c *gin.Context) {
-	feedUrl, ok := c.GetQuery("input_url")
-	if !ok || len(feedUrl) == 0 {
-		c.String(400, "empty feed url")
-		return
-	}
-	craftedFeed, err := NewCraftedFeedFromUrl(feedUrl, OptionIgnoreAdvertorial())
-	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
-	}
-	rssStr, err := craftedFeed.OutputFeed.ToRss()
-	if err != nil {
-		c.String(500, err.Error())
-		return
-	}
-	c.Header("Content-Type", "application/xml")
-	c.String(200, rssStr)
-}
-
 type CheckIfAdvertorialDebugReq struct {
-	Url string `json:"url"` // article url
+	Url         string `json:"url"  binding:"required,url" ` // article url
+	EnhanceMode bool   `json:"enhance_mode"`
 }
 type CheckIfAdvertorialDebugResp struct {
 	Url            string `json:"url"` // url for orignial article
@@ -83,9 +72,18 @@ func DebugCheckIfAdvertorial(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
-	webContent, err := TrivialExtractor(reqBody.Url, 1*time.Minute)
+	var webContent string
+	if reqBody.EnhanceMode {
+		webContent, err = getRenderedHTML2(reqBody.Url, 1*time.Minute)
+	} else {
+		webContent, err = TrivialExtractor(reqBody.Url, 1*time.Minute)
+	}
 	if err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
+		return
+	}
+	if webContent == "" {
+		c.JSON(http.StatusExpectationFailed, util.APIResponse[any]{Msg: "extract article content failed"})
 		return
 	}
 	result := CheckIfAdvertorial(webContent)

@@ -1,12 +1,11 @@
-package recipe
+package craft
 
 import (
 	"FeedCraft/internal/adapter"
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/util"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/mmcdole/gofeed"
+	"github.com/gorilla/feeds"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,7 +19,9 @@ func getIntroductionForArticle(prompt, article string) (string, error) {
 
 const promptGenerateIntroduction = "请阅读下面的文章并写一篇不超过200字的摘要,使得读者可以快速知道文章的主题和主要结论."
 
-func addIntroductionUsingGemini(item *gofeed.Item) string {
+func addIntroductionUsingGemini(item *feeds.Item) string {
+	//TODO handle description and content field separately and correctly
+
 	finalArticleContent := ""
 	originalContent := item.Content
 	originalTitle := item.Title
@@ -43,7 +44,7 @@ func addIntroductionUsingGemini(item *gofeed.Item) string {
 	}
 
 	if err != nil || cachedIntroduction == "" {
-		//articleStr, err := extractor(url, DefaultTimeout)
+		//articleStr, err := extractor(url, DefaultExtractFulltextTimeout)
 		introduction, err := getIntroductionForArticle(promptGenerateIntroduction, originalContent)
 		if err != nil {
 			logrus.Warnf("failed to generate introduction for article [%s], %v\n", originalTitle, err)
@@ -60,28 +61,13 @@ func addIntroductionUsingGemini(item *gofeed.Item) string {
 	return finalArticleContent
 }
 
-//TODO handle description and content field separately and correctly
-
-func AddIntroductionForFeed(c *gin.Context) {
-	feedUrl, ok := c.GetQuery("input_url")
-	if !ok || len(feedUrl) == 0 {
-		c.String(400, "empty feed url")
-		return
+func GetAddIntroductionCraftOptions() []CraftOption {
+	transFunc := func(item *feeds.Item) (string, error) {
+		ret := addIntroductionUsingGemini(item)
+		return ret, nil
 	}
-	fp := gofeed.NewParser()
-	parsedFeed, err := fp.ParseURL(feedUrl)
-	if err != nil {
-		c.String(500, err.Error())
-		return
+	craftOption := []CraftOption{
+		OptionTransformFeedItem(GetArticleContentProcessor(transFunc)),
 	}
-
-	ret := TransformFeed(parsedFeed, addIntroductionUsingGemini)
-
-	rssStr, err := ret.ToRss()
-	if err != nil {
-		c.String(500, err.Error())
-		return
-	}
-	c.Header("Content-Type", "application/xml")
-	c.String(200, rssStr)
+	return craftOption
 }
