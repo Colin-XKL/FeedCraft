@@ -35,6 +35,7 @@ func RegisterRouters(router *gin.Engine) {
 	router.Use(corsMiddleware)
 
 	router.Static("/assets", "./web/assets")
+	router.StaticFile("/start.html","./web/start.html")
 	router.NoRoute(func(c *gin.Context) {
 		c.File("./web/index.html")
 	})

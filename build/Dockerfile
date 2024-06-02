@@ -31,7 +31,7 @@ ENV FC_DB_SQLITE_PATH=/usr/local/feed-craft/db/
 RUN mkdir -p /usr/local/feed-craft/db/
 
 COPY --from=backend-builder /feed-craft /app/feed-craft
-# COPY /web/index.html /web/favicon.ico /app/web/  
+COPY /web/start.html /web/favicon.ico /app/web/
 COPY --from=frontend-builder /app/dist /app/web
 ENV GIN_MODE=release
 ENV LISTEN_ADDR=0.0.0.0:80
