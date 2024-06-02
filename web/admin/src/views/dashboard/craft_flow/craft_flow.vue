@@ -12,7 +12,7 @@
         @click="
           () => {
             showEditModal = true;
-            editing = false;
+            isUpdating = false;
           }
         "
         >Create CraftFlow
@@ -34,7 +34,7 @@
       </template>
       <template #actions="{ record }">
         <a-space>
-          <a-button type="outline" @click="showEditModalHandler(record)"
+          <a-button type="outline" @click="editBtnHandler(record)"
             >Edit
           </a-button>
           <a-button status="danger" @click="deleteCraftFlowHandler(record.name)"
@@ -46,7 +46,7 @@
 
     <a-modal
       v-model:visible="showEditModal"
-      :title="editing ? 'Edit Craft Flow' : 'Create Craft Flow'"
+      :title="isUpdating ? 'Edit Craft Flow' : 'Create Craft Flow'"
     >
       <!--      @ok="updateCraftFlow"-->
       <a-form
@@ -75,7 +75,6 @@
             () => {
               showEditModal = false;
               isUpdating = false;
-              editing = false;
             }
           "
           >Cancel
@@ -98,9 +97,7 @@
   } from '@/api/craft_flow';
 
   const isLoading = ref(false);
-
   const craftFlows = ref<CraftFlow[]>([]);
-
   const editedCraftFlow = ref<CraftFlow>({
     name: '',
     description: '',
@@ -108,7 +105,6 @@
   });
   // const showCreateModal = ref(false);
   const showEditModal = ref(false);
-  const editing = ref(false);
   const isUpdating = ref(false);
 
   const columns = [
@@ -118,10 +114,10 @@
     { title: 'Actions', slotName: 'actions' },
   ];
 
-  const showEditModalHandler = (craftFlow: CraftFlow) => {
+  const editBtnHandler = (craftFlow: CraftFlow) => {
     editedCraftFlow.value = { ...craftFlow };
     showEditModal.value = true;
-    editing.value = true;
+    isUpdating.value = true;
   };
 
   const deleteCraftFlowHandler = async (name: string) => {
@@ -150,39 +146,30 @@
       const craftFlowConfigList = item.craft_flow_config ?? [];
       ret.craftList =
         craftFlowConfigList.map(
-          (craftConfigItem) => craftConfigItem.craftName
+          (craftConfigItem) => craftConfigItem.craft_name
         ) ?? [];
       return ret;
     });
     isLoading.value = false;
   }
 
-  const selectedCraftFlow = ref<CraftFlow | null>(null);
   const saveCraftFlow = async () => {
-    if (editing.value) {
-      if (selectedCraftFlow.value) {
-        await updateCraftFlow(
-          editedCraftFlow.value.name,
-          transformCraftForOption(editedCraftFlow.value)
-        );
-        selectedCraftFlow.value.description = editedCraftFlow.value.description;
-        selectedCraftFlow.value.name = editedCraftFlow.value.name;
-        selectedCraftFlow.value.craft_flow_config =
-          editedCraftFlow.value.craft_flow_config;
-      }
+    if (isUpdating.value) {
+      await updateCraftFlow(
+        editedCraftFlow.value.name,
+        transformCraftForOption(editedCraftFlow.value)
+      );
     } else {
       await createCraftFlow(transformCraftForOption(editedCraftFlow.value));
-      await listAllCraftFlow();
     }
     showEditModal.value = false;
+    await listAllCraftFlow();
+    isUpdating.value = false;
     editedCraftFlow.value = {
       name: '',
       description: '',
       craft_flow_config: [],
     };
-    editing.value = false;
-    isUpdating.value = false;
-    selectedCraftFlow.value = null;
   };
 
   onBeforeMount(() => {

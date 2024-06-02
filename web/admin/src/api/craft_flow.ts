@@ -1,7 +1,7 @@
 import axios, { AxiosResponse } from 'axios';
 
 export interface CraftFlowItem {
-  craftName: string;
+  craft_name: string;
   options?: Map<string, string>;
 }
 
