@@ -9,7 +9,6 @@ import (
 	"FeedCraft/internal/util"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-
 	"log"
 	"net/http"
 )
@@ -19,13 +18,13 @@ func RegisterRouters(router *gin.Engine) {
 	if envClient == nil {
 		log.Fatalf("get env client error.")
 	}
-	siteBaseUrl := envClient.GetString("SITE_BASE_URL")
-	router.LoadHTMLFiles("web/index.html")
-	router.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", gin.H{
-			"SiteBaseUrl": siteBaseUrl,
-		})
-	})
+	//siteBaseUrl := envClient.GetString("SITE_BASE_URL")
+	//router.LoadHTMLFiles("web/index.html")
+	//router.GET("/", func(c *gin.Context) {
+	//	c.HTML(http.StatusOK, "index.html", gin.H{
+	//		"SiteBaseUrl": siteBaseUrl,
+	//	})
+	//})
 
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowCredentials = true
@@ -34,6 +33,11 @@ func RegisterRouters(router *gin.Engine) {
 	corsMiddleware := cors.New(corsConfig)
 	//corsMiddleware := cors.Default()
 	router.Use(corsMiddleware)
+
+	router.Static("/assets", "./web/assets")
+	router.NoRoute(func(c *gin.Context) {
+		c.File("/web/index.html")
+	})
 
 	// Public routes
 	public := router.Group("/api")
