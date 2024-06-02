@@ -18,15 +18,18 @@ func main() {
 	if len(sentryDsn) > 0 {
 		logrus.Info("initializing sentry...")
 		// To initialize Sentry's handler, you need to initialize Sentry itself beforehand
-		if err := sentry.Init(sentry.ClientOptions{
+		err := sentry.Init(sentry.ClientOptions{
 			Dsn:           sentryDsn,
 			EnableTracing: true,
 			// Set TracesSampleRate to 1.0 to capture 100%
 			// of transactions for performance monitoring.
 			// We recommend adjusting this value in production,
 			TracesSampleRate: 1.0,
-		}); err != nil {
-			fmt.Printf("Sentry initialization failed: %v\n", err)
+		})
+		if err != nil {
+			logrus.Warnf("sentry initialization failed: %v\n", err)
+		} else {
+			logrus.Info("sentry initialized.")
 		}
 	}
 

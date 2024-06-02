@@ -1,9 +1,12 @@
 package craft
 
 import (
+	"FeedCraft/internal/dao"
 	"FeedCraft/internal/util"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/samber/lo"
+	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
@@ -62,11 +65,35 @@ func Entry(c *gin.Context) {
 	craftName := c.Param("craft-name")
 	entries := GetSysCraftEntries()
 	craftOptionMeta, exist := entries[craftName]
-	if !exist {
-		c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: fmt.Sprintf("craft name [%s] not found", craftName)})
+	if exist {
+		logrus.Infof("requesting craft [%s]", craftName)
+		CommonCraftHandlerUsingCraftOptionList(c, craftOptionMeta.CraftOptionList)
 		return
 	}
 
-	CommonCraftHandlerUsingCraftOptionList(c, craftOptionMeta.CraftOptionList)
+	db := util.GetDatabase()
+	flowByName, err := dao.GetCraftFlowByName(db, craftName)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: fmt.Sprintf("craft flow name [%s] not found", craftName)})
+		logrus.Infof("invalid craft flow [%s]", craftName)
+		return
+	}
+	logrus.Infof("requesting craft flow [%s]", craftName)
+
+	craftNameList := lo.Map(flowByName.CraftFlowConfig, func(item dao.CraftFlowItem, index int) string {
+		return item.CraftName // TODO IMPLEMENT CUSTOM OPTION PARAMETERS
+	})
+	var craftListForFlow []CraftOption
+	for _, craftNameInFlow := range craftNameList {
+		craftOptionMeta, exist := entries[craftNameInFlow]
+		if !exist {
+			c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: fmt.Sprintf("craft name [%s] in flow [%s] not found", craftNameInFlow, flowByName.Name)})
+			return
+		}
+		craftListForFlow = append(craftListForFlow, craftOptionMeta.CraftOptionList...)
+	}
+
+	CommonCraftHandlerUsingCraftOptionList(c, craftListForFlow)
 	return
+
 }
