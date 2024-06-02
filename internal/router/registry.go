@@ -58,7 +58,8 @@ func RegisterRouters(router *gin.Engine) {
 	adminApi := router.Group("/api/admin")
 	adminApi.Use(middleware.JwtAuthMiddleware(), corsMiddleware)
 	{
-		adminApi.GET("/admin-login-test", adminLoginTest)
+		adminApi.POST("/user/info", AdminUserInfoHandler)
+
 		adminApi.POST("/craft-debug/advertorial", craft.DebugCheckIfAdvertorial)
 		adminApi.POST("/craft-debug/common-llm-call-test", admin.LLMDebug)
 
@@ -77,9 +78,11 @@ func RegisterRouters(router *gin.Engine) {
 	}
 
 }
-func adminLoginTest(c *gin.Context) {
-	ret := map[string]string{
-		"success": "ok",
+
+func AdminUserInfoHandler(c *gin.Context) {
+	resp := map[string]string{
+		"name": "admin",
+		"role": "admin",
 	}
-	c.JSON(http.StatusOK, ret)
+	c.JSON(http.StatusOK, util.APIResponse[any]{Data: resp})
 }
