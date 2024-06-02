@@ -1,12 +1,9 @@
 package craft
 
 import (
-	"FeedCraft/internal/constant"
-	"FeedCraft/internal/util"
 	"github.com/gin-gonic/gin"
 	"github.com/go-shiori/go-readability"
-	"github.com/mmcdole/gofeed"
-	"github.com/sirupsen/logrus"
+	"github.com/gorilla/feeds"
 	"time"
 )
 
@@ -17,50 +14,16 @@ func TrivialExtractor(url string, timeout time.Duration) (string, error) {
 	return article.Content, err
 }
 
-func GetFulltextExtractor(extractor FulltextExtractor) ContentTransformFunc {
-	extractFunc := func(item *gofeed.Item) string {
-		url := item.Link
-		logrus.Infof("extract fulltext for url %s", url)
-
-		articleContent := ""
-		craftName := "fulltext"
-
-		cachedContent, err := util.CacheGetString(getCacheKey(craftName, url))
-		if err != nil || cachedContent == "" {
-			articleStr, err := extractor(url, DefaultExtractFulltextTimeout)
-			if err != nil {
-				logrus.Warnf("failed to parse %s, %v\n", url, err)
-			} else {
-				articleContent = articleStr
-				cacheErr := util.CacheSetString(getCacheKey(craftName, url), articleStr, constant.WebContentExpire)
-				if cacheErr != nil {
-					logrus.Warnf("failed to cache %s, %v\n", url, cacheErr)
-				}
-			}
-		} else {
-			articleContent = cachedContent
-		}
-		return articleContent
+func GetFulltextHandler() func(c *gin.Context) {
+	transFunc := func(item *feeds.Item) (string, error) {
+		link := item.Link.Href
+		return TrivialExtractor(link, DefaultExtractFulltextTimeout)
 	}
-	return extractFunc
-}
-
-func ExtractFulltextForFeed(c *gin.Context) {
-	feedUrl, ok := c.GetQuery("input_url")
-	if !ok || len(feedUrl) == 0 {
-		c.String(400, "empty feed url")
-		return
+	cachedTransFunc := GetCommonCachedTransformer(cacheKeyForArticleTitle, transFunc, "extract fulltext")
+	craftOptions := []CraftOption{
+		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransFunc)),
 	}
-	fp := gofeed.NewParser()
-	parsedFeed, _ := fp.ParseURL(feedUrl)
-
-	ret := TransformFeed(parsedFeed, GetFulltextExtractor(TrivialExtractor))
-
-	rssStr, err := ret.ToRss()
-	if err != nil {
-		c.String(500, err.Error())
-		return
+	return func(c *gin.Context) {
+		CommonCraftHandlerUsingCraftOptionList(c, craftOptions)
 	}
-	c.Header("Content-Type", "application/xml")
-	c.String(200, rssStr)
 }

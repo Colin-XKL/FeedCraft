@@ -100,7 +100,7 @@ type RawTransformer func(item *feeds.Item) (string, error)
 func GetCommonCachedTransformer(cacheKeyGenerator ContentCacheKeyGenerator, rawTransformer TransFunc, craftName string) TransFunc {
 	ret := func(item *feeds.Item) (string, error) {
 		originalTitle := item.Title
-		logrus.Infof("applying craft [%s] to article %s", craftName, originalTitle)
+		logrus.Infof("applying craft [%s] to article [%s]", craftName, originalTitle)
 
 		final := ""
 		hashVal, _ := cacheKeyGenerator(item)

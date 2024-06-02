@@ -6,7 +6,7 @@ import (
 	"FeedCraft/internal/util"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/mmcdole/gofeed"
+	"github.com/gorilla/feeds"
 	"github.com/sirupsen/logrus"
 )
 
@@ -20,7 +20,7 @@ func getIntroductionForArticle(prompt, article string) (string, error) {
 
 const promptGenerateIntroduction = "请阅读下面的文章并写一篇不超过200字的摘要,使得读者可以快速知道文章的主题和主要结论."
 
-func addIntroductionUsingGemini(item *gofeed.Item) string {
+func addIntroductionUsingGemini(item *feeds.Item) string {
 	finalArticleContent := ""
 	originalContent := item.Content
 	originalTitle := item.Title
@@ -62,26 +62,15 @@ func addIntroductionUsingGemini(item *gofeed.Item) string {
 
 //TODO handle description and content field separately and correctly
 
-func AddIntroductionForFeed(c *gin.Context) {
-	feedUrl, ok := c.GetQuery("input_url")
-	if !ok || len(feedUrl) == 0 {
-		c.String(400, "empty feed url")
-		return
+func GetAddIntroductionHandler() func(c *gin.Context) {
+	transFunc := func(item *feeds.Item) (string, error) {
+		ret := addIntroductionUsingGemini(item)
+		return ret, nil
 	}
-	fp := gofeed.NewParser()
-	parsedFeed, err := fp.ParseURL(feedUrl)
-	if err != nil {
-		c.String(500, err.Error())
-		return
+	craftOption := []CraftOption{
+		OptionTransformFeedItem(GetArticleContentProcessor(transFunc)),
 	}
-
-	ret := TransformFeed(parsedFeed, addIntroductionUsingGemini)
-
-	rssStr, err := ret.ToRss()
-	if err != nil {
-		c.String(500, err.Error())
-		return
+	return func(c *gin.Context) {
+		CommonCraftHandlerUsingCraftOptionList(c, craftOption)
 	}
-	c.Header("Content-Type", "application/xml")
-	c.String(200, rssStr)
 }

@@ -43,12 +43,12 @@ func RegisterRouters(router *gin.Engine) {
 
 	craftRouters := router.Group("/craft")
 	{
-		craftRouters.GET("/proxy", craft.ProxyFeed)
+		craftRouters.GET("/proxy", craft.GetProxyFeedHandler())
 		craftRouters.GET("/limit", craft.GetLimitHandler())
-		craftRouters.GET("/fulltext", craft.ExtractFulltextForFeed)
-		craftRouters.GET("/fulltext-plus", craft.ExtractFulltextPlusForFeed)
-		craftRouters.GET("/introduction", craft.AddIntroductionForFeed)
-		craftRouters.GET("/ignore-advertorial", craft.IgnoreAdvertorialArticle)
+		craftRouters.GET("/fulltext", craft.GetFulltextHandler())
+		craftRouters.GET("/fulltext-plus", craft.GetFulltextPlusHandler())
+		craftRouters.GET("/introduction", craft.GetAddIntroductionHandler())
+		craftRouters.GET("/ignore-advertorial", craft.GetIgnoreAdvertorialArticleHandler())
 		craftRouters.GET("/translate-title", craft.GetTranslateTitleHandler())
 		craftRouters.GET("/translate-content", craft.GetTranslateArticleContentHandler())
 	}

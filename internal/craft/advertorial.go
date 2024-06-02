@@ -34,6 +34,16 @@ func CheckIfAdvertorial(content string) bool {
 	return result == "true"
 }
 
+func GetIgnoreAdvertorialArticleHandler() func(c *gin.Context) {
+	craftOptions := []CraftOption{
+		OptionIgnoreAdvertorial(),
+	}
+	return func(c *gin.Context) {
+		CommonCraftHandlerUsingCraftOptionList(c, craftOptions)
+	}
+}
+
+// OptionIgnoreAdvertorial option  判断一篇文章是不是推广软文和广告等
 func OptionIgnoreAdvertorial() CraftOption {
 	return func(feed *feeds.Feed) error {
 		items := feed.Items
@@ -44,26 +54,6 @@ func OptionIgnoreAdvertorial() CraftOption {
 		feed.Items = filtered
 		return nil
 	}
-}
-
-func IgnoreAdvertorialArticle(c *gin.Context) {
-	feedUrl, ok := c.GetQuery("input_url")
-	if !ok || len(feedUrl) == 0 {
-		c.String(400, "empty feed url")
-		return
-	}
-	craftedFeed, err := NewCraftedFeedFromUrl(feedUrl, OptionIgnoreAdvertorial())
-	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
-	}
-	rssStr, err := craftedFeed.OutputFeed.ToRss()
-	if err != nil {
-		c.String(500, err.Error())
-		return
-	}
-	c.Header("Content-Type", "application/xml")
-	c.String(200, rssStr)
 }
 
 type CheckIfAdvertorialDebugReq struct {

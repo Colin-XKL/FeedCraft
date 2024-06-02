@@ -26,6 +26,7 @@ func cacheKeyForArticleContent(item *feeds.Item) (string, error) {
 	return getMD5Hash(item.Description + item.Description), nil
 }
 
+// GetTranslateTitleHandler translate title
 func GetTranslateTitleHandler() func(c *gin.Context) {
 	transFunc := func(item *feeds.Item) (string, error) {
 		return translateArticleTitle(item.Title)
@@ -41,6 +42,7 @@ func GetTranslateTitleHandler() func(c *gin.Context) {
 	}
 }
 
+// GetTranslateArticleContentHandler translate article content
 func GetTranslateArticleContentHandler() func(c *gin.Context) {
 	transFunc := func(item *feeds.Item) (string, error) {
 		return translateArticleContent(item.Content) // TODO handle feed item content correctly
