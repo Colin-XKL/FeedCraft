@@ -36,7 +36,7 @@ func RegisterRouters(router *gin.Engine) {
 
 	router.Static("/assets", "./web/assets")
 	router.NoRoute(func(c *gin.Context) {
-		c.File("/web/index.html")
+		c.File("./web/index.html")
 	})
 
 	// Public routes
