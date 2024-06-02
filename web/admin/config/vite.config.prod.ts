@@ -9,10 +9,10 @@ export default mergeConfig(
   {
     mode: 'production',
     plugins: [
-      configCompressPlugin('gzip'),
-      configVisualizerPlugin(),
+      // configCompressPlugin('gzip'),
+      // configVisualizerPlugin(),
       configArcoResolverPlugin(),
-      configImageminPlugin(),
+      // configImageminPlugin(),
     ],
     build: {
       rollupOptions: {
