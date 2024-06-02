@@ -1,8 +1,8 @@
 package util
 
 import (
+	"github.com/glebarez/sqlite"
 	"github.com/sirupsen/logrus"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"log"
 	"path/filepath"
@@ -20,6 +20,7 @@ func GetDatabase() *gorm.DB {
 	path := filepath.Join(sqlitePath, sqliteDbName)
 
 	conf := &gorm.Config{}
+	// use a pure go version sqlite driver to make it more portable
 	db, err := gorm.Open(sqlite.Open(path), conf)
 	if err != nil || db == nil {
 		logrus.Fatalf("failed to connect to database. %s", err)
