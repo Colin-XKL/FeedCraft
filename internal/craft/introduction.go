@@ -5,7 +5,6 @@ import (
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/util"
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/gorilla/feeds"
 	"github.com/sirupsen/logrus"
 )
@@ -21,6 +20,8 @@ func getIntroductionForArticle(prompt, article string) (string, error) {
 const promptGenerateIntroduction = "请阅读下面的文章并写一篇不超过200字的摘要,使得读者可以快速知道文章的主题和主要结论."
 
 func addIntroductionUsingGemini(item *feeds.Item) string {
+	//TODO handle description and content field separately and correctly
+
 	finalArticleContent := ""
 	originalContent := item.Content
 	originalTitle := item.Title
@@ -60,9 +61,7 @@ func addIntroductionUsingGemini(item *feeds.Item) string {
 	return finalArticleContent
 }
 
-//TODO handle description and content field separately and correctly
-
-func GetAddIntroductionHandler() func(c *gin.Context) {
+func GetAddIntroductionCraftOptions() []CraftOption {
 	transFunc := func(item *feeds.Item) (string, error) {
 		ret := addIntroductionUsingGemini(item)
 		return ret, nil
@@ -70,7 +69,5 @@ func GetAddIntroductionHandler() func(c *gin.Context) {
 	craftOption := []CraftOption{
 		OptionTransformFeedItem(GetArticleContentProcessor(transFunc)),
 	}
-	return func(c *gin.Context) {
-		CommonCraftHandlerUsingCraftOptionList(c, craftOption)
-	}
+	return craftOption
 }

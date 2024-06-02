@@ -2,7 +2,6 @@ package craft
 
 import (
 	"FeedCraft/internal/util"
-	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
 	"github.com/go-shiori/go-readability"
 	"github.com/gorilla/feeds"
@@ -100,7 +99,7 @@ func getRenderedHTML2(websiteUrl string, timeout time.Duration) (string, error) 
 	return response.String(), nil
 }
 
-func GetFulltextPlusHandler() func(c *gin.Context) {
+func GetFulltextPlusCraftOptions() []CraftOption {
 	transFunc := func(item *feeds.Item) (string, error) {
 		link := item.Link.Href
 		return getRenderedHTML2(link, DefaultExtractFulltextTimeout)
@@ -109,7 +108,5 @@ func GetFulltextPlusHandler() func(c *gin.Context) {
 	craftOptions := []CraftOption{
 		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransFunc)),
 	}
-	return func(c *gin.Context) {
-		CommonCraftHandlerUsingCraftOptionList(c, craftOptions)
-	}
+	return craftOptions
 }

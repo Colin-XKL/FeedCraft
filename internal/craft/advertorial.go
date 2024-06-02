@@ -34,13 +34,11 @@ func CheckIfAdvertorial(content string) bool {
 	return result == "true"
 }
 
-func GetIgnoreAdvertorialArticleHandler() func(c *gin.Context) {
+func GetIgnoreAdvertorialCraftOptions() []CraftOption {
 	craftOptions := []CraftOption{
 		OptionIgnoreAdvertorial(),
 	}
-	return func(c *gin.Context) {
-		CommonCraftHandlerUsingCraftOptionList(c, craftOptions)
-	}
+	return craftOptions
 }
 
 // OptionIgnoreAdvertorial option  判断一篇文章是不是推广软文和广告等

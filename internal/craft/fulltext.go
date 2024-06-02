@@ -1,7 +1,6 @@
 package craft
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/go-shiori/go-readability"
 	"github.com/gorilla/feeds"
 	"time"
@@ -14,7 +13,7 @@ func TrivialExtractor(url string, timeout time.Duration) (string, error) {
 	return article.Content, err
 }
 
-func GetFulltextHandler() func(c *gin.Context) {
+func GetFulltextCraftOptions() []CraftOption {
 	transFunc := func(item *feeds.Item) (string, error) {
 		link := item.Link.Href
 		return TrivialExtractor(link, DefaultExtractFulltextTimeout)
@@ -23,7 +22,5 @@ func GetFulltextHandler() func(c *gin.Context) {
 	craftOptions := []CraftOption{
 		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransFunc)),
 	}
-	return func(c *gin.Context) {
-		CommonCraftHandlerUsingCraftOptionList(c, craftOptions)
-	}
+	return craftOptions
 }
