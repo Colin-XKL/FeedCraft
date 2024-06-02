@@ -11,7 +11,7 @@ Craft all your feed in one place!
 ![GitHub Release](https://img.shields.io/github/v/release/Colin-XKL/FeedCraft)
 ![GitHub Discussions](https://img.shields.io/github/discussions/Colin-XKL/FeedCraft?link=https%3A%2F%2Fgithub.com%2FColin-XKL%2FFeedCraft%2Fdiscussions)
 ![Container Image Size On GHCR](https://ghcr-badge.egpl.dev/colin-xkl/feed-craft/size?color=%2344cc11&tag=latest&label=image+size)
-![Static Badge](https://img.shields.io/badge/arch-amd64|arm64|armv7-blue)
+![Arch Badge](https://img.shields.io/badge/arch-amd64|arm64-blue)
 ![Open Source Love](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)
 
 Doc: English(WIP) | 简体中文 | 繁体中文(WIP)
@@ -58,6 +58,8 @@ https://feed-craft.colinx.one
 你可以通过docker快速自行部署一个FeedCraft实例,以获得更好的使用体验.
 下面为一个最小docker compose 示例:
 
+服务默认监听在 80 端口，你也可以在同一网络下的其他容器中，使用 `http://app.feed-craft/xxx` 这样来进行访问
+
 ```yaml
 version: "3"
 services:
@@ -66,7 +68,7 @@ services:
     container_name: feed-craft
     restart: always
     ports:
-      - 10088:8080  # 10088可替换为任何你想使用的端口
+      - "10088:80"  # 10088可替换为任何你想使用的端口
     environment:
       FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000 # 替换为你自己的 browserless 或其他浏览器实例地址
       FC_REDIS_URI: redis://service.redis:6379/ # 替换为你自己的redis 实例地址
@@ -85,7 +87,7 @@ services:
     container_name: feed-craft
     restart: always
     ports:
-      - 10088:8080  # 10088可替换为任何你想使用的端口
+      - "10088:80"  # 10088可替换为任何你想使用的端口
     environment:
       FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000 # 替换为你自己的 browserless 或其他浏览器实例地址
       FC_REDIS_URI: redis://service.redis:6379/ # 替换为你自己的redis 实例地址
@@ -113,12 +115,20 @@ FeedCraft 的名称和Logo参考并致敬两款游戏: MineCraft和塞尔达, �
 
 - [x] common openai api calling
 - [x] translate article and title
-- [ ] feed merge support
 - [x] feed limit support
-- [ ] feed custom keyword filter support
 - [x] feed natural language filter support
 - [x] craft flow
+- [ ] feed custom keyword filter support
+- [ ] feed merge support
 
+## 测试用例
+你可以使用下面几个 rss 快速进行测试
+
+- 全英文，有全文
+  https://feeds.feedburner.com/visualcapitalist
+
+- 全英文，无全文
+  https://ourworldindata.org/atom.xml
 
 ## 许可
 
