@@ -24,7 +24,11 @@ func NewCraftedFeedFromUrl(feedUrl string, options ...CraftOption) (FeedCraftIng
 	ingredient.parsedFeed = parsedFeed
 
 	byPass := func(item *gofeed.Item) string {
-		return strings.Trim(item.Content, " ")
+		content := item.Content
+		if len(content) == 0 {
+			content = item.Description
+		}
+		return strings.Trim(content, " ")
 	}
 	outputFeed := TransformFeed(parsedFeed, byPass)
 

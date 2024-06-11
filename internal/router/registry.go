@@ -28,7 +28,15 @@ func RegisterRouters(router *gin.Engine) {
 	router.Use(corsMiddleware)
 
 	router.Static("/assets", "./web/assets")
-	router.StaticFile("/start.html", "./web/start.html")
+
+	siteBaseUrl := envClient.GetString("SITE_BASE_URL")
+	router.LoadHTMLFiles("web/index.html")
+	router.GET("/start.html", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "start.html", gin.H{
+			"SiteBaseUrl": siteBaseUrl,
+		})
+	})
+
 	router.NoRoute(func(c *gin.Context) {
 		c.File("./web/index.html")
 	})
