@@ -69,6 +69,8 @@ services:
     restart: always
     ports:
       - "10088:80"  # 10088可替换为任何你想使用的端口
+    volumes:
+      - ./feed-craft-db:/usr/local/feed-craft/db # db file
     environment:
       FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000 # 替换为你自己的 browserless 或其他浏览器实例地址
       FC_REDIS_URI: redis://service.redis:6379/ # 替换为你自己的redis 实例地址
@@ -88,6 +90,8 @@ services:
     restart: always
     ports:
       - "10088:80"  # 10088可替换为任何你想使用的端口
+    volumes:
+      - ./feed-craft-db:/usr/local/feed-craft/db # db file
     environment:
       FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000 # 替换为你自己的 browserless 或其他浏览器实例地址
       FC_REDIS_URI: redis://service.redis:6379/ # 替换为你自己的redis 实例地址
