@@ -10,7 +10,7 @@ require (
 	github.com/go-resty/resty/v2 v2.12.0
 	github.com/go-shiori/go-readability v0.0.0-20240204090920-819593fddc6b
 	github.com/golang-jwt/jwt/v5 v5.2.1
-	github.com/gorilla/feeds v1.1.2
+	github.com/gorilla/feeds v1.2.0
 	github.com/mmcdole/gofeed v1.3.0
 	github.com/redis/go-redis/v9 v9.5.2
 	github.com/samber/lo v1.39.0
