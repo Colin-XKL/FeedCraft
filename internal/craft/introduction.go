@@ -17,7 +17,7 @@ func getIntroductionForArticle(prompt, article string) (string, error) {
 	return adapter.CallLLMUsingContext(prompt, article)
 }
 
-const promptGenerateIntroduction = "请阅读下面的文章并写一篇不超过200字的摘要,使得读者可以快速知道文章的主题和主要结论."
+const promptGenerateIntroduction = "请阅读下面的文章并写一篇不超过200字的中文摘要, 使得读者可以快速知道文章的主题和主要结论."
 
 func addIntroductionUsingGemini(item *feeds.Item) string {
 	//TODO handle description and content field separately and correctly
@@ -39,8 +39,8 @@ func addIntroductionUsingGemini(item *feeds.Item) string {
 	cachedIntroduction, err := util.CacheGetString(getCacheKey(craftName, hashVal))
 
 	combineIntroductionAndArticle := func(article, intro string) string {
-		//TODO use html template rendering
-		return fmt.Sprintf(`<div><b>Introduction<b><br/><p>%s</p><div>%s</div>`, intro, article)
+		introInHtml := util.Markdown2HTML(intro)
+		return fmt.Sprintf(`<div>%s<div>%s</div>`, introInHtml, article)
 	}
 
 	if err != nil || cachedIntroduction == "" {
