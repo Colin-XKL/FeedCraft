@@ -47,3 +47,11 @@ export function deleteCraftFlow(name: string): Promise<AxiosResponse<void>> {
 export function listCraftFlows(): Promise<AxiosResponse<CraftFlow[]>> {
   return axios.get<CraftFlow[]>(craftFlowApiBase);
 }
+
+export function listCraftAtoms(): Promise<
+  AxiosResponse<{ name: string; description: string }[]>
+> {
+  return axios.get<{ name: string; description: string }[]>(
+    `${adminApiBase}/craft-atoms`
+  );
+}

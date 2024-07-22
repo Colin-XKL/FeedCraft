@@ -48,7 +48,6 @@
       v-model:visible="showEditModal"
       :title="isUpdating ? 'Edit Craft Flow' : 'Create Craft Flow'"
     >
-      <!--      @ok="updateCraftFlow"-->
       <a-form
         :model="editedCraftFlow"
         :label-col="{ span: 6 }"
@@ -66,6 +65,7 @@
             multiple
             allow-clear
             allow-create
+            :options="optionList"
           />
         </a-form-item>
       </a-form>
@@ -87,11 +87,12 @@
 
 <script setup lang="ts">
   import XHeader from '@/components/header/x-header.vue';
-  import { onBeforeMount, ref } from 'vue';
+  import { computed, onBeforeMount, ref } from 'vue';
   import {
     CraftFlow,
     createCraftFlow,
     deleteCraftFlow,
+    listCraftAtoms,
     listCraftFlows,
     updateCraftFlow,
   } from '@/api/craft_flow';
@@ -113,6 +114,19 @@
     { title: 'Craft Flow', slotName: 'craft-flow-item-list' },
     { title: 'Actions', slotName: 'actions' },
   ];
+  const optionList = computed(() => {
+    const mapper = (item: any) => {
+      return {
+        value: item.name,
+        label: item.description?.length
+          ? `${item.name} (${item.description})`
+          : item.name,
+      };
+    };
+    const craftFlowOptions = craftFlows.value.map(mapper);
+    const craftAtomOptions = craftAtomList.value.map(mapper);
+    return [...craftAtomOptions, ...craftFlowOptions];
+  });
 
   const editBtnHandler = (craftFlow: CraftFlow) => {
     editedCraftFlow.value = { ...craftFlow };
@@ -171,9 +185,15 @@
       craft_flow_config: [],
     };
   };
+  const craftAtomList = ref<any>([]);
+
+  async function listAllCraftAtom() {
+    craftAtomList.value = (await listCraftAtoms()).data;
+  }
 
   onBeforeMount(() => {
     listAllCraftFlow();
+    listAllCraftAtom();
   });
 </script>
 

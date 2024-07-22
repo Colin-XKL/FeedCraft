@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"FeedCraft/internal/craft"
 	"FeedCraft/internal/dao"
 	"FeedCraft/internal/util"
 	"net/http"
@@ -136,4 +137,17 @@ func ListCraftFlows(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, util.APIResponse[any]{Data: craftFlows})
+}
+
+func ListCraftAtoms(c *gin.Context) {
+	craftAtoms := craft.GetSysCraftEntries()
+	var ret []map[string]string
+	for _, meta := range craftAtoms {
+		ret = append(ret, map[string]string{
+			"name":        meta.Name,
+			"description": meta.Description,
+		})
+	}
+	c.JSON(http.StatusOK, util.APIResponse[any]{Data: ret})
+
 }
