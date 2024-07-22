@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 	"net/http"
 )
 
@@ -63,37 +64,66 @@ func GetSysCraftEntries() map[string]Meta {
 
 func Entry(c *gin.Context) {
 	craftName := c.Param("craft-name")
-	entries := GetSysCraftEntries()
-	craftOptionMeta, exist := entries[craftName]
-	if exist {
-		logrus.Infof("requesting craft [%s]", craftName)
-		CommonCraftHandlerUsingCraftOptionList(c, craftOptionMeta.CraftOptionList)
-		return
-	}
-
+	craftAtomDict := GetSysCraftEntries()
 	db := util.GetDatabase()
-	flowByName, err := dao.GetCraftFlowByName(db, craftName)
+
+	//TODO IMPLEMENT CUSTOM OPTION PARAMETERS
+	craftOptionList, err := inner(db, &craftAtomDict, craftName, 0)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: fmt.Sprintf("craft flow name [%s] not found", craftName)})
-		logrus.Infof("invalid craft flow [%s]", craftName)
+		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
-	logrus.Infof("requesting craft flow [%s]", craftName)
-
-	craftNameList := lo.Map(flowByName.CraftFlowConfig, func(item dao.CraftFlowItem, index int) string {
-		return item.CraftName // TODO IMPLEMENT CUSTOM OPTION PARAMETERS
-	})
-	var craftListForFlow []CraftOption
-	for _, craftNameInFlow := range craftNameList {
-		craftOptionMeta, exist := entries[craftNameInFlow]
-		if !exist {
-			c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: fmt.Sprintf("craft name [%s] in flow [%s] not found", craftNameInFlow, flowByName.Name)})
-			return
-		}
-		craftListForFlow = append(craftListForFlow, craftOptionMeta.CraftOptionList...)
-	}
-
-	CommonCraftHandlerUsingCraftOptionList(c, craftListForFlow)
+	CommonCraftHandlerUsingCraftOptionList(c, craftOptionList)
 	return
+}
 
+const MaxCallDepth = 5
+
+// 递归地解出 craft option list
+func inner(db *gorm.DB, craftAtomDict *map[string]Meta, craftName string, depthId int) ([]CraftOption, error) {
+	if depthId+1 > MaxCallDepth {
+		return []CraftOption{}, fmt.Errorf("max call depth hit")
+	}
+	logrus.Infof("checking %s", craftName)
+
+	// 对于每一个 craft name in flow
+	// 1. 判断是否为 built-in craft atom
+	// 1.1 如果是, 直接返回对应的 craft option
+	// 2. 如果不是, 判断是否为flow
+	// 2.1 如果是flow, 调用 entry check
+	// 如果不是, 说明craft name 无效, 返回error
+
+	craftOptionMeta, isKnownCraftAtom := (*craftAtomDict)[craftName]
+	if isKnownCraftAtom {
+		logrus.Infof("[%s] is known craft atom", craftName)
+		return craftOptionMeta.CraftOptionList, nil
+	} else {
+		craftArr, checkErr := extractCraftArrFromFlow(db, craftName)
+		if checkErr != nil {
+			// then not a valid  craft name
+			return []CraftOption{}, fmt.Errorf("not a valid craft name")
+		}
+		var retArr []CraftOption
+		for _, extractedSubCraftName := range craftArr {
+			sub, recurErr := inner(db, craftAtomDict, extractedSubCraftName, depthId+1)
+			if recurErr != nil {
+				return []CraftOption{}, recurErr
+			}
+			retArr = append(retArr, sub...)
+		}
+		return retArr, nil
+	}
+}
+
+// 给定flowName,查询其详情, 获取 craft array
+// 只输出craft name 的array, 不做任何检查和转换
+func extractCraftArrFromFlow(db *gorm.DB, flowName string) ([]string, error) {
+	flowContent, err := dao.GetCraftFlowByName(db, flowName)
+	if err != nil {
+		return []string{}, fmt.Errorf("craft flow name [%s] not found", flowName)
+	}
+	craftNameList := lo.Map(flowContent.CraftFlowConfig, func(item dao.CraftFlowItem, index int) string {
+		return item.CraftName
+	})
+	return craftNameList, nil
 }
