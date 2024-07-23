@@ -171,6 +171,4 @@
   }
 </script>
 
-<style scoped>
-  /* Add any custom styles using Tailwind CSS */
-</style>
+<style scoped></style>

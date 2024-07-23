@@ -12,7 +12,7 @@ const sqliteDbName = "feed-craft.db"
 
 func GetDatabase() *gorm.DB {
 	envClient := GetEnvClient()
-	sqlitePath := envClient.GetString("DB_SQLITE_PATH")
+	sqlitePath := envClient.GetString("DB_SQLITE_PATH") // 这里path 实际为文件夹,后续需要在文档中说明清楚
 	if sqlitePath == "" {
 		log.Fatalf("DB_SQLITE_PATH not valid")
 	}
