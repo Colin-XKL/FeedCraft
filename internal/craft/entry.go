@@ -14,67 +14,58 @@ import (
 func GetSysCraftTemplateDict() map[string]CraftTemplate {
 	sysCraftTempList := make(map[string]CraftTemplate)
 	sysCraftTempList["proxy"] = CraftTemplate{
-		Name:        "proxy",
-		Description: "proxy the feed ",
+		Name:                "proxy",
+		Description:         "proxy the feed",
+		ParamTemplateDefine: []ParamTemplate{},
 		OptionFunc: func(m map[string]string) []CraftOption {
 			return []CraftOption{}
 		},
 	}
 	sysCraftTempList["limit"] = CraftTemplate{
-		Name:        "limit",
-		Description: "limit the number of entries to a single page",
-		OptionFunc: func(m map[string]string) []CraftOption {
-			//todo parse params
-			return GetLimitCraftOption()
-		},
+		Name:                "limit",
+		Description:         "limit the number of entries to a single page",
+		ParamTemplateDefine: limitCraftParamTmpl,
+		OptionFunc:          limitCraftLoadParams,
 	}
 	sysCraftTempList["fulltext"] = CraftTemplate{
-		Name:        "fulltext",
-		Description: "extract fulltext for rss feed",
+		Name:                "fulltext",
+		Description:         "extract fulltext for rss feed",
+		ParamTemplateDefine: []ParamTemplate{},
 		OptionFunc: func(m map[string]string) []CraftOption {
-			//todo parse params
 			return GetFulltextCraftOptions()
 		},
 	}
 	sysCraftTempList["fulltext-plus"] = CraftTemplate{
-		Name:        "fulltext-plus",
-		Description: "emulate the browser to extract fulltext for rss feed",
+		Name:                "fulltext-plus",
+		Description:         "emulate the browser to extract fulltext for rss feed",
+		ParamTemplateDefine: []ParamTemplate{},
 		OptionFunc: func(m map[string]string) []CraftOption {
-			//todo parse params
 			return GetFulltextPlusCraftOptions()
 		},
 	}
 	sysCraftTempList["introduction"] = CraftTemplate{
-		Name:        "introduction",
-		Description: "add ai-generated introduction in the beginning of the article",
-		OptionFunc: func(m map[string]string) []CraftOption {
-			//todo parse params
-			return GetAddIntroductionCraftOptions()
-		},
+		Name:                "introduction",
+		Description:         "add ai-generated introduction in the beginning of the article",
+		ParamTemplateDefine: introCraftParamTmpl,
+		OptionFunc:          introCraftLoadParam,
 	}
 	sysCraftTempList["ignore-advertorial"] = CraftTemplate{
-		Name:        "ignore-advertorial",
-		Description: "exclude advertorial article using llm",
-		OptionFunc: func(m map[string]string) []CraftOption {
-			//todo parse params
-			return GetIgnoreAdvertorialCraftOptions()
-		},
+		Name:                "ignore-advertorial",
+		Description:         "exclude advertorial article using llm",
+		ParamTemplateDefine: llmFilterCraftParamTmpl,
+		OptionFunc:          llmFilterCraftLoadParam,
 	}
 	sysCraftTempList["translate-title"] = CraftTemplate{
-		Name:        "translate-title",
-		Description: "translate title to Chinese using LLM",
-		OptionFunc: func(m map[string]string) []CraftOption {
-			//todo parse params
-			return GetTranslateTitleCraftOptions()
-		},
+		Name:                "translate-title",
+		Description:         "translate title to Chinese using LLM",
+		ParamTemplateDefine: transTitleParamTmpl,
+		OptionFunc:          transTitleCraftLoadParam,
 	}
 	sysCraftTempList["translate-content"] = CraftTemplate{
-		Name:        "translate-content",
-		Description: "translate article content to Chinese using LLM",
-		OptionFunc: func(m map[string]string) []CraftOption {
-			//todo parse params
-			return GetTranslateContentCraftOptions()
-		},
+		Name:                "translate-content",
+		Description:         "translate article content to Chinese using LLM",
+		ParamTemplateDefine: transContentParamTmpl,
+		OptionFunc:          transContentCraftLoadParam,
 	}
 	return sysCraftTempList
 }

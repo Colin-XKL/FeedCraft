@@ -6,7 +6,7 @@ package craft
 type CraftTemplate struct {
 	Name                string
 	Description         string
-	ParamTemplateDefine []ParamTemplate
+	ParamTemplateDefine []ParamTemplate // param 格式, 主要给用户填写时提供参考
 	OptionFunc          func(map[string]string) []CraftOption
 }
 
@@ -18,6 +18,7 @@ func (tmpl CraftTemplate) GetOptions(params map[string]string) []CraftOption {
 type ParamTemplate struct {
 	Key         string
 	Description string
+	Default     string
 }
 
 // CraftAtom craft atom 由 craft template 派生出来
