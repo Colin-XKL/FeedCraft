@@ -11,64 +11,97 @@ import (
 	"net/http"
 )
 
-type Meta struct {
-	Name            string        `json:"name"`
-	Description     string        `json:"description"`
-	CraftOptionList []CraftOption `json:"craft_option_list"`
+func GetSysCraftTemplateDict() map[string]CraftTemplate {
+	sysCraftTempList := make(map[string]CraftTemplate)
+	sysCraftTempList["proxy"] = CraftTemplate{
+		Name:        "proxy",
+		Description: "proxy the feed ",
+		OptionFunc: func(m map[string]string) []CraftOption {
+			return []CraftOption{}
+		},
+	}
+	sysCraftTempList["limit"] = CraftTemplate{
+		Name:        "limit",
+		Description: "limit the number of entries to a single page",
+		OptionFunc: func(m map[string]string) []CraftOption {
+			//todo parse params
+			return GetLimitCraftOption()
+		},
+	}
+	sysCraftTempList["fulltext"] = CraftTemplate{
+		Name:        "fulltext",
+		Description: "extract fulltext for rss feed",
+		OptionFunc: func(m map[string]string) []CraftOption {
+			//todo parse params
+			return GetFulltextCraftOptions()
+		},
+	}
+	sysCraftTempList["fulltext-plus"] = CraftTemplate{
+		Name:        "fulltext-plus",
+		Description: "emulate the browser to extract fulltext for rss feed",
+		OptionFunc: func(m map[string]string) []CraftOption {
+			//todo parse params
+			return GetFulltextPlusCraftOptions()
+		},
+	}
+	sysCraftTempList["introduction"] = CraftTemplate{
+		Name:        "introduction",
+		Description: "add ai-generated introduction in the beginning of the article",
+		OptionFunc: func(m map[string]string) []CraftOption {
+			//todo parse params
+			return GetAddIntroductionCraftOptions()
+		},
+	}
+	sysCraftTempList["ignore-advertorial"] = CraftTemplate{
+		Name:        "ignore-advertorial",
+		Description: "exclude advertorial article using llm",
+		OptionFunc: func(m map[string]string) []CraftOption {
+			//todo parse params
+			return GetIgnoreAdvertorialCraftOptions()
+		},
+	}
+	sysCraftTempList["translate-title"] = CraftTemplate{
+		Name:        "translate-title",
+		Description: "translate title to Chinese using LLM",
+		OptionFunc: func(m map[string]string) []CraftOption {
+			//todo parse params
+			return GetTranslateTitleCraftOptions()
+		},
+	}
+	sysCraftTempList["translate-content"] = CraftTemplate{
+		Name:        "translate-content",
+		Description: "translate article content to Chinese using LLM",
+		OptionFunc: func(m map[string]string) []CraftOption {
+			//todo parse params
+			return GetTranslateContentCraftOptions()
+		},
+	}
+	return sysCraftTempList
 }
 
-func GetSysCraftEntries() map[string]Meta {
-	craftEntries := make(map[string]Meta)
-	craftEntries["proxy"] = Meta{
-		Name:            "proxy",
-		Description:     "proxy the feed ",
-		CraftOptionList: []CraftOption{},
+func GetCraftAtomDict() map[string]CraftAtom {
+	tmplDict := GetSysCraftTemplateDict()
+	craftAtomDict := make(map[string]CraftAtom)
+	for name, craftTemplate := range tmplDict {
+		item := CraftAtom{
+			Name:         craftTemplate.Name, // 默认会有个跟template 同名的craft atom
+			Description:  fmt.Sprintf("(sys predefined)%s", craftTemplate.Description),
+			TemplateName: craftTemplate.Name,
+			Params:       map[string]string{},
+		}
+		craftAtomDict[name] = item
 	}
-	craftEntries["limit"] = Meta{
-		Name:            "limit",
-		Description:     "limit the number of entries to a single page",
-		CraftOptionList: GetLimitCraftOption(),
-	}
-	craftEntries["fulltext"] = Meta{
-		Name:            "fulltext",
-		Description:     "extract fulltext for rss feed",
-		CraftOptionList: GetFulltextCraftOptions(),
-	}
-	craftEntries["fulltext-plus"] = Meta{
-		Name:            "fulltext-plus",
-		Description:     "emulate the browser to extract fulltext for rss feed",
-		CraftOptionList: GetFulltextPlusCraftOptions(),
-	}
-	craftEntries["introduction"] = Meta{
-		Name:            "introduction",
-		Description:     "add ai-generated introduction in the beginning of the article",
-		CraftOptionList: GetAddIntroductionCraftOptions(),
-	}
-	craftEntries["ignore-advertorial"] = Meta{
-		Name:            "ignore-advertorial",
-		Description:     "exclude advertorial article using llm",
-		CraftOptionList: GetIgnoreAdvertorialCraftOptions(),
-	}
-	craftEntries["translate-title"] = Meta{
-		Name:            "translate-title",
-		Description:     "translate title to Chinese using LLM",
-		CraftOptionList: GetTranslateTitleCraftOptions(),
-	}
-	craftEntries["translate-content"] = Meta{
-		Name:            "translate-content",
-		Description:     "translate article content to Chinese using LLM",
-		CraftOptionList: GetTranslateContentCraftOptions(),
-	}
-	return craftEntries
+	return craftAtomDict
 }
 
 func Entry(c *gin.Context) {
 	craftName := c.Param("craft-name")
-	craftAtomDict := GetSysCraftEntries()
+	craftAtomDict := GetCraftAtomDict()
+	craftTmplDict := GetSysCraftTemplateDict()
 	db := util.GetDatabase()
 
 	//TODO IMPLEMENT CUSTOM OPTION PARAMETERS
-	craftOptionList, err := inner(db, &craftAtomDict, craftName, 0)
+	craftOptionList, err := inner(db, &craftAtomDict, &craftTmplDict, craftName, 0)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
@@ -80,7 +113,7 @@ func Entry(c *gin.Context) {
 const MaxCallDepth = 5
 
 // 递归地解出 craft option list
-func inner(db *gorm.DB, craftAtomDict *map[string]Meta, craftName string, depthId int) ([]CraftOption, error) {
+func inner(db *gorm.DB, craftAtomDict *map[string]CraftAtom, craftTmplDict *map[string]CraftTemplate, craftName string, depthId int) ([]CraftOption, error) {
 	if depthId+1 > MaxCallDepth {
 		return []CraftOption{}, fmt.Errorf("max call depth hit")
 	}
@@ -93,10 +126,14 @@ func inner(db *gorm.DB, craftAtomDict *map[string]Meta, craftName string, depthI
 	// 2.1 如果是flow, 调用 entry check
 	// 如果不是, 说明craft name 无效, 返回error
 
-	craftOptionMeta, isKnownCraftAtom := (*craftAtomDict)[craftName]
+	craftAtom, isKnownCraftAtom := (*craftAtomDict)[craftName]
 	if isKnownCraftAtom {
 		logrus.Infof("[%s] is known craft atom", craftName)
-		return craftOptionMeta.CraftOptionList, nil
+		tmplContent, tmplValid := (*craftTmplDict)[craftAtom.TemplateName]
+		if !tmplValid {
+			return []CraftOption{}, fmt.Errorf("invalid tmpl name [%s] for craft atom [%s]", craftAtom.TemplateName, craftAtom.Name)
+		}
+		return tmplContent.GetOptions(craftAtom.Params), nil
 	} else {
 		craftArr, checkErr := extractCraftArrFromFlow(db, craftName)
 		if checkErr != nil {
@@ -105,7 +142,7 @@ func inner(db *gorm.DB, craftAtomDict *map[string]Meta, craftName string, depthI
 		}
 		var retArr []CraftOption
 		for _, extractedSubCraftName := range craftArr {
-			sub, recurErr := inner(db, craftAtomDict, extractedSubCraftName, depthId+1)
+			sub, recurErr := inner(db, craftAtomDict, craftTmplDict, extractedSubCraftName, depthId+1)
 			if recurErr != nil {
 				return []CraftOption{}, recurErr
 			}

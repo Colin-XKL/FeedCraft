@@ -140,7 +140,7 @@ func ListCraftFlows(c *gin.Context) {
 }
 
 func ListCraftAtoms(c *gin.Context) {
-	craftAtoms := craft.GetSysCraftEntries()
+	craftAtoms := craft.GetCraftAtomDict()
 	var ret []map[string]string
 	for _, meta := range craftAtoms {
 		ret = append(ret, map[string]string{
