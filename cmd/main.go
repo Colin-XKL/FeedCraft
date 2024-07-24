@@ -15,12 +15,17 @@ import (
 
 func main() {
 	sentryDsn := os.Getenv("SENTRY_DSN")
+	env := os.Getenv("ENV")
+	if len(env) == 0 {
+		env = "prod"
+	}
 	if len(sentryDsn) > 0 {
 		logrus.Info("initializing sentry...")
 		// To initialize Sentry's handler, you need to initialize Sentry itself beforehand
 		err := sentry.Init(sentry.ClientOptions{
 			Dsn:           sentryDsn,
 			EnableTracing: true,
+			Environment:   env,
 			// Set TracesSampleRate to 1.0 to capture 100%
 			// of transactions for performance monitoring.
 			// We recommend adjusting this value in production,
