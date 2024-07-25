@@ -19,7 +19,7 @@ func getIntroductionForArticle(prompt, article string) (string, error) {
 
 const promptGenerateIntroduction = "请阅读下面的文章并写一篇不超过200字的中文摘要, 使得读者可以快速知道文章的主题和主要结论."
 
-func addIntroductionUsingGemini(item *feeds.Item) string {
+func addIntroductionUsingGemini(item *feeds.Item, prompt string) string {
 	//TODO handle description and content field separately and correctly
 
 	finalArticleContent := ""
@@ -45,7 +45,7 @@ func addIntroductionUsingGemini(item *feeds.Item) string {
 
 	if err != nil || cachedIntroduction == "" {
 		//articleStr, err := extractor(url, DefaultExtractFulltextTimeout)
-		introduction, err := getIntroductionForArticle(promptGenerateIntroduction, originalContent)
+		introduction, err := getIntroductionForArticle(prompt, originalContent)
 		if err != nil {
 			logrus.Warnf("failed to generate introduction for article [%s], %v\n", originalTitle, err)
 		} else {
@@ -61,13 +61,25 @@ func addIntroductionUsingGemini(item *feeds.Item) string {
 	return finalArticleContent
 }
 
-func GetAddIntroductionCraftOptions() []CraftOption {
+func GetAddIntroductionCraftOptions(prompt string) []CraftOption {
 	transFunc := func(item *feeds.Item) (string, error) {
-		ret := addIntroductionUsingGemini(item)
+		ret := addIntroductionUsingGemini(item, prompt)
 		return ret, nil
 	}
 	craftOption := []CraftOption{
 		OptionTransformFeedItem(GetArticleContentProcessor(transFunc)),
 	}
 	return craftOption
+}
+
+func introCraftLoadParam(m map[string]string) []CraftOption {
+	prompt, exist := m["prompt"]
+	if !exist || len(prompt) == 0 {
+		prompt = promptGenerateIntroduction
+	}
+	return GetAddIntroductionCraftOptions(prompt)
+}
+
+var introCraftParamTmpl = []ParamTemplate{
+	{Key: "prompt", Description: "the llm prompt for generate summary", Default: promptGenerateIntroduction},
 }

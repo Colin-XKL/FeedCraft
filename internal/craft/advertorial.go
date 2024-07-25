@@ -16,15 +16,14 @@ import (
 通过LLM 判断并排除广告软文 advertorial
 */
 
-const prompt = "请阅读下面的文章, 并判断是不是广告推销软文. 如果非常确信这篇文章是营销推广文章, 请返回 'true', 如果不是或者没有把握确定,请返回 'false'"
+const promptCheckIfAdvertorial = "请阅读下面的文章, 并判断是不是广告推销软文. 如果非常确信这篇文章是营销推广文章, 请返回 'true', 如果不是或者没有把握确定,请返回 'false'"
 
 // CheckIfAdvertorial 判断是否为软文, 非常有把握则返回true, 如果不是或者不确定或是发生错误则返回false
-func CheckIfAdvertorial(content string) bool {
+func CheckIfAdvertorial(content string, prompt string) bool {
 	const MinContentLength = 20
 	if len(strings.TrimSpace(content)) < MinContentLength {
 		return false
 	}
-	//result, err := adapter.CallGeminiUsingArticleContext(prompt, content)
 	result, err := adapter.CallLLMUsingContext(prompt, content)
 	if err != nil {
 		logrus.Errorf("Error checking advertorial: %v", err)
@@ -34,32 +33,49 @@ func CheckIfAdvertorial(content string) bool {
 	return result == "true"
 }
 
-func GetIgnoreAdvertorialCraftOptions() []CraftOption {
+func GetIgnoreAdvertorialCraftOptions(prompt string) []CraftOption {
 	craftOptions := []CraftOption{
-		OptionIgnoreAdvertorial(),
+		OptionIgnoreAdvertorial(prompt),
 	}
 	return craftOptions
 }
 
 // OptionIgnoreAdvertorial option  判断一篇文章是不是推广软文和广告等
-func OptionIgnoreAdvertorial() CraftOption {
+func OptionIgnoreAdvertorial(prompt string) CraftOption {
 	return func(feed *feeds.Feed) error {
 		items := feed.Items
 		filtered := lo.Filter(items, func(item *feeds.Item, index int) bool {
 			content := item.Content //TODO handle description and content field correctly
-			return CheckIfAdvertorial(content)
+			return CheckIfAdvertorial(content, prompt)
 		})
 		feed.Items = filtered
 		return nil
 	}
 }
 
+func llmFilterCraftLoadParam(m map[string]string) []CraftOption {
+	prompt, exist := m["prompt-for-exclude"]
+	if !exist || len(prompt) == 0 {
+		prompt = promptCheckIfAdvertorial
+	}
+	return GetIgnoreAdvertorialCraftOptions(prompt)
+}
+
+var llmFilterCraftParamTmpl = []ParamTemplate{
+	{Key: "prompt-for-exclude",
+		Description: "apply prompt to every article item, if llm returns 'true', then article will be excluded",
+		Default:     promptCheckIfAdvertorial},
+}
+
+// ===============
+// api for debug
+
 type CheckIfAdvertorialDebugReq struct {
 	Url         string `json:"url"  binding:"required,url" ` // article url
 	EnhanceMode bool   `json:"enhance_mode"`
 }
 type CheckIfAdvertorialDebugResp struct {
-	Url            string `json:"url"` // url for orignial article
+	Url            string `json:"url"` // url for original article
 	ArticleContent string `json:"article_content"`
 	IsAdvertorial  bool   `json:"is_advertorial"`
 }
@@ -86,7 +102,7 @@ func DebugCheckIfAdvertorial(c *gin.Context) {
 		c.JSON(http.StatusExpectationFailed, util.APIResponse[any]{Msg: "extract article content failed"})
 		return
 	}
-	result := CheckIfAdvertorial(webContent)
+	result := CheckIfAdvertorial(webContent, promptCheckIfAdvertorial)
 	ret := CheckIfAdvertorialDebugResp{
 		Url:            reqBody.Url,
 		IsAdvertorial:  result,
