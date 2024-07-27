@@ -76,7 +76,9 @@ func RegisterRouters(router *gin.Engine) {
 		adminApi.GET("/craft-flows/:name", controller.GetCraftFlow)
 		adminApi.PUT("/craft-flows/:name", controller.UpdateCraftFlow)
 		adminApi.DELETE("/craft-flows/:name", controller.DeleteCraftFlow)
+
 		adminApi.GET("/sys-craft-atoms", controller.ListSysCraftAtoms)
+		adminApi.GET("/craft-templates", controller.ListCraftTemplates)
 
 		adminApi.GET("/craft-atoms", controller.ListCraftAtoms)
 		adminApi.POST("/craft-atoms", controller.CreateCraftAtom)

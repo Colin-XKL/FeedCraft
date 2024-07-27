@@ -48,10 +48,26 @@ export function listCraftFlows(): Promise<AxiosResponse<CraftFlow[]>> {
   return axios.get<CraftFlow[]>(craftFlowApiBase);
 }
 
-export function listCraftAtoms(): Promise<
+export function listSysCraftAtoms(): Promise<
   AxiosResponse<{ name: string; description: string }[]>
 > {
   return axios.get<{ name: string; description: string }[]>(
     `${adminApiBase}/sys-craft-atoms`
   );
+}
+
+interface ParamTemplate {
+  key: string;
+  description: string;
+  default: string;
+}
+
+interface CraftTemplate {
+  name: string;
+  description?: string;
+  param_template_define: ParamTemplate[];
+}
+
+export function listCraftTemplates(): Promise<AxiosResponse<CraftTemplate[]>> {
+  return axios.get<CraftTemplate[]>(`${adminApiBase}/craft-templates`);
 }

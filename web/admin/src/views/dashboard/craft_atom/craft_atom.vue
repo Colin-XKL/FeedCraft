@@ -40,6 +40,7 @@
         :model="editedCraftAtom"
         :label-col="{ span: 6 }"
         :wrapper-col="{ span: 18 }"
+        layout="vertical"
       >
         <a-form-item label="Name" name="name">
           <a-input v-model="editedCraftAtom.name" />
@@ -47,28 +48,62 @@
         <a-form-item label="Description" name="description">
           <a-textarea v-model="editedCraftAtom.description" />
         </a-form-item>
-        <a-form-item label="Template Name" name="template_name">
-          <a-input v-model="editedCraftAtom.template_name" />
+        <a-form-item label="Template" name="template_name">
+          <a-select
+            v-model="editedCraftAtom.template_name"
+            :options="templateOptions"
+            placeholder="Select Template"
+            @change="handleTemplateChange"
+          />
         </a-form-item>
         <a-form-item label="Params" name="params">
           <a-space direction="vertical" style="width: 100%">
-            <div v-for="(param, index) in formParams" :key="index">
-              <a-row :gutter="16">
-                <a-col :span="11">
-                  <a-input v-model="param.key" placeholder="Key" />
-                </a-col>
-                <a-col :span="11">
-                  <a-input v-model="param.value" placeholder="Value" />
-                </a-col>
-                <a-col :span="2">
-                  <a-button type="text" @click="removeParam(index)">
-                    <template #icon>
-                      <icon-delete />
-                    </template>
-                  </a-button>
-                </a-col>
-              </a-row>
-            </div>
+            <a-list :split="false" size="small" :bordered="false">
+              <div class="mb-2 text-gray-400">
+                <div class="">Required Param:</div>
+                <template
+                  v-if="
+                    paramTemplates[editedCraftAtom.template_name]?.length > 0
+                  "
+                >
+                  <div
+                    v-for="item in paramTemplates[
+                      editedCraftAtom.template_name
+                    ]"
+                    :key="item.key"
+                  >
+                    <p class="text-sm"
+                      ><span
+                        class="font-bold px-1 py-0.5 bg-gray-200 rounded"
+                        >{{ item.key }}</span
+                      >: {{ item.description }}</p
+                    >
+                  </div>
+                </template>
+                <template v-else>
+                  <div>None</div>
+                </template>
+                <hr class="my-1" />
+              </div>
+              <div v-for="(param, index) in formParams" :key="index">
+                <a-row :gutter="12">
+                  <a-col :span="8">
+                    <a-input v-model="param.key" placeholder="Key" />
+                  </a-col>
+                  <a-col :span="14">
+                    <a-textarea v-model="param.value" placeholder="Value" />
+                  </a-col>
+                  <a-col :span="2">
+                    <a-button type="text" @click="removeParam(index)">
+                      <template #icon>
+                        <icon-delete />
+                      </template>
+                    </a-button>
+                  </a-col>
+                </a-row>
+              </div>
+            </a-list>
+
             <a-button type="dashed" @click="addParam">Add Param</a-button>
           </a-space>
         </a-form-item>
@@ -99,6 +134,7 @@
     listCraftAtoms,
     updateCraftAtom,
   } from '@/api/craft_atom';
+  import { listCraftTemplates } from '@/api/craft_flow';
 
   const isLoading = ref(false);
   const craftAtoms = ref<CraftAtom[]>([]);
@@ -120,9 +156,40 @@
     { title: 'Actions', slotName: 'actions' },
   ];
 
+  const templateOptions = ref<{ label: string; value: string }[]>([]);
+  const paramTemplates = ref<{
+    [key: string]: { key: string; description: string; default: string }[];
+  }>({});
+
+  const fetchTemplates = async () => {
+    const response = await listCraftTemplates();
+    templateOptions.value = response.data.map((template) => ({
+      label: template.name,
+      value: template.name,
+    }));
+    response.data.forEach((template) => {
+      paramTemplates.value[template.name] = template.param_template_define;
+    });
+  };
+
+  const handleTemplateChange = (templateName: any) => {
+    const params = paramTemplates.value[templateName as string] || [];
+    formParams.value = params.map((param) => ({
+      key: param.key,
+      value: editedCraftAtom.value.params[param.key] || param.default,
+    }));
+  };
+
+  onBeforeMount(() => {
+    listAllCraftAtoms();
+    fetchTemplates();
+  });
+
   const editBtnHandler = (craftAtom: CraftAtom) => {
     editedCraftAtom.value = { ...craftAtom };
-    formParams.value = Object.entries(editedCraftAtom.value.params).map(([key, value]) => ({ key, value }));
+    formParams.value = Object.entries(editedCraftAtom.value.params).map(
+      ([key, value]) => ({ key, value })
+    );
     showEditModal.value = true;
     isUpdating.value = true;
   };
@@ -137,10 +204,6 @@
     craftAtoms.value = (await listCraftAtoms()).data;
     isLoading.value = false;
   }
-
-  onBeforeMount(() => {
-    listAllCraftAtoms();
-  });
 
   const addParam = () => {
     formParams.value.push({ key: '', value: '' });

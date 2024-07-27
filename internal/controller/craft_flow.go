@@ -149,5 +149,15 @@ func ListSysCraftAtoms(c *gin.Context) {
 		})
 	}
 	c.JSON(http.StatusOK, util.APIResponse[any]{Data: ret})
+}
 
+func ListCraftTemplates(c *gin.Context) {
+	craftTemplates := craft.GetSysCraftTemplateDict()
+	ret := make([]craft.CraftTemplate, len(craftTemplates))
+	i := 0
+	for _, template := range craftTemplates {
+		ret[i] = template
+		i++
+	}
+	c.JSON(http.StatusOK, util.APIResponse[[]craft.CraftTemplate]{Data: ret})
 }

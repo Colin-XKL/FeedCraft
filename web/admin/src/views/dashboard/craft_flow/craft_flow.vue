@@ -92,7 +92,7 @@
     CraftFlow,
     createCraftFlow,
     deleteCraftFlow,
-    listCraftAtoms,
+    listSysCraftAtoms,
     listCraftFlows,
     updateCraftFlow,
   } from '@/api/craft_flow';
@@ -188,7 +188,7 @@
   const craftAtomList = ref<any>([]);
 
   async function listAllCraftAtom() {
-    craftAtomList.value = (await listCraftAtoms()).data;
+    craftAtomList.value = (await listSysCraftAtoms()).data;
   }
 
   onBeforeMount(() => {
