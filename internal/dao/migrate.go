@@ -10,7 +10,7 @@ func MigrateDatabases() {
 	db := util.GetDatabase()
 	err := db.AutoMigrate(
 		&CustomRecipe{},
-		&CraftFlow{},
+		&CraftFlow{}, &CraftAtom{},
 	)
 	if err != nil {
 		logrus.Error("migrate database error.", err)
