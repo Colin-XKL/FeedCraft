@@ -54,13 +54,13 @@
         :label-col="{ span: 6 }"
         :wrapper-col="{ span: 18 }"
       >
-        <a-form-item label="Name" name="name">
+        <a-form-item label="Name" field="name">
           <a-input v-model="editedCraftFlow.name" />
         </a-form-item>
-        <a-form-item label="Description" name="description">
+        <a-form-item label="Description" field="description">
           <a-textarea v-model="editedCraftFlow.description" />
         </a-form-item>
-        <a-form-item label="Flow" name="craftFlowConfig">
+        <a-form-item label="Flow" field="craftFlowConfig">
           <a-select
             v-model="editedCraftFlow.craftList"
             multiple
@@ -137,6 +137,7 @@
     updateCraftFlow,
   } from '@/api/craft_flow';
   import { listCraftAtoms } from '@/api/craft_atom';
+  import { namingValidator } from '@/utils/validator';
 
   const rules = {
     name: [
@@ -145,11 +146,7 @@
         message: 'Name is required',
         trigger: 'blur',
       },
-      {
-        pattern: /^[a-z0-9-]+$/,
-        message: 'Name can only contain lowercase letters, numbers, and hyphens',
-        trigger: 'blur',
-      },
+      namingValidator,
     ],
   };
 
