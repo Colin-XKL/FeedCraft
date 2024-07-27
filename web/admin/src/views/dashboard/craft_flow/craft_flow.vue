@@ -65,8 +65,47 @@
             multiple
             allow-clear
             allow-create
-            :options="optionList"
-          />
+          >
+            <a-optgroup label="System Craft Atoms">
+              <a-option
+                v-for="item in sysCraftAtomList"
+                :key="item.name"
+                :value="item.name"
+              >
+                {{
+                  item.description?.length
+                    ? `${item.name} (${item.description})`
+                    : item.name
+                }}
+              </a-option>
+            </a-optgroup>
+            <a-optgroup label="User Craft Atoms">
+              <a-option
+                v-for="item in craftAtomList"
+                :key="item.name"
+                :value="item.name"
+              >
+                {{
+                  item.description?.length
+                    ? `${item.name} (${item.description})`
+                    : item.name
+                }}
+              </a-option>
+            </a-optgroup>
+            <a-optgroup label="Craft Flows">
+              <a-option
+                v-for="item in craftFlows"
+                :key="item.name"
+                :value="item.name"
+              >
+                {{
+                  item.description?.length
+                    ? `${item.name} (${item.description})`
+                    : item.name
+                }}
+              </a-option>
+            </a-optgroup>
+          </a-select>
         </a-form-item>
       </a-form>
       <template #footer>
@@ -96,6 +135,7 @@
     listCraftFlows,
     updateCraftFlow,
   } from '@/api/craft_flow';
+  import { listCraftAtoms } from '@/api/craft_atom';
 
   const isLoading = ref(false);
   const craftFlows = ref<CraftFlow[]>([]);
@@ -123,9 +163,20 @@
           : item.name,
       };
     };
-    const craftFlowOptions = craftFlows.value.map(mapper);
-    const craftAtomOptions = craftAtomList.value.map(mapper);
-    return [...craftAtomOptions, ...craftFlowOptions];
+    return [
+      {
+        label: 'System Craft Atoms',
+        options: sysCraftAtomList.value.map(mapper),
+      },
+      {
+        label: 'Craft Atoms',
+        options: craftAtomList.value.map(mapper),
+      },
+      {
+        label: 'Craft Flows',
+        options: craftFlows.value.map(mapper),
+      },
+    ];
   });
 
   const editBtnHandler = (craftFlow: CraftFlow) => {
@@ -185,15 +236,21 @@
       craft_flow_config: [],
     };
   };
+  const sysCraftAtomList = ref<any>([]);
   const craftAtomList = ref<any>([]);
 
-  async function listAllCraftAtom() {
-    craftAtomList.value = (await listSysCraftAtoms()).data;
+  async function listAllSysCraftAtom() {
+    sysCraftAtomList.value = (await listSysCraftAtoms()).data;
+  }
+
+  async function listAllCraftAtoms() {
+    craftAtomList.value = (await listCraftAtoms()).data;
   }
 
   onBeforeMount(() => {
     listAllCraftFlow();
-    listAllCraftAtom();
+    listAllSysCraftAtom();
+    listAllCraftAtoms();
   });
 </script>
 

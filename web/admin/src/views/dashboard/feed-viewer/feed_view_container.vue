@@ -7,8 +7,9 @@
       title="Feed Info"
       :column="1"
     />
+    <div>total: {{ feedData.items?.length }}</div>
     <ul>
-      <li v-for="item in feedData.items?.slice(0, 5)" :key="item.guid">
+      <li v-for="item in feedData.items?.slice(0, 10)" :key="item.guid">
         <a-card class="my-2">
           <a-space>
             <h3 class="font-bold">{{ item.title }}</h3>
@@ -26,6 +27,9 @@
         </a-card>
       </li>
     </ul>
+    <div v-if="feedData.items?.length > 10"
+      >This feed is too large, only first 10 items are showed.
+    </div>
   </div>
 </template>
 
