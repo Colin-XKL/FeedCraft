@@ -152,15 +152,12 @@ func ListSysCraftAtoms(c *gin.Context) {
 }
 
 func ListCraftTemplates(c *gin.Context) {
-    values := make([]craft.CraftTemplate, 0, len(craftTemplates))
-    for _, template := range craftTemplates {
-        values = append(values, template)
-    }
-}
 	craftTemplates := craft.GetSysCraftTemplateDict()
-	var ret []craft.CraftTemplate
+	ret := make([]craft.CraftTemplate, len(craftTemplates))
+	i := 0
 	for _, template := range craftTemplates {
-		ret = append(ret, template)
+		ret[i] = template
+		i++
 	}
 	c.JSON(http.StatusOK, util.APIResponse[[]craft.CraftTemplate]{Data: ret})
 }
