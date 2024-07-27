@@ -66,33 +66,45 @@
             allow-clear
             allow-create
           >
-            <a-option-group label="System Craft Atoms">
+            <a-optgroup label="System Craft Atoms">
               <a-option
                 v-for="item in sysCraftAtomList"
                 :key="item.name"
                 :value="item.name"
               >
-                {{ item.description?.length ? `${item.name} (${item.description})` : item.name }}
+                {{
+                  item.description?.length
+                    ? `${item.name} (${item.description})`
+                    : item.name
+                }}
               </a-option>
-            </a-option-group>
-            <a-option-group label="Craft Atoms">
+            </a-optgroup>
+            <a-optgroup label="User Craft Atoms">
               <a-option
                 v-for="item in craftAtomList"
                 :key="item.name"
                 :value="item.name"
               >
-                {{ item.description?.length ? `${item.name} (${item.description})` : item.name }}
+                {{
+                  item.description?.length
+                    ? `${item.name} (${item.description})`
+                    : item.name
+                }}
               </a-option>
-            </a-option-group>
-            <a-option-group label="Craft Flows">
+            </a-optgroup>
+            <a-optgroup label="Craft Flows">
               <a-option
                 v-for="item in craftFlows"
                 :key="item.name"
                 :value="item.name"
               >
-                {{ item.description?.length ? `${item.name} (${item.description})` : item.name }}
+                {{
+                  item.description?.length
+                    ? `${item.name} (${item.description})`
+                    : item.name
+                }}
               </a-option>
-            </a-option-group>
+            </a-optgroup>
           </a-select>
         </a-form-item>
       </a-form>
