@@ -95,6 +95,7 @@
     listSysCraftAtoms,
     listCraftFlows,
     updateCraftFlow,
+    listCraftAtoms,
   } from '@/api/craft_flow';
 
   const isLoading = ref(false);
@@ -125,7 +126,8 @@
     };
     const craftFlowOptions = craftFlows.value.map(mapper);
     const sysCraftAtomOptions = sysCraftAtomList.value.map(mapper);
-    return [...sysCraftAtomOptions, ...craftFlowOptions];
+    const craftAtomOptions = craftAtomList.value.map(mapper);
+    return [...sysCraftAtomOptions, ...craftAtomOptions, ...craftFlowOptions];
   });
 
   const editBtnHandler = (craftFlow: CraftFlow) => {
@@ -186,14 +188,20 @@
     };
   };
   const sysCraftAtomList = ref<any>([]);
+  const craftAtomList = ref<any>([]);
 
   async function listAllSysCraftAtom() {
     sysCraftAtomList.value = (await listSysCraftAtoms()).data;
   }
 
+  async function listAllCraftAtoms() {
+    craftAtomList.value = (await listCraftAtoms()).data;
+  }
+
   onBeforeMount(() => {
     listAllCraftFlow();
     listAllSysCraftAtom();
+    listAllCraftAtoms();
   });
 </script>
 
