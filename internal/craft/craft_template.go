@@ -20,11 +20,3 @@ type ParamTemplate struct {
 	Description string
 	Default     string
 }
-
-// CraftAtom craft atom 由 craft template 派生出来
-type CraftAtom struct {
-	Name         string
-	Description  string
-	TemplateName string
-	Params       map[string]string
-}

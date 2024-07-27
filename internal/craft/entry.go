@@ -70,11 +70,11 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 	return sysCraftTempList
 }
 
-func GetCraftAtomDict() map[string]CraftAtom {
+func GetCraftAtomDict() map[string]dao.CraftAtom {
 	tmplDict := GetSysCraftTemplateDict()
-	craftAtomDict := make(map[string]CraftAtom)
+	craftAtomDict := make(map[string]dao.CraftAtom)
 	for name, craftTemplate := range tmplDict {
-		item := CraftAtom{
+		item := dao.CraftAtom{
 			Name:         craftTemplate.Name, // 默认会有个跟template 同名的craft atom
 			Description:  fmt.Sprintf("(sys predefined)%s", craftTemplate.Description),
 			TemplateName: craftTemplate.Name,
@@ -104,7 +104,7 @@ func Entry(c *gin.Context) {
 const MaxCallDepth = 5
 
 // 递归地解出 craft option list
-func inner(db *gorm.DB, craftAtomDict *map[string]CraftAtom, craftTmplDict *map[string]CraftTemplate, craftName string, depthId int) ([]CraftOption, error) {
+func inner(db *gorm.DB, craftAtomDict *map[string]dao.CraftAtom, craftTmplDict *map[string]CraftTemplate, craftName string, depthId int) ([]CraftOption, error) {
 	if depthId+1 > MaxCallDepth {
 		return []CraftOption{}, fmt.Errorf("max call depth hit")
 	}
