@@ -65,9 +65,35 @@
             multiple
             allow-clear
             allow-create
-            :options="optionList"
-            option-group
-          />
+          >
+            <a-option-group label="System Craft Atoms">
+              <a-option
+                v-for="item in sysCraftAtomList"
+                :key="item.name"
+                :value="item.name"
+              >
+                {{ item.description?.length ? `${item.name} (${item.description})` : item.name }}
+              </a-option>
+            </a-option-group>
+            <a-option-group label="Craft Atoms">
+              <a-option
+                v-for="item in craftAtomList"
+                :key="item.name"
+                :value="item.name"
+              >
+                {{ item.description?.length ? `${item.name} (${item.description})` : item.name }}
+              </a-option>
+            </a-option-group>
+            <a-option-group label="Craft Flows">
+              <a-option
+                v-for="item in craftFlows"
+                :key="item.name"
+                :value="item.name"
+              >
+                {{ item.description?.length ? `${item.name} (${item.description})` : item.name }}
+              </a-option>
+            </a-option-group>
+          </a-select>
         </a-form-item>
       </a-form>
       <template #footer>
