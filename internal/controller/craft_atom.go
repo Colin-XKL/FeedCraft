@@ -113,14 +113,14 @@ func DeleteCraftAtom(c *gin.Context) {
 	c.JSON(http.StatusNoContent, nil)
 }
 
-// ListSysCraftAtoms godoc
+// ListCraftAtoms godoc
 // @Summary List all CraftAtoms
 // @Description List all CraftAtoms
 // @Tags CraftAtom
 // @Produce json
 // @Success 200 {array} dao.CraftAtom
 // @Router /craft-atoms [get]
-func ListSysCraftAtoms(c *gin.Context) {
+func ListCraftAtoms(c *gin.Context) {
 	db := util.GetDatabase()
 
 	craftAtoms, err := dao.GetAllCraftAtoms(db)
