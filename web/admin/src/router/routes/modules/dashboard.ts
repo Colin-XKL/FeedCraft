@@ -86,6 +86,15 @@ const DASHBOARD: AppRouteRecordRaw = {
         title: 'Craft Atom',
       },
     },
+    {
+      path: 'feed_compare',
+      name: 'feed_compare',
+      component: () => import('@/views/dashboard/feed_compare/feed_compare.vue'),
+      meta: {
+        requiresAuth: true,
+        title: 'Feed Compare',
+      },
+    },
   ],
 };
 
