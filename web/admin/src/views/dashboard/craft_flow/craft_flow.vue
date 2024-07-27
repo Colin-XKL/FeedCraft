@@ -96,8 +96,8 @@
     listSysCraftAtoms,
     listCraftFlows,
     updateCraftFlow,
-    listCraftAtoms,
   } from '@/api/craft_flow';
+  import { listCraftAtoms } from '@/api/craft_atom';
 
   const isLoading = ref(false);
   const craftFlows = ref<CraftFlow[]>([]);
