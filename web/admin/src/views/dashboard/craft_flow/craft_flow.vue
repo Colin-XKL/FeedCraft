@@ -66,6 +66,7 @@
             allow-clear
             allow-create
             :options="optionList"
+            option-group
           />
         </a-form-item>
       </a-form>
@@ -124,10 +125,20 @@
           : item.name,
       };
     };
-    const craftFlowOptions = craftFlows.value.map(mapper);
-    const sysCraftAtomOptions = sysCraftAtomList.value.map(mapper);
-    const craftAtomOptions = craftAtomList.value.map(mapper);
-    return [...sysCraftAtomOptions, ...craftAtomOptions, ...craftFlowOptions];
+    return [
+      {
+        label: 'System Craft Atoms',
+        options: sysCraftAtomList.value.map(mapper),
+      },
+      {
+        label: 'Craft Atoms',
+        options: craftAtomList.value.map(mapper),
+      },
+      {
+        label: 'Craft Flows',
+        options: craftFlows.value.map(mapper),
+      },
+    ];
   });
 
   const editBtnHandler = (craftFlow: CraftFlow) => {
