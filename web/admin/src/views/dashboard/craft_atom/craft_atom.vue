@@ -51,7 +51,24 @@
           <a-input v-model="editedCraftAtom.template_name" />
         </a-form-item>
         <a-form-item label="Params" name="params">
-          <a-input v-model="editedCraftAtom.params" />
+          <a-space direction="vertical" style="width: 100%;">
+            <div v-for="(param, index) in editedCraftAtom.params" :key="index">
+              <a-row :gutter="16">
+                <a-col :span="11">
+                  <a-input v-model="param.key" placeholder="Key" />
+                </a-col>
+                <a-col :span="11">
+                  <a-input v-model="param.value" placeholder="Value" />
+                </a-col>
+                <a-col :span="2">
+                  <a-button type="text" @click="removeParam(index)">
+                    <template #icon><icon-delete /></template>
+                  </a-button>
+                </a-col>
+              </a-row>
+            </div>
+            <a-button type="dashed" @click="addParam">Add Param</a-button>
+          </a-space>
         </a-form-item>
       </a-form>
       <template #footer>
@@ -87,7 +104,7 @@
     name: '',
     description: '',
     template_name: '',
-    params: {},
+    params: [],
   });
   const showEditModal = ref(false);
   const isUpdating = ref(false);
@@ -144,3 +161,35 @@
     name: 'CraftAtomManage',
   };
 </script>
+  const addParam = () => {
+    editedCraftAtom.value.params.push({ key: '', value: '' });
+  };
+
+  const removeParam = (index: number) => {
+    editedCraftAtom.value.params.splice(index, 1);
+  };
+
+  const saveCraftAtom = async () => {
+    const params = {};
+    editedCraftAtom.value.params.forEach(param => {
+      if (param.key && param.value) {
+        params[param.key] = param.value;
+      }
+    });
+    editedCraftAtom.value.params = params;
+
+    if (isUpdating.value) {
+      await updateCraftAtom(editedCraftAtom.value.name, editedCraftAtom.value);
+    } else {
+      await createCraftAtom(editedCraftAtom.value);
+    }
+    showEditModal.value = false;
+    await listAllCraftAtoms();
+    isUpdating.value = false;
+    editedCraftAtom.value = {
+      name: '',
+      description: '',
+      template_name: '',
+      params: [],
+    };
+  };
