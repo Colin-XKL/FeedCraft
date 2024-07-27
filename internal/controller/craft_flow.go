@@ -152,6 +152,11 @@ func ListSysCraftAtoms(c *gin.Context) {
 }
 
 func ListCraftTemplates(c *gin.Context) {
+    values := make([]craft.CraftTemplate, 0, len(craftTemplates))
+    for _, template := range craftTemplates {
+        values = append(values, template)
+    }
+}
 	craftTemplates := craft.GetSysCraftTemplateDict()
 	var ret []craft.CraftTemplate
 	for _, template := range craftTemplates {
