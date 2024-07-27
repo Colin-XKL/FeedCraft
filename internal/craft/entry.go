@@ -27,6 +27,12 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		ParamTemplateDefine: limitCraftParamTmpl,
 		OptionFunc:          limitCraftLoadParams,
 	}
+	sysCraftTempList["keyword"] = CraftTemplate{
+		Name:                "keyword",
+		Description:         "keyword filter",
+		ParamTemplateDefine: keywordCraftParamTmpl,
+		OptionFunc:          keywordCraftLoadParams,
+	}
 	sysCraftTempList["fulltext"] = CraftTemplate{
 		Name:                "fulltext",
 		Description:         "extract fulltext for rss feed",
