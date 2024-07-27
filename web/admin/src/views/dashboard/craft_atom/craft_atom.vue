@@ -48,7 +48,11 @@
           <a-textarea v-model="editedCraftAtom.description" />
         </a-form-item>
         <a-form-item label="Template Name" name="template_name">
-          <a-input v-model="editedCraftAtom.template_name" />
+          <a-select
+            v-model="editedCraftAtom.template_name"
+            :options="templateOptions"
+            placeholder="Select Template"
+          />
         </a-form-item>
         <a-form-item label="Params" name="params">
           <a-space direction="vertical" style="width: 100%">
@@ -99,6 +103,7 @@
     listCraftAtoms,
     updateCraftAtom,
   } from '@/api/craft_atom';
+  import { listCraftTemplates } from '@/api/craft_flow';
 
   const isLoading = ref(false);
   const craftAtoms = ref<CraftAtom[]>([]);
@@ -120,9 +125,26 @@
     { title: 'Actions', slotName: 'actions' },
   ];
 
+  const templateOptions = ref<{ label: string; value: string }[]>([]);
+
+  const fetchTemplates = async () => {
+    const response = await listCraftTemplates();
+    templateOptions.value = response.data.map((template) => ({
+      label: template.name,
+      value: template.name,
+    }));
+  };
+
+  onBeforeMount(() => {
+    listAllCraftAtoms();
+    fetchTemplates();
+  });
+
   const editBtnHandler = (craftAtom: CraftAtom) => {
     editedCraftAtom.value = { ...craftAtom };
-    formParams.value = Object.entries(editedCraftAtom.value.params).map(([key, value]) => ({ key, value }));
+    formParams.value = Object.entries(editedCraftAtom.value.params).map(
+      ([key, value]) => ({ key, value })
+    );
     showEditModal.value = true;
     isUpdating.value = true;
   };
@@ -137,10 +159,6 @@
     craftAtoms.value = (await listCraftAtoms()).data;
     isLoading.value = false;
   }
-
-  onBeforeMount(() => {
-    listAllCraftAtoms();
-  });
 
   const addParam = () => {
     formParams.value.push({ key: '', value: '' });
