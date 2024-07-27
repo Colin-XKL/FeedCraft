@@ -38,17 +38,18 @@
     >
       <a-form
         :model="editedCraftAtom"
+        :rules="rules"
         :label-col="{ span: 6 }"
         :wrapper-col="{ span: 18 }"
         layout="vertical"
       >
-        <a-form-item label="Name" name="name">
+        <a-form-item label="Name" field="name">
           <a-input v-model="editedCraftAtom.name" />
         </a-form-item>
-        <a-form-item label="Description" name="description">
+        <a-form-item label="Description" field="description">
           <a-textarea v-model="editedCraftAtom.description" />
         </a-form-item>
-        <a-form-item label="Template" name="template_name">
+        <a-form-item label="Template" field="template_name">
           <a-select
             v-model="editedCraftAtom.template_name"
             :options="templateOptions"
@@ -56,7 +57,7 @@
             @change="handleTemplateChange"
           />
         </a-form-item>
-        <a-form-item label="Params" name="params">
+        <a-form-item label="Params" field="params">
           <a-space direction="vertical" style="width: 100%">
             <a-list :split="false" size="small" :bordered="false">
               <div class="mb-2 text-gray-400">
@@ -135,6 +136,7 @@
     updateCraftAtom,
   } from '@/api/craft_atom';
   import { listCraftTemplates } from '@/api/craft_flow';
+  import { namingValidator } from '@/utils/validator';
 
   const isLoading = ref(false);
   const craftAtoms = ref<CraftAtom[]>([]);
@@ -155,7 +157,23 @@
     { title: 'Params', dataIndex: 'params' },
     { title: 'Actions', slotName: 'actions' },
   ];
-
+  const rules = {
+    template_name: [
+      {
+        required: true,
+        message: 'template is required',
+        trigger: 'blur',
+      },
+    ],
+    name: [
+      {
+        required: true,
+        message: 'Name is required',
+        trigger: 'blur',
+      },
+      namingValidator,
+    ],
+  };
   const templateOptions = ref<{ label: string; value: string }[]>([]);
   const paramTemplates = ref<{
     [key: string]: { key: string; description: string; default: string }[];

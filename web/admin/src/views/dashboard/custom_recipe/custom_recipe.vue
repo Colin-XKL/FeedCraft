@@ -52,18 +52,19 @@
       <a-form
         :model="form"
         :label-col="{ span: 6 }"
+        :rules="rules"
         :wrapper-col="{ span: 18 }"
       >
-        <a-form-item label="RecipeName">
+        <a-form-item label="Name" field="id">
           <a-input v-model="form.id" :disabled="isUpdating" />
         </a-form-item>
-        <a-form-item label="Description">
+        <a-form-item label="Description" field="description">
           <a-input v-model="form.description" />
         </a-form-item>
-        <a-form-item label="Craft">
+        <a-form-item label="Craft" field="craft">
           <a-input v-model="form.craft" />
         </a-form-item>
-        <a-form-item label="FeedURL">
+        <a-form-item label="FeedURL" field="feed_url">
           <a-input v-model="form.feed_url" />
         </a-form-item>
       </a-form>
@@ -93,6 +94,7 @@
     updateCustomRecipe,
   } from '@/api/custom_recipe';
   import XHeader from '@/components/header/x-header.vue';
+  import { namingValidator } from '@/utils/validator';
 
   const recipes = ref<CustomRecipe[]>([]);
   const showModal = ref(false);
@@ -124,7 +126,30 @@
   onMounted(() => {
     listCustomRecipes();
   });
-
+  const rules = {
+    id: [
+      {
+        required: true,
+        message: 'Name is required',
+        trigger: 'blur',
+      },
+      namingValidator,
+    ],
+    craft: [
+      {
+        required: true,
+        message: 'Name is required',
+        trigger: 'blur',
+      },
+    ],
+    feed_url: [
+      {
+        required: true,
+        message: 'Name is required',
+        trigger: 'blur',
+      },
+    ],
+  };
   const showEditModal = (recipe: CustomRecipe) => {
     editing.value = true;
     selectedRecipe.value = recipe;

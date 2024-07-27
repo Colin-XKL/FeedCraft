@@ -50,16 +50,17 @@
     >
       <a-form
         :model="editedCraftFlow"
+        :rules="rules"
         :label-col="{ span: 6 }"
         :wrapper-col="{ span: 18 }"
       >
-        <a-form-item label="Name" name="name">
+        <a-form-item label="Name" field="name">
           <a-input v-model="editedCraftFlow.name" />
         </a-form-item>
-        <a-form-item label="Description" name="description">
+        <a-form-item label="Description" field="description">
           <a-textarea v-model="editedCraftFlow.description" />
         </a-form-item>
-        <a-form-item label="Flow" name="craftFlowConfig">
+        <a-form-item label="Flow" field="craftFlowConfig">
           <a-select
             v-model="editedCraftFlow.craftList"
             multiple
@@ -136,6 +137,19 @@
     updateCraftFlow,
   } from '@/api/craft_flow';
   import { listCraftAtoms } from '@/api/craft_atom';
+  import { namingValidator } from '@/utils/validator';
+
+  const rules = {
+    name: [
+      {
+        required: true,
+        message: 'Name is required',
+        trigger: 'blur',
+      },
+      namingValidator,
+    ],
+  };
+
 
   const isLoading = ref(false);
   const craftFlows = ref<CraftFlow[]>([]);
