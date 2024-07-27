@@ -77,6 +77,15 @@ const DASHBOARD: AppRouteRecordRaw = {
         title: 'Craft Flow',
       },
     },
+    {
+      path: 'craft_atom',
+      name: 'craft_atom',
+      component: () => import('@/views/dashboard/craft_atom/craft_atom.vue'),
+      meta: {
+        requiresAuth: true,
+        title: 'Craft Atom',
+      },
+    },
   ],
 };
 
