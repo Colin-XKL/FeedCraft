@@ -140,6 +140,14 @@
     });
   };
 
+  const handleTemplateChange = (templateName: string) => {
+    const params = paramTemplates.value[templateName] || [];
+    formParams.value = params.map((param) => ({
+      key: param.key,
+      value: editedCraftAtom.value.params[param.key] || param.default,
+    }));
+  };
+
   onBeforeMount(() => {
     listAllCraftAtoms();
     fetchTemplates();
