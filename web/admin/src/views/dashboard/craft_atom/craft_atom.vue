@@ -52,6 +52,7 @@
             v-model="editedCraftAtom.template_name"
             :options="templateOptions"
             placeholder="Select Template"
+            @change="handleTemplateChange"
           />
         </a-form-item>
         <a-form-item label="Params" name="params">
@@ -59,7 +60,7 @@
             <div v-for="(param, index) in formParams" :key="index">
               <a-row :gutter="16">
                 <a-col :span="11">
-                  <a-input v-model="param.key" placeholder="Key" />
+                  <a-input v-model="param.key" placeholder="Key" disabled />
                 </a-col>
                 <a-col :span="11">
                   <a-input v-model="param.value" placeholder="Value" />
@@ -126,6 +127,7 @@
   ];
 
   const templateOptions = ref<{ label: string; value: string }[]>([]);
+  const paramTemplates = ref<{ [key: string]: { key: string; description: string; default: string }[] }>({});
 
   const fetchTemplates = async () => {
     const response = await listCraftTemplates();
@@ -133,6 +135,9 @@
       label: template.name,
       value: template.name,
     }));
+    response.data.forEach((template) => {
+      paramTemplates.value[template.name] = template.param_template_define;
+    });
   };
 
   onBeforeMount(() => {
