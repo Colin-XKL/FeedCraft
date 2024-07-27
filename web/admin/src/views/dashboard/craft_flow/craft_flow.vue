@@ -50,10 +50,11 @@
     >
       <a-form
         :model="editedCraftFlow"
+        :rules="rules"
         :label-col="{ span: 6 }"
         :wrapper-col="{ span: 18 }"
       >
-        <a-form-item label="Name" name="name" :rules="[{ validator: validateName, trigger: 'blur' }]">
+        <a-form-item label="Name" name="name">
           <a-input v-model="editedCraftFlow.name" />
         </a-form-item>
         <a-form-item label="Description" name="description">
@@ -137,15 +138,19 @@
   } from '@/api/craft_flow';
   import { listCraftAtoms } from '@/api/craft_atom';
 
-  const validateName = (rule: any, value: string, callback: Function) => {
-    const regex = /^[a-z0-9-]+$/;
-    if (!value) {
-      callback(new Error('Name is required'));
-    } else if (!regex.test(value)) {
-      callback(new Error('Name can only contain lowercase letters, numbers, and hyphens'));
-    } else {
-      callback();
-    }
+  const rules = {
+    name: [
+      {
+        required: true,
+        message: 'Name is required',
+        trigger: 'blur',
+      },
+      {
+        pattern: /^[a-z0-9-]+$/,
+        message: 'Name can only contain lowercase letters, numbers, and hyphens',
+        trigger: 'blur',
+      },
+    ],
   };
 
   const isLoading = ref(false);
