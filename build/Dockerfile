@@ -17,7 +17,7 @@ COPY . .
 
 RUN --mount=type=cache,id=gobuild,target="/root/.cache/go-build" GO111MODULE=on CGO_ENABLED=0 go build -o /feed-craft /app/cmd/main.go
 
-FROM node:22-slim as frontend-builder
+FROM node:22-slim AS frontend-builder
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 
