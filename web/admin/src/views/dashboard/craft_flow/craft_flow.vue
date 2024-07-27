@@ -124,8 +124,8 @@
       };
     };
     const craftFlowOptions = craftFlows.value.map(mapper);
-    const craftAtomOptions = craftAtomList.value.map(mapper);
-    return [...craftAtomOptions, ...craftFlowOptions];
+    const sysCraftAtomOptions = sysCraftAtomList.value.map(mapper);
+    return [...sysCraftAtomOptions, ...craftFlowOptions];
   });
 
   const editBtnHandler = (craftFlow: CraftFlow) => {
@@ -185,15 +185,15 @@
       craft_flow_config: [],
     };
   };
-  const craftAtomList = ref<any>([]);
+  const sysCraftAtomList = ref<any>([]);
 
-  async function listAllCraftAtom() {
-    craftAtomList.value = (await listSysCraftAtoms()).data;
+  async function listAllSysCraftAtom() {
+    sysCraftAtomList.value = (await listSysCraftAtoms()).data;
   }
 
   onBeforeMount(() => {
     listAllCraftFlow();
-    listAllCraftAtom();
+    listAllSysCraftAtom();
   });
 </script>
 
