@@ -4,10 +4,10 @@ package craft
 // craft模版, 如limit, translate等, 定义不同的参数可以派生出多种craft atom, 如limit5, translate-cn等
 
 type CraftTemplate struct {
-	Name                string          `json:"name" binding:"required"`
-	Description         string          `json:"description"`
-	ParamTemplateDefine []ParamTemplate `json:"param_template_define"` // param 格式, 主要给用户填写时提供参考
-	OptionFunc          func(map[string]string) []CraftOption
+	Name                string                                `json:"name" binding:"required"`
+	Description         string                                `json:"description"`
+	ParamTemplateDefine []ParamTemplate                       `json:"param_template_define"` // param 格式, 主要给用户填写时提供参考
+	OptionFunc          func(map[string]string) []CraftOption `json:"-"`
 }
 
 func (tmpl CraftTemplate) GetOptions(params map[string]string) []CraftOption {
