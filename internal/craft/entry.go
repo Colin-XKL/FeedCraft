@@ -82,6 +82,17 @@ func GetCraftAtomDict() map[string]dao.CraftAtom {
 		}
 		craftAtomDict[name] = item
 	}
+
+	db := util.GetDatabase()
+	craftAtomList, err := dao.GetAllCraftAtoms(db)
+	if err != nil {
+		logrus.Errorf("read craft atom list from db error. only built-in atom will work now. err: %s", err)
+	} else {
+		for _, atom := range craftAtomList {
+			craftAtomDict[atom.Name] = atom
+		}
+	}
+
 	return craftAtomDict
 }
 
