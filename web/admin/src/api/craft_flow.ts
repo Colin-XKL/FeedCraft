@@ -52,6 +52,6 @@ export function listCraftAtoms(): Promise<
   AxiosResponse<{ name: string; description: string }[]>
 > {
   return axios.get<{ name: string; description: string }[]>(
-    `${adminApiBase}/craft-atoms`
+    `${adminApiBase}/sys-craft-atoms`
   );
 }
