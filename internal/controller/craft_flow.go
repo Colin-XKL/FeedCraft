@@ -139,7 +139,7 @@ func ListCraftFlows(c *gin.Context) {
 	c.JSON(http.StatusOK, util.APIResponse[any]{Data: craftFlows})
 }
 
-func ListCraftAtoms(c *gin.Context) {
+func ListSysCraftAtoms(c *gin.Context) {
 	craftAtoms := craft.GetCraftAtomDict()
 	var ret []map[string]string
 	for _, meta := range craftAtoms {
