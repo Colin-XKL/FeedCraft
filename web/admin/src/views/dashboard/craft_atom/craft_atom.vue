@@ -52,7 +52,7 @@
         </a-form-item>
         <a-form-item label="Params" name="params">
           <a-space direction="vertical" style="width: 100%">
-            <div v-for="(param, index) in editedCraftAtom.params" :key="index">
+            <div v-for="(param, index) in formParams" :key="index">
               <a-row :gutter="16">
                 <a-col :span="11">
                   <a-input v-model="param.key" placeholder="Key" />
@@ -106,8 +106,9 @@
     name: '',
     description: '',
     template_name: '',
-    params: [],
+    params: {},
   });
+  const formParams = ref<{ key: string; value: string }[]>([]);
   const showEditModal = ref(false);
   const isUpdating = ref(false);
 
@@ -141,14 +142,23 @@
   });
 
   const addParam = () => {
-    editedCraftAtom.value.params.push({ key: '', value: '' });
+    formParams.value.push({ key: '', value: '' });
   };
 
   const removeParam = (index: number) => {
-    editedCraftAtom.value.params.splice(index, 1);
+    formParams.value.splice(index, 1);
   };
 
   const saveCraftAtom = async () => {
+    // Convert formParams to map
+    const paramsMap: Record<string, string> = {};
+    formParams.value.forEach((param) => {
+      if (param.key && param.value) {
+        paramsMap[param.key] = param.value;
+      }
+    });
+    editedCraftAtom.value.params = paramsMap;
+
     if (isUpdating.value) {
       await updateCraftAtom(editedCraftAtom.value.name, editedCraftAtom.value);
     } else {
@@ -161,8 +171,9 @@
       name: '',
       description: '',
       template_name: '',
-      params: [],
+      params: {},
     };
+    formParams.value = [];
   };
 </script>
 
