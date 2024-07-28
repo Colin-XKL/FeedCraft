@@ -62,6 +62,7 @@ func addIntroductionUsingLLM(item *feeds.Item, prompt string) string {
 }
 
 func GetAddIntroductionCraftOptions(prompt string) []CraftOption {
+	//todo 后续在将原文发送到LLM之前, 默认去掉无效的html属性和css以节省token
 	transFunc := func(item *feeds.Item) (string, error) {
 		ret := addIntroductionUsingLLM(item, prompt)
 		return ret, nil

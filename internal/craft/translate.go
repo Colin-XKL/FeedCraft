@@ -59,6 +59,8 @@ var transTitleParamTmpl = []ParamTemplate{
 // translate article content
 // ===
 
+//todo 后续添加mode字段, 支持将摘要放在文章开头/文章结尾/替换掉原文
+
 // GetTranslateContentCraftOptions translate article content
 func GetTranslateContentCraftOptions(prompt string) []CraftOption {
 	transFunc := func(item *feeds.Item) (string, error) {
