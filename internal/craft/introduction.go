@@ -19,7 +19,7 @@ func getIntroductionForArticle(prompt, article string) (string, error) {
 
 const promptGenerateIntroduction = "请阅读下面的文章并写一篇不超过200字的中文摘要, 使得读者可以快速知道文章的主题和主要结论."
 
-func addIntroductionUsingGemini(item *feeds.Item, prompt string) string {
+func addIntroductionUsingLLM(item *feeds.Item, prompt string) string {
 	//TODO handle description and content field separately and correctly
 
 	finalArticleContent := ""
@@ -63,7 +63,7 @@ func addIntroductionUsingGemini(item *feeds.Item, prompt string) string {
 
 func GetAddIntroductionCraftOptions(prompt string) []CraftOption {
 	transFunc := func(item *feeds.Item) (string, error) {
-		ret := addIntroductionUsingGemini(item, prompt)
+		ret := addIntroductionUsingLLM(item, prompt)
 		return ret, nil
 	}
 	craftOption := []CraftOption{
