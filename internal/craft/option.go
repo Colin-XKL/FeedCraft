@@ -53,6 +53,7 @@ func GetArticleContentProcessor(transFunc TransFunc) FeedItemProcessor {
 			return err
 		}
 		item.Content = transformed
+		item.Description = transformed
 		return nil
 	}
 }
