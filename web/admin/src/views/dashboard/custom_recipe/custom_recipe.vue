@@ -98,6 +98,8 @@
 
   const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '/';
 
+  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '/';
+
   const recipes = ref<CustomRecipe[]>([]);
   const showModal = ref(false);
   const form = ref<CustomRecipe>({
