@@ -40,7 +40,7 @@
             Edit
           </a-button>
           <a-button @click="deleteRecipe(record.id)">Delete</a-button>
-          <a-link :href="`/recipe/${record?.id}`">Link</a-link>
+          <a-link :href="`${baseUrl}/recipe/${record?.id}`">Link</a-link>
         </a-space>
       </template>
     </a-table>
@@ -93,6 +93,8 @@
     updateCustomRecipe,
   } from '@/api/custom_recipe';
   import XHeader from '@/components/header/x-header.vue';
+
+  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '/';
 
   const recipes = ref<CustomRecipe[]>([]);
   const showModal = ref(false);

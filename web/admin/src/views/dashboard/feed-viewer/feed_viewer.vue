@@ -33,7 +33,7 @@
   const feedUrl = ref('');
   const feedContent = ref<any>(null);
   const isLoading = ref(false);
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '/';
 
   async function fetchFeed() {
     isLoading.value = true;

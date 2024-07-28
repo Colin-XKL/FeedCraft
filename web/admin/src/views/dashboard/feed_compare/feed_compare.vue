@@ -63,7 +63,7 @@
   const originalFeedContent = ref<any>(null);
   const craftAppliedFeedContent = ref<any>(null);
   const isLoading = ref(false);
-  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '/';
 
   async function fetchFeed(url: string) {
     const parser = new Parser();
