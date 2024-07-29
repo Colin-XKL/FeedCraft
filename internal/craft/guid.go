@@ -27,7 +27,9 @@ func feedItemGuidGenerator(item *feeds.Item) (string, error) {
 	titleHash := getMD5Hash(item.Title)
 	contentFieldHash := getMD5Hash(item.Content)
 	descriptionFieldHash := getMD5Hash(item.Description)
-	return fmt.Sprintf("%s%s%s", titleHash, contentFieldHash, descriptionFieldHash), nil
+	combinedInput := title + content + description
+	hash := md5.Sum([]byte(combinedInput))
+	return fmt.Sprintf("%x", hash), nil
 }
 
 func GetGuidCraftOptions() []CraftOption {
