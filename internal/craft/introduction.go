@@ -34,7 +34,7 @@ func addIntroductionUsingLLM(item *feeds.Item, prompt string) string {
 	}
 	logrus.Infof("generate introduction using gemini for article [%s]", originalTitle)
 
-	hashVal := getMD5Hash(originalContent)
+	hashVal := util.GetMD5Hash(originalContent)
 	craftName := "introduction"
 	cachedIntroduction, err := util.CacheGetString(getCacheKey(craftName, hashVal))
 

@@ -3,8 +3,6 @@ package craft
 import (
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/util"
-	"crypto/md5"
-	"encoding/hex"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/feeds"
@@ -176,10 +174,4 @@ func TransformArticleContent(item *gofeed.Item, transFunc func(item *gofeed.Item
 		}
 	}
 	return &retItem
-}
-
-func getMD5Hash(text string) string {
-	h := md5.New()
-	h.Write([]byte(text))
-	return hex.EncodeToString(h.Sum(nil))
 }
