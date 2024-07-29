@@ -102,29 +102,44 @@ func GetCommonCachedTransformer(cacheKeyGenerator ContentCacheKeyGenerator, rawT
 		originalTitle := item.Title
 		logrus.Infof("applying craft [%s] to article [%s]", craftName, originalTitle)
 
-		final := ""
 		hashVal, _ := cacheKeyGenerator(item)
+		cacheKey := getCacheKey(craftName, hashVal)
 
-		cached, err := util.CacheGetString(getCacheKey(craftName, hashVal))
-		if err != nil || cached == "" {
-			translated, err := rawTransformer(item)
+		valFunc := func() (string, error) {
+			ret, err := rawTransformer(item)
 			if err != nil {
 				logrus.Warnf("failed to apply craft [%s] for article [%s], %v\n", craftName, originalTitle, err)
-				return "", err
-			} else {
-				final = translated
-				cacheErr := util.CacheSetString(getCacheKey(craftName, hashVal), translated, constant.WebContentExpire)
-				if cacheErr != nil {
-					logrus.Warnf("failed to cache result of craft [%s] for article [%s], %v\n", craftName,
-						originalTitle, cacheErr)
-				}
 			}
-		} else {
-			final = cached
+			return ret, err
 		}
-		return final, nil
+
+		return CachedFunc(cacheKey, valFunc)
 	}
 	return ret
+}
+
+// CachedFunc 先尝试取缓存, 如不存在, 则调用valFunc 获取值并写入缓存
+func CachedFunc(cacheKey string, valFunc func() (string, error)) (string, error) {
+	final := ""
+	cached, err := util.CacheGetString(cacheKey)
+	if err != nil || cached == "" {
+		translated, err := valFunc()
+		if err != nil {
+			return "", err
+		} else {
+			final = translated
+			cacheErr := util.CacheSetString(cacheKey, translated, constant.WebContentExpire)
+			if cacheErr != nil {
+				logrus.Warn("failed to cache result")
+				//logrus.Warnf("failed to cache result of craft [%s] for article [%s], %v\n", craftName,
+				//	originalTitle, cacheErr)
+			}
+		}
+	} else {
+		final = cached
+	}
+
+	return final, nil
 }
 
 func TransformArticleContent(item *gofeed.Item, transFunc func(item *gofeed.Item) string) *feeds.Item {
