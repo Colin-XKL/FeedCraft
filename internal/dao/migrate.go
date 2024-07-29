@@ -3,6 +3,8 @@ package dao
 import (
 	"FeedCraft/internal/util"
 	"github.com/sirupsen/logrus"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 func MigrateDatabases() {

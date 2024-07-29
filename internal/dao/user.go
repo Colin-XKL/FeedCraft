@@ -21,7 +21,7 @@ type UserInfo struct {
 
 // CreateUser creates a new User record
 func CreateUser(db *gorm.DB, user *User) error {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	hashedPassword, err := HashPassword(user.Password)
 	if err != nil {
 		return err
 	}
@@ -43,7 +43,7 @@ func GetUserByUsername(db *gorm.DB, username string) (*User, error) {
 // UpdateUser updates an existing User record
 func UpdateUser(db *gorm.DB, user *User) error {
 	if user.Password != "" {
-		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+		hashedPassword, err := HashPassword(user.Password)
 		if err != nil {
 			return err
 		}
@@ -66,4 +66,8 @@ func ListUsers(db *gorm.DB) ([]*User, error) {
 		return nil, err
 	}
 	return users, nil
+}
+// HashPassword 计算密码哈希
+func HashPassword(password string) ([]byte, error) {
+	return bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 }
