@@ -3,7 +3,6 @@ package dao
 import (
 	"FeedCraft/internal/util"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -38,7 +37,7 @@ func createAdminUser(db *gorm.DB) {
 	}
 
 	// 创建 admin 用户
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hashedPassword, err := HashPassword(password)
 	if err != nil {
 		logrus.Error("failed to hash password for admin user", err)
 		return
