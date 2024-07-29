@@ -12,6 +12,12 @@ type User struct {
 	PasswordHash []byte `gorm:"column:password_hash"`
 }
 
+type UserInfo struct {
+	Username string `json:"username"`
+	NickName string `json:"nickname"`
+	Email    string `json:"email"`
+}
+
 // CreateUser creates a new User record
 func CreateUser(db *gorm.DB, user *User) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)

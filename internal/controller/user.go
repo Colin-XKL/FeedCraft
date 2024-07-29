@@ -24,8 +24,12 @@ func CreateUser(c *gin.Context) {
 
 	// 不返回密码哈希
 	user.PasswordHash = nil
-	user.PasswordHash = nil
-	c.JSON(http.StatusCreated, util.APIResponse[any]{Data: user})
+	userInfo := dao.UserInfo{
+		Username: user.Username,
+		NickName: user.NickName,
+		Email:    user.Email,
+	}
+	c.JSON(http.StatusCreated, util.APIResponse[any]{Data: userInfo})
 }
 
 func GetUser(c *gin.Context) {
@@ -42,8 +46,12 @@ func GetUser(c *gin.Context) {
 		return
 	}
 
-	user.PasswordHash = nil
-	c.JSON(http.StatusOK, util.APIResponse[any]{Data: user})
+	userInfo := dao.UserInfo{
+		Username: user.Username,
+		NickName: user.NickName,
+		Email:    user.Email,
+	}
+	c.JSON(http.StatusOK, util.APIResponse[any]{Data: userInfo})
 }
 
 func UpdateUser(c *gin.Context) {
@@ -77,8 +85,12 @@ func UpdateUser(c *gin.Context) {
 	}
 
 	// 不返回密码哈希
-	existingUser.PasswordHash = nil
-	c.JSON(http.StatusOK, util.APIResponse[any]{Data: existingUser})
+	userInfo := dao.UserInfo{
+		Username: existingUser.Username,
+		NickName: existingUser.NickName,
+		Email:    existingUser.Email,
+	}
+	c.JSON(http.StatusOK, util.APIResponse[any]{Data: userInfo})
 }
 
 func DeleteUser(c *gin.Context) {
@@ -99,8 +111,14 @@ func ListUsers(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 	}
+	var userInfoList []dao.UserInfo
 	for _, user := range userList {
-		user.PasswordHash = nil
+		userInfo := dao.UserInfo{
+			Username: user.Username,
+			NickName: user.NickName,
+			Email:    user.Email,
+		}
+		userInfoList = append(userInfoList, userInfo)
 	}
-	c.JSON(http.StatusOK, util.APIResponse[any]{Data: userList})
+	c.JSON(http.StatusOK, util.APIResponse[any]{Data: userInfoList})
 }
