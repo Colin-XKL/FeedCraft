@@ -19,7 +19,7 @@ const DefaultExtractFulltextTimeout = 30 * time.Second
 //		return fmt.Sprintf("%s_%s", constant.PrefixWebContent, url)
 //	}
 
-func getCacheKey(namespace, id string) string {
+func getCraftCacheKey(namespace, id string) string {
 	return fmt.Sprintf("%s_%s_%s", constant.PrefixWebContent, namespace, id)
 }
 
@@ -101,7 +101,7 @@ func GetCommonCachedTransformer(cacheKeyGenerator ContentCacheKeyGenerator, rawT
 		logrus.Infof("applying craft [%s] to article [%s]", craftName, originalTitle)
 
 		hashVal, _ := cacheKeyGenerator(item)
-		cacheKey := getCacheKey(craftName, hashVal)
+		cacheKey := getCraftCacheKey(craftName, hashVal)
 
 		valFunc := func() (string, error) {
 			ret, err := rawTransformer(item)
@@ -111,33 +111,9 @@ func GetCommonCachedTransformer(cacheKeyGenerator ContentCacheKeyGenerator, rawT
 			return ret, err
 		}
 
-		return CachedFunc(cacheKey, valFunc)
+		return util.CachedFunc(cacheKey, valFunc)
 	}
 	return ret
-}
-
-// CachedFunc 先尝试取缓存, 如不存在, 则调用valFunc 获取值并写入缓存
-func CachedFunc(cacheKey string, valFunc func() (string, error)) (string, error) {
-	final := ""
-	cached, err := util.CacheGetString(cacheKey)
-	if err != nil || cached == "" {
-		translated, err := valFunc()
-		if err != nil {
-			return "", err
-		} else {
-			final = translated
-			cacheErr := util.CacheSetString(cacheKey, translated, constant.WebContentExpire)
-			if cacheErr != nil {
-				logrus.Warn("failed to cache result")
-				//logrus.Warnf("failed to cache result of craft [%s] for article [%s], %v\n", craftName,
-				//	originalTitle, cacheErr)
-			}
-		}
-	} else {
-		final = cached
-	}
-
-	return final, nil
 }
 
 func TransformArticleContent(item *gofeed.Item, transFunc func(item *gofeed.Item) string) *feeds.Item {

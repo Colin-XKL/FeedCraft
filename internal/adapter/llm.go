@@ -1,7 +1,6 @@
 package adapter
 
 import (
-	"FeedCraft/internal/craft"
 	"FeedCraft/internal/util"
 	"fmt"
 )
@@ -33,5 +32,5 @@ func CallLLMUsingContext(prompt, context string) (string, error) {
 	valFunc := func() (string, error) {
 		return SimpleLLMCall(UseDefaultModel, finalPrompt)
 	}
-	return craft.CachedFunc(cacheKey, valFunc)
+	return util.CachedFunc(cacheKey, valFunc)
 }

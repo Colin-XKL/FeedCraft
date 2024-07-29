@@ -2,7 +2,6 @@ package craft
 
 import (
 	"FeedCraft/internal/adapter"
-	"FeedCraft/internal/constant"
 	"FeedCraft/internal/util"
 	"fmt"
 	"github.com/gorilla/feeds"
@@ -19,9 +18,13 @@ func getIntroductionForArticle(prompt, article string) (string, error) {
 
 const promptGenerateIntroduction = "请阅读下面的文章并写一篇不超过200字的中文摘要, 使得读者可以快速知道文章的主题和主要结论."
 
+func combineIntroductionAndArticle(article, intro string) string {
+	introInHtml := util.Markdown2HTML(intro)
+	return fmt.Sprintf(`<div>%s<div>%s</div>`, introInHtml, article)
+}
+
 func addIntroductionUsingLLM(item *feeds.Item, prompt string) string {
 	//TODO handle description and content field separately and correctly
-
 	finalArticleContent := ""
 	originalContent := item.Content
 	originalTitle := item.Title
@@ -32,32 +35,15 @@ func addIntroductionUsingLLM(item *feeds.Item, prompt string) string {
 		originalContent = item.Description
 		logrus.Warnf("empty content, use description field val as fallback")
 	}
-	logrus.Infof("generate introduction using gemini for article [%s]", originalTitle)
 
-	hashVal := util.GetMD5Hash(originalContent)
-	craftName := "introduction"
-	cachedIntroduction, err := util.CacheGetString(getCacheKey(craftName, hashVal))
-
-	combineIntroductionAndArticle := func(article, intro string) string {
-		introInHtml := util.Markdown2HTML(intro)
-		return fmt.Sprintf(`<div>%s<div>%s</div>`, introInHtml, article)
+	introduction, err := getIntroductionForArticle(prompt, originalContent)
+	if err != nil {
+		errMsg := "add introduction for article failed."
+		logrus.Warnf(errMsg)
+		introduction = errMsg
 	}
 
-	if err != nil || cachedIntroduction == "" {
-		//articleStr, err := extractor(url, DefaultExtractFulltextTimeout)
-		introduction, err := getIntroductionForArticle(prompt, originalContent)
-		if err != nil {
-			logrus.Warnf("failed to generate introduction for article [%s], %v\n", originalTitle, err)
-		} else {
-			finalArticleContent = combineIntroductionAndArticle(originalContent, introduction)
-			cacheErr := util.CacheSetString(getCacheKey(craftName, hashVal), introduction, constant.WebContentExpire)
-			if cacheErr != nil {
-				logrus.Warnf("failed to cache generated introduction for article [%s], %v\n", originalTitle, cacheErr)
-			}
-		}
-	} else {
-		finalArticleContent = combineIntroductionAndArticle(originalContent, cachedIntroduction)
-	}
+	finalArticleContent = combineIntroductionAndArticle(originalContent, introduction)
 	return finalArticleContent
 }
 
@@ -67,8 +53,9 @@ func GetAddIntroductionCraftOptions(prompt string) []CraftOption {
 		ret := addIntroductionUsingLLM(item, prompt)
 		return ret, nil
 	}
+	cachedTransformer := GetCommonCachedTransformer(cacheKeyForArticleTitle, transFunc, "add intro")
 	craftOption := []CraftOption{
-		OptionTransformFeedItem(GetArticleContentProcessor(transFunc)),
+		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransformer)),
 	}
 	return craftOption
 }
