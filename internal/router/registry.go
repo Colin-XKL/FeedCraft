@@ -71,6 +71,12 @@ func RegisterRouters(router *gin.Engine) {
 		adminApi.PUT("/recipes/:id", controller.UpdateCustomRecipe)
 		adminApi.DELETE("/recipes/:id", controller.DeleteCustomRecipe)
 
+		adminApi.POST("/users", controller.CreateUser)
+		adminApi.GET("/users", controller.ListUsers)
+		adminApi.GET("/users/:username", controller.GetUser)
+		adminApi.PUT("/users/:username", controller.UpdateUser)
+		adminApi.DELETE("/users/:username", controller.DeleteUser)
+
 		adminApi.GET("/craft-flows", controller.ListCraftFlows)
 		adminApi.POST("/craft-flows", controller.CreateCraftFlow)
 		adminApi.GET("/craft-flows/:name", controller.GetCraftFlow)
