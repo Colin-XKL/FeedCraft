@@ -6,10 +6,10 @@ import (
 )
 
 type User struct {
-	Username string `gorm:"primaryKey"`
-	NickName string
-	Email    string
-	Password string // 临时存储密码
+	Username     string `gorm:"primaryKey"`
+	NickName     string
+	Email        string
+	Password     string `gorm:"-"` // 临时存储密码
 	PasswordHash []byte `gorm:"column:password_hash"`
 }
 
@@ -25,11 +25,9 @@ func CreateUser(db *gorm.DB, user *User) error {
 	if err != nil {
 		return err
 	}
-	if err != nil {
-		return err
-	}
+
 	user.PasswordHash = hashedPassword
-	return db.Create(user).Error
+	return db.Omit("Password").Create(user).Error
 }
 
 // GetUserByUsername retrieves a User record by its username
@@ -52,7 +50,7 @@ func UpdateUser(db *gorm.DB, user *User) error {
 		user.PasswordHash = hashedPassword
 		user.Password = "" // 清空密码
 	}
-	return db.Save(user).Error
+	return db.Omit("Password").Save(user).Error
 }
 
 // DeleteUser deletes a User record by its username
