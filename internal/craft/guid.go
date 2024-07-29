@@ -2,6 +2,7 @@ package craft
 
 import (
 	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/gorilla/feeds"
 )
@@ -25,7 +26,7 @@ func feedItemGuidGenerator(item *feeds.Item) (string, error) {
 		return uuid.New().String(), nil
 	}
 
-	combinedInput := title + content + description
+	combinedInput := item.Title + item.Content + item.Description
 	hash := getMD5Hash(combinedInput)
 	return fmt.Sprintf("%x", hash), nil
 }
