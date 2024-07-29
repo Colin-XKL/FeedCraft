@@ -42,6 +42,7 @@
   const prompt = ref('what is rss and how to use it?');
   const response = ref('');
   const isLoading = ref(false);
+  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
   async function onSubmit() {
     isLoading.value = true;
@@ -50,7 +51,7 @@
         model: model.value,
         input: prompt.value,
       };
-      const apiPath = '/api/admin/craft-debug/common-llm-call-test';
+      const apiPath = `${baseUrl}/api/admin/craft-debug/common-llm-call-test`;
       const resp = await axios.post(apiPath, reqBody);
       response.value = resp.data.output;
     } catch (error) {

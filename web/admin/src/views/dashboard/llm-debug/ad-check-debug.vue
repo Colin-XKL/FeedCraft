@@ -43,14 +43,18 @@
   const articleContent = ref('');
   const isAdvertorial = ref(false);
   const isLoading = ref(false);
+  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
   async function fetchArticle() {
     isLoading.value = true;
     try {
-      const resp = await axios.post(`/api/admin/craft-debug/advertorial`, {
-        url: articleUrl.value,
-        enhance_mode: useEnhanceMode.value,
-      });
+      const resp = await axios.post(
+        `${baseUrl}/api/admin/craft-debug/advertorial`,
+        {
+          url: articleUrl.value,
+          enhance_mode: useEnhanceMode.value,
+        }
+      );
       articleContent.value = resp.data.article_content;
       isAdvertorial.value = resp.data.is_advertorial;
     } catch (error) {
