@@ -8,8 +8,8 @@ import (
 type User struct {
 	Username string `gorm:"primaryKey"`
 	NickName string
-	PasswordHash []byte
 	Email    string
+	PasswordHash []byte `gorm:"column:password_hash"`
 }
 
 // CreateUser creates a new User record

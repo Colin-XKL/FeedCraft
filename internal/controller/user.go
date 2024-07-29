@@ -24,6 +24,7 @@ func CreateUser(c *gin.Context) {
 
 	// 不返回密码哈希
 	user.PasswordHash = nil
+	user.PasswordHash = nil
 	c.JSON(http.StatusCreated, util.APIResponse[any]{Data: user})
 }
 
@@ -41,6 +42,7 @@ func GetUser(c *gin.Context) {
 		return
 	}
 
+	user.PasswordHash = nil
 	c.JSON(http.StatusOK, util.APIResponse[any]{Data: user})
 }
 
@@ -96,6 +98,9 @@ func ListUsers(c *gin.Context) {
 	userList, err := dao.ListUsers(db)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
+	}
+	for _, user := range userList {
+		user.PasswordHash = nil
 	}
 	c.JSON(http.StatusOK, util.APIResponse[any]{Data: userList})
 }
