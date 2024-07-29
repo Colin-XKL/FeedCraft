@@ -27,12 +27,12 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 	openAIModel := model
 	if openAIModel == "" {
 		openAIModel = envClient.GetString("OPENAI_DEFAULT_MODEL")
-		logrus.Info("model not specified, using default model from env:", openAIModel)
+		//logrus.Info("model not specified, using default model from env:", openAIModel)
 	}
 
 	conf := openai.DefaultConfig(openAIAuthKey)
 	if openAIEndpoint != "" {
-		logrus.Info("using custom openai endpoint ", openAIEndpoint)
+		//logrus.Info("using custom openai endpoint ", openAIEndpoint)
 		conf.BaseURL = openAIEndpoint
 	} else {
 		logrus.Info("using default openai endpoint ")

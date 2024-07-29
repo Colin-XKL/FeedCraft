@@ -33,6 +33,14 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		ParamTemplateDefine: keywordCraftParamTmpl,
 		OptionFunc:          keywordCraftLoadParams,
 	}
+	sysCraftTempList["guid-fix"] = CraftTemplate{
+		Name:                "guid-fix",
+		Description:         "fix rss guid. use article content md5 as unique id.",
+		ParamTemplateDefine: []ParamTemplate{},
+		OptionFunc: func(m map[string]string) []CraftOption {
+			return GetGuidCraftOptions()
+		},
+	}
 	sysCraftTempList["fulltext"] = CraftTemplate{
 		Name:                "fulltext",
 		Description:         "extract fulltext for rss feed",
@@ -108,7 +116,6 @@ func Entry(c *gin.Context) {
 	craftTmplDict := GetSysCraftTemplateDict()
 	db := util.GetDatabase()
 
-	//TODO IMPLEMENT CUSTOM OPTION PARAMETERS
 	craftOptionList, err := inner(db, &craftAtomDict, &craftTmplDict, craftName, 0)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
