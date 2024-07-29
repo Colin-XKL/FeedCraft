@@ -24,11 +24,9 @@ func feedItemGuidGenerator(item *feeds.Item) (string, error) {
 	if len(item.Title) == 0 && len(item.Content) == 0 && len(item.Description) == 0 {
 		return uuid.New().String(), nil
 	}
-	titleHash := getMD5Hash(item.Title)
-	contentFieldHash := getMD5Hash(item.Content)
-	descriptionFieldHash := getMD5Hash(item.Description)
+
 	combinedInput := title + content + description
-	hash := md5.Sum([]byte(combinedInput))
+	hash := getMD5Hash(combinedInput))
 	return fmt.Sprintf("%x", hash), nil
 }
 
