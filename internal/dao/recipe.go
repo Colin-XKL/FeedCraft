@@ -6,14 +6,14 @@ import (
 	"time"
 )
 
-type BaseModelWithPK struct {
+type BaseModelWithoutPK struct {
 	CreatedAt time.Time    `json:"created_at"`
 	UpdatedAt time.Time    `json:"updated_at"`
 	DeletedAt sql.NullTime `gorm:"index" json:"deleted_at,omitempty"`
 }
 
 type CustomRecipe struct {
-	BaseModelWithPK
+	BaseModelWithoutPK
 	ID          string `gorm:"primaryKey" json:"id,omitempty" binding:"required"`
 	Description string `json:"description,omitempty"`
 	Craft       string `json:"craft" binding:"required"`

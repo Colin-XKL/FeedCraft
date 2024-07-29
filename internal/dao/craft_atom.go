@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 // CraftAtom craft atom 由 craft template 派生出来
 type CraftAtom struct {
-	BaseModelWithPK
+	BaseModelWithoutPK
 	Name         string            `json:"name" gorm:"primaryKey" binding:"required"`
 	Description  string            `json:"description"`
 	TemplateName string            `json:"template_name" binding:"required" `

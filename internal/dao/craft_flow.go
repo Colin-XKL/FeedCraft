@@ -3,7 +3,7 @@ package dao
 import "gorm.io/gorm"
 
 type CraftFlow struct {
-	BaseModelWithPK
+	BaseModelWithoutPK
 	Name            string          `gorm:"primaryKey" json:"name" binding:"required"`
 	Description     string          `json:"description,omitempty"`
 	CraftFlowConfig []CraftFlowItem `json:"craft_flow_config" binding:"required" gorm:"serializer:json"`
