@@ -27,5 +27,5 @@ func CallGeminiUsingArticleContext(prompt string, article string) (string, error
 // CallLLMUsingContext using openai compatible api
 func CallLLMUsingContext(prompt, context string) (string, error) {
 	finalPrompt := fmt.Sprintf("%s \n `%s`", prompt, context)
-	return SimpleLLMCall(USE_DEFAULT_MODEL, finalPrompt)
+	return SimpleLLMCall(UseDefaultModel, finalPrompt)
 }
