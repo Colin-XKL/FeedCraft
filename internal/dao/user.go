@@ -9,6 +9,7 @@ type User struct {
 	Username string `gorm:"primaryKey"`
 	NickName string
 	Email    string
+	Password string // 临时存储密码
 	PasswordHash []byte `gorm:"column:password_hash"`
 }
 
@@ -21,6 +22,9 @@ type UserInfo struct {
 // CreateUser creates a new User record
 func CreateUser(db *gorm.DB, user *User) error {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
 	if err != nil {
 		return err
 	}
@@ -46,6 +50,7 @@ func UpdateUser(db *gorm.DB, user *User) error {
 			return err
 		}
 		user.PasswordHash = hashedPassword
+		user.Password = "" // 清空密码
 	}
 	return db.Save(user).Error
 }

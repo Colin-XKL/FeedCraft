@@ -15,6 +15,7 @@ func CreateUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
+	user.Username = c.Param("username") // 确保用户名被正确设置
 	db := util.GetDatabase()
 
 	if err := dao.CreateUser(db, &user); err != nil {
@@ -23,7 +24,6 @@ func CreateUser(c *gin.Context) {
 	}
 
 	// 不返回密码哈希
-	user.PasswordHash = nil
 	userInfo := dao.UserInfo{
 		Username: user.Username,
 		NickName: user.NickName,
@@ -76,12 +76,16 @@ func UpdateUser(c *gin.Context) {
 	// 仅更新非密码字段
 	existingUser.NickName = user.NickName
 	existingUser.Email = user.Email
+	if user.Password != "" {
+		existingUser.Password = user.Password // 确保密码被正确设置
+	}
 
 	if user.Password != "" {
 		if err := dao.UpdateUser(db, existingUser); err != nil {
 			c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 			return
 		}
+		existingUser.Password = "" // 清空密码
 	}
 
 	// 不返回密码哈希
