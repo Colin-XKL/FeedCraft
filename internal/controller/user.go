@@ -22,6 +22,8 @@ func CreateUser(c *gin.Context) {
 		return
 	}
 
+	// 不返回密码哈希
+	user.PasswordHash = nil
 	c.JSON(http.StatusCreated, util.APIResponse[any]{Data: user})
 }
 
@@ -51,7 +53,7 @@ func UpdateUser(c *gin.Context) {
 	}
 	db := util.GetDatabase()
 
-	_, err := dao.GetUserByUsername(db, username)
+	existingUser, err := dao.GetUserByUsername(db, username)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "User not found"})
@@ -61,12 +63,20 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	if err := dao.UpdateUser(db, &user); err != nil {
-		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
-		return
+	// 仅更新非密码字段
+	existingUser.NickName = user.NickName
+	existingUser.Email = user.Email
+
+	if user.Password != "" {
+		if err := dao.UpdateUser(db, existingUser); err != nil {
+			c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
+			return
+		}
 	}
 
-	c.JSON(http.StatusOK, util.APIResponse[any]{Data: user})
+	// 不返回密码哈希
+	existingUser.PasswordHash = nil
+	c.JSON(http.StatusOK, util.APIResponse[any]{Data: existingUser})
 }
 
 func DeleteUser(c *gin.Context) {

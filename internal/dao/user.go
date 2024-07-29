@@ -1,18 +1,24 @@
 package dao
 
 import (
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
 type User struct {
 	Username string `gorm:"primaryKey"`
 	NickName string
-	Password string
+	PasswordHash []byte
 	Email    string
 }
 
 // CreateUser creates a new User record
 func CreateUser(db *gorm.DB, user *User) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.PasswordHash = hashedPassword
 	return db.Create(user).Error
 }
 
@@ -20,11 +26,21 @@ func CreateUser(db *gorm.DB, user *User) error {
 func GetUserByUsername(db *gorm.DB, username string) (*User, error) {
 	var user User
 	result := db.Where("username = ?", username).First(&user)
-	return &user, result.Error
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &user, nil
 }
 
 // UpdateUser updates an existing User record
 func UpdateUser(db *gorm.DB, user *User) error {
+	if user.Password != "" {
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+		if err != nil {
+			return err
+		}
+		user.PasswordHash = hashedPassword
+	}
 	return db.Save(user).Error
 }
 
