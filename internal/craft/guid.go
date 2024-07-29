@@ -26,7 +26,7 @@ func feedItemGuidGenerator(item *feeds.Item) (string, error) {
 	}
 
 	combinedInput := title + content + description
-	hash := getMD5Hash(combinedInput))
+	hash := getMD5Hash(combinedInput)
 	return fmt.Sprintf("%x", hash), nil
 }
 
