@@ -96,7 +96,7 @@
   import XHeader from '@/components/header/x-header.vue';
   import { namingValidator } from '@/utils/validator';
 
-  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '/';
+  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
   const recipes = ref<CustomRecipe[]>([]);
   const showModal = ref(false);

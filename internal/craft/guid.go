@@ -1,6 +1,7 @@
 package craft
 
 import (
+	"FeedCraft/internal/util"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -27,7 +28,7 @@ func feedItemGuidGenerator(item *feeds.Item) (string, error) {
 	}
 
 	combinedInput := item.Title + item.Content + item.Description
-	hash := getMD5Hash(combinedInput)
+	hash := util.GetMD5Hash(combinedInput)
 	return fmt.Sprintf("%x", hash), nil
 }
 

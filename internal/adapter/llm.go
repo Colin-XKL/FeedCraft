@@ -1,6 +1,7 @@
 package adapter
 
 import (
+	"FeedCraft/internal/util"
 	"fmt"
 )
 
@@ -27,5 +28,9 @@ func CallGeminiUsingArticleContext(prompt string, article string) (string, error
 // CallLLMUsingContext using openai compatible api
 func CallLLMUsingContext(prompt, context string) (string, error) {
 	finalPrompt := fmt.Sprintf("%s \n `%s`", prompt, context)
-	return SimpleLLMCall(USE_DEFAULT_MODEL, finalPrompt)
+	cacheKey := fmt.Sprintf("llm_call_%s", util.GetMD5Hash(finalPrompt))
+	valFunc := func() (string, error) {
+		return SimpleLLMCall(UseDefaultModel, finalPrompt)
+	}
+	return util.CachedFunc(cacheKey, valFunc)
 }

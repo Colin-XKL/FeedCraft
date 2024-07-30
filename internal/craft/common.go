@@ -3,8 +3,6 @@ package craft
 import (
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/util"
-	"crypto/md5"
-	"encoding/hex"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/feeds"
@@ -21,7 +19,7 @@ const DefaultExtractFulltextTimeout = 30 * time.Second
 //		return fmt.Sprintf("%s_%s", constant.PrefixWebContent, url)
 //	}
 
-func getCacheKey(namespace, id string) string {
+func getCraftCacheKey(namespace, id string) string {
 	return fmt.Sprintf("%s_%s_%s", constant.PrefixWebContent, namespace, id)
 }
 
@@ -102,27 +100,18 @@ func GetCommonCachedTransformer(cacheKeyGenerator ContentCacheKeyGenerator, rawT
 		originalTitle := item.Title
 		logrus.Infof("applying craft [%s] to article [%s]", craftName, originalTitle)
 
-		final := ""
 		hashVal, _ := cacheKeyGenerator(item)
+		cacheKey := getCraftCacheKey(craftName, hashVal)
 
-		cached, err := util.CacheGetString(getCacheKey(craftName, hashVal))
-		if err != nil || cached == "" {
-			translated, err := rawTransformer(item)
+		valFunc := func() (string, error) {
+			ret, err := rawTransformer(item)
 			if err != nil {
 				logrus.Warnf("failed to apply craft [%s] for article [%s], %v\n", craftName, originalTitle, err)
-				return "", err
-			} else {
-				final = translated
-				cacheErr := util.CacheSetString(getCacheKey(craftName, hashVal), translated, constant.WebContentExpire)
-				if cacheErr != nil {
-					logrus.Warnf("failed to cache result of craft [%s] for article [%s], %v\n", craftName,
-						originalTitle, cacheErr)
-				}
 			}
-		} else {
-			final = cached
+			return ret, err
 		}
-		return final, nil
+
+		return util.CachedFunc(cacheKey, valFunc)
 	}
 	return ret
 }
@@ -161,10 +150,4 @@ func TransformArticleContent(item *gofeed.Item, transFunc func(item *gofeed.Item
 		}
 	}
 	return &retItem
-}
-
-func getMD5Hash(text string) string {
-	h := md5.New()
-	h.Write([]byte(text))
-	return hex.EncodeToString(h.Sum(nil))
 }

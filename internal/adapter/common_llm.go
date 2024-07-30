@@ -14,7 +14,7 @@ import (
 Handle LLM calling and processing, support OpenAI and all compatible services.
 */
 
-const USE_DEFAULT_MODEL = ""
+const UseDefaultModel = ""
 
 func SimpleLLMCall(model string, promptInput string) (string, error) {
 	envClient := util.GetEnvClient()

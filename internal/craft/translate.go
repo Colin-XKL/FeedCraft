@@ -2,6 +2,7 @@ package craft
 
 import (
 	"FeedCraft/internal/adapter"
+	"FeedCraft/internal/util"
 	"github.com/gorilla/feeds"
 )
 
@@ -19,10 +20,10 @@ func translateArticleContent(content string, prompt string) (string, error) {
 type ContentCacheKeyGenerator TransFunc
 
 func cacheKeyForArticleTitle(item *feeds.Item) (string, error) {
-	return getMD5Hash(item.Title), nil
+	return util.GetMD5Hash(item.Title), nil
 }
 func cacheKeyForArticleContent(item *feeds.Item) (string, error) {
-	return getMD5Hash(item.Description + item.Description), nil
+	return util.GetMD5Hash(item.Description + item.Description), nil
 }
 
 // =======================================

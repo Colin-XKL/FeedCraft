@@ -1,8 +1,10 @@
 package util
 
 import (
+	"FeedCraft/internal/constant"
 	"context"
 	"github.com/redis/go-redis/v9"
+	"github.com/sirupsen/logrus"
 	"log"
 	"time"
 )
@@ -34,4 +36,28 @@ func CacheSetString(key string, value string, ttl time.Duration) error {
 func CacheGetString(key string) (string, error) {
 	rdb := GetRedisClient()
 	return rdb.Get(context.Background(), key).Result()
+}
+
+// CachedFunc 先尝试取缓存, 如不存在, 则调用valFunc 获取值并写入缓存
+func CachedFunc(cacheKey string, valFunc func() (string, error)) (string, error) {
+	final := ""
+	cached, err := CacheGetString(cacheKey)
+	if err != nil || cached == "" {
+		translated, err := valFunc()
+		if err != nil {
+			return "", err
+		} else {
+			final = translated
+			cacheErr := CacheSetString(cacheKey, translated, constant.WebContentExpire)
+			if cacheErr != nil {
+				logrus.Warn("failed to cache result")
+				//logrus.Warnf("failed to cache result of craft [%s] for article [%s], %v\n", craftName,
+				//	originalTitle, cacheErr)
+			}
+		}
+	} else {
+		final = cached
+	}
+
+	return final, nil
 }
