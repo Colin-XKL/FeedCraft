@@ -5,14 +5,18 @@ import { UserState } from '@/store/modules/user/types';
 
 export interface LoginData {
   username: string;
-  md5Password: string;
+  password: string;
 }
 
 export interface LoginRes {
   token: string;
 }
 export function login(data: LoginData) {
-  return axios.post<LoginRes>('/api/login', data);
+  const md5Password = md5(data.password).toString();
+  return axios.post<LoginRes>('/api/login', {
+    username: data.username,
+    md5Password: md5Password,
+  });
 }
 
 export function logout() {
