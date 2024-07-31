@@ -24,8 +24,7 @@ func CreateUser(db *gorm.DB, user *User) error {
 		return err
 	}
 	user.Salt = salt
-	user.PasswordHash = HashPassword(user.Password, salt)
-	user.Password = "" // 清空密码
+	user.PasswordHash = HashPassword(md5Password, salt)
 	return db.Create(user).Error
 }
 
@@ -44,7 +43,7 @@ func GetUserByUsername(db *gorm.DB, username string) (*User, error) {
 
 // UpdateUser updates an existing User record
 func UpdateUser(db *gorm.DB, user *User) error {
-	if user.Password != "" {
+	if md5Password != "" {
 		salt, err := generateSalt()
 		if err != nil {
 			return err
