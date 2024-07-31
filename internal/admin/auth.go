@@ -32,7 +32,6 @@ func LoginAuth(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, util.APIResponse[string]{Msg: err.Error()})
 		return
 	}
-	md5Password := md5.Sum([]byte(input.Password))
 	if !loginValidator(input.Username, input.Md5Password, db) {
 		c.JSON(http.StatusForbidden, util.APIResponse[string]{Msg: "invalid username or password"})
 		return
