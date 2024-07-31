@@ -79,12 +79,9 @@ func UpdateUser(c *gin.Context) {
 		existingUser.Password = user.Password // 确保密码被正确设置
 	}
 
-	if user.Password != "" {
-		if err := dao.UpdateUser(db, existingUser); err != nil {
-			c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
-			return
-		}
-		existingUser.Password = "" // 清空密码
+	if err := dao.UpdateUser(db, existingUser); err != nil {
+		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
+		return
 	}
 
 	// 不返回密码哈希

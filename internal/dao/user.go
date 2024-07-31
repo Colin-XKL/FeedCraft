@@ -2,6 +2,7 @@ package dao
 
 import (
 	"crypto/md5"
+	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"gorm.io/gorm"
@@ -28,7 +29,7 @@ func CreateUser(db *gorm.DB, user *User) error {
 		return err
 	}
 	user.Salt = salt
-	user.PasswordHash = hashPassword(user.Password, salt)
+	user.PasswordHash = HashPassword(user.Password, salt)
 	user.Password = "" // Clear the password field
 	return db.Omit("Password").Create(user).Error
 }
@@ -51,7 +52,7 @@ func UpdateUser(db *gorm.DB, user *User) error {
 			return err
 		}
 		user.Salt = salt
-		user.PasswordHash = hashPassword(user.Password, salt)
+		user.PasswordHash = HashPassword(user.Password, salt)
 		user.Password = "" // 清空密码
 	}
 	return db.Omit("Password").Save(user).Error
@@ -79,7 +80,7 @@ func generateSalt() (string, error) {
 	return hex.EncodeToString(bytes), nil
 }
 
-func hashPassword(password, salt string) string {
+func HashPassword(password, salt string) string {
 	md5Hash := md5.Sum([]byte(password))
 	md5Password := hex.EncodeToString(md5Hash[:])
 	combined := md5Password + salt

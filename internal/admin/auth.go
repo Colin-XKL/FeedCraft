@@ -1,8 +1,12 @@
 package admin
 
 import (
+	"FeedCraft/internal/dao"
 	"FeedCraft/internal/util"
+	"crypto/md5"
+	"encoding/hex"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"net/http"
 )
 
@@ -20,8 +24,9 @@ type UserAuth struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func LoginAuth(c *gin.Context, db *gorm.DB) {
+func LoginAuth(c *gin.Context) {
 	var input UserAuth
+	db := util.GetDatabase()
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[string]{Msg: err.Error()})
