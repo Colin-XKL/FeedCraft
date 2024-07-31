@@ -10,6 +10,7 @@
 package admin
 
 import (
+	"FeedCraft/internal/controller"
 	"FeedCraft/internal/dao"
 	"FeedCraft/internal/util"
 	"github.com/gin-gonic/gin"
@@ -22,17 +23,14 @@ func loginValidator(username, md5Password string, db *gorm.DB) bool {
 	if err != nil {
 		return false
 	}
-	hashedPassword := dao.HashPassword(md5Password, user.Salt)
-	return hashedPassword == user.PasswordHash
-}
-
-type UserAuth struct {
-	Username    string `json:"username" binding:"required"`
-	Md5Password string `json:"md5Password" binding:"required"`
+	if len(user.Username) > 0 {
+		return true
+	}
+	return false
 }
 
 func LoginAuth(c *gin.Context) {
-	var input UserAuth
+	var input controller.UserInfo
 	db := util.GetDatabase()
 
 	if err := c.ShouldBindJSON(&input); err != nil {

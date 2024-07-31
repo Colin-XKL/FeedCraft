@@ -9,6 +9,14 @@ import (
 	"net/http"
 )
 
+// UserInfo 对外通信使用的结构
+type UserInfo struct {
+	NickName    string `json:"nickname"`
+	Email       string `json:"email"`
+	Username    string `json:"username" binding:"required"`
+	Md5Password string `json:"md5Password" binding:"required"` // 前端传递过来的只有md5哈希过的密码
+}
+
 func CreateUser(c *gin.Context) {
 	var user dao.User
 	if err := c.ShouldBindJSON(&user); err != nil {
@@ -23,7 +31,7 @@ func CreateUser(c *gin.Context) {
 	}
 
 	// 不返回密码哈希
-	userInfo := dao.UserInfo{
+	userInfo := UserInfo{
 		Username: user.Username,
 		NickName: user.NickName,
 		Email:    user.Email,
@@ -45,7 +53,7 @@ func GetUser(c *gin.Context) {
 		return
 	}
 
-	userInfo := dao.UserInfo{
+	userInfo := UserInfo{
 		Username: user.Username,
 		NickName: user.NickName,
 		Email:    user.Email,
@@ -76,7 +84,7 @@ func UpdateUser(c *gin.Context) {
 	existingUser.NickName = user.NickName
 	existingUser.Email = user.Email
 	if user.Password != "" {
-		existingUser.Password = user.Password // 确保密码被正确设置
+		// No need to set the password field here
 	}
 
 	if err := dao.UpdateUser(db, existingUser); err != nil {
@@ -85,7 +93,7 @@ func UpdateUser(c *gin.Context) {
 	}
 
 	// 不返回密码哈希
-	userInfo := dao.UserInfo{
+	userInfo := UserInfo{
 		Username: existingUser.Username,
 		NickName: existingUser.NickName,
 		Email:    existingUser.Email,
@@ -111,9 +119,9 @@ func ListUsers(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 	}
-	var userInfoList []dao.UserInfo
+	var userInfoList []UserInfo
 	for _, user := range userList {
-		userInfo := dao.UserInfo{
+		userInfo := UserInfo{
 			Username: user.Username,
 			NickName: user.NickName,
 			Email:    user.Email,

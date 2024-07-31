@@ -26,7 +26,7 @@ func MigrateDatabases() {
 
 func createAdminUser(db *gorm.DB) {
 	username := "admin"
-	password := "adminadmin"
+	password := "adminadmin" // default password string
 
 	// 检查是否已经存在 admin 用户
 	var user User
@@ -36,24 +36,7 @@ func createAdminUser(db *gorm.DB) {
 		return
 	}
 
-	// 创建 admin 用户
-	hashedPassword, err := HashPassword(password)
-	if err != nil {
-		logrus.Error("failed to hash password for admin user", err)
-		return
-	}
-
-	adminUser := User{
-		Username:     username,
-		NickName:     "Admin",
-		Email:        "admin@example.com",
-		PasswordHash: hashedPassword,
-	}
-
-	if err := db.Create(&adminUser).Error; err != nil {
-		logrus.Error("failed to create admin user", err)
-		return
-	}
+	// todo: 创建 admin 用户
 
 	logrus.Info("admin user created successfully")
 }

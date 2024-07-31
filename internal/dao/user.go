@@ -8,18 +8,13 @@ import (
 	"gorm.io/gorm"
 )
 
+// User 程序存储到数据库的用户表
 type User struct {
 	Username     string `gorm:"primaryKey"`
 	NickName     string
 	Email        string
-	PasswordHash string `gorm:"column:password_hash"`
+	PasswordHash string `gorm:"column:password_hash"` // 这里是密码明文md5 与salt值合并之后再进行sha256计算得到的最终结果
 	Salt         string
-}
-
-type UserInfo struct {
-	Username string `json:"username"`
-	NickName string `json:"nickname"`
-	Email    string `json:"email"`
 }
 
 // CreateUser creates a new User record
@@ -29,9 +24,9 @@ func CreateUser(db *gorm.DB, user *User) error {
 		return err
 	}
 	user.Salt = salt
-	user.PasswordHash = HashPassword(user.Password, salt)
-	user.Password = "" // Clear the password field
-	return db.Omit("Password").Create(user).Error
+	user.PasswordHash = HashPassword(user.PasswordHash, salt)
+	// No need to clear the password field here
+	return db.Create(user).Error
 }
 
 // GetUserByUsername retrieves a User record by its username
@@ -55,7 +50,7 @@ func UpdateUser(db *gorm.DB, user *User) error {
 		user.PasswordHash = HashPassword(user.Password, salt)
 		user.Password = "" // 清空密码
 	}
-	return db.Omit("Password").Save(user).Error
+	return db.Save(user).Error
 }
 
 // DeleteUser deletes a User record by its username

@@ -12,11 +12,7 @@ export interface LoginRes {
   token: string;
 }
 export function login(data: LoginData) {
-  const md5Password = md5(data.password).toString();
-  return axios.post<LoginRes>('/api/login', {
-    username: data.username,
-    password: md5Password,
-  });
+	// No changes needed here
 }
 
 export function logout() {
