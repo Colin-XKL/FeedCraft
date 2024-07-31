@@ -18,7 +18,7 @@ type User struct {
 }
 
 // CreateUser creates a new User record
-func CreateUser(db *gorm.DB, user *User) error {
+func CreateUser(db *gorm.DB, user *User, md5Password string) error {
 	salt, err := generateSalt()
 	if err != nil {
 		return err
@@ -42,7 +42,7 @@ func GetUserByUsername(db *gorm.DB, username string) (*User, error) {
 }
 
 // UpdateUser updates an existing User record
-func UpdateUser(db *gorm.DB, user *User) error {
+func UpdateUser(db *gorm.DB, user *User, md5Password string) error {
 	if md5Password != "" {
 		salt, err := generateSalt()
 		if err != nil {
