@@ -20,8 +20,8 @@ func loginValidator(username, md5Password string, db *gorm.DB) bool {
 }
 
 type UserAuth struct {
-	Username string `json:"username" binding:"required"`
-	Password string `json:"password" binding:"required"`
+	Username   string `json:"username" binding:"required"`
+	Md5Password string `json:"md5Password" binding:"required"`
 }
 
 func LoginAuth(c *gin.Context) {
@@ -33,7 +33,7 @@ func LoginAuth(c *gin.Context) {
 		return
 	}
 	md5Password := md5.Sum([]byte(input.Password))
-	if !loginValidator(input.Username, hex.EncodeToString(md5Password[:]), db) {
+	if !loginValidator(input.Username, input.Md5Password, db) {
 		c.JSON(http.StatusForbidden, util.APIResponse[string]{Msg: "invalid username or password"})
 		return
 	}

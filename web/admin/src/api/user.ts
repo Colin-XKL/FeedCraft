@@ -15,7 +15,7 @@ export function login(data: LoginData) {
   const md5Password = md5(data.password).toString();
   return axios.post<LoginRes>('/api/login', {
     username: data.username,
-    md5Password: md5Password,
+    password: md5Password,
   });
 }
 
