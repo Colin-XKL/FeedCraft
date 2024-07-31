@@ -15,7 +15,6 @@ func CreateUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
-	user.Username = c.Param("username") // 确保用户名被正确设置
 	db := util.GetDatabase()
 
 	if err := dao.CreateUser(db, &user); err != nil {

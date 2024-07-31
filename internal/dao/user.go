@@ -29,11 +29,7 @@ func CreateUser(db *gorm.DB, user *User) error {
 	}
 	user.Salt = salt
 	user.PasswordHash = hashPassword(user.Password, salt)
-	if err != nil {
-		return err
-	}
-
-	user.PasswordHash = hashedPassword
+	user.Password = "" // Clear the password field
 	return db.Omit("Password").Create(user).Error
 }
 
