@@ -24,7 +24,8 @@ func CreateUser(db *gorm.DB, user *User) error {
 		return err
 	}
 	user.Salt = salt
-	user.PasswordHash = HashPassword(user.PasswordHash, salt)
+	user.PasswordHash = HashPassword(user.Password, salt)
+	user.Password = "" // 清空密码
 	// No need to clear the password field here
 	return db.Create(user).Error
 }
@@ -34,6 +35,9 @@ func GetUserByUsername(db *gorm.DB, username string) (*User, error) {
 	var user User
 	result := db.Where("username = ?", username).First(&user)
 	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, gorm.ErrRecordNotFound
+		}
 		return nil, result.Error
 	}
 	return &user, nil
@@ -41,14 +45,13 @@ func GetUserByUsername(db *gorm.DB, username string) (*User, error) {
 
 // UpdateUser updates an existing User record
 func UpdateUser(db *gorm.DB, user *User) error {
-	if user.Password != "" {
+	if user.PasswordHash != "" {
 		salt, err := generateSalt()
 		if err != nil {
 			return err
 		}
 		user.Salt = salt
-		user.PasswordHash = HashPassword(user.Password, salt)
-		user.Password = "" // 清空密码
+		user.PasswordHash = HashPassword(user.PasswordHash, salt)
 	}
 	return db.Save(user).Error
 }
@@ -63,12 +66,15 @@ func DeleteUser(db *gorm.DB, username string) error {
 func ListUsers(db *gorm.DB) ([]*User, error) {
 	var users []*User
 	if err := db.Find(&users).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, gorm.ErrRecordNotFound
+		}
 		return nil, err
 	}
 	return users, nil
 }
 func generateSalt() (string, error) {
-	bytes := make([]byte, 16)
+	bytes := make([]byte, 32)
 	if _, err := rand.Read(bytes); err != nil {
 		return "", err
 	}
@@ -76,9 +82,7 @@ func generateSalt() (string, error) {
 }
 
 func HashPassword(password, salt string) string {
-	md5Hash := md5.Sum([]byte(password))
-	md5Password := hex.EncodeToString(md5Hash[:])
-	combined := md5Password + salt
+	combined := password + salt
 	sha256Hash := sha256.Sum256([]byte(combined))
 	return hex.EncodeToString(sha256Hash[:])
 }
