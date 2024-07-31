@@ -22,14 +22,12 @@ func MigrateDatabases() {
 
 	// 创建 admin 账户
 	createAdminUser(db)
-
-	// 创建 admin 账户
-	createAdminUser(db)
 }
 
 func createAdminUser(db *gorm.DB) {
 	username := "admin"
-	password := "adminadmin" // default password string
+	defaultPassword := "adminadmin" // default defaultPassword string
+	md5Password := util.GetMD5Hash(defaultPassword)
 
 	// 检查是否已经存在 admin 用户
 	var user User
@@ -45,12 +43,10 @@ func createAdminUser(db *gorm.DB) {
 		NickName: "Admin",
 		Email:    "admin@example.com",
 	}
-	if err := CreateUser(db, adminUser, password); err != nil {
+	if err := CreateUser(db, adminUser, md5Password); err != nil {
 		logrus.Error("failed to create admin user:", err)
 		return
 	}
-
-	logrus.Info("admin user created successfully")
 
 	logrus.Info("admin user created successfully")
 }
