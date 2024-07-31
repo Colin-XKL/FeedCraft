@@ -30,6 +30,7 @@
     "@arco-design/web-vue": "^2.44.7",
     "@vueuse/core": "^9.3.0",
     "axios": "^0.28.0",
+    "crypto-js": "^4.2.0",
     "dayjs": "^1.11.5",
     "echarts": "^5.4.0",
     "events": "^3.3.0",

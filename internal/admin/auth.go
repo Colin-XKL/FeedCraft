@@ -23,10 +23,11 @@ func loginValidator(username, md5Password string, db *gorm.DB) bool {
 	if err != nil {
 		return false
 	}
-	if len(user.Username) > 0 {
-		return true
+	if user == nil {
+		return false
 	}
-	return false
+	hashedPassword := dao.HashPasswordWithSalt(md5Password, user.Salt)
+	return hashedPassword == user.PasswordHash
 }
 
 func LoginAuth(c *gin.Context) {

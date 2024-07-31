@@ -24,7 +24,7 @@ func CreateUser(db *gorm.DB, user *User, md5Password string) error {
 		return err
 	}
 	user.Salt = salt
-	user.PasswordHash = HashPassword(md5Password, salt)
+	user.PasswordHash = HashPasswordWithSalt(md5Password, salt)
 	return db.Create(user).Error
 }
 
@@ -49,7 +49,7 @@ func UpdateUser(db *gorm.DB, user *User, md5Password string) error {
 			return err
 		}
 		user.Salt = salt
-		user.PasswordHash = HashPassword(md5Password, salt)
+		user.PasswordHash = HashPasswordWithSalt(md5Password, salt)
 	}
 	return db.Save(user).Error
 }
@@ -79,7 +79,7 @@ func generateSalt() (string, error) {
 	return hex.EncodeToString(bytes), nil
 }
 
-func HashPassword(password, salt string) string {
+func HashPasswordWithSalt(password, salt string) string {
 	combined := password + salt
 	sha256Hash := sha256.Sum256([]byte(combined))
 	return hex.EncodeToString(sha256Hash[:])
