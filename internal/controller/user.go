@@ -11,9 +11,10 @@ import (
 
 // UserInfo 对外通信使用的结构
 type UserInfo struct {
-	NickName string `json:"nickname"`
-	Email    string `json:"email"`
-	Username string `json:"username" binding:"required"`
+	NickName    string `json:"nickname"`
+	Email       string `json:"email"`
+	Username    string `json:"username" binding:"required"`
+	Md5Password string `json:"md5_password"` // 新增字段
 }
 
 func CreateUser(c *gin.Context) {
@@ -67,8 +68,8 @@ func GetUser(c *gin.Context) {
 
 func UpdateUser(c *gin.Context) {
 	username := c.Param("username")
-	var user dao.User
-	if err := c.ShouldBindJSON(&user); err != nil {
+	var input UserInfo
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
@@ -99,7 +100,7 @@ func UpdateUser(c *gin.Context) {
 		}
 	}
 
-	if err := dao.UpdateUser(db, existingUser); err != nil {
+	if err := dao.UpdateUser(db, existingUser, input.Md5Password); err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
