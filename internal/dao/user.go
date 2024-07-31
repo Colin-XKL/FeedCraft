@@ -1,7 +1,9 @@
 package dao
 
 import (
-	"golang.org/x/crypto/bcrypt"
+	"crypto/md5"
+	"crypto/sha256"
+	"encoding/hex"
 	"gorm.io/gorm"
 )
 
