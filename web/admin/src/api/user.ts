@@ -1,10 +1,12 @@
 import axios from 'axios';
+import md5 from 'crypto-js/md5';
 import type { RouteRecordNormalized } from 'vue-router';
 import { UserState } from '@/store/modules/user/types';
 
 export interface LoginData {
   username: string;
   password: string;
+  md5Password: string;
 }
 
 export interface LoginRes {
