@@ -9,8 +9,8 @@ type User struct {
 	Username     string `gorm:"primaryKey"`
 	NickName     string
 	Email        string
-	Password     string `gorm:"-"` // 临时存储密码
-	PasswordHash []byte `gorm:"column:password_hash"`
+	PasswordHash string `gorm:"column:password_hash"`
+	Salt         string
 }
 
 type UserInfo struct {
@@ -21,7 +21,12 @@ type UserInfo struct {
 
 // CreateUser creates a new User record
 func CreateUser(db *gorm.DB, user *User) error {
-	hashedPassword, err := HashPassword(user.Password)
+	salt, err := generateSalt()
+	if err != nil {
+		return err
+	}
+	user.Salt = salt
+	user.PasswordHash = hashPassword(user.Password, salt)
 	if err != nil {
 		return err
 	}
@@ -43,11 +48,12 @@ func GetUserByUsername(db *gorm.DB, username string) (*User, error) {
 // UpdateUser updates an existing User record
 func UpdateUser(db *gorm.DB, user *User) error {
 	if user.Password != "" {
-		hashedPassword, err := HashPassword(user.Password)
+		salt, err := generateSalt()
 		if err != nil {
 			return err
 		}
-		user.PasswordHash = hashedPassword
+		user.Salt = salt
+		user.PasswordHash = hashPassword(user.Password, salt)
 		user.Password = "" // 清空密码
 	}
 	return db.Omit("Password").Save(user).Error
@@ -67,7 +73,18 @@ func ListUsers(db *gorm.DB) ([]*User, error) {
 	}
 	return users, nil
 }
-// HashPassword 计算密码哈希
-func HashPassword(password string) ([]byte, error) {
-	return bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+func generateSalt() (string, error) {
+	bytes := make([]byte, 16)
+	if _, err := rand.Read(bytes); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(bytes), nil
+}
+
+func hashPassword(password, salt string) string {
+	md5Hash := md5.Sum([]byte(password))
+	md5Password := hex.EncodeToString(md5Hash[:])
+	combined := md5Password + salt
+	sha256Hash := sha256.Sum256([]byte(combined))
+	return hex.EncodeToString(sha256Hash[:])
 }

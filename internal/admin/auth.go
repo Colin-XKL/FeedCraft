@@ -6,9 +6,13 @@ import (
 	"net/http"
 )
 
-func loginValidator(username, passwd string) bool {
-	// TODO replace the mock val
-	return username == "admin" && passwd == "adminadmin"
+func loginValidator(username, md5Password string, db *gorm.DB) bool {
+	user, err := dao.GetUserByUsername(db, username)
+	if err != nil {
+		return false
+	}
+	hashedPassword := dao.HashPassword(md5Password, user.Salt)
+	return hashedPassword == user.PasswordHash
 }
 
 type UserAuth struct {
@@ -16,14 +20,15 @@ type UserAuth struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func LoginAuth(c *gin.Context) {
+func LoginAuth(c *gin.Context, db *gorm.DB) {
 	var input UserAuth
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[string]{Msg: err.Error()})
 		return
 	}
-	if !loginValidator(input.Username, input.Password) {
+	md5Password := md5.Sum([]byte(input.Password))
+	if !loginValidator(input.Username, hex.EncodeToString(md5Password[:]), db) {
 		c.JSON(http.StatusForbidden, util.APIResponse[string]{Msg: "invalid username or password"})
 		return
 	}
