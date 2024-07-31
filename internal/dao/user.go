@@ -1,10 +1,10 @@
 package dao
 
 import (
-	"crypto/md5"
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"gorm.io/gorm"
 )
 
@@ -49,8 +49,7 @@ func UpdateUser(db *gorm.DB, user *User) error {
 			return err
 		}
 		user.Salt = salt
-		user.PasswordHash = HashPassword(user.Password, salt)
-		user.Password = "" // 清空密码
+		user.PasswordHash = HashPassword(md5Password, salt)
 	}
 	return db.Save(user).Error
 }

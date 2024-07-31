@@ -11,21 +11,25 @@ import (
 
 // UserInfo 对外通信使用的结构
 type UserInfo struct {
-	NickName    string `json:"nickname"`
-	Email       string `json:"email"`
-	Username    string `json:"username" binding:"required"`
-	Md5Password string `json:"md5Password" binding:"required"` // 前端传递过来的只有md5哈希过的密码
+	NickName string `json:"nickname"`
+	Email    string `json:"email"`
+	Username string `json:"username" binding:"required"`
 }
 
 func CreateUser(c *gin.Context) {
-	var user dao.User
-	if err := c.ShouldBindJSON(&user); err != nil {
+	var input UserInfo
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 	db := util.GetDatabase()
 
-	if err := dao.CreateUser(db, &user); err != nil {
+	user := dao.User{
+		Username: input.Username,
+		NickName: input.NickName,
+		Email:    input.Email,
+	}
+	if err := dao.CreateUser(db, &user, input.Md5Password); err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
@@ -81,10 +85,18 @@ func UpdateUser(c *gin.Context) {
 	}
 
 	// 仅更新非密码字段
-	existingUser.NickName = user.NickName
-	existingUser.Email = user.Email
-	if user.Password != "" {
-		// No need to set the password field here
+	existingUser.NickName = input.NickName
+	existingUser.Email = input.Email
+	if input.Md5Password != "" {
+		if err := dao.UpdateUser(db, existingUser, input.Md5Password); err != nil {
+			c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
+			return
+		}
+	} else {
+		if err := dao.UpdateUser(db, existingUser, ""); err != nil {
+			c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
+			return
+		}
 	}
 
 	if err := dao.UpdateUser(db, existingUser); err != nil {
