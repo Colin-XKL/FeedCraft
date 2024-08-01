@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { md5 } from 'js-md5';
 import type { RouteRecordNormalized } from 'vue-router';
 import { UserState } from '@/store/modules/user/types';
 
@@ -10,8 +11,13 @@ export interface LoginData {
 export interface LoginRes {
   token: string;
 }
+
 export function login(data: LoginData) {
-  return axios.post<LoginRes>('/api/login', data);
+  const md5Password = md5(data.password).toString();
+  return axios.post<LoginRes>('/api/login', {
+    username: data.username,
+    md5_password: md5Password,
+  });
 }
 
 export function logout() {
