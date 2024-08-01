@@ -67,7 +67,7 @@
     "eslint-import-resolver-typescript": "^3.5.1",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^4.2.1",
-    "eslint-plugin-vue": "^9.6.0",
+    "eslint-plugin-vue": "^9.27.0",
     "less": "^4.1.3",
     "lint-staged": "^13.0.3",
     "mockjs": "^1.1.0",
