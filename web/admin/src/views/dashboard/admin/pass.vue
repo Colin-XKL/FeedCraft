@@ -31,6 +31,14 @@
 
   const handleSubmit = async (event: any) => {
     event.preventDefault();
+    if (form.value.newPassword.length < 6) {
+      Message.error('New password must be at least 6 characters long');
+      return;
+    }
+    if (/^\d+$/.test(form.value.newPassword)) {
+      Message.error('New password cannot be purely numeric');
+      return;
+    }
     if (form.value.newPassword !== form.value.confirmPassword) {
       Message.error('New passwords do not match');
       return;
