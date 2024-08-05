@@ -1,24 +1,24 @@
 <template>
   <div class="py-8 px-16">
-    <x-header title="LLM Debug" description="大模型测试"></x-header>
+    <x-header title="LLM 调试" description="大模型测试"></x-header>
 
     <a-space direction="vertical" class="w-full">
       <a-card class="my-2 w-full" title="输入参数">
         <a-space direction="horizontal" class="w-full">
           <a-input
             v-model:model-value="model"
-            placeholder="model name"
+            placeholder="模型名称"
             class="max-w-48"
           ></a-input>
           <a-textarea
             v-model:model-value="prompt"
-            placeholder="prompt input"
+            placeholder="提示输入"
             allow-clear
             class="w-full min-w-96"
             auto-size
           ></a-textarea>
           <a-button :loading="isLoading" type="primary" @click="onSubmit"
-            >Submit
+            >提交
           </a-button>
         </a-space>
       </a-card>

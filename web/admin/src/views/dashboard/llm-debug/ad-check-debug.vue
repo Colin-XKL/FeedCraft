@@ -1,8 +1,8 @@
 <template>
   <div class="py-8 px-16">
     <x-header
-      title="LLM Debug Page - Check If Advertorial"
-      description="通过大模型能力,检测一个文章是不是广告或是推广的软文"
+      title="LLM 调试页面 - 检查是否为广告"
+      description="通过大模型能力，检测一个文章是不是广告或是推广的软文"
     >
     </x-header>
 
@@ -12,11 +12,11 @@
         <a-input
           v-model="articleUrl"
           type="text"
-          placeholder="Enter article URL"
+          placeholder="输入文章链接"
           class="w-full"
         />
         <a-checkbox v-model="useEnhanceMode">启用增强模式</a-checkbox>
-        <a-button :loading="isLoading" @click="fetchArticle">Submit</a-button>
+        <a-button :loading="isLoading" @click="fetchArticle">提交</a-button>
       </a-space>
     </a-card>
     <a-card title="结果预览" class="my-4" :loading="isLoading">
