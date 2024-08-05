@@ -43,7 +43,7 @@ func GetUserByUsername(db *gorm.DB, username string) (*User, error) {
 
 // UpdateUserInfo updates an existing User record
 func UpdateUserInfo(db *gorm.DB, user *User) error {
-	return db.Save(user).Error
+	return db.Model(user).Select("NickName", "Email").Updates(user).Error
 }
 
 func UpdateUserPassword(db *gorm.DB, user *User, md5Password string) error {

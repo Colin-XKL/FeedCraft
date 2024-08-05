@@ -88,13 +88,13 @@ func UpdateUser(c *gin.Context) {
 	// 仅更新非密码字段
 	existingUser.NickName = input.NickName
 	existingUser.Email = input.Email
+	if err := dao.UpdateUserInfo(db, existingUser); err != nil {
+		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
+		return
+	}
+
 	if input.Md5Password != "" {
-		if err := dao.UpdateUser(db, existingUser, input.Md5Password); err != nil {
-			c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
-			return
-		}
-	} else {
-		if err := dao.UpdateUser(db, existingUser, ""); err != nil {
+		if err := dao.UpdateUserPassword(db, existingUser, input.Md5Password); err != nil {
 			c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 			return
 		}
