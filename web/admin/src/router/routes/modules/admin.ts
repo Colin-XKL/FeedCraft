@@ -9,7 +9,7 @@ const ADMIN_PAGE: AppRouteRecordRaw = {
     locale: 'menu.user',
     requiresAuth: true,
     icon: 'icon-user',
-    order: 0,
+    order: 10,
   },
   children: [
     {
