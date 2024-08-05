@@ -24,7 +24,7 @@ const DASHBOARD: AppRouteRecordRaw = {
     {
       path: 'viewer',
       name: 'FeedViewer',
-      component: () => import('@/views/dashboard/feed-viewer/feed_viewer.vue'),
+      component: () => import('@/views/dashboard/feed_viewer/feed_viewer.vue'),
       meta: {
         title: 'FeedViewer',
         requiresAuth: false,
@@ -43,7 +43,7 @@ const DASHBOARD: AppRouteRecordRaw = {
     {
       path: 'ad-check-debug',
       name: 'AdCheckDebug',
-      component: () => import('@/views/dashboard/llm-debug/ad-check-debug.vue'),
+      component: () => import('@/views/dashboard/llm_debug/ad-check-debug.vue'),
       meta: {
         title: 'Ad Check Debug',
         requiresAuth: true,
@@ -52,7 +52,7 @@ const DASHBOARD: AppRouteRecordRaw = {
     {
       path: 'llm-debug',
       name: 'llm-debug',
-      component: () => import('@/views/dashboard/llm-debug/llm-test.vue'),
+      component: () => import('@/views/dashboard/llm_debug/llm-test.vue'),
       meta: {
         title: 'LLM Debug',
         requiresAuth: true,
