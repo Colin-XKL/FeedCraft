@@ -38,5 +38,9 @@ export interface ChangePasswordData {
 }
 
 export function changePassword(data: ChangePasswordData) {
-  return axios.post('/api/admin/user/change-password', data);
+  return axios.post('/api/admin/user/change-password', {
+    username: data.username,
+    currentPassword: data.currentPassword,
+    newPassword: data.newPassword,
+  });
 }
