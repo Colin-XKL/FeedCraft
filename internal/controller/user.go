@@ -166,10 +166,27 @@ func ChangePassword(c *gin.Context) {
 		return
 	}
 
-	if err := dao.UpdateUser(db, user, ""); err != nil {
+	if len(input.NewPassword) < 6 {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: "Password must be at least 6 characters long"})
+		return
+	}
+	if isNumeric(input.NewPassword) {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: "Password cannot be purely numeric"})
+		return
+	}
+	if err := dao.UpdateUser(db, user, input.NewPassword); err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, util.APIResponse[any]{Msg: "Password updated successfully"})
+}
+
+func isNumeric(s string) bool {
+	for _, c := range s {
+		if c < '0' || c > '9' {
+			return false
+		}
+	}
+	return true
 }
