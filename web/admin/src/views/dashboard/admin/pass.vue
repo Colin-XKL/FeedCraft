@@ -52,7 +52,7 @@
     }
     try {
       await changePassword({
-        username: currentUser.value, // 这里需要替换为当前登录用户的用户名
+        username: currentUser.value,
         currentPassword: form.value.currentPassword,
         newPassword: form.value.newPassword,
       });
