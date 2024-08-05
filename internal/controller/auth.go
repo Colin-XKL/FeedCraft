@@ -7,10 +7,10 @@
 // 5. 验证通过后，后端生成一个 JWT 令牌，并将其返回给前端。
 // 6. 前端在后续的请求中，将 JWT 令牌放在请求头中，后端通过验证 JWT 令牌来进行鉴权。
 
-package admin
+package controller
 
 import (
-	"FeedCraft/internal/controller"
+	"FeedCraft/internal/admin"
 	"FeedCraft/internal/dao"
 	"FeedCraft/internal/util"
 	"github.com/gin-gonic/gin"
@@ -31,7 +31,7 @@ func loginValidator(username, md5Password string, db *gorm.DB) bool {
 }
 
 func LoginAuth(c *gin.Context) {
-	var input controller.UserInfo
+	var input UserInfo
 	db := util.GetDatabase()
 
 	if err := c.ShouldBindJSON(&input); err != nil {
@@ -42,7 +42,7 @@ func LoginAuth(c *gin.Context) {
 		c.JSON(http.StatusForbidden, util.APIResponse[string]{Msg: "invalid username or password"})
 		return
 	}
-	token, err := GenerateToken(input.Username)
+	token, err := admin.GenerateToken(input.Username)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[string]{Msg: err.Error()})
 		c.Abort()
