@@ -143,3 +143,43 @@ func ListUsers(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, util.APIResponse[any]{Data: userInfoList})
 }
+func ChangePassword(c *gin.Context) {
+  var input struct {
+    Username        string `json:"username" binding:"required"`
+    CurrentPassword string `json:"currentPassword" binding:"required"`
+    NewPassword     string `json:"newPassword" binding:"required"`
+  }
+  if err := c.ShouldBindJSON(&input); err != nil {
+    c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
+    return
+  }
+
+  db := util.GetDatabase()
+  user, err := dao.GetUserByUsername(db, input.Username)
+  if err != nil {
+    c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
+    return
+  }
+
+  if !loginValidator(input.Username, input.CurrentPassword, db) {
+    c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: "Invalid current password"})
+    return
+  }
+
+  salt, err := dao.GenerateSalt()
+  if err != nil {
+    c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
+    return
+  }
+
+  hashedPassword := dao.HashPasswordWithSalt(input.NewPassword, salt)
+  user.PasswordHash = hashedPassword
+  user.Salt = salt
+
+  if err := dao.UpdateUser(db, user, ""); err != nil {
+    c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
+    return
+  }
+
+  c.JSON(http.StatusOK, util.APIResponse[any]{Msg: "Password updated successfully"})
+}
