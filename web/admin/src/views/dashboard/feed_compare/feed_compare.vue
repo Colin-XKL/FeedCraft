@@ -45,7 +45,7 @@
   import { ref } from 'vue';
   import Parser from 'rss-parser';
   import { Message } from '@arco-design/web-vue';
-  import FeedViewContainer from '@/views/dashboard/feed-viewer/feed_view_container.vue';
+  import FeedViewContainer from '@/views/dashboard/feed_viewer/feed_view_container.vue';
   import XHeader from '@/components/header/x-header.vue';
   import CraftFlowSelect from '@/views/dashboard/craft_flow/CraftFlowSelect.vue';
 

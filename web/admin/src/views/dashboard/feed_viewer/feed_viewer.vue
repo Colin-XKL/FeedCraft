@@ -1,16 +1,11 @@
 <template>
   <div class="py-8 px-16">
-    <x-header title="RSS 源预览" description="RSS 源预览">
-    </x-header>
+    <x-header title="RSS 源预览" description="RSS 源预览"> </x-header>
 
     <a-card class="my-2" title="输入链接">
       <p>输入要预览的RSS源地址 支持RSS/ATOM</p>
       <a-space>
-        <a-input
-          v-model="feedUrl"
-          type="text"
-          placeholder="输入RSS源地址"
-        />
+        <a-input v-model="feedUrl" type="text" placeholder="输入RSS源地址" />
         <a-button :loading="isLoading" @click="fetchFeed">预览</a-button>
       </a-space>
     </a-card>
@@ -27,7 +22,7 @@
   import { computed, ref } from 'vue';
   import Parser from 'rss-parser';
   import { Message } from '@arco-design/web-vue';
-  import FeedViewContainer from '@/views/dashboard/feed-viewer/feed_view_container.vue';
+  import FeedViewContainer from '@/views/dashboard/feed_viewer/feed_view_container.vue';
   import XHeader from '@/components/header/x-header.vue';
 
   const feedUrl = ref('');
