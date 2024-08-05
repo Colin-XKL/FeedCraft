@@ -1,17 +1,17 @@
 <template>
   <div class="py-8 px-16">
-    <h1 class="text-3xl font-bold">LLM Debug Page - Check If Advertorial</h1>
-    <p>通过大模型能力,检测一个文章是不是广告或是推广的软文</p>
+    <h1 class="text-3xl font-bold">LLM 调试页面 - 检查是否为广告</h1>
+    <p>通过大模型能力，检测一个文章是不是广告或是推广的软文</p>
     <a-card class="my-2" title="输入链接">
       <p>输入要预览的文章链接</p>
       <a-space>
         <a-input
           v-model="articleUrl"
           type="text"
-          placeholder="Enter article URL"
+          placeholder="输入文章链接"
           class="w-full"
         />
-        <a-button :loading="isLoading" @click="fetchArticle">Submit</a-button>
+        <a-button :loading="isLoading" @click="fetchArticle">提交</a-button>
       </a-space>
     </a-card>
     <a-card title="结果预览" class="my-4" :loading="isLoading">
