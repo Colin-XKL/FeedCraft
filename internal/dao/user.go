@@ -53,7 +53,7 @@ func UpdateUserPassword(db *gorm.DB, user *User, md5Password string) error {
 	}
 	user.Salt = salt
 	user.PasswordHash = HashPasswordWithSalt(md5Password, salt)
-	return db.Save(user).Error
+	return db.Model(user).Select("PasswordHash", "Salt").Updates(user).Error
 }
 
 func UpdateUser(db *gorm.DB, user *User, md5Password string) error {
