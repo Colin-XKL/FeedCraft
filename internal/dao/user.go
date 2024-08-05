@@ -42,16 +42,25 @@ func GetUserByUsername(db *gorm.DB, username string) (*User, error) {
 }
 
 // UpdateUser updates an existing User record
+func UpdateUserInfo(db *gorm.DB, user *User) error {
+	return db.Save(user).Error
+}
+
+func UpdateUserPassword(db *gorm.DB, user *User, md5Password string) error {
+	salt, err := generateSalt()
+	if err != nil {
+		return err
+	}
+	user.Salt = salt
+	user.PasswordHash = HashPasswordWithSalt(md5Password, salt)
+	return db.Save(user).Error
+}
+
 func UpdateUser(db *gorm.DB, user *User, md5Password string) error {
 	if md5Password != "" {
-		salt, err := generateSalt()
-		if err != nil {
-			return err
-		}
-		user.Salt = salt
-		user.PasswordHash = HashPasswordWithSalt(md5Password, salt)
+		return UpdateUserPassword(db, user, md5Password)
 	}
-	return db.Save(user).Error
+	return UpdateUserInfo(db, user)
 }
 
 // DeleteUser deletes a User record by its username
