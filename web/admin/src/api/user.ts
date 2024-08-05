@@ -31,13 +31,12 @@ export function getUserInfo() {
 export function getMenuList() {
   return axios.post<RouteRecordNormalized[]>('/api/user/menu');
 }
+
 export interface ChangePasswordData {
   username: string;
   currentPassword: string;
   newPassword: string;
 }
-
-import { md5 } from 'js-md5';
 
 export function changePassword(data: ChangePasswordData) {
   const currentPasswordMd5 = md5(data.currentPassword).toString();
