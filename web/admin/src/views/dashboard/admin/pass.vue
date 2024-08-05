@@ -1,8 +1,10 @@
 <template>
   <div class="p-4">
     <a-card title="Change Password">
-      <div>User: {{ currentUser }}</div>
       <a-form :model="form" @submit="handleSubmit">
+        <a-form-item label="current user" field="username">
+          <a-input :model-value="currentUser" disabled></a-input>
+        </a-form-item>
         <a-form-item field="currentPassword" label="Current Password">
           <a-input v-model="form.currentPassword" type="password" />
         </a-form-item>
