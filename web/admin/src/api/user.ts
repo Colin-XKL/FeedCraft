@@ -31,3 +31,12 @@ export function getUserInfo() {
 export function getMenuList() {
   return axios.post<RouteRecordNormalized[]>('/api/user/menu');
 }
+export interface ChangePasswordData {
+  username: string;
+  currentPassword: string;
+  newPassword: string;
+}
+
+export function changePassword(data: ChangePasswordData) {
+  return axios.post('/api/admin/user/change-password', data);
+}

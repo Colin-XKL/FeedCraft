@@ -61,6 +61,7 @@ func RegisterRouters(router *gin.Engine) {
 	adminApi.Use(middleware.JwtAuthMiddleware(), corsMiddleware)
 	{
 		adminApi.POST("/user/info", AdminUserInfoHandler)
+		adminApi.POST("/user/change-password", controller.ChangePassword)
 
 		adminApi.POST("/craft-debug/advertorial", craft.DebugCheckIfAdvertorial)
 		adminApi.POST("/craft-debug/common-llm-call-test", admin.LLMDebug)
