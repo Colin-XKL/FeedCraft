@@ -1,11 +1,11 @@
 <template>
   <div class="py-8 px-16">
-    <x-header title="Craft Atom Management" description="Manage Craft Atoms">
+    <x-header title="Craft Atom 管理" description="管理 Craft Atoms">
     </x-header>
 
     <a-space direction="horizontal" class="mb-6">
       <a-button type="primary" :loading="isLoading" @click="listAllCraftAtoms">
-        List
+        列出
       </a-button>
       <a-button
         type="outline"
@@ -34,7 +34,7 @@
 
     <a-modal
       v-model:visible="showEditModal"
-      :title="isUpdating ? 'Edit Craft Atom' : 'Create Craft Atom'"
+      :title="isUpdating ? '编辑 Craft Atom' : '创建 Craft Atom'"
     >
       <a-form
         :model="editedCraftAtom"
@@ -43,25 +43,25 @@
         :wrapper-col="{ span: 18 }"
         layout="vertical"
       >
-        <a-form-item label="Name" field="name">
+        <a-form-item label="名称" field="name">
           <a-input v-model="editedCraftAtom.name" />
         </a-form-item>
-        <a-form-item label="Description" field="description">
+        <a-form-item label="描述" field="description">
           <a-textarea v-model="editedCraftAtom.description" />
         </a-form-item>
-        <a-form-item label="Template" field="template_name">
+        <a-form-item label="模板" field="template_name">
           <a-select
             v-model="editedCraftAtom.template_name"
             :options="templateOptions"
-            placeholder="Select Template"
+            placeholder="选择模板"
             @change="handleTemplateChange"
           />
         </a-form-item>
-        <a-form-item label="Params" field="params">
+        <a-form-item label="参数" field="params">
           <a-space direction="vertical" style="width: 100%">
             <a-list :split="false" size="small" :bordered="false">
               <div class="mb-2 text-gray-400">
-                <div class="">Required Param:</div>
+                <div class="">必填参数:</div>
                 <template
                   v-if="
                     paramTemplates[editedCraftAtom.template_name]?.length > 0
@@ -82,7 +82,7 @@
                   </div>
                 </template>
                 <template v-else>
-                  <div>None</div>
+                  <div>无</div>
                 </template>
                 <hr class="my-1" />
               </div>
@@ -151,11 +151,11 @@
   const isUpdating = ref(false);
 
   const columns = [
-    { title: 'Name', dataIndex: 'name' },
-    { title: 'Description', dataIndex: 'description' },
-    { title: 'Template Name', dataIndex: 'template_name' },
-    { title: 'Params', dataIndex: 'params' },
-    { title: 'Actions', slotName: 'actions' },
+    { title: '名称', dataIndex: 'name' },
+    { title: '描述', dataIndex: 'description' },
+    { title: '模板名称', dataIndex: 'template_name' },
+    { title: '参数', dataIndex: 'params' },
+    { title: '操作', slotName: 'actions' },
   ];
   const rules = {
     template_name: [
