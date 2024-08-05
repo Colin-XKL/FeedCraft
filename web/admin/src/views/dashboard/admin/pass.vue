@@ -33,9 +33,8 @@
   });
   const userStore = useUserStore();
   const currentUser = computed(() => {
-    return userStore.name;
+    return userStore.name || 'unknown user';
   });
-  console.log(currentUser.value);
   const handleSubmit = async (event: any) => {
     // event.preventDefault();
     if (form.value.newPassword.length < 6) {
