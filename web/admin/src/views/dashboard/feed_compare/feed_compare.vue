@@ -13,19 +13,10 @@
           class="min-w-48"
           placeholder="Enter RSS feed URL"
         />
-        <a-select
-          v-model="selectedCraft"
-          placeholder="Select Craft"
-          allow-create
-          allow-clear
-        >
-          <a-option v-for="craft in crafts" :key="craft" :value="craft"
-            >{{ craft }}
-          </a-option>
-        </a-select>
+        <CraftFlowSelect v-model="selectedCraft" />
         <a-button :loading="isLoading" type="primary" @click="compareFeeds"
-          >Compare</a-button
-        >
+          >Compare
+        </a-button>
       </a-space>
     </a-card>
 
@@ -56,10 +47,11 @@
   import { Message } from '@arco-design/web-vue';
   import FeedViewContainer from '@/views/dashboard/feed-viewer/feed_view_container.vue';
   import XHeader from '@/components/header/x-header.vue';
+  import CraftFlowSelect from '@/views/dashboard/craft_flow/CraftFlowSelect.vue';
 
   const feedUrl = ref('');
   const selectedCraft = ref('');
-  const crafts = ref(['craft1', 'craft2', 'craft3']); // 这里需要从后端获取craft列表
+  // const crafts = ref(['craft1', 'craft2', 'craft3']); // 这里需要从后端获取craft列表
   const originalFeedContent = ref<any>(null);
   const craftAppliedFeedContent = ref<any>(null);
   const isLoading = ref(false);

@@ -1,7 +1,6 @@
 <template>
   <div class="py-8 px-16">
-    <x-header title="RSS 源预览" description="RSS 源预览">
-    </x-header>
+    <x-header title="RSS 源预览" description="RSS 源预览"> </x-header>
 
     <a-space direction="horizontal" class="mb-6">
       <a-button type="primary" :loading="isLoading" @click="listAllCraftFlow">
@@ -61,52 +60,7 @@
           <a-textarea v-model="editedCraftFlow.description" />
         </a-form-item>
         <a-form-item label="流程" field="craftFlowConfig">
-          <a-select
-            v-model="editedCraftFlow.craftList"
-            multiple
-            allow-clear
-            allow-create
-          >
-            <a-optgroup label="系统 Craft Atoms">
-              <a-option
-                v-for="item in sysCraftAtomList"
-                :key="item.name"
-                :value="item.name"
-              >
-                {{
-                  item.description?.length
-                    ? `${item.name} (${item.description})`
-                    : item.name
-                }}
-              </a-option>
-            </a-optgroup>
-            <a-optgroup label="用户 Craft Atoms">
-              <a-option
-                v-for="item in craftAtomList"
-                :key="item.name"
-                :value="item.name"
-              >
-                {{
-                  item.description?.length
-                    ? `${item.name} (${item.description})`
-                    : item.name
-                }}
-              </a-option>
-            </a-optgroup>
-            <a-optgroup label="Craft Flows">
-              <a-option
-                v-for="item in craftFlows"
-                :key="item.name"
-                :value="item.name"
-              >
-                {{
-                  item.description?.length
-                    ? `${item.name} (${item.description})`
-                    : item.name
-                }}
-              </a-option>
-            </a-optgroup>
-          </a-select>
+          <CraftFlowSelect v-model="editedCraftFlow.craftList" />
         </a-form-item>
       </a-form>
       <template #footer>
@@ -138,6 +92,7 @@
   } from '@/api/craft_flow';
   import { listCraftAtoms } from '@/api/craft_atom';
   import { namingValidator } from '@/utils/validator';
+  import CraftFlowSelect from '@/views/dashboard/craft_flow/CraftFlowSelect.vue';
 
   const rules = {
     name: [
@@ -149,7 +104,6 @@
       namingValidator,
     ],
   };
-
 
   const isLoading = ref(false);
   const craftFlows = ref<CraftFlow[]>([]);
