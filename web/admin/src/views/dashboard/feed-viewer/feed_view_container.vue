@@ -28,7 +28,7 @@
       </li>
     </ul>
     <div v-if="feedData.items?.length > 10"
-      >这个Feed太大了，只显示前10项。
+      >Feed 内容项过多, 只显示前10项。
     </div>
   </div>
 </template>
