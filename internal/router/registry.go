@@ -44,7 +44,7 @@ func RegisterRouters(router *gin.Engine) {
 	// Public routes
 	public := router.Group("/api")
 	{
-		public.POST("/login", admin.LoginAuth)
+		public.POST("/login", controller.LoginAuth)
 	}
 
 	craftRouters := router.Group("/craft")
