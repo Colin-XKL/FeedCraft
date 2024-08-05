@@ -41,7 +41,7 @@ func GetUserByUsername(db *gorm.DB, username string) (*User, error) {
 	return &user, nil
 }
 
-// UpdateUser updates an existing User record
+// UpdateUserInfo updates an existing User record
 func UpdateUserInfo(db *gorm.DB, user *User) error {
 	return db.Save(user).Error
 }
