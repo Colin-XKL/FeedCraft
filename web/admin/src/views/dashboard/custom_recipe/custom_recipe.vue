@@ -1,11 +1,11 @@
 <template>
   <div class="py-8 px-16">
-    <x-header title="Custom Recipe" description="自定义rss, 以及要使用的craft">
+    <x-header title="自定义配方" description="自定义RSS，以及要使用的工艺">
     </x-header>
 
     <a-space direction="horizontal" class="mb-4">
       <a-button type="primary" :loading="isLoading" @click="listCustomRecipes">
-        List
+        列出
       </a-button>
       <a-button
         type="outline"
@@ -16,7 +16,7 @@
           }
         "
       >
-        Create Custom Recipe
+        创建自定义配方
       </a-button>
     </a-space>
 
@@ -37,17 +37,17 @@
               }
             "
           >
-            Edit
+            编辑
           </a-button>
-          <a-button @click="deleteRecipe(record.id)">Delete</a-button>
-          <a-link :href="`${baseUrl}/recipe/${record?.id}`">Link</a-link>
+          <a-button @click="deleteRecipe(record.id)">删除</a-button>
+          <a-link :href="`${baseUrl}/recipe/${record?.id}`">链接</a-link>
         </a-space>
       </template>
     </a-table>
 
     <a-modal
       v-model:visible="showModal"
-      :title="editing ? 'Edit Custom Recipe' : 'Create Custom Recipe'"
+      :title="editing ? '编辑自定义配方' : '创建自定义配方'"
     >
       <a-form
         :model="form"
@@ -55,13 +55,13 @@
         :rules="rules"
         :wrapper-col="{ span: 18 }"
       >
-        <a-form-item label="Name" field="id">
+        <a-form-item label="名称" field="id">
           <a-input v-model="form.id" :disabled="isUpdating" />
         </a-form-item>
-        <a-form-item label="Description" field="description">
+        <a-form-item label="描述" field="description">
           <a-input v-model="form.description" />
         </a-form-item>
-        <a-form-item label="Craft" field="craft">
+        <a-form-item label="工艺" field="craft">
           <a-input v-model="form.craft" />
         </a-form-item>
         <a-form-item label="FeedURL" field="feed_url">
@@ -76,9 +76,9 @@
               isUpdating = false;
             }
           "
-          >Cancel
+          >取消
         </a-button>
-        <a-button type="primary" @click="saveRecipe">Save</a-button>
+        <a-button type="primary" @click="saveRecipe">保存</a-button>
       </template>
     </a-modal>
   </div>
