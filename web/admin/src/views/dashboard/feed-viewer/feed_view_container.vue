@@ -4,10 +4,10 @@
     <a-descriptions
       style="margin-top: 20px"
       :data="feedMetaList"
-      title="Feed Info"
+      title="Feed 信息"
       :column="1"
     />
-    <div>total: {{ feedData.items?.length }}</div>
+    <div>总数: {{ feedData.items?.length }}</div>
     <ul>
       <li v-for="item in feedData.items?.slice(0, 10)" :key="item.guid">
         <a-card class="my-2">
@@ -28,7 +28,7 @@
       </li>
     </ul>
     <div v-if="feedData.items?.length > 10"
-      >This feed is too large, only first 10 items are showed.
+      >这个Feed太大了，只显示前10项。
     </div>
   </div>
 </template>

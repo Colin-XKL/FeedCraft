@@ -1,6 +1,6 @@
 <template>
   <div class="py-8 px-16">
-    <x-header title="RSS Feed Preview" description="RSS Feed Preview">
+    <x-header title="RSS 源预览" description="RSS 源预览">
     </x-header>
 
     <a-card class="my-2" title="输入链接">
@@ -9,9 +9,9 @@
         <a-input
           v-model="feedUrl"
           type="text"
-          placeholder="Enter RSS feed URL"
+          placeholder="输入RSS源地址"
         />
-        <a-button :loading="isLoading" @click="fetchFeed">Preview</a-button>
+        <a-button :loading="isLoading" @click="fetchFeed">预览</a-button>
       </a-space>
     </a-card>
     <a-card title="结果预览" class="my-4" :loading="isLoading">
