@@ -1,21 +1,21 @@
 <template>
   <div class="p-4">
-    <a-card title="Change Password">
+    <a-card title="修改密码">
       <a-form :model="form" @submit="handleSubmit">
-        <a-form-item label="current user" field="username">
+        <a-form-item label="当前用户" field="username">
           <a-input :model-value="currentUser" disabled></a-input>
         </a-form-item>
-        <a-form-item field="currentPassword" label="Current Password">
+        <a-form-item field="currentPassword" label="当前密码">
           <a-input v-model="form.currentPassword" type="password" />
         </a-form-item>
-        <a-form-item field="newPassword" label="New Password">
+        <a-form-item field="newPassword" label="新密码">
           <a-input v-model="form.newPassword" type="password" />
         </a-form-item>
-        <a-form-item field="confirmPassword" label="Confirm New Password">
+        <a-form-item field="confirmPassword" label="确认新密码">
           <a-input v-model="form.confirmPassword" type="password" />
         </a-form-item>
         <a-form-item>
-          <a-button type="primary" html-type="submit">Change Password</a-button>
+          <a-button type="primary" html-type="submit">修改密码</a-button>
         </a-form-item>
       </a-form>
     </a-card>
@@ -40,15 +40,15 @@
   const handleSubmit = async (event: any) => {
     // event.preventDefault();
     if (form.value.newPassword.length < 6) {
-      Message.error('New password must be at least 6 characters long');
+      Message.error('新密码必须至少6个字符长');
       return;
     }
     if (/^\d+$/.test(form.value.newPassword)) {
-      Message.error('New password cannot be purely numeric');
+      Message.error('新密码不能纯数字');
       return;
     }
     if (form.value.newPassword !== form.value.confirmPassword) {
-      Message.error('New passwords do not match');
+      Message.error('新密码不匹配');
       return;
     }
     try {
@@ -57,9 +57,9 @@
         currentPassword: form.value.currentPassword,
         newPassword: form.value.newPassword,
       });
-      Message.success('Password changed successfully');
+      Message.success('密码修改成功');
     } catch (error) {
-      Message.error('Failed to change password');
+      Message.error('密码修改失败');
     }
   };
 </script>
