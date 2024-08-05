@@ -37,10 +37,14 @@ export interface ChangePasswordData {
   newPassword: string;
 }
 
+import { md5 } from 'js-md5';
+
 export function changePassword(data: ChangePasswordData) {
+  const currentPasswordMd5 = md5(data.currentPassword).toString();
+  const newPasswordMd5 = md5(data.newPassword).toString();
   return axios.post('/api/admin/user/change-password', {
     username: data.username,
-    currentPassword: data.currentPassword,
-    newPassword: data.newPassword,
+    currentPassword: currentPasswordMd5,
+    newPassword: newPasswordMd5,
   });
 }
