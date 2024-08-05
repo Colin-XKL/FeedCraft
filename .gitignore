@@ -182,3 +182,4 @@ yarn-error.log
 web/admin/.idea
 web/admin/dist
 .aider*
+.run
