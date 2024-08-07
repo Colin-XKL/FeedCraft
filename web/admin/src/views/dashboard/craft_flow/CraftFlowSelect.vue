@@ -1,7 +1,7 @@
 <template>
   <a-select
     v-model="selectedCraftFlow"
-    :mode="mode === 'multiple' ? 'multiple' : undefined"
+    :multiple="mode === 'multiple'"
     placeholder="Select Craft Flow"
     allow-create
     allow-clear
@@ -65,7 +65,7 @@
   const craftFlows = ref<CraftFlow[]>([]);
   const sysCraftAtomList = ref<CraftFlow[]>([]);
   const craftAtomList = ref<CraftFlow[]>([]);
-  const selectedCraftFlow = ref<string[]>(props.modelValue);
+  const selectedCraftFlow = ref<string[] | string>(props.modelValue);
 
   onMounted(async () => {
     const [craftFlowsResponse, sysCraftAtomsResponse, craftAtomsResponse] =
@@ -86,13 +86,13 @@
   });
 
   watch(selectedCraftFlow, (newValue) => {
-    emit('update:modelValue', props.mode === 'multiple' ? newValue : newValue[0]);
+    emit('update:modelValue', newValue);
   });
 
   watch(
     () => props.modelValue,
     (newValue) => {
-      selectedCraftFlow.value = props.mode === 'multiple' ? newValue : [newValue];
+      selectedCraftFlow.value = newValue;
     }
   );
 </script>
