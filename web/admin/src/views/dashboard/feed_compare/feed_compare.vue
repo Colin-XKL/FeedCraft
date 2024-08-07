@@ -13,7 +13,7 @@
           class="min-w-48"
           placeholder="Enter RSS feed URL"
         />
-        <CraftFlowSelect v-model="selectedCraft" />
+        <CraftFlowSelect v-model="selectedCraft" mode="single" />
         <a-button :loading="isLoading" type="primary" @click="compareFeeds"
           >Compare
         </a-button>
