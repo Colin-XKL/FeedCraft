@@ -15,7 +15,9 @@
           placeholder="输入文章链接"
           class="w-full"
         />
-        <a-checkbox v-model="useEnhanceMode">启用增强模式</a-checkbox>
+        <a-checkbox v-model="useEnhanceMode"
+          >启用增强模式获取文章内容</a-checkbox
+        >
         <a-button :loading="isLoading" @click="fetchArticle">提交</a-button>
       </a-space>
     </a-card>
