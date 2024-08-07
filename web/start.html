@@ -27,6 +27,18 @@
             }
             const resultUrl = `${baseUrl}/craft/${selectedSite}?input_url=${encodeURIComponent(inputUrl)}`
             document.getElementById("resultUrl").textContent = resultUrl;
+            document.getElementById("copyButton").textContent = "Copy URL";
+        }
+
+        function copyUrl() {
+            const resultUrl = document.getElementById("resultUrl").textContent;
+            if (resultUrl) {
+                navigator.clipboard.writeText(resultUrl).then(() => {
+                    document.getElementById("copyButton").textContent = "Copied!";
+                }).catch(err => {
+                    console.error('Could not copy text: ', err);
+                });
+            }
         }
     </script>
 </head>
@@ -65,6 +77,9 @@
             <div class="mt-4 ">
                 <label for="resultUrl" class="mr-2">Result URL:</label>
                 <span id="resultUrl"></span>
+                <button id="copyButton" onclick="copyUrl()"
+                        class="px-1 py-0.5 bg-gray-200 text-gray-700 rounded ml-0.5 hover:bg-green-400 ">Copy URL
+                </button>
             </div>
         </div>
     </div>
