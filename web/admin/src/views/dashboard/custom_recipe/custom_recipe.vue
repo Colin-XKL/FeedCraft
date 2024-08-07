@@ -5,7 +5,7 @@
 
     <a-space direction="horizontal" class="mb-4">
       <a-button type="primary" :loading="isLoading" @click="listCustomRecipes">
-        列出
+        查询
       </a-button>
       <a-button
         type="outline"
@@ -16,7 +16,7 @@
           }
         "
       >
-        创建自定义配方
+        创建自定义Recipe
       </a-button>
     </a-space>
 

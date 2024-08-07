@@ -5,7 +5,7 @@
 
     <a-space direction="horizontal" class="mb-6">
       <a-button type="primary" :loading="isLoading" @click="listAllCraftAtoms">
-        列出
+        查询
       </a-button>
       <a-button
         type="outline"
@@ -15,7 +15,7 @@
             isUpdating = false;
           }
         "
-        >Create CraftAtom
+        >新建 CraftAtom
       </a-button>
     </a-space>
 
@@ -105,7 +105,7 @@
               </div>
             </a-list>
 
-            <a-button type="dashed" @click="addParam">Add Param</a-button>
+            <a-button type="dashed" @click="addParam">添加参数</a-button>
           </a-space>
         </a-form-item>
       </a-form>
