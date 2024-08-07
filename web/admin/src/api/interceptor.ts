@@ -3,6 +3,7 @@ import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { Message, Modal } from '@arco-design/web-vue';
 import { useUserStore } from '@/store';
 import { getToken } from '@/utils/auth';
+import { useRouter } from 'vue-router';
 
 export interface HttpResponse<T = unknown> {
   status?: number;
@@ -39,6 +40,12 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   (response: AxiosResponse<HttpResponse>) => {
     const res = response.data;
+    if (res.status && res.status >= 400 && res.status <= 500) {
+      console.log('login required');
+      Message.error('login required');
+      const router = useRouter();
+      router.push({ name: 'login' });
+    }
     if (res.code !== 0) {
       Message.error({
         content: res.msg || 'Error',
