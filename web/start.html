@@ -20,7 +20,7 @@
             const selectedSite = customCraft ? customCraft : siteSelector.value;
             const inputUrl = document.getElementById("inputUrl").value;
             let baseUrl=""
-            baseUrl = {{ .SiteBaseUrl }}
+            // baseUrl = {{ .SiteBaseUrl }}
             // let baseUrl = "https://feed-craft.colinx.one"
             if (baseUrl.length === 0){
                 baseUrl= window.location.origin;
