@@ -1,6 +1,7 @@
 <template>
   <a-select
     v-model="selectedCraftFlow"
+    mode="multiple"
     placeholder="Select Craft Flow"
     allow-create
     allow-clear
@@ -52,8 +53,8 @@
     name: 'CraftFlowSelect',
     props: {
       modelValue: {
-        type: String,
-        default: '',
+        type: Array as () => string[],
+        default: () => [],
       },
     },
     emits: ['update:modelValue'],
@@ -61,7 +62,7 @@
       const craftFlows = ref([]);
       const sysCraftAtomList = ref([]);
       const craftAtomList = ref([]);
-      const selectedCraftFlow = ref(props.modelValue);
+      const selectedCraftFlow = ref<string[]>(props.modelValue);
 
       onMounted(async () => {
         const [craftFlowsResponse, sysCraftAtomsResponse, craftAtomsResponse] =
