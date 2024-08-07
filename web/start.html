@@ -16,7 +16,8 @@
     <script>
         function appendPrefix() {
             const siteSelector = document.getElementById("siteSelector");
-            const selectedSite = siteSelector.value;
+            const customCraft = document.getElementById("customCraft").value;
+            const selectedSite = customCraft ? customCraft : siteSelector.value;
             const inputUrl = document.getElementById("inputUrl").value;
             let baseUrl=""
             baseUrl = {{ .SiteBaseUrl }}
@@ -52,6 +53,8 @@
                     <option value="fulltext-plus">fulltext-plus</option>
                     <option value="introduction">introduction</option>
                 </select>
+                <label for="customCraft" class="ml-4 mr-2">Or enter a custom craft:</label>
+                <input type="text" id="customCraft" placeholder="Enter custom craft" class="p-2 border border-gray-300 rounded"/>
             </div>
             <div class="mb-4">
                 <label for="inputUrl" class="mr-2">Enter a Feed URL:</label>
