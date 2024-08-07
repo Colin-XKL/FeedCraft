@@ -122,7 +122,7 @@ FeedCraft 的名称和Logo参考并致敬两款游戏: MineCraft和塞尔达, �
 - [x] feed limit support
 - [x] feed natural language filter support
 - [x] craft flow
-- [ ] feed custom keyword filter support
+- [x] feed custom keyword filter support
 - [ ] feed merge support
 
 ## 测试用例
