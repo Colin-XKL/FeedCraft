@@ -27,7 +27,13 @@
             }
             const resultUrl = `${baseUrl}/craft/${selectedSite}?input_url=${encodeURIComponent(inputUrl)}`
             document.getElementById("resultUrl").textContent = resultUrl;
-            document.getElementById("copyButton").textContent = "Copy URL";
+            const copyButton = document.getElementById("copyButton");
+            if (resultUrl) {
+                copyButton.style.display = "inline-block";
+                copyButton.textContent = "Copy URL";
+            } else {
+                copyButton.style.display = "none";
+            }
         }
 
         function copyUrl() {
@@ -79,7 +85,8 @@
                 <label for="resultUrl" class="mr-2">Result URL:</label>
                 <span id="resultUrl"></span>
                 <button id="copyButton" onclick="copyUrl()"
-                        class="px-1 py-0.5 bg-gray-200 text-gray-700 rounded ml-0.5 hover:bg-green-400 ">Copy URL
+                        class="px-1 py-0.5 bg-gray-200 text-gray-700 rounded ml-0.5 hover:bg-green-400 "
+                        style="display: none;">Copy URL
                 </button>
             </div>
         </div>
