@@ -63,7 +63,7 @@
           <a-textarea v-model="editedCraftFlow.description" />
         </a-form-item>
         <a-form-item label="流程" field="craftFlowConfig">
-          <CraftFlowSelect v-model="editedCraftFlow.craftList" />
+          <CraftFlowSelect v-model="editedCraftFlow.craftList" mode="multiple" />
         </a-form-item>
       </a-form>
       <template #footer>
