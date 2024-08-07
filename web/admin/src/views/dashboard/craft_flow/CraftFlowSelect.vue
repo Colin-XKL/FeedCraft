@@ -44,7 +44,7 @@
   </a-select>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
   import { ref, onMounted, watch } from 'vue';
   import {
     CraftFlow,
@@ -53,60 +53,46 @@
   } from '@/api/craft_flow';
   import { listCraftAtoms } from '@/api/craft_atom';
 
-  export default {
-    name: 'CraftFlowSelect',
-    props: {
-      modelValue: {
-        type: Array as () => string[],
-        default: () => [],
-      },
-      mode: {
-        type: String as () => 'single' | 'multiple',
-        default: 'multiple',
-      },
-    },
-    emits: ['update:modelValue'],
-    setup(props, { emit }) {
-      const craftFlows = ref<CraftFlow[]>([]);
-      const sysCraftAtomList = ref<CraftFlow[]>([]);
-      const craftAtomList = ref<CraftFlow[]>([]);
-      const selectedCraftFlow = ref<string[]>(props.modelValue);
+  const props = defineProps<{
+    modelValue: string[];
+    mode: 'single' | 'multiple';
+  }>();
 
-      onMounted(async () => {
-        const [craftFlowsResponse, sysCraftAtomsResponse, craftAtomsResponse] =
-          await Promise.all([
-            listCraftFlows(),
-            listSysCraftAtoms(),
-            listCraftAtoms(),
-          ]);
-        craftFlows.value = craftFlowsResponse.data as CraftFlow[];
-        sysCraftAtomList.value = sysCraftAtomsResponse.data as {
-          name: string;
-          description?: string;
-        }[];
-        craftAtomList.value = craftAtomsResponse.data as {
-          name: string;
-          description?: string;
-        }[];
-      });
+  const emit = defineEmits<{
+    (event: 'update:modelValue', value: string | string[]): void;
+  }>();
 
-      watch(selectedCraftFlow, (newValue) => {
-        emit('update:modelValue', mode === 'multiple' ? newValue : newValue[0]);
-      });
+  const craftFlows = ref<CraftFlow[]>([]);
+  const sysCraftAtomList = ref<CraftFlow[]>([]);
+  const craftAtomList = ref<CraftFlow[]>([]);
+  const selectedCraftFlow = ref<string[]>(props.modelValue);
 
-      watch(
-        () => props.modelValue,
-        (newValue) => {
-          selectedCraftFlow.value = mode === 'multiple' ? newValue : [newValue];
-        }
-      );
+  onMounted(async () => {
+    const [craftFlowsResponse, sysCraftAtomsResponse, craftAtomsResponse] =
+      await Promise.all([
+        listCraftFlows(),
+        listSysCraftAtoms(),
+        listCraftAtoms(),
+      ]);
+    craftFlows.value = craftFlowsResponse.data as CraftFlow[];
+    sysCraftAtomList.value = sysCraftAtomsResponse.data as {
+      name: string;
+      description?: string;
+    }[];
+    craftAtomList.value = craftAtomsResponse.data as {
+      name: string;
+      description?: string;
+    }[];
+  });
 
-      return {
-        craftFlows,
-        sysCraftAtomList,
-        craftAtomList,
-        selectedCraftFlow,
-      };
-    },
-  };
+  watch(selectedCraftFlow, (newValue) => {
+    emit('update:modelValue', props.mode === 'multiple' ? newValue : newValue[0]);
+  });
+
+  watch(
+    () => props.modelValue,
+    (newValue) => {
+      selectedCraftFlow.value = props.mode === 'multiple' ? newValue : [newValue];
+    }
+  );
 </script>
