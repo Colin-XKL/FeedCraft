@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <title>FeedCraft</title>
-    <!-- Include Tailwind CSS -->
+    <!-- 包含 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Center the container */
+        /* 居中容器 */
         .container {
             display: flex;
             justify-content: center;
@@ -30,7 +30,7 @@
             const copyButton = document.getElementById("copyButton");
             if (resultUrl) {
                 copyButton.style.display = "inline-block";
-                copyButton.textContent = "Copy URL";
+                copyButton.textContent = "复制 URL";
             } else {
                 copyButton.style.display = "none";
             }
@@ -40,9 +40,9 @@
             const resultUrl = document.getElementById("resultUrl").textContent;
             if (resultUrl) {
                 navigator.clipboard.writeText(resultUrl).then(() => {
-                    document.getElementById("copyButton").textContent = "Copied!";
+                    document.getElementById("copyButton").textContent = "已复制!";
                 }).catch(err => {
-                    console.error('Could not copy text: ', err);
+                    console.error('无法复制文本: ', err);
                 });
             }
         }
@@ -52,7 +52,7 @@
 <div class="container p-4 w-full">
     <div>
         <div class="mb-8 text-2xl">
-            <p class="text-gray-700">Welcome to<br/>
+            <p class="text-gray-700">欢迎来到<br/>
                 <span class="text-4xl font-bold text-sky-700 underline decoration-sky-500 decoration-wavy hover:underline-offset-2 hover:decoration-4"
                 >Feed Craft</span></p>
         </div>
@@ -62,31 +62,31 @@
                 https://github.com/Colin-XKL/FeedCraft</a>
         </div>
         <div class="py-8 pl-8 pr-32 bg-gray-100 rounded-lg w-full h-72 mx-auto ">
-            <h1 class="text-2xl  mb-4 ">URL Generator</h1>
+            <h1 class="text-2xl  mb-4 ">URL 生成器</h1>
             <div class="mb-4">
-                <label for="siteSelector" class="mr-2">Select a craft:</label>
+                <label for="siteSelector" class="mr-2">选择一个 craft:</label>
                 <select id="siteSelector" class="p-2 border border-gray-300 rounded">
                     <option value="proxy">proxy</option>
                     <option value="fulltext">fulltext</option>
                     <option value="fulltext-plus">fulltext-plus</option>
                     <option value="introduction">introduction</option>
                 </select>
-                <label for="customCraft" class="ml-4 mr-2">Or enter a custom craft:</label>
-                <input type="text" id="customCraft" placeholder="Enter custom craft"
+                <label for="customCraft" class="ml-4 mr-2">或输入自定义 craft:</label>
+                <input type="text" id="customCraft" placeholder="输入自定义 craft"
                        class="p-2 border border-gray-300 rounded"/>
             </div>
             <div class="mb-4">
-                <label for="inputUrl" class="mr-2">Enter a Feed URL:</label>
-                <input type="text" id="inputUrl" placeholder="Enter URL" class="p-2 border border-gray-300 rounded"/>
+                <label for="inputUrl" class="mr-2">输入 Feed URL:</label>
+                <input type="text" id="inputUrl" placeholder="输入 URL" class="p-2 border border-gray-300 rounded"/>
             </div>
-            <button onclick="appendPrefix()" class="px-4 py-2 bg-blue-500 text-white rounded">Show Crafted Feed URL
+            <button onclick="appendPrefix()" class="px-4 py-2 bg-blue-500 text-white rounded">显示 Crafted Feed URL
             </button>
             <div class="mt-4 ">
-                <label for="resultUrl" class="mr-2">Result URL:</label>
+                <label for="resultUrl" class="mr-2">结果 URL:</label>
                 <span id="resultUrl"></span>
                 <button id="copyButton" onclick="copyUrl()"
                         class="px-1 py-0.5 bg-gray-200 text-gray-700 rounded ml-0.5 hover:bg-green-400 "
-                        style="display: none;">Copy URL
+                        style="display: none;">复制 URL
                 </button>
             </div>
         </div>
