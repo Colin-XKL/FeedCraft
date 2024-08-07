@@ -15,7 +15,7 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 	sysCraftTempList := make(map[string]CraftTemplate)
 	sysCraftTempList["proxy"] = CraftTemplate{
 		Name:                "proxy",
-		Description:         "proxy the feed",
+		Description:         "代理订阅源",
 		ParamTemplateDefine: []ParamTemplate{},
 		OptionFunc: func(m map[string]string) []CraftOption {
 			return []CraftOption{}
@@ -23,19 +23,19 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 	}
 	sysCraftTempList["limit"] = CraftTemplate{
 		Name:                "limit",
-		Description:         "limit the number of entries to a single page",
+		Description:         "限制单页条目数量",
 		ParamTemplateDefine: limitCraftParamTmpl,
 		OptionFunc:          limitCraftLoadParams,
 	}
 	sysCraftTempList["keyword"] = CraftTemplate{
 		Name:                "keyword",
-		Description:         "keyword filter",
+		Description:         "关键词过滤",
 		ParamTemplateDefine: keywordCraftParamTmpl,
 		OptionFunc:          keywordCraftLoadParams,
 	}
 	sysCraftTempList["guid-fix"] = CraftTemplate{
 		Name:                "guid-fix",
-		Description:         "fix rss guid. use article content md5 as unique id.",
+		Description:         "修复 RSS GUID。使用文章内容 MD5 作为唯一 ID。",
 		ParamTemplateDefine: []ParamTemplate{},
 		OptionFunc: func(m map[string]string) []CraftOption {
 			return GetGuidCraftOptions()
@@ -43,7 +43,7 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 	}
 	sysCraftTempList["fulltext"] = CraftTemplate{
 		Name:                "fulltext",
-		Description:         "extract fulltext for rss feed",
+		Description:         "提取 RSS 订阅源的全文",
 		ParamTemplateDefine: []ParamTemplate{},
 		OptionFunc: func(m map[string]string) []CraftOption {
 			return GetFulltextCraftOptions()
@@ -51,7 +51,7 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 	}
 	sysCraftTempList["fulltext-plus"] = CraftTemplate{
 		Name:                "fulltext-plus",
-		Description:         "emulate the browser to extract fulltext for rss feed",
+		Description:         "模拟浏览器提取 RSS 订阅源的全文",
 		ParamTemplateDefine: []ParamTemplate{},
 		OptionFunc: func(m map[string]string) []CraftOption {
 			return GetFulltextPlusCraftOptions()
@@ -59,25 +59,25 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 	}
 	sysCraftTempList["introduction"] = CraftTemplate{
 		Name:                "introduction",
-		Description:         "add ai-generated introduction in the beginning of the article",
+		Description:         "在文章开头添加 AI 生成的介绍",
 		ParamTemplateDefine: introCraftParamTmpl,
 		OptionFunc:          introCraftLoadParam,
 	}
 	sysCraftTempList["ignore-advertorial"] = CraftTemplate{
 		Name:                "ignore-advertorial",
-		Description:         "exclude advertorial article using llm",
+		Description:         "使用 LLM 排除广告文章",
 		ParamTemplateDefine: llmFilterCraftParamTmpl,
 		OptionFunc:          llmFilterCraftLoadParam,
 	}
 	sysCraftTempList["translate-title"] = CraftTemplate{
 		Name:                "translate-title",
-		Description:         "translate title to Chinese using LLM",
+		Description:         "使用 LLM 将标题翻译为中文",
 		ParamTemplateDefine: transTitleParamTmpl,
 		OptionFunc:          transTitleCraftLoadParam,
 	}
 	sysCraftTempList["translate-content"] = CraftTemplate{
 		Name:                "translate-content",
-		Description:         "translate article content to Chinese using LLM",
+		Description:         "使用 LLM 将文章内容翻译为中文",
 		ParamTemplateDefine: transContentParamTmpl,
 		OptionFunc:          transContentCraftLoadParam,
 	}
