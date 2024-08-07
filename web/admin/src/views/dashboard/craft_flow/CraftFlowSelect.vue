@@ -1,7 +1,7 @@
 <template>
   <a-select
     v-model="selectedCraftFlow"
-    mode="multiple"
+    :mode="mode === 'multiple' ? 'multiple' : undefined"
     placeholder="Select Craft Flow"
     allow-create
     allow-clear
@@ -60,6 +60,10 @@
         type: Array as () => string[],
         default: () => [],
       },
+      mode: {
+        type: String as () => 'single' | 'multiple',
+        default: 'multiple',
+      },
     },
     emits: ['update:modelValue'],
     setup(props, { emit }) {
@@ -87,13 +91,13 @@
       });
 
       watch(selectedCraftFlow, (newValue) => {
-        emit('update:modelValue', newValue);
+        emit('update:modelValue', mode === 'multiple' ? newValue : newValue[0]);
       });
 
       watch(
         () => props.modelValue,
         (newValue) => {
-          selectedCraftFlow.value = newValue;
+          selectedCraftFlow.value = mode === 'multiple' ? newValue : [newValue];
         }
       );
 
