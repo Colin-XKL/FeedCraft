@@ -155,3 +155,22 @@ FeedCraft 的名称和Logo参考并致敬两款游戏: MineCraft和塞尔达, �
 ## 许可
 
 GPLv3
+
+## 页面展示
+
+**欢迎页**
+<img width="1900" alt="Xnip2024-08-08_00-48-49" src="https://github.com/user-attachments/assets/d3541f4e-9ab4-4948-9fc7-5b815db225ce">
+
+**RSS源比较工具**
+你可以输入一个RSS 源的地址, 然后选择要使用的craft atom, 就可以看到前后的对比.
+如下图我应用的craft是自定义的, 只显示文章标题带有`RSS`的文章, 可以看到筛选后的结果少了很多
+
+<img width="1907" alt="Xnip2024-08-08_01-05-09" src="https://github.com/user-attachments/assets/7abd764a-8b19-4a72-8c94-e3ea442ff385">
+
+**创建Craft Atom 自定义Prompt**
+<img width="1918" alt="Xnip2024-08-08_00-46-13" src="https://github.com/user-attachments/assets/ff15fe79-3792-4a96-b991-f121d2a8973e">
+
+**自定义recipe, 指定使用哪个craft atom 处理哪个RSS源**
+<img width="1900" alt="Xnip2024-08-08_00-48-34" src="https://github.com/user-attachments/assets/5794de1d-28b6-45ff-8737-16f8adc6ed8a">
+
+
