@@ -19,11 +19,11 @@
             const customCraft = document.getElementById("customCraft").value;
             const selectedSite = customCraft ? customCraft : siteSelector.value;
             const inputUrl = document.getElementById("inputUrl").value;
-            let baseUrl=""
+            let baseUrl = ""
             // baseUrl = {{ .SiteBaseUrl }}
             // let baseUrl = "https://feed-craft.colinx.one"
-            if (baseUrl.length === 0){
-                baseUrl= window.location.origin;
+            if (baseUrl.length === 0) {
+                baseUrl = window.location.origin;
             }
             const resultUrl = `${baseUrl}/craft/${selectedSite}?input_url=${encodeURIComponent(inputUrl)}`
             document.getElementById("resultUrl").textContent = resultUrl;
@@ -66,7 +66,8 @@
                     <option value="introduction">introduction</option>
                 </select>
                 <label for="customCraft" class="ml-4 mr-2">Or enter a custom craft:</label>
-                <input type="text" id="customCraft" placeholder="Enter custom craft" class="p-2 border border-gray-300 rounded"/>
+                <input type="text" id="customCraft" placeholder="Enter custom craft"
+                       class="p-2 border border-gray-300 rounded"/>
             </div>
             <div class="mb-4">
                 <label for="inputUrl" class="mr-2">Enter a Feed URL:</label>
