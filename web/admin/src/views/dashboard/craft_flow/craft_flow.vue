@@ -63,7 +63,10 @@
           <a-textarea v-model="editedCraftFlow.description" />
         </a-form-item>
         <a-form-item label="流程" field="craftFlowConfig">
-          <CraftFlowSelect v-model="editedCraftFlow.craftList" mode="multiple" />
+          <CraftFlowSelect
+            v-model="editedCraftFlow.craftList"
+            mode="multiple"
+          />
         </a-form-item>
       </a-form>
       <template #footer>
@@ -110,7 +113,7 @@
 
   const isLoading = ref(false);
   const craftFlows = ref<CraftFlow[]>([]);
-  const editedCraftFlow = ref<CraftFlow>({
+  const editedCraftFlow = ref<any>({
     name: '',
     description: '',
     craft_flow_config: [],
