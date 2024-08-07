@@ -25,33 +25,50 @@ filter your rss feed, and more!
 你可以用它来翻译、提取正文、模拟浏览器来渲染那些动态生成的网页并提取全文、通过大语言模型如Google
 Gemini来生成文章摘要、通过自然语言筛选文章等
 
+## 核心特性介绍:
+
+- 开源可自部署, 与现用任何RSS阅读器协同使用
+- AI Power, 可以接入所有Open AI接口兼容的LLM对RSS进行处理, 可自定义prompt
+- 支持保存规则批量应用到不同的RSS源
+- 支持便携模式(portable mode, 即用即走, 只需要在原RSS地址前面加个前缀即可), 和 高级模式(dock mode,
+  在后台页面自定义RSS地址和各类深度加工参数)
+
 ## 快速开始
 
 访问以下URL 即可快速调用FeedCraft对输入的RSS源进行指定的处理
-/craft/{choose_craft_option}?input_url={input_rss_url}
+`/craft/{choose_craft_option}?input_url={input_rss_url}`
 
 FeedCraft中的几个核心概念:
 
-- Craft(工艺), 指要如何处理一个rss源, 比如是要进行翻译,还是提取正文,还是AI生成摘要等
-- CraftFlow(工艺组合), 多个craft组成的序列, 比如你可以定义一个新的名叫 clean-article 的 craft flow,
+- CraftAtom(工艺), 指要如何处理一个rss源, 比如是要进行翻译,还是提取正文,还是AI生成摘要等
+- CraftFlow(工艺组合), 多个craft atom组成的序列, 比如你可以定义一个新的名叫 clean-article 的 craft flow,
   将提取全文、AI筛选文章、AI摘要组合到一起,
 - Recipe(食谱), 记录了以什么样的craft 或 craft flow对某个指定的rss源进行处理, 比如你可以指定一个名叫my-zhihu-daliy的recipe,
   对知乎日报的rss自动进行AI生成摘要的操作, 这个recipe对应一个新的rss地址, 你可以直接订阅这个地址得到带摘要版本的知乎日报
 
-目前可用的几个选项(craft option):
+你可以先开始尝试下面的几个选项(craft option):
 
-- proxy: 简易RSS代理, 不作任何处理
-- limit: 限制文章个数, 默认最新10个
-- fulltext: 获取全文
-- fulltext-plus: 获取全文,但是会模拟浏览器渲染网页,适用于常规模式无法获取到文章内容,动态渲染内容的站点
-- introduction: 调用AI为文章生成摘要,附加在原文开头
-- translate-title: 调用AI翻译文章标题
-- translate-content: 调用AI翻译文章标题
+- **proxy**: 简易RSS代理, 不作任何处理.
+- **limit**: 限制文章个数, 默认最新10个
+- **fulltext**: 获取全文
+- **fulltext-plus**: 获取全文,但是会模拟浏览器渲染网页,适用于常规模式无法获取到文章内容,动态渲染内容的站点
+- **introduction**: 调用AI为文章生成摘要,附加在原文开头
+- **translate-title**: 调用AI翻译文章标题
+- **translate-content**: 调用AI翻译文章标题
+- **ignore-advertorial**: 调用AI对文章进行筛选, 排除营销软文
 
 你可以使用提供的demo站点快速开始体验 :
 https://feed-craft.colinx.one
 
-*注意:Demo站点仅供体验使用
+例如, 现在你想要阅读这个RSS源 `https://feeds.feedburner.com/visualcapitalist`, 但是全英文的不方便快速略读,
+使用FeedCraft对标题进行翻译,
+那么只需要将订阅地址改成
+`https://feed-craft.colinx.one/craft/translate-title?input_url=https://feeds.feedburner.com/visualcapitalist`  即可.
+
+(部分RSS订阅软件不会自动进行字符转译, 你可能需要把 input_url 后面的内容进行手动转译,
+结果为 `https://feed-craft.colinx.one/craft/translate-title?input_url=https%3A%2F%2Ffeeds.feedburner.com%2Fvisualcapitalist` )
+
+*注意: Demo站点仅供体验使用
 
 ## 部署
 
@@ -126,6 +143,7 @@ FeedCraft 的名称和Logo参考并致敬两款游戏: MineCraft和塞尔达, �
 - [ ] feed merge support
 
 ## 测试用例
+
 你可以使用下面几个 rss 快速进行测试
 
 - 全英文，有全文
