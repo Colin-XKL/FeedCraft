@@ -46,7 +46,11 @@
 
 <script lang="ts">
   import { ref, onMounted, watch } from 'vue';
-  import { listCraftFlows, listSysCraftAtoms } from '@/api/craft_flow';
+  import {
+    CraftFlow,
+    listCraftFlows,
+    listSysCraftAtoms,
+  } from '@/api/craft_flow';
   import { listCraftAtoms } from '@/api/craft_atom';
 
   export default {
@@ -59,9 +63,9 @@
     },
     emits: ['update:modelValue'],
     setup(props, { emit }) {
-      const craftFlows = ref([]);
-      const sysCraftAtomList = ref([]);
-      const craftAtomList = ref([]);
+      const craftFlows = ref<CraftFlow[]>([]);
+      const sysCraftAtomList = ref<CraftFlow[]>([]);
+      const craftAtomList = ref<CraftFlow[]>([]);
       const selectedCraftFlow = ref<string[]>(props.modelValue);
 
       onMounted(async () => {
@@ -71,9 +75,15 @@
             listSysCraftAtoms(),
             listCraftAtoms(),
           ]);
-        craftFlows.value = craftFlowsResponse.data;
-        sysCraftAtomList.value = sysCraftAtomsResponse.data;
-        craftAtomList.value = craftAtomsResponse.data;
+        craftFlows.value = craftFlowsResponse.data as CraftFlow[];
+        sysCraftAtomList.value = sysCraftAtomsResponse.data as {
+          name: string;
+          description?: string;
+        }[];
+        craftAtomList.value = craftAtomsResponse.data as {
+          name: string;
+          description?: string;
+        }[];
       });
 
       watch(selectedCraftFlow, (newValue) => {
