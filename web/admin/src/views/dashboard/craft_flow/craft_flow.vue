@@ -1,10 +1,13 @@
 <template>
   <div class="py-8 px-16">
-    <x-header title="RSS 源预览" description="RSS 源预览"> </x-header>
+    <x-header
+      title="Craft Flow"
+      description="你可以将craft atom 串起来一次性完成多个任务, 此外还可以复用craft flow, 将处理规则应用到多个RSS源"
+    ></x-header>
 
     <a-space direction="horizontal" class="mb-6">
       <a-button type="primary" :loading="isLoading" @click="listAllCraftFlow">
-        列表
+        查询
       </a-button>
       <a-button
         type="outline"

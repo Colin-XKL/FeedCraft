@@ -1,7 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html >
+<html lang="en" >
 <head>
     <title>FeedCraft</title>
+    <meta charset="utf-8">
     <!-- 包含 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -52,13 +53,13 @@
 <div class="container p-4 w-full">
     <div>
         <div class="mb-8 text-2xl">
-            <p class="text-gray-700">欢迎来到<br/>
+            <p class="text-gray-700">Welcome to<br/>
                 <span class="text-4xl font-bold text-sky-700 underline decoration-sky-500 decoration-wavy hover:underline-offset-2 hover:decoration-4"
                 >Feed Craft</span></p>
         </div>
         <div class="flex  align-center items-center mb-2">
             <span class="mdi--github"></span><b> Github: </b>
-            <a href="https://github.com/Colin-XKL/FeedCraft" class="text-sky-800">
+            <a href="https://github.com/Colin-XKL/FeedCraft" class="text-sky-800 underline-offset-1 hover:underline">
                 https://github.com/Colin-XKL/FeedCraft</a>
         </div>
         <div class="py-8 pl-8 pr-32 bg-gray-100 rounded-lg w-full h-72 mx-auto ">
@@ -76,7 +77,7 @@
                        class="p-2 border border-gray-300 rounded"/>
             </div>
             <div class="mb-4">
-                <label for="inputUrl" class="mr-2">输入 Feed URL:</label>
+                <label for="inputUrl" class="mr-2">输入原 RSS URL:</label>
                 <input type="text" id="inputUrl" placeholder="输入 URL" class="p-2 border border-gray-300 rounded"/>
             </div>
             <button onclick="appendPrefix()" class="px-4 py-2 bg-blue-500 text-white rounded">显示 Crafted Feed URL
@@ -85,7 +86,7 @@
                 <label for="resultUrl" class="mr-2">结果 URL:</label>
                 <span id="resultUrl"></span>
                 <button id="copyButton" onclick="copyUrl()"
-                        class="px-1 py-0.5 bg-gray-200 text-gray-700 rounded ml-0.5 hover:bg-green-400 "
+                        class="px-2 py-0.5 bg-gray-200 text-gray-700 rounded ml-0.5 hover:bg-teal-500 "
                         style="display: none;">复制 URL
                 </button>
             </div>
