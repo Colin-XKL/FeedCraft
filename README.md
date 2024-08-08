@@ -54,18 +54,18 @@ FeedCraft中的几个核心概念:
 - **fulltext-plus**: 获取全文,但是会模拟浏览器渲染网页,适用于常规模式无法获取到文章内容,动态渲染内容的站点
 - **introduction**: 调用AI为文章生成摘要,附加在原文开头
 - **translate-title**: 调用AI翻译文章标题
-- **translate-content**: 调用AI翻译文章标题
+- **translate-content**: 调用AI翻译文章内容
 - **ignore-advertorial**: 调用AI对文章进行筛选, 排除营销软文
 
 你可以使用提供的demo站点快速开始体验 :
 https://feed-craft.colinx.one
 
-例如, 现在你想要阅读这个RSS源 `https://feeds.feedburner.com/visualcapitalist`, 但是全英文的不方便快速略读,
+例如, 现在你想要阅读这个RSS源 `https://feeds.feedburner.com/visualcapitalist`, 但是由于是全英文的不方便快速略读,
 使用FeedCraft对标题进行翻译,
 那么只需要将订阅地址改成
 `https://feed-craft.colinx.one/craft/translate-title?input_url=https://feeds.feedburner.com/visualcapitalist`  即可.
 
-(部分RSS订阅软件不会自动进行字符转译, 你可能需要把 input_url 后面的内容进行手动转译,
+(部分RSS订阅软件不会自动进行字符转义, 你可能需要把 input_url 后面的内容进行手动转义,
 结果为 `https://feed-craft.colinx.one/craft/translate-title?input_url=https%3A%2F%2Ffeeds.feedburner.com%2Fvisualcapitalist` )
 
 *注意: Demo站点仅供体验使用
