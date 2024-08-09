@@ -35,8 +35,8 @@ Gemini来生成文章摘要、通过自然语言筛选文章等
 
 ## 快速开始
 
-访问以下URL 即可快速调用FeedCraft对输入的RSS源进行指定的处理
-`/craft/{choose_craft_option}?input_url={input_rss_url}`
+访问以下URL格式即可快速调用FeedCraft对输入的RSS源进行指定的处理
+`https://feed-craft.colinx.one/craft/{craft_atom}?input_url={input_rss_url}`
 
 FeedCraft中的几个核心概念:
 
@@ -46,7 +46,7 @@ FeedCraft中的几个核心概念:
 - Recipe(食谱), 记录了以什么样的craft 或 craft flow对某个指定的rss源进行处理, 比如你可以指定一个名叫my-zhihu-daliy的recipe,
   对知乎日报的rss自动进行AI生成摘要的操作, 这个recipe对应一个新的rss地址, 你可以直接订阅这个地址得到带摘要版本的知乎日报
 
-你可以先开始尝试下面的几个选项(craft option):
+你可以先开始尝试下面的几个工艺(craft atom):
 
 - **proxy**: 简易RSS代理, 不作任何处理.
 - **limit**: 限制文章个数, 默认最新10个
@@ -75,7 +75,8 @@ https://feed-craft.colinx.one
 你可以通过docker快速自行部署一个FeedCraft实例,以获得更好的使用体验.
 下面为一个最小docker compose 示例:
 
-服务默认监听在 80 端口，你也可以在同一网络下的其他容器中，使用 `http://app.feed-craft/xxx` 这样来进行访问
+服务默认监听在 80 端口，你也可以在同一网络下的其他容器中，使用 `http://app.feed-craft/xxx` 这样来进行访问。  
+控制台默认账号`admin`, 密码 `adminadmin`, 登陆后请尽快修改默认密码
 
 ```yaml
 version: "3"
