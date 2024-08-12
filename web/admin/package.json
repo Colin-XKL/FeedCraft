@@ -37,7 +37,7 @@
     "lodash": "^4.17.21",
     "mitt": "^3.0.0",
     "nprogress": "^0.2.0",
-    "pinia": "^2.2.0",
+    "pinia": "^2.2.1",
     "query-string": "^8.0.3",
     "rss-parser": "~3.13.0",
     "sortablejs": "^1.15.0",

@@ -44,8 +44,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0
       pinia:
-        specifier: ^2.2.0
-        version: 2.2.0(typescript@4.9.5)(vue@3.4.27(typescript@4.9.5))
+        specifier: ^2.2.1
+        version: 2.2.1(typescript@4.9.5)(vue@3.4.27(typescript@4.9.5))
       query-string:
         specifier: ^8.0.3
         version: 8.2.0
@@ -2034,8 +2034,8 @@ packages:
     resolution: {integrity: sha512-uB80kBFb/tfd68bVleG9T5GGsGPjJrLAUpR5PZIrhBnIaRTQRjqdJSsIKkOP6OAIFbj7GOrcudc5pNjZ+geV2g==}
     engines: {node: '>=6'}
 
-  pinia@2.2.0:
-    resolution: {integrity: sha512-iPrIh26GMqfpUlMOGyxuDowGmYousTecbTHFwT0xZ1zJvh23oQ+Cj99ZoPQA1TnUPhU6AuRPv6/drkTCJ0VHQA==}
+  pinia@2.2.1:
+    resolution: {integrity: sha512-ltEU3xwiz5ojVMizdP93AHi84Rtfz0+yKd8ud75hr9LVyWX2alxp7vLbY1kFm7MXFmHHr/9B08Xf8Jj6IHTEiQ==}
     peerDependencies:
       '@vue/composition-api': ^1.4.0
       typescript: '>=4.4.4'
@@ -2519,6 +2519,17 @@ packages:
 
   vue-demi@0.13.11:
     resolution: {integrity: sha512-IR8HoEEGM65YY3ZJYAjMlKygDQn25D5ajNFNoKh9RSDMQtlzCxtfQjdQgv9jjK+m3377SsJXY8ysq8kLCZL25A==}
+    engines: {node: '>=12'}
+    hasBin: true
+    peerDependencies:
+      '@vue/composition-api': ^1.0.0-rc.1
+      vue: ^3.0.0-0 || ^2.6.0
+    peerDependenciesMeta:
+      '@vue/composition-api':
+        optional: true
+
+  vue-demi@0.14.10:
+    resolution: {integrity: sha512-nMZBOwuzabUO0nLgIcc6rycZEebF6eeUfaiQx9+WSk8e29IbLvPU9feI6tqW4kTo3hvoYAJkMh8n8D0fuISphg==}
     engines: {node: '>=12'}
     hasBin: true
     peerDependencies:
@@ -4696,11 +4707,11 @@ snapshots:
   pify@4.0.1:
     optional: true
 
-  pinia@2.2.0(typescript@4.9.5)(vue@3.4.27(typescript@4.9.5)):
+  pinia@2.2.1(typescript@4.9.5)(vue@3.4.27(typescript@4.9.5)):
     dependencies:
       '@vue/devtools-api': 6.6.3
       vue: 3.4.27(typescript@4.9.5)
-      vue-demi: 0.14.8(vue@3.4.27(typescript@4.9.5))
+      vue-demi: 0.14.10(vue@3.4.27(typescript@4.9.5))
     optionalDependencies:
       typescript: 4.9.5
 
@@ -5200,6 +5211,10 @@ snapshots:
       less: 4.2.0
 
   vue-demi@0.13.11(vue@3.4.27(typescript@4.9.5)):
+    dependencies:
+      vue: 3.4.27(typescript@4.9.5)
+
+  vue-demi@0.14.10(vue@3.4.27(typescript@4.9.5)):
     dependencies:
       vue: 3.4.27(typescript@4.9.5)
 
