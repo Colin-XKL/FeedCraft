@@ -6,15 +6,15 @@ ENV GOMODCACHE=/root/.cache/go-mod-cache
 WORKDIR /app
 
 # copy Go modules and dependencies to image
-COPY go.mod ./
+COPY go.mod go.sum ./
 
 # download Go modules and dependencies
 RUN --mount=type=cache,id=gomod,target="/root/.cache/go-mod-cache" go mod download
 
 # copy directory files i.e all files ending with .go
 COPY . .
-# compile application
 
+# compile application
 RUN --mount=type=cache,id=gobuild,target="/root/.cache/go-build" GO111MODULE=on CGO_ENABLED=0 go build -o /feed-craft /app/cmd/main.go
 
 FROM node:22-slim AS frontend-builder
@@ -28,10 +28,9 @@ WORKDIR /app
 COPY web/admin/pnpm-lock.yaml web/admin/package.json /app/
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install
 
-COPY  web/admin /app/
+COPY web/admin /app/
 RUN pnpm run build
 
-## DEPLOY
 FROM alpine
 
 WORKDIR /app
