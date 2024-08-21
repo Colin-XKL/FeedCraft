@@ -83,6 +83,7 @@ version: "3"
 services:
   app.feed-craft:
     image: ghcr.io/colin-xkl/feed-craft
+  # image: colinxkl/feed-craft  # 你也可以使用docker hub的镜像
     container_name: feed-craft
     restart: always
     ports:
