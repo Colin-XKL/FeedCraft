@@ -78,6 +78,7 @@ jobs:
             # set latest tag for default branch
             type=raw,value=latest,enable={{is_default_branch}}
             type=edge,branch=dev
+            type=main,branch=main
             type=pep440,pattern={{major}}.{{minor}},enable={{is_default_branch}}
             type=pep440,pattern={{version}},enable={{is_default_branch}}
           flavor: latest=false
