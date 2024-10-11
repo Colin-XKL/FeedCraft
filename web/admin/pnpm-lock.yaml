@@ -151,10 +151,10 @@ importers:
         version: 2.8.8
       rollup:
         specifier: ^2.56.3
-        version: 2.79.1
+        version: 2.79.2
       rollup-plugin-visualizer:
         specifier: ^5.8.2
-        version: 5.12.0(rollup@2.79.1)
+        version: 5.12.0(rollup@2.79.2)
       tailwindcss:
         specifier: ^3.4.7
         version: 3.4.7
@@ -163,7 +163,7 @@ importers:
         version: 4.9.5
       unplugin-vue-components:
         specifier: ^0.24.1
-        version: 0.24.1(@babel/parser@7.24.6)(rollup@2.79.1)(vue@3.4.27(typescript@4.9.5))
+        version: 0.24.1(@babel/parser@7.24.6)(rollup@2.79.2)(vue@3.4.27(typescript@4.9.5))
       vite:
         specifier: ^3.2.5
         version: 3.2.10(@types/node@16.18.97)(less@4.2.0)
@@ -2243,8 +2243,8 @@ packages:
       rollup:
         optional: true
 
-  rollup@2.79.1:
-    resolution: {integrity: sha512-uKxbd0IhMZOhjAiD5oAFp7BqvkA4Dv47qpOCtaNvng4HBwdbWtdOh8f5nZNuk2rp51PMGk3bzfWu5oayNEuYnw==}
+  rollup@2.79.2:
+    resolution: {integrity: sha512-fS6iqSPZDs3dr/y7Od6y5nha8dW1YnbgtsyotCVvoFGKbERG++CVRFv1meyGDE1SNItQA8BrnCw7ScdAhRJ3XQ==}
     engines: {node: '>=10.0.0'}
     hasBin: true
 
@@ -3049,13 +3049,13 @@ snapshots:
       estree-walker: 2.0.2
       picomatch: 2.3.1
 
-  '@rollup/pluginutils@5.1.0(rollup@2.79.1)':
+  '@rollup/pluginutils@5.1.0(rollup@2.79.2)':
     dependencies:
       '@types/estree': 1.0.5
       estree-walker: 2.0.2
       picomatch: 2.3.1
     optionalDependencies:
-      rollup: 2.79.1
+      rollup: 2.79.2
 
   '@rtsao/scc@1.1.0': {}
 
@@ -4932,16 +4932,16 @@ snapshots:
     dependencies:
       glob: 7.2.3
 
-  rollup-plugin-visualizer@5.12.0(rollup@2.79.1):
+  rollup-plugin-visualizer@5.12.0(rollup@2.79.2):
     dependencies:
       open: 8.4.2
       picomatch: 2.3.1
       source-map: 0.7.4
       yargs: 17.7.2
     optionalDependencies:
-      rollup: 2.79.1
+      rollup: 2.79.2
 
-  rollup@2.79.1:
+  rollup@2.79.2:
     optionalDependencies:
       fsevents: 2.3.3
 
@@ -5232,10 +5232,10 @@ snapshots:
       has-symbols: 1.0.3
       which-boxed-primitive: 1.0.2
 
-  unplugin-vue-components@0.24.1(@babel/parser@7.24.6)(rollup@2.79.1)(vue@3.4.27(typescript@4.9.5)):
+  unplugin-vue-components@0.24.1(@babel/parser@7.24.6)(rollup@2.79.2)(vue@3.4.27(typescript@4.9.5)):
     dependencies:
       '@antfu/utils': 0.7.8
-      '@rollup/pluginutils': 5.1.0(rollup@2.79.1)
+      '@rollup/pluginutils': 5.1.0(rollup@2.79.2)
       chokidar: 3.6.0
       debug: 4.3.5
       fast-glob: 3.3.2
@@ -5287,7 +5287,7 @@ snapshots:
       '@rollup/pluginutils': 4.2.1
       '@types/eslint': 8.56.10
       eslint: 8.57.0
-      rollup: 2.79.1
+      rollup: 2.79.2
       vite: 3.2.10(@types/node@16.18.97)(less@4.2.0)
 
   vite-svg-loader@3.6.0:
@@ -5300,7 +5300,7 @@ snapshots:
       esbuild: 0.15.18
       postcss: 8.4.40
       resolve: 1.22.8
-      rollup: 2.79.1
+      rollup: 2.79.2
     optionalDependencies:
       '@types/node': 16.18.97
       fsevents: 2.3.3
