@@ -102,8 +102,8 @@ importers:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.4.40)
       code-inspector-plugin:
-        specifier: ^0.13.0
-        version: 0.13.0
+        specifier: ^0.16.1
+        version: 0.16.1
       consola:
         specifier: ^2.15.3
         version: 2.15.3
@@ -825,11 +825,11 @@ packages:
     resolution: {integrity: sha512-BSeNnyus75C4//NQ9gQt1/csTXyo/8Sb+afLAkzAptFuMsod9HFokGNudZpi/oQV73hnVK+sR+5PVRMd+Dr7YQ==}
     engines: {node: '>=12'}
 
-  code-inspector-core@0.13.0:
-    resolution: {integrity: sha512-oYPNLdJjn3SY50YtF3IuxZOKLBNwzXSRPOqiXVnZFceMz9Ar6ugP3+zj7HszouxrsLFb2dVtlv//5wr4+cq62A==}
+  code-inspector-core@0.16.1:
+    resolution: {integrity: sha512-rZlgRy7hp98X3uX9EfLw/BudkcASiaeXQJbTnSmfNSgWyY3EntSmhr2Ek4DsSnDcOaD2405zFHBCP9dPPdh/ZQ==}
 
-  code-inspector-plugin@0.13.0:
-    resolution: {integrity: sha512-v4mq5hhHkyMmutembTzREVsFeZ/+KsCwfx20+0gTqm1Il/M1T4d2BCv9mZ4ivie3GvvDMt/pVz1iBBVP3SuzJA==}
+  code-inspector-plugin@0.16.1:
+    resolution: {integrity: sha512-/oV9RO2dij1s9pm6E6F9n0hwJjq9H+ATOi6YamjTFihaiP0Gp0sv8kJGeljqe9PAkue4lxwFghSR9tEtfZn1Ow==}
 
   color-convert@1.9.3:
     resolution: {integrity: sha512-QfAUtd+vFdAtFQcC8CCyYt1fYWxSqAiK2cSD6zDB8N3cpsEBAvRxp9zOGg6G/SHHJYAT88/az/IuDGALsNVbGg==}
@@ -1106,6 +1106,9 @@ packages:
     cpu: [arm64]
     os: [android]
 
+  esbuild-code-inspector-plugin@0.16.1:
+    resolution: {integrity: sha512-BgewNP7lWxkTW7snW0tr/L9wRECH3EqvCqxrCVpiCVbAOn9R468URhTXUi3sMZwbuk0D87VpUmLugOjbL4THtg==}
+
   esbuild-darwin-64@0.15.18:
     resolution: {integrity: sha512-2WAvs95uPnVJPuYKP0Eqx+Dl/jaYseZEUUT1sjg97TJa4oBtbAKnPnl3b5M9l51/nbx7+QAEtuummJZW0sBEmg==}
     engines: {node: '>=12'}
@@ -1317,6 +1320,7 @@ packages:
   eslint@8.57.0:
     resolution: {integrity: sha512-dZ6+mexnaTIbSBZWgou51U6OmzIhYM2VcNdtiTtI7qPNZm35Akpr0f6vtw3w1Kmn5PYo+tZVfh13WrhpS6oLqQ==}
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
 
   espree@9.6.1:
@@ -2500,8 +2504,8 @@ packages:
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
 
-  vite-code-inspector-plugin@0.13.0:
-    resolution: {integrity: sha512-hvIn9G+IFzQHVVynWh2wGTBHo51CBJRqQBzYryeuuaL0BK0w8my2/tlpSAae5ofQxOBXBMhyXC2gWgYUJnNWrA==}
+  vite-code-inspector-plugin@0.16.1:
+    resolution: {integrity: sha512-SFV6UjWmgn9h3G4jzWuB1zEbBqC8Vuh+gTNCmVz2HsOB4keLjpEr/4+gAsNhVUyjYdRD1SoEVs5n0q260/si+g==}
 
   vite-plugin-eslint@1.8.1:
     resolution: {integrity: sha512-PqdMf3Y2fLO9FsNPmMX+//2BF5SF8nEWspZdgl4kSt7UvHDRHVVfHvxsD7ULYzZrJDGRxR81Nq7TOFgwMnUang==}
@@ -2617,8 +2621,8 @@ packages:
       typescript:
         optional: true
 
-  webpack-code-inspector-plugin@0.13.0:
-    resolution: {integrity: sha512-T3ZZ84NX0cVmwff5zyYhB9OuroZYsyaQpSgFicgiuYAWCsQePYApM/R3bHdvcECkBXO50hAVtr9SjWRTu1+Ntg==}
+  webpack-code-inspector-plugin@0.16.1:
+    resolution: {integrity: sha512-KCZ9sx4ei3WledsrhPZQ1eN6A/ZhNv1DH06I6yoUEEFl9KstbHAZ6Zm5hjBagY7MXqGfqepdz+j3XYT3Ep/Wwg==}
 
   webpack-sources@3.2.3:
     resolution: {integrity: sha512-/DyMEOrDgLKKIG0fmvtz+4dUX/3Ghozwgm6iPp8KRhvn+eQf9+Q7GWxVNMk3+uCPWfdXYC4ExGBckIXdFEfH1w==}
@@ -3505,20 +3509,21 @@ snapshots:
       strip-ansi: 6.0.1
       wrap-ansi: 7.0.0
 
-  code-inspector-core@0.13.0:
+  code-inspector-core@0.16.1:
     dependencies:
       '@vue/compiler-dom': 3.4.27
-      chalk: 4.1.1
+      chalk: 4.1.2
       portfinder: 1.0.32
     transitivePeerDependencies:
       - supports-color
 
-  code-inspector-plugin@0.13.0:
+  code-inspector-plugin@0.16.1:
     dependencies:
       chalk: 4.1.1
-      code-inspector-core: 0.13.0
-      vite-code-inspector-plugin: 0.13.0
-      webpack-code-inspector-plugin: 0.13.0
+      code-inspector-core: 0.16.1
+      esbuild-code-inspector-plugin: 0.16.1
+      vite-code-inspector-plugin: 0.16.1
+      webpack-code-inspector-plugin: 0.16.1
     transitivePeerDependencies:
       - supports-color
 
@@ -3820,6 +3825,12 @@ snapshots:
 
   esbuild-android-arm64@0.15.18:
     optional: true
+
+  esbuild-code-inspector-plugin@0.16.1:
+    dependencies:
+      code-inspector-core: 0.16.1
+    transitivePeerDependencies:
+      - supports-color
 
   esbuild-darwin-64@0.15.18:
     optional: true
@@ -5219,9 +5230,9 @@ snapshots:
 
   util-deprecate@1.0.2: {}
 
-  vite-code-inspector-plugin@0.13.0:
+  vite-code-inspector-plugin@0.16.1:
     dependencies:
-      code-inspector-core: 0.13.0
+      code-inspector-core: 0.16.1
     transitivePeerDependencies:
       - supports-color
 
@@ -5317,9 +5328,9 @@ snapshots:
     optionalDependencies:
       typescript: 4.9.5
 
-  webpack-code-inspector-plugin@0.13.0:
+  webpack-code-inspector-plugin@0.16.1:
     dependencies:
-      code-inspector-core: 0.13.0
+      code-inspector-core: 0.16.1
     transitivePeerDependencies:
       - supports-color
 
