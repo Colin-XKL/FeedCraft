@@ -19,7 +19,7 @@ require (
 	github.com/sashabaranov/go-openai v1.26.3
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/viper v1.18.2
-	gorm.io/gorm v1.25.11
+	gorm.io/gorm v1.25.12
 )
 
 require (
