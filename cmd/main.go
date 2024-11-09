@@ -9,11 +9,44 @@ import (
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cobra"
 	"net/http"
 	"os"
 )
 
+var rootCmd = &cobra.Command{
+	Use:   "feedcraft",
+	Short: "FeedCraft is a feed management system",
+	Run: func(cmd *cobra.Command, args []string) {
+		startServer()
+	},
+}
+
+var resetPasswordCmd = &cobra.Command{
+	Use:   "reset-password",
+	Short: "Reset admin password",
+	Run: func(cmd *cobra.Command, args []string) {
+		if err := dao.ResetAdminPassword(); err != nil {
+			logrus.Errorf("Failed to reset admin password: %v", err)
+			os.Exit(1)
+		}
+		logrus.Info("Admin password has been reset successfully")
+		os.Exit(0)
+	},
+}
+
+func init() {
+	rootCmd.AddCommand(resetPasswordCmd)
+}
+
 func main() {
+	if err := rootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+}
+
+func startServer() {
 	sentryDsn := os.Getenv("SENTRY_DSN")
 	env := os.Getenv("ENV")
 	if len(env) == 0 {
