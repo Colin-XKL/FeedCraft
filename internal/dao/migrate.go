@@ -24,14 +24,15 @@ func MigrateDatabases() {
 	createAdminUser(db)
 }
 
+var defaultAdminUsername = "admin"
+var defaultPassword = "adminadmin" // default defaultPassword string
+
 func createAdminUser(db *gorm.DB) {
-	username := "admin"
-	defaultPassword := "adminadmin" // default defaultPassword string
 	md5Password := util.GetMD5Hash(defaultPassword)
 
 	// 检查是否已经存在 admin 用户
 	var user User
-	result := db.Where("username = ?", username).First(&user)
+	result := db.Where("username = ?", defaultAdminUsername).First(&user)
 	if result.Error == nil {
 		logrus.Info("admin user already exists")
 		return
@@ -39,7 +40,7 @@ func createAdminUser(db *gorm.DB) {
 
 	// 创建 admin 用户
 	adminUser := &User{
-		Username: username,
+		Username: defaultAdminUsername,
 		NickName: "Admin",
 		Email:    "admin@example.com",
 	}
@@ -49,4 +50,12 @@ func createAdminUser(db *gorm.DB) {
 	}
 
 	logrus.Info("admin user created successfully")
+}
+
+// 重置 admin 密码
+func ResetAdminPassword()error {
+	logrus.Info("resetting admin password...")
+	db := util.GetDatabase()
+	md5Password := util.GetMD5Hash(defaultPassword)
+	return db.Model(&User{}).Where("username = ?", defaultAdminUsername).Update("password", md5Password).Error
 }
