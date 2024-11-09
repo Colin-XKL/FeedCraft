@@ -2,14 +2,15 @@ package craft
 
 import (
 	"FeedCraft/internal/util"
-	"github.com/go-resty/resty/v2"
-	"github.com/go-shiori/go-readability"
-	"github.com/gorilla/feeds"
-	"github.com/sirupsen/logrus"
 	"log"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/go-resty/resty/v2"
+	"github.com/go-shiori/go-readability"
+	"github.com/gorilla/feeds"
+	"github.com/sirupsen/logrus"
 )
 
 //func getRenderedHTML(websiteUrl string) (string, error) {
@@ -96,7 +97,6 @@ func getRenderedHTML2(websiteUrl string, timeout time.Duration) (string, error) 
 	article, err := readability.FromReader(strings.NewReader(response.String()), parseUrl)
 
 	return article.Content, err
-	return response.String(), nil
 }
 
 func GetFulltextPlusCraftOptions() []CraftOption {
