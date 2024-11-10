@@ -183,3 +183,4 @@ web/admin/.idea
 web/admin/dist
 .aider*
 .run
+main

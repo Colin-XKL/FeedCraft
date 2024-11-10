@@ -1,9 +1,10 @@
 package craft
 
 import (
+	"strings"
+
 	"github.com/gorilla/feeds"
 	"github.com/sirupsen/logrus"
-	"strings"
 )
 
 type KeywordFilterMode string
@@ -54,12 +55,10 @@ func optionKeyword(mode KeywordFilterMode, matchScope KeywordMatchScope, keyword
 				if matched {
 					filtered = append(filtered, feedItem)
 				}
-				break
 			case KeywordExcludeMode:
 				if !matched {
 					filtered = append(filtered, feedItem)
 				}
-				break
 			default:
 				logrus.Warnf("unknown mode %s", mode)
 			}
@@ -83,7 +82,7 @@ var keywordCraftParamTmpl = []ParamTemplate{
 }
 
 func keywordCraftLoadParams(m map[string]string) []CraftOption {
-	modeStr, _ := m["mode"]
+	modeStr := m["mode"]
 	mode := KeywordIncludeMode
 	if modeStr == string(KeywordIncludeMode) {
 		mode = KeywordIncludeMode
@@ -92,7 +91,7 @@ func keywordCraftLoadParams(m map[string]string) []CraftOption {
 	} else {
 		logrus.Warnf("unknown mode str %s", modeStr)
 	}
-	scopeStr, _ := m["scope"]
+	scopeStr := m["scope"]
 	scope := KeywordMatchAll
 	if scopeStr == string(KeywordMatchTitle) {
 		scope = KeywordMatchTitle
@@ -103,7 +102,7 @@ func keywordCraftLoadParams(m map[string]string) []CraftOption {
 	} else {
 		logrus.Warnf("unknown scope str %s", scopeStr)
 	}
-	keywordStr, _ := m["keywords"]
+	keywordStr := m["keywords"]
 	keywordList := strings.Split(keywordStr, ",")
 	return GetKeywordOption(mode, scope, keywordList)
 }

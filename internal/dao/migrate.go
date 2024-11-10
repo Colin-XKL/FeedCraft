@@ -2,6 +2,7 @@ package dao
 
 import (
 	"FeedCraft/internal/util"
+
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -27,6 +28,12 @@ func MigrateDatabases() {
 var defaultAdminUsername = "admin"
 var defaultPassword = "adminadmin" // default defaultPassword string
 
+var defaultAdminUser = User{
+	Username: defaultAdminUsername,
+	NickName: "Admin",
+	Email:    "admin@example.com",
+}
+
 func createAdminUser(db *gorm.DB) {
 	md5Password := util.GetMD5Hash(defaultPassword)
 
@@ -39,12 +46,7 @@ func createAdminUser(db *gorm.DB) {
 	}
 
 	// 创建 admin 用户
-	adminUser := &User{
-		Username: defaultAdminUsername,
-		NickName: "Admin",
-		Email:    "admin@example.com",
-	}
-	if err := CreateUser(db, adminUser, md5Password); err != nil {
+	if err := CreateUser(db, &defaultAdminUser, md5Password); err != nil {
 		logrus.Error("failed to create admin user:", err)
 		return
 	}
@@ -53,9 +55,9 @@ func createAdminUser(db *gorm.DB) {
 }
 
 // 重置 admin 密码
-func ResetAdminPassword()error {
+func ResetAdminPassword() error {
 	logrus.Info("resetting admin password...")
 	db := util.GetDatabase()
 	md5Password := util.GetMD5Hash(defaultPassword)
-	return db.Model(&User{}).Where("username = ?", defaultAdminUsername).Update("password", md5Password).Error
+	return UpdateUserPassword(db, &defaultAdminUser, md5Password)
 }

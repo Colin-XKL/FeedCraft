@@ -4,11 +4,12 @@ import (
 	"FeedCraft/internal/dao"
 	"FeedCraft/internal/util"
 	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 	"gorm.io/gorm"
-	"net/http"
 )
 
 func GetSysCraftTemplateDict() map[string]CraftTemplate {
@@ -122,7 +123,6 @@ func Entry(c *gin.Context) {
 		return
 	}
 	CommonCraftHandlerUsingCraftOptionList(c, craftOptionList)
-	return
 }
 
 const MaxCallDepth = 5
