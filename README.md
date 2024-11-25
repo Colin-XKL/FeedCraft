@@ -116,7 +116,7 @@ services:
       FC_REDIS_URI: redis://service.redis:6379/ # 替换为你自己的redis 实例地址
       FC_OPENAI_AUTH_KEY: skxxxxxx # 鉴权的key
       FC_OPENAI_DEFAULT_MODEL: gemini-pro/chatgpt-3.5/... # 默认使用的模型
-      FC_OPENAI_ENDPOINT: https://xxxxxx # OPENAI API 或兼容平台的API接口路径
+      FC_OPENAI_ENDPOINT: https://xxxxxx # OPENAI API 或兼容平台的API接口路径，需要以 “/v1” 结尾
   service.redis:
     image: redis:6-alpine
     container_name: feedcraft_redis
