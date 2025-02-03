@@ -43,7 +43,7 @@
     "sortablejs": "^1.15.0",
     "vue": "^3.2.40",
     "vue-echarts": "^6.2.3",
-    "vue-i18n": "^9.14.2",
+    "vue-i18n": "^11.1.0",
     "vue-router": "^4.0.14"
   },
   "devDependencies": {
