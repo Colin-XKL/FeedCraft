@@ -6,9 +6,9 @@ import (
 	"github.com/gorilla/feeds"
 )
 
-const translateArticleContentPrompt = "下面是一篇文章的内容,请将其翻译为中文. 如果文章内有图片或者链接尽量保留它们, 对于专有名词也请保持原样. "
+const translateArticleContentPrompt = "下面是一篇文章的内容,请将其翻译为中文. 如果文章内有图片或者链接尽量保留它们, 对于专有名词也请保持原样. 注意只需要输出翻译后的文章内容即可，不要包括其他无关的内容。"
 
-const translateArticleTitlePrompt = "下面是一篇文章的标题, 请将其翻译为中文. 对于专有名词等请保持原样"
+const translateArticleTitlePrompt = "下面是一篇文章的标题, 请将其翻译为中文. 对于专有名词等请保持原样。注意只需要输出一句翻译后的内容即可，不要包括其他无关的内容。"
 
 func translateArticleTitle(title string, prompt string) (string, error) {
 	return adapter.CallLLMUsingContext(prompt, title)
