@@ -159,14 +159,14 @@ func TransformArticleContent(item *gofeed.Item, transFunc func(item *gofeed.Item
 	return &retItem
 }
 
-// 作用与feed 级别, 确保获取到绝对url
+// 作用于 feed 级别, 确保获取到绝对url
 func getAbsFeedLink(feedUrl, feedLinkAttr string) string {
 	feedLinkUrl, err := url.Parse(feedLinkAttr)
 	if err != nil || feedLinkUrl == nil {
 		logrus.Warnf("invalid feed link url [%s] for feed [%s]", feedLinkAttr, feedUrl)
 	} else {
 		if feedLinkUrl.IsAbs() {
-			return feedUrl
+			return feedLinkAttr
 		}
 	}
 	parsedFeedUrl, err := url.Parse(feedUrl)
