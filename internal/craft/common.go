@@ -143,10 +143,14 @@ func TransformArticleContent(item *gofeed.Item, transFunc func(item *gofeed.Item
 		Content:     articleContent,
 	}
 
-	if item.Author != nil {
+	authorItem := item.Author
+	if item.Author == nil {
+		authorItem = lo.FirstOrEmpty(item.Authors)
+	}
+	if authorItem != nil {
 		retItem.Author = &feeds.Author{
-			Name:  item.Author.Name,
-			Email: item.Author.Email,
+			Name:  authorItem.Name,
+			Email: authorItem.Email,
 		}
 	}
 	return &retItem
