@@ -1,6 +1,6 @@
 module FeedCraft
 
-go 1.19
+go 1.23
 
 require (
 	github.com/getsentry/sentry-go v0.29.1
