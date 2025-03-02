@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	_ "go.uber.org/automaxprocs"
 	"net/http"
 	"os"
 )
