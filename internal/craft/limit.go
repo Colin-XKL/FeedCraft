@@ -10,7 +10,7 @@ import (
 const defaultLimit = 10
 
 func OptionLimit(n int) CraftOption {
-	return func(feed *feeds.Feed) error {
+	return func(feed *feeds.Feed, payload ExtraPayload) error {
 		items := feed.Items
 		filtered := lo.Slice(items, 0, n)
 		feed.Items = filtered

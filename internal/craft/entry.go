@@ -42,6 +42,14 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 			return GetGuidCraftOptions()
 		},
 	}
+	sysCraftTempList["relative-link-fix"] = CraftTemplate{
+		Name:                "relative-link-fix",
+		Description:         "修复文章链接,确保是绝对url. 这样可以保证在获取全文等场景时可以跳转到正确的网页",
+		ParamTemplateDefine: []ParamTemplate{},
+		OptionFunc: func(m map[string]string) []CraftOption {
+			return GetRelativeLinkFixCraftOptions()
+		},
+	}
 	sysCraftTempList["fulltext"] = CraftTemplate{
 		Name:                "fulltext",
 		Description:         "提取 RSS 订阅源的全文",

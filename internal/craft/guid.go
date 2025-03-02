@@ -11,7 +11,7 @@ import (
 // 通过文章原始内容的title 和content 字段, 计算哈希值, 来生成一个唯一的guid, 替换掉原feed中的可能有问题的guid
 
 func GetGuidProcessor(transFunc TransFunc) FeedItemProcessor {
-	return func(item *feeds.Item) error {
+	return func(item *feeds.Item, payload ExtraPayload) error {
 		guid, err := transFunc(item)
 		if err != nil {
 			return err

@@ -26,7 +26,7 @@ func optionKeyword(mode KeywordFilterMode, matchScope KeywordMatchScope, keyword
 	searchTitle := matchScope == KeywordMatchAll || matchScope == KeywordMatchTitle
 	searchContent := matchScope == KeywordMatchAll || matchScope == KeywordMatchContent
 
-	return func(feed *feeds.Feed) error {
+	return func(feed *feeds.Feed, payload ExtraPayload) error {
 		items := feed.Items
 		var filtered []*feeds.Item
 		if len(keywordList) == 0 {
