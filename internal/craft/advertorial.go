@@ -42,7 +42,7 @@ func GetIgnoreAdvertorialCraftOptions(prompt string) []CraftOption {
 
 // OptionIgnoreAdvertorial option  判断一篇文章是不是推广软文和广告等
 func OptionIgnoreAdvertorial(prompt string) CraftOption {
-	return func(feed *feeds.Feed) error {
+	return func(feed *feeds.Feed, payload ExtraPayload) error {
 		items := feed.Items
 		filtered := lo.Filter(items, func(item *feeds.Item, index int) bool {
 			content := item.Content //TODO handle description and content field correctly

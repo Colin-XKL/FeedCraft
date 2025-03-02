@@ -16,7 +16,7 @@ type CraftedFeed struct {
 type ExtraPayload struct {
 	originalFeedUrl string
 }
-type CraftOption func(*feeds.Feed) error
+type CraftOption func(*feeds.Feed, ExtraPayload) error
 
 func NewCraftedFeedFromUrl(feedUrl string, options ...CraftOption) (CraftedFeed, error) {
 	ingredient := CraftedFeed{originalFeedUrl: feedUrl}
@@ -37,8 +37,9 @@ func NewCraftedFeedFromUrl(feedUrl string, options ...CraftOption) (CraftedFeed,
 	}
 	outputFeed := TransformFeed(parsedFeed, feedUrl, byPass)
 
+	payload := ExtraPayload{originalFeedUrl: feedUrl}
 	for _, option := range options {
-		optionErr := option(&outputFeed)
+		optionErr := option(&outputFeed, payload)
 		if optionErr != nil {
 			return ingredient, optionErr
 		}
@@ -78,7 +79,7 @@ type FeedItemProcessor func(feedItem *feeds.Item) error // 对每个feed item要
 
 // OptionTransformFeedItem 通用的feed item 处理
 func OptionTransformFeedItem(processor FeedItemProcessor) CraftOption {
-	return func(feed *feeds.Feed) error {
+	return func(feed *feeds.Feed, payload ExtraPayload) error {
 		for _, itemPointer := range feed.Items {
 			err := processor(itemPointer)
 			if err != nil {
