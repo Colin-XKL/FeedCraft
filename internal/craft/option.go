@@ -53,7 +53,7 @@ func NewCraftedFeedFromUrl(feedUrl string, options ...CraftOption) (CraftedFeed,
 type TransFunc func(item *feeds.Item) (string, error)
 
 func GetArticleContentProcessor(transFunc TransFunc) FeedItemProcessor {
-	return func(item *feeds.Item) error {
+	return func(item *feeds.Item, payload ExtraPayload) error {
 		transformed, err := transFunc(item)
 		if err != nil {
 			return err
@@ -65,7 +65,7 @@ func GetArticleContentProcessor(transFunc TransFunc) FeedItemProcessor {
 }
 
 func GetArticleTitleProcessor(transFunc TransFunc) FeedItemProcessor {
-	return func(item *feeds.Item) error {
+	return func(item *feeds.Item, payload ExtraPayload) error {
 		transformed, err := transFunc(item)
 		if err != nil {
 			return err
@@ -75,13 +75,13 @@ func GetArticleTitleProcessor(transFunc TransFunc) FeedItemProcessor {
 	}
 }
 
-type FeedItemProcessor func(feedItem *feeds.Item) error // 对每个feed item要执行的操作
+type FeedItemProcessor func(feedItem *feeds.Item, payload ExtraPayload) error // 对每个feed item要执行的操作
 
 // OptionTransformFeedItem 通用的feed item 处理
 func OptionTransformFeedItem(processor FeedItemProcessor) CraftOption {
 	return func(feed *feeds.Feed, payload ExtraPayload) error {
 		for _, itemPointer := range feed.Items {
-			err := processor(itemPointer)
+			err := processor(itemPointer, payload)
 			if err != nil {
 				return err
 			}
