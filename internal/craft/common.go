@@ -10,6 +10,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -25,7 +26,7 @@ func getCraftCacheKey(namespace, id string) string {
 
 type ContentTransformFunc func(item *gofeed.Item) string
 
-func TransformFeed(parsedFeed *gofeed.Feed, transFunc ContentTransformFunc) feeds.Feed {
+func TransformFeed(parsedFeed *gofeed.Feed, feedUrl string, transFunc ContentTransformFunc) feeds.Feed {
 	updatedTimePointer := parsedFeed.UpdatedParsed
 	updatedTime := time.Now()
 	if updatedTimePointer != nil {
@@ -45,7 +46,8 @@ func TransformFeed(parsedFeed *gofeed.Feed, transFunc ContentTransformFunc) feed
 	ret := feeds.Feed{
 		Title: parsedFeed.Title,
 		Link: &feeds.Link{
-			Href: parsedFeed.Link,
+			//Href: parsedFeed.Link,
+			Href: getAbsFeedLink(feedUrl, parsedFeed.Link),
 		},
 		Description: parsedFeed.Description,
 		Updated:     updatedTime,
@@ -54,6 +56,7 @@ func TransformFeed(parsedFeed *gofeed.Feed, transFunc ContentTransformFunc) feed
 		Items:       lo.Map(parsedFeed.Items, extractIterator),
 		Copyright:   parsedFeed.Copyright,
 	}
+
 	if parsedFeed.Author != nil {
 		ret.Author = &feeds.Author{
 			Name:  parsedFeed.Author.Name,
@@ -154,4 +157,51 @@ func TransformArticleContent(item *gofeed.Item, transFunc func(item *gofeed.Item
 		}
 	}
 	return &retItem
+}
+
+// 作用与feed 级别, 确保获取到绝对url
+func getAbsFeedLink(feedUrl, feedLinkAttr string) string {
+	feedLinkUrl, err := url.Parse(feedLinkAttr)
+	if err != nil || feedLinkUrl == nil {
+		logrus.Warnf("invalid feed link url [%s] for feed [%s]", feedLinkAttr, feedUrl)
+	} else {
+		if feedLinkUrl.IsAbs() {
+			return feedUrl
+		}
+	}
+	parsedFeedUrl, err := url.Parse(feedUrl)
+	if err != nil {
+		logrus.Errorf("invalid feed url [%s]. err: %v", feedUrl, err)
+	} else {
+		return fmt.Sprintf("%s://%s", parsedFeedUrl.Scheme, parsedFeedUrl.Host)
+	}
+	return feedLinkAttr
+}
+
+// 作用于 article级别, 确保获取到绝对路径url
+// feedUrl: 原始feed的url
+// feedLinkAttr: feed 内容中的link字段
+// feedItemUrl: feed 内容中每个文章的link字段
+func getAbsLinkForFeedItem(feedUrl, feedLinkAttr, feedItemUrl string) string {
+	feedLinkUrl, err := url.Parse(feedLinkAttr)
+	if err != nil || feedLinkUrl == nil {
+		logrus.Warnf("invalid feed link url [%s] for feed [%s]", feedLinkAttr, feedUrl)
+	} else {
+		if feedLinkUrl.IsAbs() {
+			absFeedItemUrl, err := util.BuildAbsoluteURL(feedLinkAttr, feedItemUrl)
+			if err != nil {
+				logrus.Errorf("build absoluteURL failed. error: %v", err)
+				return feedItemUrl
+			}
+			return absFeedItemUrl
+		}
+	}
+
+	// if `link` attr in feed content is not an abs path, use feed url instead
+	absFeedItemUrl, err := util.BuildAbsoluteURL(feedUrl, feedItemUrl)
+	if err != nil {
+		logrus.Errorf("build absoluteURL failed. error: %v", err)
+		return feedItemUrl
+	}
+	return absFeedItemUrl
 }
