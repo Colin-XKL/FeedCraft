@@ -6,15 +6,20 @@ import (
 	"strings"
 )
 
-type FeedCraftIngredient struct {
+type CraftedFeed struct {
 	originalFeedUrl string
 	parsedFeed      *gofeed.Feed
 	OutputFeed      *feeds.Feed
 }
+
+// ExtraPayload extra info for crating feed
+type ExtraPayload struct {
+	originalFeedUrl string
+}
 type CraftOption func(*feeds.Feed) error
 
-func NewCraftedFeedFromUrl(feedUrl string, options ...CraftOption) (FeedCraftIngredient, error) {
-	ingredient := FeedCraftIngredient{originalFeedUrl: feedUrl}
+func NewCraftedFeedFromUrl(feedUrl string, options ...CraftOption) (CraftedFeed, error) {
+	ingredient := CraftedFeed{originalFeedUrl: feedUrl}
 
 	fp := gofeed.NewParser()
 	parsedFeed, err := fp.ParseURL(feedUrl)
@@ -30,7 +35,7 @@ func NewCraftedFeedFromUrl(feedUrl string, options ...CraftOption) (FeedCraftIng
 		}
 		return strings.Trim(content, " ")
 	}
-	outputFeed := TransformFeed(parsedFeed, byPass)
+	outputFeed := TransformFeed(parsedFeed, feedUrl, byPass)
 
 	for _, option := range options {
 		optionErr := option(&outputFeed)
