@@ -179,7 +179,7 @@ func getAbsFeedLink(feedUrl, feedLinkAttr string) string {
 }
 
 // 作用于 article级别, 确保获取到绝对路径url
-// feedUrl: 原始feed的url
+// feedUrl: 原始feed文件的来源的url
 // feedLinkAttr: feed 内容中的link字段
 // feedItemUrl: feed 内容中每个文章的link字段
 func getAbsLinkForFeedItem(feedUrl, feedLinkAttr, feedItemUrl string) string {
