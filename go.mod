@@ -3,7 +3,8 @@ module FeedCraft
 go 1.23
 
 require (
-	github.com/getsentry/sentry-go v0.29.1
+	github.com/getsentry/sentry-go v0.31.1
+	github.com/getsentry/sentry-go/gin v0.31.1
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/glebarez/sqlite v1.11.0
