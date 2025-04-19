@@ -109,7 +109,7 @@ func GetCommonCachedTransformer(cacheKeyGenerator ContentCacheKeyGenerator, rawT
 		valFunc := func() (string, error) {
 			ret, err := rawTransformer(item)
 			if err != nil {
-				logrus.Warnf("failed to apply craft [%s] for article [%s], %v\n", craftName, originalTitle, err)
+				logrus.Warnf("failed to apply craft [%s] for article [%s], err: %v\n", craftName, originalTitle, err)
 			}
 			return ret, err
 		}
