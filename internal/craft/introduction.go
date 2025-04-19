@@ -35,9 +35,16 @@ func addIntroductionUsingLLM(item *feeds.Item, prompt string) string {
 		originalContent = item.Description
 		logrus.Warnf("empty content, use description field val as fallback")
 	}
+
 	domain, _ := util.ParseDomainFromUrl(item.Link.Href)
 	cleanedArticleContent := util.Html2Markdown(originalContent, &domain)
-	introduction, err := getIntroductionForArticle(prompt, cleanedArticleContent)
+	introduction := ""
+	var err error
+	if len(cleanedArticleContent) > 0 {
+		introduction, err = getIntroductionForArticle(prompt, cleanedArticleContent)
+	} else {
+		introduction, err = getIntroductionForArticle(prompt, originalContent)
+	}
 	if err != nil {
 		errMsg := "add introduction for article failed."
 		logrus.Warnf(errMsg)

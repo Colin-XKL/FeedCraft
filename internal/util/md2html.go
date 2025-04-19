@@ -8,7 +8,7 @@ import (
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
-	"log"
+	"github.com/sirupsen/logrus"
 )
 
 func Markdown2HTML(md string) string {
@@ -42,7 +42,7 @@ func Html2Markdown(text string, domain *string) string {
 	mdStr, err := conv.ConvertString(text, convertOptions...)
 
 	if err != nil {
-		log.Fatal(err)
+		logrus.Errorf("convert html to markdown err: %v", err)
 	}
 	return mdStr
 }
