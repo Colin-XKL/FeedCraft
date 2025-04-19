@@ -1,9 +1,14 @@
 package util
 
 import (
+	"github.com/JohannesKaufmann/html-to-markdown/v2/converter"
+	"github.com/JohannesKaufmann/html-to-markdown/v2/plugin/base"
+	"github.com/JohannesKaufmann/html-to-markdown/v2/plugin/commonmark"
+	"github.com/JohannesKaufmann/html-to-markdown/v2/plugin/table"
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
+	"log"
 )
 
 func Markdown2HTML(md string) string {
@@ -19,4 +24,25 @@ func Markdown2HTML(md string) string {
 
 	renderResult := markdown.Render(doc, renderer)
 	return string(renderResult)
+}
+
+func Html2Markdown(text string, domain *string) string {
+	conv := converter.NewConverter(
+		converter.WithPlugins(
+			base.NewBasePlugin(),
+			table.NewTablePlugin(),
+			commonmark.NewCommonmarkPlugin(),
+		),
+	)
+	var convertOptions []converter.ConvertOptionFunc
+	if domain != nil {
+		convertOptions = append(convertOptions, converter.WithDomain(*domain))
+	}
+
+	mdStr, err := conv.ConvertString(text, convertOptions...)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	return mdStr
 }
