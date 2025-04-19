@@ -20,7 +20,7 @@ const promptGenerateIntroduction = "请阅读下面的文章并写一篇不超�
 
 func combineIntroductionAndArticle(article, intro string) string {
 	introInHtml := util.Markdown2HTML(intro)
-	return fmt.Sprintf(`<div>%s<div>%s</div>`, introInHtml, article)
+	return fmt.Sprintf(`<div>%s<div><hr/>%s</div>`, introInHtml, article)
 }
 
 func addIntroductionUsingLLM(item *feeds.Item, prompt string) string {
@@ -36,7 +36,15 @@ func addIntroductionUsingLLM(item *feeds.Item, prompt string) string {
 		logrus.Warnf("empty content, use description field val as fallback")
 	}
 
-	introduction, err := getIntroductionForArticle(prompt, originalContent)
+	domain, _ := util.ParseDomainFromUrl(item.Link.Href)
+	cleanedArticleContent := util.Html2Markdown(originalContent, &domain)
+	introduction := ""
+	var err error
+	if len(cleanedArticleContent) > 0 {
+		introduction, err = getIntroductionForArticle(prompt, cleanedArticleContent)
+	} else {
+		introduction, err = getIntroductionForArticle(prompt, originalContent)
+	}
 	if err != nil {
 		errMsg := "add introduction for article failed."
 		logrus.Warnf(errMsg)
@@ -48,7 +56,6 @@ func addIntroductionUsingLLM(item *feeds.Item, prompt string) string {
 }
 
 func GetAddIntroductionCraftOptions(prompt string) []CraftOption {
-	//todo 后续在将原文发送到LLM之前, 默认去掉无效的html属性和css以节省token
 	transFunc := func(item *feeds.Item) (string, error) {
 		ret := addIntroductionUsingLLM(item, prompt)
 		return ret, nil
