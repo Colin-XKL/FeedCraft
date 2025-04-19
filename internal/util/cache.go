@@ -43,12 +43,12 @@ func CachedFunc(cacheKey string, valFunc func() (string, error)) (string, error)
 	final := ""
 	cached, err := CacheGetString(cacheKey)
 	if err != nil || cached == "" {
-		translated, err := valFunc()
-		if err != nil {
-			return "", err
+		processedContent, getValErr := valFunc()
+		if getValErr != nil {
+			return "", getValErr
 		} else {
-			final = translated
-			cacheErr := CacheSetString(cacheKey, translated, constant.WebContentExpire)
+			final = processedContent
+			cacheErr := CacheSetString(cacheKey, processedContent, constant.WebContentExpire)
 			if cacheErr != nil {
 				logrus.Warn("failed to cache result")
 				//logrus.Warnf("failed to cache result of craft [%s] for article [%s], %v\n", craftName,

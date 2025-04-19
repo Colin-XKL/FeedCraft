@@ -66,6 +66,14 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 			return GetFulltextPlusCraftOptions()
 		},
 	}
+	sysCraftTempList["cleanup"] = CraftTemplate{
+		Name:                "cleanup",
+		Description:         "清理文章HTML内容，保留核心内容",
+		ParamTemplateDefine: []ParamTemplate{},
+		OptionFunc: func(m map[string]string) []CraftOption {
+			return GetCleanupCraftOptions()
+		},
+	}
 	sysCraftTempList["introduction"] = CraftTemplate{
 		Name:                "introduction",
 		Description:         "在文章开头添加 AI 生成的介绍",
