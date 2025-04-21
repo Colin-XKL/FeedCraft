@@ -20,7 +20,7 @@ const promptGenerateIntroduction = "请阅读下面的文章并写一篇不超�
 
 func combineIntroductionAndArticle(article, intro string) string {
 	introInHtml := util.Markdown2HTML(intro)
-	return fmt.Sprintf(`<div>%s<div><hr/>%s</div>`, introInHtml, article)
+	return fmt.Sprintf(`<div>%s<div><hr/><br/>%s</div>`, introInHtml, article)
 }
 
 func addIntroductionUsingLLM(item *feeds.Item, prompt string) string {
@@ -46,7 +46,7 @@ func addIntroductionUsingLLM(item *feeds.Item, prompt string) string {
 		introduction, err = getIntroductionForArticle(prompt, originalContent)
 	}
 	if err != nil {
-		errMsg := "add introduction for article failed."
+		errMsg := fmt.Sprintf("add introduction for article failed. err: %v ", err)
 		logrus.Warnf(errMsg)
 		introduction = errMsg
 	}
