@@ -13,8 +13,9 @@ Craft all your feed in one place!
 ![Container Image Size On GHCR](https://ghcr-badge.egpl.dev/colin-xkl/feed-craft/size?color=%2344cc11&tag=latest&label=image+size)
 ![Arch Badge](https://img.shields.io/badge/arch-amd64|arm64-blue)
 ![Open Source Love](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Colin-XKL/FeedCraft)
 
-Doc: English(WIP) | 简体中文 | 繁体中文(WIP)
+Doc: [English](https://deepwiki.com/Colin-XKL/FeedCraft) | 简体中文
 
 **FeedCraft** is a powerful tool to process your rss feeds as a middleware, use it to translate your feed, extract
 fulltext, emulate browser
