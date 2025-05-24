@@ -1,7 +1,6 @@
 package recipe
 
 import (
-	"FeedCraft/internal/controller"
 	"FeedCraft/internal/dao"
 	"FeedCraft/internal/util"
 	"errors"
@@ -14,13 +13,16 @@ import (
 	"net/url"
 )
 
-var Scheduler *controller.PreheatingScheduler
+var Scheduler *util.PreheatingScheduler
+
+func QueryCustomRecipeName(recipeName string) (*dao.CustomRecipe, error) {
+	db := util.GetDatabase()
+	return dao.GetCustomRecipeByID(db, recipeName)
+}
 
 func CustomRecipe(c *gin.Context) {
 	id := c.Param("id")
-	db := util.GetDatabase()
-
-	recipe, err := dao.GetCustomRecipeByID(db, id)
+	recipe, err := QueryCustomRecipeName(id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "Recipe not found"})
@@ -29,17 +31,21 @@ func CustomRecipe(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
-	path := fmt.Sprintf("/craft/%s?input_url=%s", recipe.Craft, url.QueryEscape(recipe.FeedURL))
-
+	path := GetPathForCustomRecipe(recipe)
 	response, err := RetrieveCraftRecipeUsingPath(path)
 	logrus.Infof("add preheating task")
-	Scheduler.ScheduleTask(path)
+	Scheduler.ScheduleTask(id)
 
 	if err != nil {
 		logrus.Errorf("error making request to %s: %s", path, err)
 		return
 	}
 	c.Data(http.StatusOK, "text/xml; charset=utf-8", response.Body())
+}
+
+func GetPathForCustomRecipe(recipe *dao.CustomRecipe) string {
+	path := fmt.Sprintf("/craft/%s?input_url=%s", recipe.Craft, url.QueryEscape(recipe.FeedURL))
+	return path
 }
 
 func RetrieveCraftRecipeUsingPath(path string) (*resty.Response, error) {
