@@ -1,6 +1,7 @@
 package recipe
 
 import (
+	"FeedCraft/internal/controller"
 	"FeedCraft/internal/dao"
 	"FeedCraft/internal/util"
 	"errors"
@@ -12,6 +13,8 @@ import (
 	"net/http"
 	"net/url"
 )
+
+var Scheduler *controller.PreheatingScheduler
 
 func CustomRecipe(c *gin.Context) {
 	id := c.Param("id")
@@ -26,9 +29,11 @@ func CustomRecipe(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
-	client := newRecipeClient()
 	path := fmt.Sprintf("/craft/%s?input_url=%s", recipe.Craft, url.QueryEscape(recipe.FeedURL))
-	response, err := client.R().Get(path)
+
+	response, err := RetrieveCraftRecipeUsingPath(path)
+	logrus.Infof("add preheating task")
+	Scheduler.ScheduleTask(path)
 
 	if err != nil {
 		logrus.Errorf("error making request to %s: %s", path, err)
@@ -36,6 +41,13 @@ func CustomRecipe(c *gin.Context) {
 	}
 	c.Data(http.StatusOK, "text/xml; charset=utf-8", response.Body())
 }
+
+func RetrieveCraftRecipeUsingPath(path string) (*resty.Response, error) {
+	client := newRecipeClient()
+	response, err := client.R().Get(path)
+	return response, err
+}
+
 func newRecipeClient() *resty.Client {
 	client := resty.New().SetBaseURL(fmt.Sprintf("http://localhost:%d", util.GetLocalPort()))
 	return client

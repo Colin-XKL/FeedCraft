@@ -1,7 +1,9 @@
 package main
 
 import (
+	"FeedCraft/internal/controller"
 	"FeedCraft/internal/dao"
+	"FeedCraft/internal/recipe"
 	"FeedCraft/internal/router"
 	"FeedCraft/internal/util"
 	"fmt"
@@ -14,6 +16,16 @@ import (
 	"net/http"
 	"os"
 )
+func init() {
+	logrus.Info("Starting PreheatingScheduler...")
+	// 设置预热任务函数
+	taskFunc := func(path string) error {
+		_, err := recipe.RetrieveCraftRecipeUsingPath(path)
+		return err
+	}
+	recipe.Scheduler = controller.NewPreheatingScheduler(taskFunc)
+	logrus.Info("Start PreheatingScheduler done.")
+}
 
 var rootCmd = &cobra.Command{
 	Use:   "feedcraft",

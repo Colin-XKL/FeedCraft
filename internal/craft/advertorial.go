@@ -3,6 +3,7 @@ package craft
 import (
 	"FeedCraft/internal/adapter"
 	"FeedCraft/internal/util"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/feeds"
 	"github.com/samber/lo"
@@ -16,7 +17,25 @@ import (
 通过LLM 判断并排除广告软文 advertorial
 */
 
-const promptCheckIfAdvertorial = "请阅读下面的文章, 并判断是不是广告推销软文. 如果非常确信这篇文章是营销推广文章, 请返回 'true', 如果不是或者没有把握确定,请返回 'false'"
+const judgePrompt = `
+# 如何判断一篇文章是不是营销软文？
+1. 内容是否围绕某单个产品或品牌展开.
+如果文章的核心内容始终围绕某单个特定品牌或产品，尤其是多次提及该品牌或产品的优点，很可能是软文。
+
+2. 是否有明显的推广意图.
+虽然软文不会直接说“买这个产品”，但会通过暗示、推荐或引导的方式，让读者对产品产生兴趣。比如，文章可能会非常强调某个产品的独特功能、优惠活动或用户好评。
+
+3. 是否带有购买链接或引导性行动
+软文会在文章末尾或中间插入购买链接、优惠码、下载链接等，引导读者采取行动。
+
+4. 内容是否过于正面或缺乏客观性
+软文通常会刻意突出产品的优点，而忽略或淡化缺点。如果一篇文章对某个产品的评价过于正面，缺乏客观分析，可能是软文。
+
+4. 是否有夸大或煽动性语言.
+软文常常使用夸张的语言或煽动性的表达，比如“颠覆性创新”“行业领先”“唯一选择”等，以吸引读者注意。
+`
+
+const promptCheckIfAdvertorial = "请阅读下面的文章, 并判断是不是广告推销软文. 如果非常确信这篇文章是营销推广文章, 请返回 'true', 不要包括其他内容. 如果不是或者没有把握确定,请返回 'false'"
 
 // CheckIfAdvertorial 判断是否为软文, 非常有把握则返回true, 如果不是或者不确定或是发生错误则返回false
 func CheckIfAdvertorial(content string, prompt string) bool {
@@ -29,8 +48,8 @@ func CheckIfAdvertorial(content string, prompt string) bool {
 		logrus.Errorf("Error checking advertorial: %v", err)
 		return false
 	}
-	logrus.Info("advertorial check: ", result)
-	return result == "true"
+	logrus.Infof("advertorial check: [%s]", result)
+	return strings.TrimSpace(result) == "true"
 }
 
 func GetIgnoreAdvertorialCraftOptions(prompt string) []CraftOption {
@@ -56,7 +75,7 @@ func OptionIgnoreAdvertorial(prompt string) CraftOption {
 func llmFilterCraftLoadParam(m map[string]string) []CraftOption {
 	prompt, exist := m["prompt-for-exclude"]
 	if !exist || len(prompt) == 0 {
-		prompt = promptCheckIfAdvertorial
+		prompt = fmt.Sprintf("%s\n%s\n", judgePrompt, promptCheckIfAdvertorial)
 	}
 	return GetIgnoreAdvertorialCraftOptions(prompt)
 }
@@ -64,7 +83,7 @@ func llmFilterCraftLoadParam(m map[string]string) []CraftOption {
 var llmFilterCraftParamTmpl = []ParamTemplate{
 	{Key: "prompt-for-exclude",
 		Description: "apply prompt to every article item, if llm returns 'true', then article will be excluded",
-		Default:     promptCheckIfAdvertorial},
+		Default:     fmt.Sprintf("%s\n%s\n", judgePrompt, promptCheckIfAdvertorial)},
 }
 
 // ===============
@@ -102,7 +121,9 @@ func DebugCheckIfAdvertorial(c *gin.Context) {
 		c.JSON(http.StatusExpectationFailed, util.APIResponse[any]{Msg: "extract article content failed"})
 		return
 	}
-	result := CheckIfAdvertorial(webContent, promptCheckIfAdvertorial)
+	prompt := fmt.Sprintf("%s\n%s\n", judgePrompt, promptCheckIfAdvertorial)
+
+	result := CheckIfAdvertorial(webContent, prompt)
 	ret := CheckIfAdvertorialDebugResp{
 		Url:            reqBody.Url,
 		IsAdvertorial:  result,

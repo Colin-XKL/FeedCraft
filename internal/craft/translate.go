@@ -25,6 +25,13 @@ func cacheKeyForArticleTitle(item *feeds.Item) (string, error) {
 func cacheKeyForArticleContent(item *feeds.Item) (string, error) {
 	return util.GetMD5Hash(item.Description + item.Description), nil
 }
+func cacheKeyForArticleLink(item *feeds.Item) (string, error) {
+	uniqLinkStr := ""
+	uniqLinkStr += item.Link.Href
+	uniqLinkStr += item.Source.Href
+	uniqLinkStr += item.Id
+	return util.GetMD5Hash(uniqLinkStr), nil
+}
 
 // =======================================
 // translate article title
