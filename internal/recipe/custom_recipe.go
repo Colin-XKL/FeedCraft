@@ -12,7 +12,6 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"net/url"
-	"time"
 )
 
 var Scheduler *controller.PreheatingScheduler
@@ -33,7 +32,8 @@ func CustomRecipe(c *gin.Context) {
 	path := fmt.Sprintf("/craft/%s?input_url=%s", recipe.Craft, url.QueryEscape(recipe.FeedURL))
 
 	response, err := RetrieveCraftRecipeUsingPath(path)
-	Scheduler.ScheduleTask(path, 6*time.Hour)
+	logrus.Infof("add preheating task")
+	Scheduler.ScheduleTask(path)
 
 	if err != nil {
 		logrus.Errorf("error making request to %s: %s", path, err)
