@@ -1,14 +1,15 @@
 package controller
 
 import (
-	"log"
+	"github.com/sirupsen/logrus"
+	"math/rand/v2"
 	"sync"
 	"time"
 )
 
 // PreheatingScheduler 预热调度器
 type PreheatingScheduler struct {
-	tasks    map[string]*time.Timer // key: taskID, value: timer
+	tasks    map[string]*time.Timer // key: path, value: timer
 	mutex    sync.RWMutex
 	taskFunc func(string) error // 实际的长任务函数
 }
@@ -30,11 +31,12 @@ func (s *PreheatingScheduler) ScheduleTask(path string, delay time.Duration) {
 	}
 
 	// 创建新的定时器
-	timer := time.AfterFunc(delay, func() {
+	timer := time.AfterFunc(delay+time.Duration(rand.IntN(60))*time.Second, func() {
 		// 执行预热任务
 		go func() {
+			logrus.Info("running preheating task...")
 			if err := s.taskFunc(path); err != nil {
-				log.Printf("预热任务失败: %v", err)
+				logrus.Errorf("预热任务失败: %v", err)
 			}
 
 			// 清理定时器
