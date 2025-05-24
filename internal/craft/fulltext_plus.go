@@ -95,7 +95,9 @@ func getRenderedHTML2(websiteUrl string, timeout time.Duration) (string, error) 
 	//fmt.Println(response.String())
 
 	article, err := readability.FromReader(strings.NewReader(response.String()), parseUrl)
-
+	if err != nil {
+		return "", err
+	}
 	return article.Content, err
 }
 
@@ -104,7 +106,7 @@ func GetFulltextPlusCraftOptions() []CraftOption {
 		link := item.Link.Href
 		return getRenderedHTML2(link, DefaultExtractFulltextTimeout)
 	}
-	cachedTransFunc := GetCommonCachedTransformer(cacheKeyForArticleTitle, transFunc, "extract fulltext plus")
+	cachedTransFunc := GetCommonCachedTransformer(cacheKeyForArticleLink, transFunc, "extract fulltext plus")
 	craftOptions := []CraftOption{
 		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransFunc)),
 	}
