@@ -21,8 +21,8 @@ func QueryCustomRecipeName(recipeName string) (*dao.CustomRecipe, error) {
 }
 
 func CustomRecipe(c *gin.Context) {
-	id := c.Param("id")
-	recipe, err := QueryCustomRecipeName(id)
+	recipeId := c.Param("recipeId")
+	recipe, err := QueryCustomRecipeName(recipeId)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "Recipe not found"})
@@ -33,11 +33,12 @@ func CustomRecipe(c *gin.Context) {
 	}
 	path := GetPathForCustomRecipe(recipe)
 	response, err := RetrieveCraftRecipeUsingPath(path)
-	logrus.Infof("add preheating task")
-	Scheduler.ScheduleTask(id)
+	logrus.Infof("add preheating task for recipe [%s]", recipeId)
+	Scheduler.ScheduleTask(recipeId)
 
 	if err != nil {
 		logrus.Errorf("error making request to %s: %s", path, err)
+		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 	c.Data(http.StatusOK, "text/xml; charset=utf-8", response.Body())

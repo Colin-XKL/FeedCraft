@@ -73,7 +73,7 @@ func (s *PreheatingScheduler) ScheduleTask(recipeName string) {
 	nextPreheatingTime = nextPreheatingTime.Add(time.Duration(rand.Intn(60)) * time.Second) // 添加一个随机的等待时间,避免短时间大量请求集中
 
 	nextRun := nextPreheatingTime.Sub(now)
-	logrus.Debug("next run after %s", nextRun.String())
+	logrus.Debugf("next run after %s", nextRun.String())
 	//创建新的定时器
 	timer := time.AfterFunc(nextRun, func() {
 		// 执行预热任务
@@ -89,7 +89,7 @@ func (s *PreheatingScheduler) ScheduleTask(recipeName string) {
 
 			err := s.taskFunc(recipeName)
 			if err != nil {
-				logrus.Errorf("预热任务[%s]失败: %v", recipeName, err)
+				logrus.Errorf("preheating task for recipe [%s] exec failed. err: %v", recipeName, err)
 			}
 			s.ScheduleTask(recipeName)
 		}()
@@ -103,6 +103,8 @@ type PreheatingTaskInfo struct {
 }
 
 func (s *PreheatingScheduler) GetContextInfo(key string) PreheatingTaskInfo {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	ctx, ok := s.contexts[key]
 	if !ok {
 		return PreheatingTaskInfo{

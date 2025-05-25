@@ -58,6 +58,11 @@ type RecipeInfo struct {
 func ListCustomRecipe(c *gin.Context) {
 	db := util.GetDatabase()
 	recipeList, err := dao.ListCustomRecipe(db)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
+		return
+	}
+
 	recipeInfoList := lo.Map(recipeList, func(item *dao.CustomRecipe, index int) RecipeInfo {
 		recipeStatus := recipe.Scheduler.GetContextInfo(item.ID)
 		return RecipeInfo{
@@ -69,9 +74,6 @@ func ListCustomRecipe(c *gin.Context) {
 			LastAccessedAt: recipeStatus.LastRequestTime,
 		}
 	})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
-	}
 	c.JSON(http.StatusOK, util.APIResponse[any]{Data: recipeInfoList})
 }
 
