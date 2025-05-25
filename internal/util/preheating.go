@@ -1,4 +1,4 @@
-package controller
+package util
 
 import (
 	"github.com/sirupsen/logrus"
@@ -36,21 +36,21 @@ func NewPreheatingScheduler(taskFunc func(payload string) error) *PreheatingSche
 	}
 }
 
-func (s *PreheatingScheduler) ScheduleTask(path string) {
+func (s *PreheatingScheduler) ScheduleTask(recipeName string) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	ctx, exists := s.contexts[path]
+	ctx, exists := s.contexts[recipeName]
 	now := time.Now()
 
 	if !exists {
 		ctx = &PreheatingContext{
-			taskKey:          path,
+			taskKey:          recipeName,
 			firstRequestTime: now,
 			lastRequestTime:  now,
 			preheatingCount:  0,
 		}
-		s.contexts[path] = ctx
+		s.contexts[recipeName] = ctx
 	} else {
 		ctx.lastRequestTime = now
 	}
@@ -63,7 +63,7 @@ func (s *PreheatingScheduler) ScheduleTask(path string) {
 	// 检查是否超过时间窗口或预热次数上限
 	if now.Sub(ctx.firstRequestTime) > MAX_PREHEATING_GRACE_TIME ||
 		ctx.preheatingCount >= MAX_PREHEATING_COUNT {
-		delete(s.contexts, path)
+		delete(s.contexts, recipeName)
 		return
 	}
 
@@ -73,7 +73,7 @@ func (s *PreheatingScheduler) ScheduleTask(path string) {
 	nextPreheatingTime = nextPreheatingTime.Add(time.Duration(rand.Intn(60)) * time.Second) // 添加一个随机的等待时间,避免短时间大量请求集中
 
 	nextRun := nextPreheatingTime.Sub(now)
-	logrus.Debug("next run after %s", nextRun.String())
+	logrus.Debugf("next run after %s", nextRun.String())
 	//创建新的定时器
 	timer := time.AfterFunc(nextRun, func() {
 		// 执行预热任务
@@ -81,18 +81,38 @@ func (s *PreheatingScheduler) ScheduleTask(path string) {
 			logrus.Infof("running preheating task...(this is [#%d] preheating for key [%s])", ctx.preheatingCount, ctx.taskKey)
 
 			s.mutex.Lock()
-			_, taskExist := s.contexts[path]
+			_, taskExist := s.contexts[recipeName]
 			s.mutex.Unlock()
 			if !taskExist {
 				return
 			}
 
-			err := s.taskFunc(path)
+			err := s.taskFunc(recipeName)
 			if err != nil {
-				logrus.Errorf("预热任务[%s]失败: %v", path, err)
+				logrus.Errorf("preheating task for recipe [%s] exec failed. err: %v", recipeName, err)
 			}
-			s.ScheduleTask(path)
+			s.ScheduleTask(recipeName)
 		}()
 	})
 	ctx.timer = timer
+}
+
+type PreheatingTaskInfo struct {
+	IsActive        bool
+	LastRequestTime time.Time
+}
+
+func (s *PreheatingScheduler) GetContextInfo(key string) PreheatingTaskInfo {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	ctx, ok := s.contexts[key]
+	if !ok {
+		return PreheatingTaskInfo{
+			IsActive: false,
+		}
+	}
+	return PreheatingTaskInfo{
+		IsActive:        true,
+		LastRequestTime: ctx.lastRequestTime,
+	}
 }

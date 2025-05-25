@@ -5,6 +5,8 @@ export interface CustomRecipe {
   description?: string;
   craft: string;
   feed_url: string;
+  is_active?: boolean;
+  last_accessed_at?: string;
 }
 
 const adminApiBase = '/api/admin';

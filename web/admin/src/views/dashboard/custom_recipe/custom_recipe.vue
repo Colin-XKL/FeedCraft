@@ -26,6 +26,22 @@
       :bordered="true"
       :loading="isLoading"
     >
+      <template #status="{ record }">
+        <a-tooltip
+          v-if="record.is_active"
+          :content="`该 recipe 处于活跃状态, 会自动定期获取最新内容. 最近一次用户请求时间 ${dayjs(
+            record.last_accessed_at
+          ).format('YYYY-MM-DD HH:mm:ss')}`"
+        >
+          <a-tag color="green" :default-checked="true">活跃</a-tag>
+        </a-tooltip>
+        <a-tooltip
+          v-else
+          content="该 recipe 近3天没有请求,已经进入休眠状态,不会自动定期获取最新内容"
+        >
+          <a-tag color="gray" :default-checked="true">不活跃</a-tag>
+        </a-tooltip>
+      </template>
       <template #actions="{ record }">
         <a-space direction="horizontal">
           <a-button
@@ -95,6 +111,7 @@
   } from '@/api/custom_recipe';
   import XHeader from '@/components/header/x-header.vue';
   import { namingValidator } from '@/utils/validator';
+  import dayjs from 'dayjs';
 
   const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
@@ -112,11 +129,12 @@
   const isUpdating = ref(false);
 
   const columns = [
-    { title: 'Name', dataIndex: 'id' },
-    { title: 'Description', dataIndex: 'description' },
-    { title: 'Craft', dataIndex: 'craft' },
-    { title: 'Feed URL', dataIndex: 'feed_url' },
-    { title: 'Actions', slotName: 'actions' },
+    { title: '名称', dataIndex: 'id' },
+    { title: '描述', dataIndex: 'description' },
+    { title: '使用的Craft', dataIndex: 'craft' },
+    { title: '状态', slotName: 'status' },
+    { title: 'URL', dataIndex: 'feed_url' },
+    { title: '操作', slotName: 'actions' },
   ];
 
   async function listCustomRecipes() {
