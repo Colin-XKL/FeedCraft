@@ -11,9 +11,12 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 var Scheduler *util.PreheatingScheduler
+
+var recipeMaxFetchTimeout = time.Minute * 10
 
 func QueryCustomRecipeName(recipeName string) (*dao.CustomRecipe, error) {
 	db := util.GetDatabase()
@@ -56,6 +59,8 @@ func RetrieveCraftRecipeUsingPath(path string) (*resty.Response, error) {
 }
 
 func newRecipeClient() *resty.Client {
-	client := resty.New().SetBaseURL(fmt.Sprintf("http://localhost:%d", util.GetLocalPort()))
+	client := resty.New().SetBaseURL(
+		fmt.Sprintf("http://localhost:%d", util.GetLocalPort()),
+	).SetTimeout(recipeMaxFetchTimeout)
 	return client
 }
