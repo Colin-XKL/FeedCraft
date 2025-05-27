@@ -26,10 +26,13 @@ func cacheKeyForArticleContent(item *feeds.Item) (string, error) {
 	return util.GetMD5Hash(item.Description + item.Description), nil
 }
 func cacheKeyForArticleLink(item *feeds.Item) (string, error) {
-	uniqLinkStr := ""
-	uniqLinkStr += item.Link.Href
-	uniqLinkStr += item.Source.Href
+	uniqLinkStr := item.Title
 	uniqLinkStr += item.Id
+	if item.Link != nil {
+		uniqLinkStr += item.Link.Href
+	} else if item.Source != nil {
+		uniqLinkStr += item.Source.Href
+	}
 	return util.GetMD5Hash(uniqLinkStr), nil
 }
 

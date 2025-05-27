@@ -57,10 +57,10 @@ func TransformFeed(parsedFeed *gofeed.Feed, feedUrl string, transFunc ContentTra
 		Copyright:   parsedFeed.Copyright,
 	}
 
-	if parsedFeed.Author != nil {
+	if len(parsedFeed.Authors) > 0 {
 		ret.Author = &feeds.Author{
-			Name:  parsedFeed.Author.Name,
-			Email: parsedFeed.Author.Email,
+			Name:  parsedFeed.Authors[0].Name,
+			Email: parsedFeed.Authors[0].Email,
 		}
 	}
 	if parsedFeed.Image != nil {
@@ -146,10 +146,7 @@ func TransformArticleContent(item *gofeed.Item, transFunc func(item *gofeed.Item
 		Content:     articleContent,
 	}
 
-	authorItem := item.Author
-	if item.Author == nil {
-		authorItem = lo.FirstOrEmpty(item.Authors)
-	}
+	authorItem := lo.FirstOrEmpty(item.Authors)
 	if authorItem != nil {
 		retItem.Author = &feeds.Author{
 			Name:  authorItem.Name,
