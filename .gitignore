@@ -194,3 +194,7 @@ run_local.ps1
 build.ps1
 push_docker.ps1
 docker-compose*.yml
+
+# 构建产生的二进制文件
+feedcraft
+feedcraft.exe
