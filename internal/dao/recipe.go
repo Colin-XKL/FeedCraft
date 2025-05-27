@@ -28,6 +28,10 @@ func CreateCustomRecipe(db *gorm.DB, recipe *CustomRecipe) error {
 // GetCustomRecipeByID retrieves a CustomRecipe record by its ID
 func GetCustomRecipeByID(db *gorm.DB, id string) (*CustomRecipe, error) {
 	var recipe CustomRecipe
+	// 添加日志记录查询的 ID
+	if id == "" {
+		return nil, gorm.ErrRecordNotFound
+	}
 	result := db.Where("id = ?", id).First(&recipe)
 	return &recipe, result.Error
 }
