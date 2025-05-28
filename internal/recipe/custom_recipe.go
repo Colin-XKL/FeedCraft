@@ -25,7 +25,8 @@ func QueryCustomRecipeName(recipeName string) (*dao.CustomRecipe, error) {
 	if err != nil {
 		logrus.Errorf("查询 recipe 失败，ID: [%s], 错误: %v", recipeName, err)
 	} else {
-		logrus.Infof("成功找到 recipe，ID: [%s], Description: [%s]", recipe.ID, recipe.Description)
+		// Log only the recipe ID to avoid exposing sensitive or lengthy data
+		logrus.Infof("成功找到 recipe，ID: [%s]", recipe.ID)
 	}
 	return recipe, err
 }
