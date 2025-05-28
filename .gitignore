@@ -184,3 +184,17 @@ web/admin/dist
 .aider*
 .run
 main
+
+local.env
+run_local.sh
+run_local.ps1
+/data
+
+# Docker 构建和部署相关文件
+build.ps1
+push_docker.ps1
+docker-compose*.yml
+
+# 构建产生的二进制文件
+feedcraft
+feedcraft.exe
