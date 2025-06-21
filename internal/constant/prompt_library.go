@@ -4,8 +4,8 @@ package constant
 type ProcessorType string
 
 const (
-	ProcessorTypeIntroduction ProcessorType = "introduction"
-	ProcessorTypeSummary      ProcessorType = "summary"
+	ProcessorTypeIntroduction ProcessorType = "add-introduction"
+	ProcessorTypeSummary      ProcessorType = "add-summary"
 	// Add more processor types here
 )
 

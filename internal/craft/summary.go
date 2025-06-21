@@ -7,12 +7,12 @@ import (
 
 func GetSummaryCraftOptions(prompt string) []CraftOption {
 	transFunc := func(item *feeds.Item) (string, error) {
-		processorType := "add-summary"
-		processor := NewLLMTextProcessor(constant.ProcessorType(processorType), prompt)
+		processorType := constant.ProcessorTypeSummary
+		processor := NewLLMTextProcessor(processorType, prompt)
 		ret := processItemContent(item, processor)
 		return ret, nil
 	}
-	cachedTransformer := GetCommonCachedTransformer(cacheKeyForArticleTitle, transFunc, "add summary")
+	cachedTransformer := GetCommonCachedTransformer(cacheKeyForArticleTitle, transFunc, string(constant.ProcessorTypeSummary))
 	craftOption := []CraftOption{
 		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransformer)),
 	}
@@ -23,12 +23,12 @@ func summaryCraftLoadParam(m map[string]string) []CraftOption {
 	if !exist || len(prompt) == 0 {
 		prompt = constant.DefaultPrompts[constant.ProcessorTypeSummary]
 	}
-	return GetAddIntroductionCraftOptions(prompt)
+	return GetSummaryCraftOptions(prompt)
 }
 
 var summaryCraftParamTmpl = []ParamTemplate{
 	{
-		Key: "prompt", Description: "the llm prompt for generate introduction",
+		Key: "prompt", Description: "the llm prompt for generate summary",
 		Default: constant.DefaultPrompts[constant.ProcessorTypeSummary],
 	},
 }

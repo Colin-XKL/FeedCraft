@@ -27,7 +27,7 @@ func (p *LLMTextProcessor) Process(original string) (string, error) {
 }
 func (p *LLMTextProcessor) Combine(original, processed string) string {
 	processedHTML := util.Markdown2HTML(processed)
-	return fmt.Sprintf(`<div>%s<div><hr/><br/>%s</div>`, processedHTML, original)
+	return fmt.Sprintf(`<div><div>%s</div><hr/><br/><div>%s</div></div>`, processedHTML, original)
 }
 func (p *LLMTextProcessor) GetName() string {
 	return p.name
@@ -76,12 +76,12 @@ func NewLLMTextProcessor(processorType constant.ProcessorType, customPrompt stri
 
 func GetAddIntroductionCraftOptions(prompt string) []CraftOption {
 	transFunc := func(item *feeds.Item) (string, error) {
-		processorType := "add-intro"
-		processor := NewLLMTextProcessor(constant.ProcessorType(processorType), prompt)
+		processorType := constant.ProcessorTypeIntroduction
+		processor := NewLLMTextProcessor(processorType, prompt)
 		ret := processItemContent(item, processor)
 		return ret, nil
 	}
-	cachedTransformer := GetCommonCachedTransformer(cacheKeyForArticleTitle, transFunc, "add intro")
+	cachedTransformer := GetCommonCachedTransformer(cacheKeyForArticleTitle, transFunc, string(constant.ProcessorTypeIntroduction))
 	craftOption := []CraftOption{
 		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransformer)),
 	}
