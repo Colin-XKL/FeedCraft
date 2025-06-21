@@ -67,10 +67,19 @@
             <div class="mb-4">
                 <label for="siteSelector" class="mr-2">选择一个 craft:</label>
                 <select id="siteSelector" class="p-2 border border-gray-300 rounded">
-                    <option value="proxy">proxy</option>
-                    <option value="fulltext">fulltext</option>
-                    <option value="fulltext-plus">fulltext-plus</option>
-                    <option value="introduction">introduction</option>
+                    <option value="proxy">proxy - 代理订阅源</option>
+                    <option value="limit">limit - 限制单页条目数量</option>
+                    <option value="keyword">keyword - 关键词过滤</option>
+                    <option value="guid-fix">guid-fix - 修复 RSS GUID</option>
+                    <option value="relative-link-fix">relative-link-fix - 修复文章链接</option>
+                    <option value="fulltext">fulltext - 提取全文</option>
+                    <option value="fulltext-plus">fulltext-plus - 模拟浏览器提取全文</option>
+                    <option value="cleanup">cleanup - 清理文章HTML内容</option>
+                    <option value="introduction">introduction - AI生成导读</option>
+                    <option value="summary">summary - AI总结文章</option>
+                    <option value="ignore-advertorial">ignore-advertorial - 排除广告文章</option>
+                    <option value="translate-title">translate-title - 翻译标题</option>
+                    <option value="translate-content">translate-content - 翻译内容</option>
                 </select>
                 <label for="customCraft" class="ml-4 mr-2">或输入自定义 craft:</label>
                 <input type="text" id="customCraft" placeholder="输入自定义 craft"
