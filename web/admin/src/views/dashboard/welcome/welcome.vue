@@ -43,10 +43,36 @@
                 >
               </p>
               可使用的Craft Option:
-              <li><b>proxy</b>仅代理模式</li>
-              <li><b>fulltext</b>提取全文</li>
-              <li><b>fulltext-plus</b>提取全文,使用模拟浏览器渲染网页内容</li>
-              <li><b>introduction</b>使用AI生成文章简介,附加在原文开头</li>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <h3 class="font-bold">基础处理</h3>
+                  <ul>
+                    <li><b>proxy</b> - 仅代理模式</li>
+                    <li><b>limit</b> - 限制单页条目数量</li>
+                    <li><b>keyword</b> - 关键词过滤</li>
+                    <li><b>guid-fix</b> - 修复RSS GUID</li>
+                    <li><b>relative-link-fix</b> - 修复文章链接</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 class="font-bold">内容提取</h3>
+                  <ul>
+                    <li><b>fulltext</b> - 提取全文</li>
+                    <li><b>fulltext-plus</b> - 模拟浏览器提取全文</li>
+                    <li><b>cleanup</b> - 清理文章HTML内容</li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 class="font-bold">AI处理</h3>
+                  <ul>
+                    <li><b>introduction</b> - AI生成导读</li>
+                    <li><b>summary</b> - AI总结文章</li>
+                    <li><b>ignore-advertorial</b> - 排除广告文章</li>
+                    <li><b>translate-title</b> - 翻译标题</li>
+                    <li><b>translate-content</b> - 翻译内容</li>
+                  </ul>
+                </div>
+              </div>
             </a-card>
           </a-col>
           <a-col :span="8">
