@@ -6,7 +6,8 @@ toolchain go1.24.2
 
 require (
 	github.com/JohannesKaufmann/html-to-markdown/v2 v2.3.3
-	github.com/getsentry/sentry-go v0.29.1
+	github.com/getsentry/sentry-go v0.33.0
+	github.com/getsentry/sentry-go/gin v0.33.0
 	github.com/gin-contrib/cors v1.7.5
 	github.com/gin-gonic/gin v1.10.0
 	github.com/glebarez/sqlite v1.11.0
