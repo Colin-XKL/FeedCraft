@@ -2,65 +2,86 @@ package craft
 
 import (
 	"FeedCraft/internal/adapter"
+	"FeedCraft/internal/constant"
 	"FeedCraft/internal/util"
 	"fmt"
 	"github.com/gorilla/feeds"
 	"github.com/sirupsen/logrus"
 )
 
-/*
-add introduction for article,powered by google gemini
-*/
-
-func getIntroductionForArticle(prompt, article string) (string, error) {
-	return adapter.CallLLMUsingContext(prompt, article)
+// TextProcessor defines interface for processing text content
+type TextProcessor interface {
+	Process(original string) (string, error)
+	Combine(original, processed string) string
+	GetName() string
 }
 
-const promptGenerateIntroduction = "请阅读下面的文章并写一篇不超过200字的中文摘要, 使得读者可以快速知道文章的主题和主要结论."
-
-func combineIntroductionAndArticle(article, intro string) string {
-	introInHtml := util.Markdown2HTML(intro)
-	return fmt.Sprintf(`<div>%s<div><hr/><br/>%s</div>`, introInHtml, article)
+// LLMTextProcessor 调用LLM处理文章内容,然后把处理结果放到文章开头
+type LLMTextProcessor struct {
+	prompt string
+	name   string
 }
 
-func addIntroductionUsingLLM(item *feeds.Item, prompt string) string {
-	//TODO handle description and content field separately and correctly
-	finalArticleContent := ""
+func (p *LLMTextProcessor) Process(original string) (string, error) {
+	return adapter.CallLLMUsingContext(p.prompt, original)
+}
+func (p *LLMTextProcessor) Combine(original, processed string) string {
+	processedHTML := util.Markdown2HTML(processed)
+	return fmt.Sprintf(`<div><div>%s</div><hr/><br/><div>%s</div></div>`, processedHTML, original)
+}
+func (p *LLMTextProcessor) GetName() string {
+	return p.name
+}
+
+func processItemContent(item *feeds.Item, processor TextProcessor) string {
 	originalContent := item.Content
 	originalTitle := item.Title
+
 	if len(originalContent) == 0 {
 		if len(item.Description) == 0 {
-			logrus.Warnf("empty content , both content as description field have no value. title [%s]", originalTitle)
+			logrus.Warnf("empty content, both content and description fields are empty. title [%s]", originalTitle)
 		}
 		originalContent = item.Description
-		logrus.Warnf("empty content, use description field val as fallback")
+		logrus.Warnf("empty content, using description field as fallback")
 	}
 
 	domain, _ := util.ParseDomainFromUrl(item.Link.Href)
-	cleanedArticleContent := util.Html2Markdown(originalContent, &domain)
-	introduction := ""
+	cleanedContent := util.Html2Markdown(originalContent, &domain)
+
+	var processedContent string
 	var err error
-	if len(cleanedArticleContent) > 0 {
-		introduction, err = getIntroductionForArticle(prompt, cleanedArticleContent)
+
+	if len(cleanedContent) > 0 {
+		processedContent, err = processor.Process(cleanedContent)
 	} else {
-		introduction, err = getIntroductionForArticle(prompt, originalContent)
-	}
-	if err != nil {
-		errMsg := fmt.Sprintf("add introduction for article failed. err: %v ", err)
-		logrus.Warnf(errMsg)
-		introduction = errMsg
+		processedContent, err = processor.Process(originalContent)
 	}
 
-	finalArticleContent = combineIntroductionAndArticle(originalContent, introduction)
-	return finalArticleContent
+	if err != nil {
+		errMsg := fmt.Sprintf("process article content using processsor [%s] failed. err: %v", processor.GetName(), err)
+		logrus.Warnf(errMsg)
+		processedContent = errMsg
+	}
+
+	return processor.Combine(originalContent, processedContent)
+}
+
+func NewLLMTextProcessor(processorType constant.ProcessorType, customPrompt string) TextProcessor {
+	prompt := customPrompt
+	if prompt == "" {
+		prompt = constant.DefaultPrompts[processorType]
+	}
+	return &LLMTextProcessor{prompt: prompt, name: string(processorType)}
 }
 
 func GetAddIntroductionCraftOptions(prompt string) []CraftOption {
 	transFunc := func(item *feeds.Item) (string, error) {
-		ret := addIntroductionUsingLLM(item, prompt)
+		processorType := constant.ProcessorTypeIntroduction
+		processor := NewLLMTextProcessor(processorType, prompt)
+		ret := processItemContent(item, processor)
 		return ret, nil
 	}
-	cachedTransformer := GetCommonCachedTransformer(cacheKeyForArticleTitle, transFunc, "add intro")
+	cachedTransformer := GetCommonCachedTransformer(cacheKeyForArticleTitle, transFunc, string(constant.ProcessorTypeIntroduction))
 	craftOption := []CraftOption{
 		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransformer)),
 	}
@@ -70,11 +91,15 @@ func GetAddIntroductionCraftOptions(prompt string) []CraftOption {
 func introCraftLoadParam(m map[string]string) []CraftOption {
 	prompt, exist := m["prompt"]
 	if !exist || len(prompt) == 0 {
-		prompt = promptGenerateIntroduction
+		prompt = constant.DefaultPrompts[constant.ProcessorTypeIntroduction]
 	}
 	return GetAddIntroductionCraftOptions(prompt)
 }
 
 var introCraftParamTmpl = []ParamTemplate{
-	{Key: "prompt", Description: "the llm prompt for generate summary", Default: promptGenerateIntroduction},
+	{
+		Key:         "prompt",
+		Description: "the llm prompt for generate introduction",
+		Default:     constant.DefaultPrompts[constant.ProcessorTypeIntroduction],
+	},
 }
