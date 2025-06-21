@@ -49,11 +49,12 @@ FeedCraft中的几个核心概念:
 
 你可以先开始尝试下面的几个工艺(craft atom):
 
-- **proxy**: 简易RSS代理, 不作任何处理.
+- **proxy**: 简易RSS代理, 不作任何处理
 - **limit**: 限制文章个数, 默认最新10个
 - **fulltext**: 获取全文
 - **fulltext-plus**: 获取全文,但是会模拟浏览器渲染网页,适用于常规模式无法获取到文章内容,动态渲染内容的站点
 - **introduction**: 调用AI为文章生成摘要,附加在原文开头
+- **summary**: 调用AI总结文章主要内容,附加在原文开头
 - **translate-title**: 调用AI翻译文章标题
 - **translate-content**: 调用AI翻译文章内容
 - **ignore-advertorial**: 调用AI对文章进行筛选, 排除营销软文
@@ -67,7 +68,8 @@ https://feed-craft.colinx.one
 `https://feed-craft.colinx.one/craft/translate-title?input_url=https://feeds.feedburner.com/visualcapitalist`  即可.
 
 (部分RSS订阅软件不会自动进行字符转义, 你可能需要把 input_url 后面的内容进行手动转义,
-结果为 `https://feed-craft.colinx.one/craft/translate-title?input_url=https%3A%2F%2Ffeeds.feedburner.com%2Fvisualcapitalist` )
+结果为
+`https://feed-craft.colinx.one/craft/translate-title?input_url=https%3A%2F%2Ffeeds.feedburner.com%2Fvisualcapitalist` )
 
 *注意: Demo站点仅供体验使用
 
@@ -84,7 +86,7 @@ version: "3"
 services:
   app.feed-craft:
     image: ghcr.io/colin-xkl/feed-craft
-  # image: colinxkl/feed-craft  # 你也可以使用docker hub的镜像
+    # image: colinxkl/feed-craft  # 你也可以使用docker hub的镜像
     container_name: feed-craft
     restart: always
     ports:

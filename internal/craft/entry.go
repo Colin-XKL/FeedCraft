@@ -76,9 +76,15 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 	}
 	sysCraftTempList["introduction"] = CraftTemplate{
 		Name:                "introduction",
-		Description:         "在文章开头添加 AI 生成的介绍",
+		Description:         "在文章开头添加 AI 生成的导读",
 		ParamTemplateDefine: introCraftParamTmpl,
 		OptionFunc:          introCraftLoadParam,
+	}
+	sysCraftTempList["summary"] = CraftTemplate{
+		Name:                "summary",
+		Description:         "让AI总结文章主要内容,并附在原文开头",
+		ParamTemplateDefine: summaryCraftParamTmpl,
+		OptionFunc:          summaryCraftLoadParam,
 	}
 	sysCraftTempList["ignore-advertorial"] = CraftTemplate{
 		Name:                "ignore-advertorial",
