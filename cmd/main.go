@@ -125,7 +125,7 @@ func startServer() {
 		logrus.Info("Starting pprof on :6060")
 		go func() {
 			if err := http.ListenAndServe("localhost:6060", nil); err != nil {
-				logrus.Warnf("pprof server failed to start: %v", err)
+			    logrus.Errorf("pprof server failed to start: %v", err)
 			}
 		}()
 	}
