@@ -12,50 +12,14 @@ const DASHBOARD: AppRouteRecordRaw = {
     order: 0,
   },
   children: [
-    // {
-    //   path: 'welcome',
-    //   name: 'Welcome',
-    //   component: () => import('@/views/dashboard/welcome/welcome.vue'),
-    //   meta: {
-    //     title: '欢迎使用',
-    //     requiresAuth: true,
-    //   },
-    // },
-    {
-      path: 'viewer',
-      name: 'FeedViewer',
-      component: () => import('@/views/dashboard/feed_viewer/feed_viewer.vue'),
-      meta: {
-        title: 'RSS 源预览',
-        requiresAuth: false,
-      },
-    },
     {
       path: 'workplace',
       name: 'Workplace',
       component: () => import('@/views/dashboard/welcome/welcome.vue'),
       meta: {
         title: '欢迎页',
-        requiresAuth: true,
+        requiresAuth: false,
         roles: ['*'],
-      },
-    },
-    {
-      path: 'ad-check-debug',
-      name: 'AdCheckDebug',
-      component: () => import('@/views/dashboard/llm_debug/ad-check-debug.vue'),
-      meta: {
-        title: 'LLM 广告软文检测',
-        requiresAuth: true,
-      },
-    },
-    {
-      path: 'llm-debug',
-      name: 'llm-debug',
-      component: () => import('@/views/dashboard/llm_debug/llm-test.vue'),
-      meta: {
-        title: 'LLM Debug',
-        requiresAuth: true,
       },
     },
     {
@@ -65,7 +29,7 @@ const DASHBOARD: AppRouteRecordRaw = {
         import('@/views/dashboard/custom_recipe/custom_recipe.vue'),
       meta: {
         requiresAuth: true,
-        title: '自定义Recipe',
+        title: 'Craft Recipe',
       },
     },
     {
@@ -84,16 +48,6 @@ const DASHBOARD: AppRouteRecordRaw = {
       meta: {
         requiresAuth: true,
         title: 'Craft Atom',
-      },
-    },
-    {
-      path: 'feed_compare',
-      name: 'feed_compare',
-      component: () =>
-        import('@/views/dashboard/feed_compare/feed_compare.vue'),
-      meta: {
-        requiresAuth: true,
-        title: 'RSS 对比',
       },
     },
   ],
