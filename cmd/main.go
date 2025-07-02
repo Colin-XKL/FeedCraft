@@ -6,15 +6,18 @@ import (
 	"FeedCraft/internal/router"
 	"FeedCraft/internal/util"
 	"fmt"
+	"net/http"
+	_ "net/http/pprof"
+	"os"
+
 	"github.com/getsentry/sentry-go"
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	_ "go.uber.org/automaxprocs"
-	"net/http"
-	"os"
 )
+
 func init() {
 	logrus.Info("Starting PreheatingScheduler...")
 	// 设置预热任务函数
@@ -66,11 +69,19 @@ func main() {
 func startServer() {
 	sentryDsn := os.Getenv("SENTRY_DSN")
 	env := os.Getenv("ENV")
-	if len(env) == 0 {
+	if len(env) == 0 { // set env to `prod` or `dev`
 		env = "prod"
+	}
+	isProd := env == "prod"
+	if !isProd {
+		logrus.SetLevel(logrus.DebugLevel)
 	}
 	if len(sentryDsn) > 0 {
 		logrus.Info("initializing sentry...")
+		sampledRate := 1.0
+		if isProd {
+			sampledRate = 0.1
+		}
 		// To initialize Sentry's handler, you need to initialize Sentry itself beforehand
 		err := sentry.Init(sentry.ClientOptions{
 			Dsn:           sentryDsn,
@@ -79,7 +90,7 @@ func startServer() {
 			// Set TracesSampleRate to 1.0 to capture 100%
 			// of transactions for performance monitoring.
 			// We recommend adjusting this value in production,
-			TracesSampleRate: 1.0,
+			TracesSampleRate: sampledRate,
 		})
 		if err != nil {
 			logrus.Warnf("sentry initialization failed: %v\n", err)
@@ -109,5 +120,13 @@ func startServer() {
 	go func() {
 		_ = r.Run(fmt.Sprintf("localhost:%d", localDefaultPort))
 	}()
+	// Enable pprof if DEBUG_MODE is true
+	if !isProd {
+		logrus.Info("Starting pprof on :6060")
+		go func() {
+			_ = http.ListenAndServe("localhost:6060", nil)
+		}()
+	}
+
 	_ = r.Run(listenAddr) // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
