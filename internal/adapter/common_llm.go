@@ -4,9 +4,11 @@ import (
 	"FeedCraft/internal/util"
 	"context"
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/sashabaranov/go-openai"
 	"github.com/sirupsen/logrus"
-	"log"
 )
 
 /*
@@ -15,6 +17,8 @@ Handle LLM calling and processing, support OpenAI and all compatible services.
 */
 
 const UseDefaultModel = ""
+
+var llmCallTimeout = 10 * time.Minute
 
 func SimpleLLMCall(model string, promptInput string) (string, error) {
 	envClient := util.GetEnvClient()
@@ -42,9 +46,10 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 	if client == nil {
 		return "", fmt.Errorf("new openai client error")
 	}
-
+	ctx, cancel := context.WithTimeout(context.Background(), llmCallTimeout)
+	defer cancel()
 	resp, err := client.CreateChatCompletion(
-		context.Background(),
+		ctx,
 		openai.ChatCompletionRequest{
 			Model: openAIModel,
 			Messages: []openai.ChatCompletionMessage{

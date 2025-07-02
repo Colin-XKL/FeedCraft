@@ -3,8 +3,9 @@ package admin
 import (
 	"FeedCraft/internal/adapter"
 	"FeedCraft/internal/util"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 /*
@@ -12,7 +13,7 @@ For debug use
 */
 
 type llmDebugReq struct {
-	Model string `json:"model" binding:"required,min=1"`
+	Model string `json:"model"`
 	Input string `json:"input" binding:"required,min=1"`
 }
 
