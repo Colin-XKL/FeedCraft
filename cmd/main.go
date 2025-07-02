@@ -120,7 +120,7 @@ func startServer() {
 	go func() {
 		_ = r.Run(fmt.Sprintf("localhost:%d", localDefaultPort))
 	}()
-	// Enable pprof if DEBUG_MODE is true
+	// Enable pprof for non-production environments
 	if !isProd {
 		logrus.Info("Starting pprof on :6060")
 		go func() {
