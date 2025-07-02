@@ -23,7 +23,7 @@ const TOOLS: AppRouteRecordRaw = {
     },
     {
       path: 'feed_compare',
-      name: 'feed_compare',
+      name: 'FeedCompare',
       component: () =>
         import('@/views/dashboard/feed_compare/feed_compare.vue'),
       meta: {
