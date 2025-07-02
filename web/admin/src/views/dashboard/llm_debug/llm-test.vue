@@ -38,7 +38,7 @@
   import axios from 'axios';
   import XHeader from '@/components/header/x-header.vue';
 
-  const model = ref('chatgpt-3.5');
+  const model = ref('');
   const prompt = ref('what is rss and how to use it?');
   const response = ref('');
   const isLoading = ref(false);
