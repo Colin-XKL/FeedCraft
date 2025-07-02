@@ -3,10 +3,11 @@
     <div class="h-screen flex items-center justify-center">
       <div>
         <img :src="logo" style="height: 8rem; width: 8rem" />
-        <h1 class="text-3xl my-4"
+        <h1 class="text-3xl my-4 font-light"
           >Welcome To
           <span class="font-bold"
-            >Feed<span style="color: #79f1bf">Craft</span></span
+            ><span style="color: #4d4f5a">Feed</span
+            ><span style="color: #79f1bf">Craft</span></span
           ></h1
         >
         <p class="text-xl"

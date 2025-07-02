@@ -1,7 +1,9 @@
 <template>
   <div class="py-8 px-16">
-    <x-header title="Craft Atom 管理" description="管理 Craft Atoms">
-    </x-header>
+    <x-header
+      title="Craft Atom 管理"
+      description="CraftAtom(工艺), 指要如何处理一个rss源, 比如是要进行翻译,还是提取正文,还是AI生成摘要等"
+    ></x-header>
 
     <a-space direction="horizontal" class="mb-6">
       <a-button type="primary" :loading="isLoading" @click="listAllCraftAtoms">

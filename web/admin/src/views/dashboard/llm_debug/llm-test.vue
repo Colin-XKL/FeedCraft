@@ -1,6 +1,9 @@
 <template>
   <div class="py-8 px-16">
-    <x-header title="LLM 调试" description="大模型测试"></x-header>
+    <x-header
+      title="LLM 调试"
+      description="大模型API测试, 你可以快捷调试后端的LLM API配置是否正常工作"
+    ></x-header>
 
     <a-space direction="vertical" class="w-full">
       <a-card class="my-2 w-full" title="输入参数">
@@ -12,7 +15,7 @@
           ></a-input>
           <a-textarea
             v-model:model-value="prompt"
-            placeholder="提示输入"
+            placeholder="在此输入你的提示词"
             allow-clear
             class="w-full min-w-96"
             auto-size
