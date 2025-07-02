@@ -99,8 +99,8 @@ func startServer() {
 		}
 	}
 
-	r := gin.Default()
-
+	r := gin.New()
+	r.Use(gin.Logger(), gin.Recovery())
 	if len(sentryDsn) > 0 {
 		r.Use(sentrygin.New(sentrygin.Options{}))
 	}
