@@ -42,7 +42,7 @@ const TOOLS: AppRouteRecordRaw = {
     },
     {
       path: 'llm-debug',
-      name: 'llm-debug',
+      name: 'LlmDebug',
       component: () => import('@/views/dashboard/llm_debug/llm-test.vue'),
       meta: {
         title: 'LLM API 调试',
