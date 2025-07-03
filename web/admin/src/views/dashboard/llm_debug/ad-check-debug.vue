@@ -2,7 +2,7 @@
   <div class="py-8 px-16">
     <x-header
       title="LLM 调试页面 - 检查是否为广告"
-      description="通过大模型能力，检测一个文章是不是广告或是推广的软文"
+      description="通过大模型能力，检测一个文章是不是广告或是推广的软文. 对应craft: ignore-advertorial"
     >
     </x-header>
 

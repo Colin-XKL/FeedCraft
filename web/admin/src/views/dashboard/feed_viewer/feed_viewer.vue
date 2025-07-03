@@ -1,6 +1,6 @@
 <template>
   <div class="py-8 px-16">
-    <x-header title="RSS 源预览" description="RSS 源预览"> </x-header>
+    <x-header title="RSS 预览" description="输入 RSS 链接进行预览"> </x-header>
 
     <a-card class="my-2" title="输入链接">
       <p>输入要预览的RSS源地址 支持RSS/ATOM</p>

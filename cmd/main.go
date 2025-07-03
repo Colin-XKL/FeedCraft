@@ -115,7 +115,7 @@ func startServer() {
 
 	// Migrate the schema
 	dao.MigrateDatabases()
-	localDefaultPort := util.GetLocalPort()
+	localDefaultPort := util.GetLocalPort() // 让gin额外监听的一个端口,用于向自身发送请求时使用
 	listenAddr := os.Getenv("LISTEN_ADDR")
 	go func() {
 		_ = r.Run(fmt.Sprintf("localhost:%d", localDefaultPort))
@@ -124,7 +124,9 @@ func startServer() {
 	if !isProd {
 		logrus.Info("Starting pprof on :6060")
 		go func() {
-			_ = http.ListenAndServe("localhost:6060", nil)
+			if err := http.ListenAndServe("localhost:6060", nil); err != nil {
+			    logrus.Errorf("pprof server failed to start: %v", err)
+			}
 		}()
 	}
 
