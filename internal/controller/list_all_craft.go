@@ -17,19 +17,23 @@ var (
 	UserDefinedCraftFlow CraftType = "@user/flow"
 )
 
+type CraftItem struct {
+	Type        CraftType `json:"type"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+}
+
 func ListAllCraft(c *gin.Context) {
-	var allCrafts []map[string]interface{}
+	var allCrafts []CraftItem
 	db := util.GetDatabase()
 
 	// 获取系统内置 craft atoms
 	sysCraftTemplates := craft.GetSysCraftTemplateDict()
 	for _, tmpl := range sysCraftTemplates {
-		allCrafts = append(allCrafts, map[string]interface{}{
-			"type":        SysDefinedCraftAtom,
-			"name":        tmpl.Name,
-			"description": tmpl.Description,
-			"template":    tmpl.Name,
-			"params":      map[string]string{}, // 系统内置的 atom 默认没有参数
+		allCrafts = append(allCrafts, CraftItem{
+			Type:        SysDefinedCraftAtom,
+			Name:        tmpl.Name,
+			Description: tmpl.Description,
 		})
 	}
 
@@ -40,12 +44,10 @@ func ListAllCraft(c *gin.Context) {
 		return
 	}
 	for _, atom := range customAtoms {
-		allCrafts = append(allCrafts, map[string]interface{}{
-			"type":        UserDefinedCraftAtom,
-			"name":        atom.Name,
-			"description": atom.Description,
-			"template":    atom.TemplateName,
-			"params":      atom.Params,
+		allCrafts = append(allCrafts, CraftItem{
+			Type:        UserDefinedCraftAtom,
+			Name:        atom.Name,
+			Description: atom.Description,
 		})
 	}
 
@@ -56,11 +58,10 @@ func ListAllCraft(c *gin.Context) {
 		return
 	}
 	for _, flow := range craftFlows {
-		allCrafts = append(allCrafts, map[string]interface{}{
-			"type":              UserDefinedCraftFlow,
-			"name":              flow.Name,
-			"description":       flow.Description,
-			"craft_flow_config": flow.CraftFlowConfig,
+		allCrafts = append(allCrafts, CraftItem{
+			Type:        UserDefinedCraftFlow,
+			Name:        flow.Name,
+			Description: flow.Description,
 		})
 	}
 

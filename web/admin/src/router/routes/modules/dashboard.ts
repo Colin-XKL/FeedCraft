@@ -50,6 +50,16 @@ const DASHBOARD: AppRouteRecordRaw = {
         title: 'Craft Atom',
       },
     },
+    {
+      path: 'all_craft_list',
+      name: 'all_craft_list',
+      component: () =>
+        import('@/views/dashboard/all_craft_list/all_craft_list.vue'),
+      meta: {
+        requiresAuth: true,
+        title: '所有 Craft 列表',
+      },
+    },
   ],
 };
 
