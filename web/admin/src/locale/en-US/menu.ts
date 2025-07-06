@@ -16,14 +16,17 @@ export default {
   'menu.repo': 'Repository',
   'navbar.docs': 'Docs Center',
   'navbar.action.locale': 'Switch to English',
-  'menu.craftAtom': 'Craft Atom Management',
+  // workplace menus
+  'menu.craftAtom': 'Craft Atom',
   'menu.craftFlow': 'Craft Flow',
   'menu.customRecipe': 'Custom Recipe',
   'menu.allCraftList': 'All Craft List',
+  // tools menus
   'menu.feedCompare': 'Feed Compare',
   'menu.feedViewer': 'RSS Viewer',
   'menu.llmDebug': 'LLM Debug',
   'menu.changePassword': 'Change Password',
   'menu.adCheckDebug': 'Ad/Advertorial Check',
+  // other menu
   'menu.llmApiDebug': 'LLM API Debug',
 };

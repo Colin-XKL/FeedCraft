@@ -16,14 +16,17 @@ export default {
   'menu.repo': '项目地址',
   'navbar.docs': '文档中心',
   'navbar.action.locale': '切换为中文',
-  'menu.craftAtom': 'Craft Atom 管理',
+  // 工作台菜单
+  'menu.craftAtom': 'Craft Atom',
   'menu.craftFlow': 'Craft Flow',
   'menu.customRecipe': '自定义配方',
   'menu.allCraftList': '所有 Craft 列表',
+  // 调试菜单
   'menu.feedCompare': 'Feed 对比',
   'menu.feedViewer': 'RSS 预览',
   'menu.llmDebug': 'LLM 调试',
-  'menu.changePassword': '修改密码',
   'menu.adCheckDebug': '广告软文检测',
   'menu.llmApiDebug': 'LLM API 调试',
+  // 其他
+  'menu.changePassword': '修改密码',
 };
