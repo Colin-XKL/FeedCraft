@@ -2,7 +2,7 @@
   <div class="py-8 px-16">
     <x-header
       title="Craft Flow"
-      description="你可以将craft atom 串起来一次性完成多个任务, 此外还可以复用craft flow, 将处理规则应用到多个RSS源"
+      description="CraftFlow(工艺组合), 多个craft atom组成的序列, 比如你可以定义一个新的名叫 clean-article 的 craft flow, 将提取全文、AI筛选文章、AI摘要组合到一起"
     ></x-header>
 
     <a-space direction="horizontal" class="mb-6">

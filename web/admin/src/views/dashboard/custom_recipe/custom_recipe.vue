@@ -1,6 +1,9 @@
 <template>
   <div class="py-8 px-16">
-    <x-header title="自定义配方" description="自定义RSS，以及要使用的工艺">
+    <x-header
+      title="自定义配方"
+      description="Recipe(食谱), 记录了以什么样的craft 或 craft flow对某个指定的RSS源进行处理, 比如你可以指定一个名叫my-zhihu-daliy的recipe, 对知乎日报的rss自动进行AI生成摘要的操作, 这个recipe对应一个新的rss地址, 你可以直接订阅这个地址得到带摘要版本的知乎日报"
+    >
     </x-header>
 
     <a-space direction="horizontal" class="mb-4">
