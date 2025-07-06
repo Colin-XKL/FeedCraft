@@ -107,14 +107,9 @@ func startServer() {
 
 	router.RegisterRouters(r)
 
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
-
 	// Migrate the schema
 	dao.MigrateDatabases()
+
 	localDefaultPort := util.GetLocalPort() // 让gin额外监听的一个端口,用于向自身发送请求时使用
 	listenAddr := os.Getenv("LISTEN_ADDR")
 	go func() {
@@ -125,7 +120,7 @@ func startServer() {
 		logrus.Info("Starting pprof on :6060")
 		go func() {
 			if err := http.ListenAndServe("localhost:6060", nil); err != nil {
-			    logrus.Errorf("pprof server failed to start: %v", err)
+				logrus.Errorf("pprof server failed to start: %v", err)
 			}
 		}()
 	}
