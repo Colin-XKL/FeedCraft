@@ -19,8 +19,9 @@ func GetFulltextCraftOptions() []CraftOption {
 		return TrivialExtractor(link, DefaultExtractFulltextTimeout)
 	}
 	cachedTransFunc := GetCommonCachedTransformer(cacheKeyForArticleLink, transFunc, "extract fulltext")
-	craftOptions := []CraftOption{
-		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransFunc)),
-	}
+	relativeLinkFixOptions := GetRelativeLinkFixCraftOptions()
+	var craftOptions []CraftOption
+	craftOptions = append(craftOptions, relativeLinkFixOptions...)
+	craftOptions = append(craftOptions, OptionTransformFeedItem(GetArticleContentProcessor(cachedTransFunc)))
 	return craftOptions
 }

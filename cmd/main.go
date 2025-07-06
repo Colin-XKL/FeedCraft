@@ -19,7 +19,7 @@ import (
 )
 
 func init() {
-	logrus.Info("Starting PreheatingScheduler...")
+	logrus.Info("Preheating scheduler starting...")
 	// 设置预热任务函数
 	taskFunc := func(recipeName string) error {
 		recipeData, err := recipe.QueryCustomRecipeName(recipeName)
@@ -31,7 +31,7 @@ func init() {
 		return err
 	}
 	recipe.Scheduler = util.NewPreheatingScheduler(taskFunc)
-	logrus.Info("Start PreheatingScheduler done.")
+	logrus.Info("Preheating scheduler started.")
 }
 
 var rootCmd = &cobra.Command{
@@ -50,7 +50,7 @@ var resetPasswordCmd = &cobra.Command{
 			logrus.Errorf("Failed to reset admin password: %v", err)
 			os.Exit(1)
 		}
-		logrus.Info("Admin password has been reset successfully")
+		logrus.Info("Admin password reset successfully.")
 		os.Exit(0)
 	},
 }
@@ -77,7 +77,7 @@ func startServer() {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 	if len(sentryDsn) > 0 {
-		logrus.Info("initializing sentry...")
+		logrus.Info("Initializing Sentry...")
 		sampledRate := 1.0
 		if isProd {
 			sampledRate = 0.1
@@ -93,9 +93,9 @@ func startServer() {
 			TracesSampleRate: sampledRate,
 		})
 		if err != nil {
-			logrus.Warnf("sentry initialization failed: %v\n", err)
+			logrus.Warnf("Sentry initialization failed: %v", err)
 		} else {
-			logrus.Info("sentry initialized.")
+			logrus.Info("Sentry initialized.")
 		}
 	}
 
@@ -106,29 +106,38 @@ func startServer() {
 	}
 
 	router.RegisterRouters(r)
-
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
-
-	// Migrate the schema
 	dao.MigrateDatabases()
+	logrus.Info("Database migration done.")
+
 	localDefaultPort := util.GetLocalPort() // 让gin额外监听的一个端口,用于向自身发送请求时使用
 	listenAddr := os.Getenv("LISTEN_ADDR")
 	go func() {
 		_ = r.Run(fmt.Sprintf("localhost:%d", localDefaultPort))
 	}()
-	// Enable pprof for non-production environments
+
 	if !isProd {
-		logrus.Info("Starting pprof on :6060")
+		logrus.Info("Pprof server starting on :6060...")
 		go func() {
 			if err := http.ListenAndServe("localhost:6060", nil); err != nil {
-			    logrus.Errorf("pprof server failed to start: %v", err)
+				logrus.Errorf("pprof server failed to start: %v", err)
 			}
 		}()
 	}
-
+	fmt.Print("=================================================================================")
+	fmt.Print(`
+==  ███████╗███████╗███████╗██████╗  ██████╗██████╗  █████╗ ███████╗████████╗
+==  ██╔════╝██╔════╝██╔════╝██╔══██╗██╔════╝██╔══██╗██╔══██╗██╔════╝╚══██╔══╝
+==  █████╗  █████╗  █████╗  ██║  ██║██║     ██████╔╝███████║█████╗     ██║   
+==  ██╔══╝  ██╔══╝  ██╔══╝  ██║  ██║██║     ██╔══██╗██╔══██║██╔══╝     ██║   
+==  ██║     ███████╗███████╗██████╔╝╚██████╗██║  ██║██║  ██║██║        ██║   
+==  ╚═╝     ╚══════╝╚══════╝╚═════╝  ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝        ╚═╝   
+==  
+==                           Welcome to FeedCraft!
+== Project Homepage: https://github.com/Colin-XKL/FeedCraft
+`)
+	fmt.Println("== Server listen at ", listenAddr)
+	fmt.Println("== Admin Default User: admin\n== Default Password: adminadmin")
+	fmt.Println("== Enjoy!")
+	fmt.Println("=================================================================================")
 	_ = r.Run(listenAddr) // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }

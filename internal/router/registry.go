@@ -7,10 +7,11 @@ import (
 	"FeedCraft/internal/middleware"
 	"FeedCraft/internal/recipe"
 	"FeedCraft/internal/util"
-	"github.com/gin-contrib/cors"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 func RegisterRouters(router *gin.Engine) {
@@ -41,6 +42,12 @@ func RegisterRouters(router *gin.Engine) {
 
 	router.NoRoute(func(c *gin.Context) {
 		c.File("./web/index.html")
+	})
+
+	router.GET("/ping", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"message": "pong",
+		})
 	})
 
 	// Public routes
