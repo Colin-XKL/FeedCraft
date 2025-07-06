@@ -1,17 +1,17 @@
 <template>
   <div class="py-8 px-16">
     <x-header
-      title="Feed Compare"
-      description="指定feed源url与要应用的craft(craft flow 或 atom都可), 对比处理前和处理后的结果"
+      :title="t('menu.feedCompare')"
+      :description="t('feedCompare.description')"
     ></x-header>
 
-    <a-card class="my-2" title="输入链接">
+    <a-card class="my-2" :title="t('feedCompare.inputLink')">
       <a-space>
         <a-input
           v-model="feedUrl"
           type="text"
           class="min-w-48"
-          placeholder="Enter RSS feed URL"
+          :placeholder="t('feedCompare.placeholder')"
         />
         <CraftFlowSelect
           v-model="selectedCraft"
@@ -19,14 +19,14 @@
           class="min-w-48"
         />
         <a-button :loading="isLoading" type="primary" @click="compareFeeds"
-          >Compare
+          >{{ t('feedCompare.compare') }}
         </a-button>
       </a-space>
     </a-card>
 
     <a-row :gutter="24">
       <a-col :span="12">
-        <a-card title="Original Feed" :loading="isLoading">
+        <a-card :title="t('feedCompare.originalFeed')" :loading="isLoading">
           <div v-if="originalFeedContent">
             <FeedViewContainer :feed-data="originalFeedContent" />
           </div>
@@ -34,7 +34,7 @@
         </a-card>
       </a-col>
       <a-col :span="12">
-        <a-card title="Craft Applied Feed" :loading="isLoading">
+        <a-card :title="t('feedCompare.craftAppliedFeed')" :loading="isLoading">
           <div v-if="craftAppliedFeedContent">
             <FeedViewContainer :feed-data="craftAppliedFeedContent" />
           </div>
@@ -52,6 +52,9 @@
   import FeedViewContainer from '@/views/dashboard/feed_viewer/feed_view_container.vue';
   import XHeader from '@/components/header/x-header.vue';
   import CraftFlowSelect from '@/views/dashboard/craft_flow/CraftFlowSelect.vue';
+  import { useI18n } from 'vue-i18n';
+
+  const { t } = useI18n();
 
   const feedUrl = ref('');
   const selectedCraft = ref<string[]>([]);
@@ -69,7 +72,7 @@
 
   async function compareFeeds() {
     if (!feedUrl.value || !selectedCraft.value) {
-      Message.warning('Please enter a feed URL and select a craft');
+      Message.warning(t('feedCompare.message.inputRequired'));
       return;
     }
 
@@ -84,7 +87,7 @@
         )}`
       );
     } catch (error) {
-      Message.warning(error?.toString() ?? 'Unknown Error');
+      Message.warning(error?.toString() ?? t('feedCompare.message.unknownError'));
       console.error(error);
     } finally {
       isLoading.value = false;

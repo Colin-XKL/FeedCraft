@@ -17,7 +17,7 @@ const TOOLS: AppRouteRecordRaw = {
       name: 'FeedViewer',
       component: () => import('@/views/dashboard/feed_viewer/feed_viewer.vue'),
       meta: {
-        title: 'RSS 预览',
+        locale: 'menu.feedViewer',
         requiresAuth: false,
       },
     },
@@ -28,7 +28,7 @@ const TOOLS: AppRouteRecordRaw = {
         import('@/views/dashboard/feed_compare/feed_compare.vue'),
       meta: {
         requiresAuth: false,
-        title: 'RSS 对比',
+        locale: 'menu.feedCompare',
       },
     },
     {
@@ -36,7 +36,7 @@ const TOOLS: AppRouteRecordRaw = {
       name: 'AdCheckDebug',
       component: () => import('@/views/dashboard/llm_debug/ad-check-debug.vue'),
       meta: {
-        title: '广告软文检测',
+        locale: 'menu.adCheckDebug',
         requiresAuth: true,
       },
     },
@@ -45,7 +45,7 @@ const TOOLS: AppRouteRecordRaw = {
       name: 'LlmDebug',
       component: () => import('@/views/dashboard/llm_debug/llm-test.vue'),
       meta: {
-        title: 'LLM API 调试',
+        locale: 'menu.llmDebug',
         requiresAuth: true,
       },
     },

@@ -1,13 +1,13 @@
 <template>
   <div class="py-8 px-16">
     <x-header
-      title="所有 Craft 列表"
-      description="展示所有系统内置 Craft Atom、用户自定义 Craft Atom 和用户自定义 Craft Flow"
+      :title="t('menu.allCraftList')"
+      :description="t('allCraftList.description')"
     ></x-header>
 
     <a-space direction="horizontal" class="mb-6">
       <a-button type="primary" :loading="isLoading" @click="listAllCrafts">
-        查询
+        {{ t('allCraftList.query') }}
       </a-button>
     </a-space>
 
@@ -25,6 +25,9 @@
   import { onBeforeMount, ref } from 'vue';
   import { Message } from '@arco-design/web-vue';
   import axios from 'axios';
+  import { useI18n } from 'vue-i18n';
+
+  const { t } = useI18n();
 
   interface CraftItem {
     name: string;
@@ -36,9 +39,9 @@
   const allCrafts = ref<CraftItem[]>([]);
 
   const columns = [
-    { title: '名称', dataIndex: 'name' },
-    { title: '类型', dataIndex: 'type' },
-    { title: '描述', dataIndex: 'description' },
+    { title: t('allCraftList.table.name'), dataIndex: 'name' },
+    { title: t('allCraftList.table.type'), dataIndex: 'type' },
+    { title: t('allCraftList.table.description'), dataIndex: 'description' },
   ];
 
   const listAllCrafts = async () => {
@@ -47,7 +50,7 @@
       const response = await axios.get('/api/list-all-craft');
       allCrafts.value = response.data;
     } catch (error) {
-      Message.error('Failed to fetch all crafts');
+      Message.error(t('allCraftList.message.fetchFailed'));
     } finally {
       isLoading.value = false;
     }
