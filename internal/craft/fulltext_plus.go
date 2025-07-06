@@ -13,44 +13,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-//func getRenderedHTML(websiteUrl string) (string, error) {
-//	envClient := util.GetEnvClient()
-//	browserURI := envClient.GetString("PUPPETEER_WS_ENDPOINT")
-//	if browserURI == "" {
-//		log.Fatalf("puppeteer websocket endpoint not found in env")
-//	}
-//
-//	allocatorContext, cancel := chromedp.NewRemoteAllocator(context.Background(), browserURI)
-//	defer cancel()
-//
-//	// create context
-//	ctx, cancel := chromedp.NewContext(allocatorContext)
-//	defer cancel()
-//
-//	var res string
-//
-//	err := chromedp.Run(ctx,
-//		chromedp.Navigate(websiteUrl),
-//		//chromedp.WaitVisible("body"),
-//		chromedp.Sleep(1*time.Second),
-//		chromedp.ActionFunc(func(ctx context.Context) error {
-//			fmt.Println("reading dom")
-//			node, err := dom.GetDocument().Do(ctx)
-//			if err != nil {
-//				return err
-//			}
-//			res, err = dom.GetOuterHTML().WithNodeID(node.NodeID).Do(ctx)
-//			return err
-//		}),
-//	)
-//
-//	if err != nil {
-//		logrus.Errorf("get rendered web page failed: %v", err)
-//	}
-//	return res, nil
-//
-//}
-
 type browserRenderReq struct {
 	URL                 string           `json:"url"`
 	RejectResourceTypes []string         `json:"rejectResourceTypes,omitempty"`
@@ -106,9 +68,13 @@ func GetFulltextPlusCraftOptions() []CraftOption {
 		link := item.Link.Href
 		return getRenderedHTML2(link, DefaultExtractFulltextTimeout)
 	}
+
 	cachedTransFunc := GetCommonCachedTransformer(cacheKeyForArticleLink, transFunc, "extract fulltext plus")
-	craftOptions := []CraftOption{
-		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransFunc)),
-	}
+
+	relativeLinkFixOptions := GetRelativeLinkFixCraftOptions()
+
+	var craftOptions []CraftOption
+	craftOptions = append(craftOptions, relativeLinkFixOptions...)
+	craftOptions = append(craftOptions, OptionTransformFeedItem(GetArticleContentProcessor(cachedTransFunc)))
 	return craftOptions
 }
