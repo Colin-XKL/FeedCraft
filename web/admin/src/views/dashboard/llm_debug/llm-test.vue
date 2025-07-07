@@ -49,7 +49,7 @@
   const { t } = useI18n();
 
   const model = ref('');
-  const prompt = ref('');
+  const prompt = ref(t('llmDebug.llmTest.defaultPrompt') || 'what is rss and how to use it?');
   const response = ref('');
   const isLoading = ref(false);
   const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
