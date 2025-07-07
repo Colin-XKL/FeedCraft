@@ -1,11 +1,14 @@
 <template>
   <div class="py-8 px-16">
-    <x-header title="自定义配方" description="自定义RSS，以及要使用的工艺">
+    <x-header
+      :title="t('menu.customRecipe')"
+      :description="t('customRecipe.description')"
+    >
     </x-header>
 
     <a-space direction="horizontal" class="mb-4">
       <a-button type="primary" :loading="isLoading" @click="listCustomRecipes">
-        查询
+        {{ t('customRecipe.query') }}
       </a-button>
       <a-button
         type="outline"
@@ -16,7 +19,7 @@
           }
         "
       >
-        创建自定义Recipe
+        {{ t('customRecipe.create') }}
       </a-button>
     </a-space>
 
@@ -29,17 +32,19 @@
       <template #status="{ record }">
         <a-tooltip
           v-if="record.is_active"
-          :content="`该 recipe 处于活跃状态, 会自动定期获取最新内容. 最近一次用户请求时间 ${dayjs(
-            record.last_accessed_at
-          ).format('YYYY-MM-DD HH:mm:ss')}`"
+          :content="
+            t('customRecipe.status.activeTooltip', {
+              time: dayjs(record.last_accessed_at).format('YYYY-MM-DD HH:mm:ss'),
+            })
+          "
         >
-          <a-tag color="green" :default-checked="true">活跃</a-tag>
+          <a-tag color="green" :default-checked="true">{{ t('customRecipe.status.active') }}</a-tag>
         </a-tooltip>
         <a-tooltip
           v-else
-          content="该 recipe 近3天没有请求,已经进入休眠状态,不会自动定期获取最新内容"
+          :content="t('customRecipe.status.inactiveTooltip')"
         >
-          <a-tag color="gray" :default-checked="true">不活跃</a-tag>
+          <a-tag color="gray" :default-checked="true">{{ t('customRecipe.status.inactive') }}</a-tag>
         </a-tooltip>
       </template>
       <template #actions="{ record }">
@@ -53,17 +58,21 @@
               }
             "
           >
-            编辑
+            {{ t('customRecipe.edit') }}
           </a-button>
-          <a-button @click="deleteRecipe(record.id)">删除</a-button>
-          <a-link :href="`${baseUrl}/recipe/${record?.id}`">链接</a-link>
+          <a-button @click="deleteRecipe(record.id)">{{ t('customRecipe.delete') }}</a-button>
+          <a-link :href="`${baseUrl}/recipe/${record?.id}`">{{ t('customRecipe.link') }}</a-link>
         </a-space>
       </template>
     </a-table>
 
     <a-modal
       v-model:visible="showModal"
-      :title="editing ? '编辑自定义配方' : '创建自定义配方'"
+      :title="
+        editing
+          ? t('customRecipe.editModalTitle.edit')
+          : t('customRecipe.editModalTitle.create')
+      "
     >
       <a-form
         :model="form"
@@ -71,16 +80,16 @@
         :rules="rules"
         :wrapper-col="{ span: 18 }"
       >
-        <a-form-item label="名称" field="id">
+        <a-form-item :label="t('customRecipe.form.name')" field="id">
           <a-input v-model="form.id" :disabled="isUpdating" />
         </a-form-item>
-        <a-form-item label="描述" field="description">
+        <a-form-item :label="t('customRecipe.form.description')" field="description">
           <a-input v-model="form.description" />
         </a-form-item>
-        <a-form-item label="工艺" field="craft">
+        <a-form-item :label="t('customRecipe.form.craft')" field="craft">
           <a-input v-model="form.craft" />
         </a-form-item>
-        <a-form-item label="FeedURL" field="feed_url">
+        <a-form-item :label="t('customRecipe.form.feedURL')" field="feed_url">
           <a-input v-model="form.feed_url" />
         </a-form-item>
       </a-form>
@@ -92,9 +101,9 @@
               isUpdating = false;
             }
           "
-          >取消
+          >{{ t('customRecipe.form.cancel') }}
         </a-button>
-        <a-button type="primary" @click="saveRecipe">保存</a-button>
+        <a-button type="primary" @click="saveRecipe">{{ t('customRecipe.form.save') }}</a-button>
       </template>
     </a-modal>
   </div>
@@ -112,6 +121,9 @@
   import XHeader from '@/components/header/x-header.vue';
   import { namingValidator } from '@/utils/validator';
   import dayjs from 'dayjs';
+  import { useI18n } from 'vue-i18n';
+
+  const { t } = useI18n();
 
   const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
@@ -129,12 +141,12 @@
   const isUpdating = ref(false);
 
   const columns = [
-    { title: '名称', dataIndex: 'id' },
-    { title: '描述', dataIndex: 'description' },
-    { title: '使用的Craft', dataIndex: 'craft' },
-    { title: '状态', slotName: 'status' },
-    { title: 'URL', dataIndex: 'feed_url' },
-    { title: '操作', slotName: 'actions' },
+    { title: t('customRecipe.form.name'), dataIndex: 'id' },
+    { title: t('customRecipe.form.description'), dataIndex: 'description' },
+    { title: t('customRecipe.form.craft'), dataIndex: 'craft' },
+    { title: t('customRecipe.status.active'), slotName: 'status' },
+    { title: t('customRecipe.form.feedURL'), dataIndex: 'feed_url' },
+    { title: t('customRecipe.edit'), slotName: 'actions' },
   ];
 
   async function listCustomRecipes() {
@@ -150,7 +162,7 @@
     id: [
       {
         required: true,
-        message: 'Name is required',
+        message: t('customRecipe.form.rule.nameRequired'),
         trigger: 'blur',
       },
       namingValidator,
@@ -158,14 +170,14 @@
     craft: [
       {
         required: true,
-        message: 'Name is required',
+        message: t('customRecipe.form.rule.craftRequired'),
         trigger: 'blur',
       },
     ],
     feed_url: [
       {
         required: true,
-        message: 'Name is required',
+        message: t('customRecipe.form.rule.feedURLRequired'),
         trigger: 'blur',
       },
     ],

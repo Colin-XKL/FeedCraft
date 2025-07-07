@@ -1,13 +1,13 @@
 <template>
   <div class="py-8 px-16">
     <x-header
-      title="Craft Flow"
-      description="你可以将craft atom 串起来一次性完成多个任务, 此外还可以复用craft flow, 将处理规则应用到多个RSS源"
+      :title="t('menu.craftFlow')"
+      :description="t('craftFlow.description')"
     ></x-header>
 
     <a-space direction="horizontal" class="mb-6">
       <a-button type="primary" :loading="isLoading" @click="listAllCraftFlow">
-        查询
+        {{ t('craftFlow.query') }}
       </a-button>
       <a-button
         type="outline"
@@ -17,7 +17,7 @@
             isUpdating = false;
           }
         "
-        >创建 CraftFlow
+        >{{ t('craftFlow.create') }}
       </a-button>
     </a-space>
 
@@ -37,10 +37,10 @@
       <template #actions="{ record }">
         <a-space>
           <a-button type="outline" @click="editBtnHandler(record)"
-            >编辑
+            >{{ t('craftFlow.edit') }}
           </a-button>
           <a-button status="danger" @click="deleteCraftFlowHandler(record.name)"
-            >删除
+            >{{ t('craftFlow.delete') }}
           </a-button>
         </a-space>
       </template>
@@ -48,7 +48,11 @@
 
     <a-modal
       v-model:visible="showEditModal"
-      :title="isUpdating ? '编辑 Craft Flow' : '创建 Craft Flow'"
+      :title="
+        isUpdating
+          ? t('craftFlow.editModalTitle.edit')
+          : t('craftFlow.editModalTitle.create')
+      "
     >
       <a-form
         :model="editedCraftFlow"
@@ -56,13 +60,13 @@
         :label-col="{ span: 6 }"
         :wrapper-col="{ span: 18 }"
       >
-        <a-form-item label="名称" field="name">
+        <a-form-item :label="t('craftFlow.form.name')" field="name">
           <a-input v-model="editedCraftFlow.name" />
         </a-form-item>
-        <a-form-item label="描述" field="description">
+        <a-form-item :label="t('craftFlow.form.description')" field="description">
           <a-textarea v-model="editedCraftFlow.description" />
         </a-form-item>
-        <a-form-item label="流程" field="craftFlowConfig">
+        <a-form-item :label="t('craftFlow.form.flow')" field="craftFlowConfig">
           <CraftFlowSelect
             v-model="editedCraftFlow.craftList"
             mode="multiple"
@@ -77,9 +81,9 @@
               isUpdating = false;
             }
           "
-          >取消
+          >{{ t('craftFlow.form.cancel') }}
         </a-button>
-        <a-button type="primary" @click="saveCraftFlow">保存</a-button>
+        <a-button type="primary" @click="saveCraftFlow">{{ t('craftFlow.form.save') }}</a-button>
       </template>
     </a-modal>
   </div>
@@ -99,6 +103,9 @@
   import { listCraftAtoms } from '@/api/craft_atom';
   import { namingValidator } from '@/utils/validator';
   import CraftFlowSelect from '@/views/dashboard/craft_flow/CraftFlowSelect.vue';
+  import { useI18n } from 'vue-i18n';
+
+  const { t } = useI18n();
 
   const rules = {
     name: [
@@ -123,10 +130,10 @@
   const isUpdating = ref(false);
 
   const columns = [
-    { title: 'Name', dataIndex: 'name' },
-    { title: 'Description', dataIndex: 'description' },
-    { title: 'Craft Flow', slotName: 'craft-flow-item-list' },
-    { title: 'Actions', slotName: 'actions' },
+    { title: t('craftFlow.form.name'), dataIndex: 'name' },
+    { title: t('craftFlow.form.description'), dataIndex: 'description' },
+    { title: t('craftFlow.form.flow'), slotName: 'craft-flow-item-list' },
+    { title: t('craftFlow.edit'), slotName: 'actions' },
   ];
   const optionList = computed(() => {
     const mapper = (item: any) => {

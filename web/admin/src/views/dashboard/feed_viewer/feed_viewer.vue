@@ -1,15 +1,22 @@
 <template>
   <div class="py-8 px-16">
-    <x-header title="RSS 预览" description="输入 RSS 链接进行预览"> </x-header>
+    <x-header
+      :title="t('menu.feedViewer')"
+      :description="t('feedViewer.description')"
+    > </x-header>
 
-    <a-card class="my-2" title="输入链接">
-      <p>输入要预览的RSS源地址 支持RSS/ATOM</p>
+    <a-card class="my-2" :title="t('feedViewer.inputLink')">
+      <p>{{ t('feedViewer.inputTip') }}</p>
       <a-space>
-        <a-input v-model="feedUrl" type="text" placeholder="输入RSS源地址" />
-        <a-button :loading="isLoading" @click="fetchFeed">预览</a-button>
+        <a-input
+          v-model="feedUrl"
+          type="text"
+          :placeholder="t('feedViewer.placeholder')"
+        />
+        <a-button :loading="isLoading" @click="fetchFeed">{{ t('feedViewer.preview') }}</a-button>
       </a-space>
     </a-card>
-    <a-card title="结果预览" class="my-4" :loading="isLoading">
+    <a-card :title="t('feedViewer.resultPreview')" class="my-4" :loading="isLoading">
       <div v-if="feedContent">
         <FeedViewContainer :feed-data="feedContent" />
       </div>
@@ -24,6 +31,9 @@
   import { Message } from '@arco-design/web-vue';
   import FeedViewContainer from '@/views/dashboard/feed_viewer/feed_view_container.vue';
   import XHeader from '@/components/header/x-header.vue';
+  import { useI18n } from 'vue-i18n';
+
+  const { t } = useI18n();
 
   const feedUrl = ref('');
   const feedContent = ref<any>(null);
@@ -43,7 +53,7 @@
       });
       feedContent.value = feed;
     } catch (error) {
-      Message.warning(error?.toString() ?? 'Unknown Error');
+      Message.warning(error?.toString() ?? t('feedViewer.message.unknownError'));
       console.error(error);
     } finally {
       isLoading.value = false;

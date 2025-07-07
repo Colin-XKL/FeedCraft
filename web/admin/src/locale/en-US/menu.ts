@@ -1,0 +1,32 @@
+export default {
+  'menu.dashboard': 'Dashboard',
+  'menu.tools': 'Tools',
+  'menu.server.dashboard': 'Dashboard-Server',
+  'menu.server.workplace': 'Workplace-Server',
+  'menu.server.monitor': 'Monitor-Server',
+  'menu.list': 'List',
+  'menu.result': 'Result',
+  'menu.exception': 'Exception',
+  'menu.form': 'Form',
+  'menu.profile': 'Profile',
+  'menu.visualization': 'Data Visualization',
+  'menu.user': 'User Center',
+  'menu.arcoWebsite': 'Arco Design',
+  'menu.faq': 'FAQ',
+  'menu.repo': 'Repository',
+  'navbar.docs': 'Docs Center',
+  'navbar.action.locale': 'Switch to English',
+  // workplace menus
+  'menu.craftAtom': 'Craft Atom',
+  'menu.craftFlow': 'Craft Flow',
+  'menu.customRecipe': 'Custom Recipe',
+  'menu.allCraftList': 'All Craft List',
+  // tools menus
+  'menu.feedCompare': 'Feed Compare',
+  'menu.feedViewer': 'RSS Viewer',
+  'menu.llmDebug': 'LLM Debug',
+  'menu.changePassword': 'Change Password',
+  'menu.adCheckDebug': 'Ad/Advertorial Check',
+  // other menu
+  'menu.llmApiDebug': 'LLM API Debug',
+};

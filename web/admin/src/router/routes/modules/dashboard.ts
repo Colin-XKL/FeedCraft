@@ -6,48 +6,58 @@ const DASHBOARD: AppRouteRecordRaw = {
   name: 'dashboard',
   component: DEFAULT_LAYOUT,
   meta: {
-    locale: 'menu.dashboard',
+    locale: 'menu.dashboard.workplace',
     requiresAuth: true,
     icon: 'icon-dashboard',
     order: 0,
   },
   children: [
     {
-      path: 'workplace',
-      name: 'Workplace',
+      path: 'welcome',
+      name: 'Welcome',
       component: () => import('@/views/dashboard/welcome/welcome.vue'),
       meta: {
-        title: '欢迎页',
+        locale: 'menu.dashboard.workplace',
         requiresAuth: false,
         roles: ['*'],
       },
     },
     {
       path: 'custom_recipe',
-      name: 'custom_recipe',
+      name: 'CustomRecipe',
       component: () =>
         import('@/views/dashboard/custom_recipe/custom_recipe.vue'),
       meta: {
         requiresAuth: true,
-        title: 'Craft Recipe',
+        locale: 'menu.customRecipe',
       },
     },
     {
       path: 'craft_flow',
-      name: 'craft_flow',
+      name: 'CraftFlow',
       component: () => import('@/views/dashboard/craft_flow/craft_flow.vue'),
       meta: {
         requiresAuth: true,
-        title: 'Craft Flow',
+        locale: 'menu.craftFlow',
       },
     },
     {
       path: 'craft_atom',
-      name: 'craft_atom',
+      name: 'CraftAtom',
       component: () => import('@/views/dashboard/craft_atom/craft_atom.vue'),
       meta: {
         requiresAuth: true,
-        title: 'Craft Atom',
+        locale: 'menu.craftAtom',
+      },
+    },
+    {
+      path: 'all_craft_list',
+      name: 'AllCraftList',
+      component: () =>
+        import('@/views/dashboard/all_craft_list/all_craft_list.vue'),
+      meta: {
+        requiresAuth: true,
+        locale: 'menu.allCraftList',
       },
     },
   ],

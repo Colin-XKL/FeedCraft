@@ -17,7 +17,7 @@ const ADMIN_PAGE: AppRouteRecordRaw = {
       name: 'ChangePassword',
       component: () => import('@/views/dashboard/admin/pass.vue'),
       meta: {
-        title: '修改密码',
+        locale: 'menu.changePassword',
         requiresAuth: true,
       },
     },

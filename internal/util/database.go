@@ -32,7 +32,6 @@ func GetDatabase() *gorm.DB {
 		db, err = gorm.Open(sqlite.Open(path), conf)
 		if err != nil || db == nil {
 			logrus.Fatalf("failed to connect to database. %s", err)
-			panic("failed to connect database")
 		}
 		// 设置连接池
 		sqlDB, err := db.DB()

@@ -54,6 +54,7 @@ func RegisterRouters(router *gin.Engine) {
 	public := router.Group("/api")
 	{
 		public.POST("/login", controller.LoginAuth)
+		public.GET("/list-all-craft", controller.ListAllCraft)
 	}
 
 	craftRouters := router.Group("/craft")
@@ -101,7 +102,6 @@ func RegisterRouters(router *gin.Engine) {
 		adminApi.GET("/craft-atoms/:name", controller.GetCraftAtom)
 		adminApi.PUT("/craft-atoms/:name", controller.UpdateCraftAtom)
 		adminApi.DELETE("/craft-atoms/:name", controller.DeleteCraftAtom)
-
 	}
 
 }

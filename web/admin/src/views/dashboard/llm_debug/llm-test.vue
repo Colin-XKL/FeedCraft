@@ -1,31 +1,35 @@
 <template>
   <div class="py-8 px-16">
     <x-header
-      title="LLM 调试"
-      description="大模型API测试, 你可以快捷调试后端的LLM API配置是否正常工作"
+      :title="t('llmDebug.llmTest.title')"
+      :description="t('llmDebug.llmTest.description')"
     ></x-header>
 
     <a-space direction="vertical" class="w-full">
-      <a-card class="my-2 w-full" title="输入参数">
+      <a-card class="my-2 w-full" :title="t('llmDebug.llmTest.inputParams')">
         <a-space direction="horizontal" class="w-full">
           <a-input
             v-model:model-value="model"
-            placeholder="模型名称"
+            :placeholder="t('llmDebug.llmTest.modelNamePlaceholder')"
             class="max-w-48"
           ></a-input>
           <a-textarea
             v-model:model-value="prompt"
-            placeholder="在此输入你的提示词"
+            :placeholder="t('llmDebug.llmTest.promptPlaceholder')"
             allow-clear
             class="w-full min-w-96"
             auto-size
           ></a-textarea>
           <a-button :loading="isLoading" type="primary" @click="onSubmit"
-            >提交
+            >{{ t('llmDebug.llmTest.submit') }}
           </a-button>
         </a-space>
       </a-card>
-      <a-card title="response" :loading="isLoading" class="w-full">
+      <a-card
+        :title="t('llmDebug.llmTest.response')"
+        :loading="isLoading"
+        class="w-full"
+      >
         <div v-if="response.length > 0">
           {{ response }}
         </div>
@@ -40,9 +44,12 @@
   import { Message } from '@arco-design/web-vue';
   import axios from 'axios';
   import XHeader from '@/components/header/x-header.vue';
+  import { useI18n } from 'vue-i18n';
+
+  const { t } = useI18n();
 
   const model = ref('');
-  const prompt = ref('what is rss and how to use it?');
+  const prompt = ref(t('llmDebug.llmTest.defaultPrompt') || 'what is rss and how to use it?');
   const response = ref('');
   const isLoading = ref(false);
   const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
@@ -58,7 +65,7 @@
       const resp = await axios.post(apiPath, reqBody);
       response.value = resp.data.output;
     } catch (error) {
-      Message.warning(error?.toString() ?? 'Unknown Error');
+      Message.warning(error?.toString() ?? t('llmDebug.llmTest.unknownError'));
       console.error(error);
     } finally {
       isLoading.value = false;

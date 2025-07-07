@@ -1,31 +1,42 @@
 <template>
   <div class="py-8 px-16">
     <x-header
-      title="LLM 调试页面 - 检查是否为广告"
-      description="通过大模型能力，检测一个文章是不是广告或是推广的软文. 对应craft: ignore-advertorial"
+      :title="t('llmDebug.adCheck.title')"
+      :description="t('llmDebug.adCheck.description')"
     >
     </x-header>
 
-    <a-card class="my-2" title="输入链接">
-      <p>输入要预览的文章链接</p>
+    <a-card class="my-2" :title="t('llmDebug.adCheck.inputLink')">
+      <p>{{ t('llmDebug.adCheck.inputTip') }}</p>
       <a-space>
         <a-input
           v-model="articleUrl"
           type="text"
-          placeholder="输入文章链接"
+          :placeholder="t('llmDebug.adCheck.placeholder')"
           class="w-full"
         />
-        <a-checkbox v-model="useEnhanceMode"
-          >启用增强模式获取文章内容</a-checkbox
-        >
-        <a-button :loading="isLoading" @click="fetchArticle">提交</a-button>
+        <a-checkbox v-model="useEnhanceMode">{{
+          t('llmDebug.adCheck.enhanceMode')
+        }}</a-checkbox>
+        <a-button :loading="isLoading" @click="fetchArticle">{{
+          t('llmDebug.adCheck.submit')
+        }}</a-button>
       </a-space>
     </a-card>
-    <a-card title="结果预览" class="my-4" :loading="isLoading">
+    <a-card
+      :title="t('llmDebug.adCheck.resultPreview')"
+      class="my-4"
+      :loading="isLoading"
+    >
       <div v-if="articleContent?.length !== 0">
-        <p class="mb-2"><b>Is Advertorial:</b>{{ isAdvertorial }}</p>
+        <p class="mb-2"
+          ><b>{{ t('llmDebug.adCheck.isAdvertorial') }}</b
+          >{{ isAdvertorial }}</p
+        >
         <hr class="my-1" />
-        <p class="my-1"><b>Article Content: </b></p>
+        <p class="my-1"
+          ><b>{{ t('llmDebug.adCheck.articleContent') }}</b></p
+        >
         <p>{{ articleContent }}</p>
       </div>
       <a-empty v-else />
@@ -39,6 +50,9 @@
 
   import axios from 'axios';
   import XHeader from '@/components/header/x-header.vue';
+  import { useI18n } from 'vue-i18n';
+
+  const { t } = useI18n();
 
   const articleUrl = ref('');
   const useEnhanceMode = ref(false);
@@ -60,7 +74,9 @@
       articleContent.value = resp.data.article_content;
       isAdvertorial.value = resp.data.is_advertorial;
     } catch (error) {
-      Message.warning(error?.toString() ?? 'Unknown Error');
+      Message.warning(
+        error?.toString() ?? t('llmDebug.adCheck.message.unknownError')
+      );
       console.error(error);
     } finally {
       isLoading.value = false;
