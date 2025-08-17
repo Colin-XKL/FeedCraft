@@ -8,5 +8,5 @@ export default {
   'urlGenerator.showCraftedUrl': 'Show Crafted URL',
   'urlGenerator.resultUrl': 'Crafted URL',
   'urlGenerator.copyUrl': 'Copy',
-  'urlGenerator.copied': 'Copied to clipboard!'
+  'urlGenerator.copied': 'Copied to clipboard!',
 };

@@ -16,11 +16,15 @@
           {{ t('urlGenerator.description') }}
         </p>
         <div class="mb-4">
-          <label for="siteSelector" class="mr-2">{{ t('urlGenerator.selectCraft') }}</label>
+          <label for="siteSelector" class="mr-2">{{
+            t('urlGenerator.selectCraft')
+          }}</label>
           <CraftFlowSelect v-model="selectedSite" mode="single" />
         </div>
         <div class="mb-4">
-          <label for="inputUrl" class="mr-2">{{ t('urlGenerator.inputOriginalUrl') }}</label>
+          <label for="inputUrl" class="mr-2">{{
+            t('urlGenerator.inputOriginalUrl')
+          }}</label>
           <a-input
             id="inputUrl"
             v-model="inputUrl"
@@ -28,9 +32,13 @@
             :placeholder="t('urlGenerator.inputUrlPlaceholder')"
           />
         </div>
-        <a-button @click="appendPrefix">{{ t('urlGenerator.showCraftedUrl') }} </a-button>
+        <a-button @click="appendPrefix"
+          >{{ t('urlGenerator.showCraftedUrl') }}
+        </a-button>
         <div class="mt-8">
-          <label for="resultUrl" class="mr-2">{{ t('urlGenerator.resultUrl') }}</label>
+          <label for="resultUrl" class="mr-2">{{
+            t('urlGenerator.resultUrl')
+          }}</label>
           <span id="resultUrl">{{ resultUrl }}</span>
           <a-button
             id="copyButton"
@@ -57,17 +65,6 @@
   const inputUrl = ref('');
   const resultUrl = ref('');
   const copyButtonText = ref(t('urlGenerator.copyUrl'));
-
-  const appendPrefix = () => {
-    const currentSelectedSite = customCraft.value
-      ? customCraft.value
-      : selectedSite.value;
-    const baseUrl = import.meta.env.VITE_API_BASE_URL ?? window.location.origin;
-    resultUrl.value = `${baseUrl}/craft/${currentSelectedSite}?input_url=${encodeURIComponent(
-      inputUrl.value
-    )}`;
-    copyButtonText.value = t('urlGenerator.copyUrl');
-  };
 
   const copyUrl = () => {
     if (resultUrl.value) {
@@ -100,6 +97,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    height: 90vh;
   }
 </style>
