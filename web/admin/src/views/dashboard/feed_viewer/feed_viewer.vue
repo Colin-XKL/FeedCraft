@@ -3,7 +3,8 @@
     <x-header
       :title="t('menu.feedViewer')"
       :description="t('feedViewer.description')"
-    > </x-header>
+    >
+    </x-header>
 
     <a-card class="my-2" :title="t('feedViewer.inputLink')">
       <p>{{ t('feedViewer.inputTip') }}</p>
@@ -13,10 +14,16 @@
           type="text"
           :placeholder="t('feedViewer.placeholder')"
         />
-        <a-button :loading="isLoading" @click="fetchFeed">{{ t('feedViewer.preview') }}</a-button>
+        <a-button :loading="isLoading" @click="fetchFeed">{{
+          t('feedViewer.preview')
+        }}</a-button>
       </a-space>
     </a-card>
-    <a-card :title="t('feedViewer.resultPreview')" class="my-4" :loading="isLoading">
+    <a-card
+      :title="t('feedViewer.resultPreview')"
+      class="my-4"
+      :loading="isLoading"
+    >
       <div v-if="feedContent">
         <FeedViewContainer :feed-data="feedContent" />
       </div>
@@ -53,7 +60,9 @@
       });
       feedContent.value = feed;
     } catch (error) {
-      Message.warning(error?.toString() ?? t('feedViewer.message.unknownError'));
+      Message.warning(
+        error?.toString() ?? t('feedViewer.message.unknownError')
+      );
       console.error(error);
     } finally {
       isLoading.value = false;
