@@ -19,7 +19,7 @@
           <label for="siteSelector" class="mr-2">{{
             t('urlGenerator.selectCraft')
           }}</label>
-          <CraftFlowSelect v-model="selectedSite" mode="single" />
+          <CraftFlowSelect v-model="selectedCraft" mode="single" />
         </div>
         <div class="mb-4">
           <label for="inputUrl" class="mr-2">{{
@@ -32,7 +32,7 @@
             :placeholder="t('urlGenerator.inputUrlPlaceholder')"
           />
         </div>
-        <a-button @click="appendPrefix"
+        <a-button type="primary" @click="generateUrl"
           >{{ t('urlGenerator.showCraftedUrl') }}
         </a-button>
         <div class="mt-8">
@@ -43,7 +43,6 @@
           <a-button
             id="copyButton"
             class="px-2 py-0.5 rounded ml-0.5"
-            :style="{ display: resultUrl ? 'inline-block' : 'none' }"
             @click="copyUrl"
             >{{ copyButtonText }}
           </a-button>
@@ -53,18 +52,29 @@
   </div>
 </template>
 
-<script setup>
-  import { ref, watch } from 'vue';
+<script setup lang="ts">
+  import { ref } from 'vue';
   import CraftFlowSelect from '@/views/dashboard/craft_flow/CraftFlowSelect.vue';
   import { useI18n } from 'vue-i18n';
 
   const { t } = useI18n();
 
-  const selectedSite = ref('proxy');
+  const selectedCraft = ref('proxy');
   const customCraft = ref('');
   const inputUrl = ref('');
   const resultUrl = ref('');
   const copyButtonText = ref(t('urlGenerator.copyUrl'));
+
+  const generateUrl = () => {
+    const currentSelectedCraft = customCraft.value
+      ? customCraft.value
+      : selectedCraft.value;
+    const baseUrl = import.meta.env.VITE_API_BASE_URL ?? window.location.origin;
+    resultUrl.value = `${baseUrl}/craft/${currentSelectedCraft}?input_url=${encodeURIComponent(
+      inputUrl.value
+    )}`;
+    copyButtonText.value = t('urlGenerator.copyUrl');
+  };
 
   const copyUrl = () => {
     if (resultUrl.value) {
@@ -78,18 +88,6 @@
         });
     }
   };
-
-  watch(customCraft, (newValue) => {
-    if (newValue) {
-      selectedSite.value = ''; // Clear selectedSite if customCraft is used
-    }
-  });
-
-  watch(selectedSite, (newValue) => {
-    if (newValue) {
-      customCraft.value = ''; // Clear customCraft if selectedSite is used
-    }
-  });
 </script>
 
 <style scoped>
