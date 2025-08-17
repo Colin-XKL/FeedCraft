@@ -2,8 +2,8 @@
   <div class="container p-4 w-full">
     <div>
       <div class="mb-8 text-2xl">
-        <p
-          >Welcome to<br />
+        <p class="text-gray-700"
+          >{{ t('urlGenerator.welcome') }}<br />
           <span
             class="text-4xl font-bold text-sky-700 underline decoration-sky-500 decoration-wavy hover:underline-offset-2 hover:decoration-4"
             >Feed Craft</span
@@ -11,26 +11,26 @@
         >
       </div>
       <a-card class="rounded-lg w-full min-w-8xl">
-        <h1 class="text-2xl mb-2">快速生成 FeedCraft URL</h1>
+        <h1 class="text-2xl mb-2">{{ t('urlGenerator.title') }}</h1>
         <p class="mb-8">
-          输入原 RSS URL，选择需要的 craft，即可生成最终URL。
+          {{ t('urlGenerator.description') }}
         </p>
         <div class="mb-4">
-          <label for="siteSelector" class="mr-2">选择一个 craft:</label>
+          <label for="siteSelector" class="mr-2">{{ t('urlGenerator.selectCraft') }}</label>
           <CraftFlowSelect v-model="selectedSite" mode="single" />
         </div>
         <div class="mb-4">
-          <label for="inputUrl" class="mr-2">输入原 RSS URL:</label>
+          <label for="inputUrl" class="mr-2">{{ t('urlGenerator.inputOriginalUrl') }}</label>
           <a-input
             id="inputUrl"
             v-model="inputUrl"
             type="text"
-            placeholder="输入 URL"
+            :placeholder="t('urlGenerator.inputUrlPlaceholder')"
           />
         </div>
-        <a-button @click="appendPrefix">显示 Crafted Feed URL </a-button>
+        <a-button @click="appendPrefix">{{ t('urlGenerator.showCraftedUrl') }} </a-button>
         <div class="mt-8">
-          <label for="resultUrl" class="mr-2">结果 URL:</label>
+          <label for="resultUrl" class="mr-2">{{ t('urlGenerator.resultUrl') }}</label>
           <span id="resultUrl">{{ resultUrl }}</span>
           <a-button
             id="copyButton"
@@ -48,12 +48,15 @@
 <script setup>
   import { ref, watch } from 'vue';
   import CraftFlowSelect from '@/views/dashboard/craft_flow/CraftFlowSelect.vue';
+  import { useI18n } from 'vue-i18n';
+
+  const { t } = useI18n();
 
   const selectedSite = ref('proxy');
   const customCraft = ref('');
   const inputUrl = ref('');
   const resultUrl = ref('');
-  const copyButtonText = ref('复制 URL');
+  const copyButtonText = ref(t('urlGenerator.copyUrl'));
 
   const appendPrefix = () => {
     const currentSelectedSite = customCraft.value
@@ -63,7 +66,7 @@
     resultUrl.value = `${baseUrl}/craft/${currentSelectedSite}?input_url=${encodeURIComponent(
       inputUrl.value
     )}`;
-    copyButtonText.value = '复制 URL';
+    copyButtonText.value = t('urlGenerator.copyUrl');
   };
 
   const copyUrl = () => {
@@ -71,7 +74,7 @@
       navigator.clipboard
         .writeText(resultUrl.value)
         .then(() => {
-          copyButtonText.value = '已复制!';
+          copyButtonText.value = t('urlGenerator.copied');
         })
         .catch((err) => {
           console.error('无法复制文本: ', err);
