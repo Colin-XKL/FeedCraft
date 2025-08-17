@@ -104,7 +104,7 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		ParamTemplateDefine: transContentParamTmpl,
 		OptionFunc:          transContentCraftLoadParam,
 	}
-	sysCraftTempList["translate-content"] = CraftTemplate{
+	sysCraftTempList["translate-content-immersive"] = CraftTemplate{
 		Name:                "translate-content-immersive",
 		Description:         "使用 LLM 将文章内容翻译为中文, 沉浸式翻译模式, 每个原文段落后面添加翻译后内容",
 		ParamTemplateDefine: immersiveTranslateParamTmpl,

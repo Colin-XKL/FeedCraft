@@ -26,12 +26,12 @@ filter your rss feed, and more!
 你可以用它来翻译、提取正文、模拟浏览器来渲染那些动态生成的网页并提取全文、通过大语言模型如Google
 Gemini来生成文章摘要、通过自然语言筛选文章等
 
-## 核心特性介绍:
+## 核心特性
 
 - 开源可自部署, 与现用任何RSS阅读器协同使用
 - AI Power, 可以接入所有Open AI接口兼容的LLM对RSS进行处理, 可自定义prompt
 - 支持保存规则批量应用到不同的RSS源
-- 支持便携模式(portable mode, 即用即走, 只需要在原RSS地址前面加个前缀即可), 和 高级模式(dock mode,
+- 支持**便携模式**(portable mode, 即用即走, 只需要在原RSS地址前面加个前缀即可), 和**高级模式**(dock mode,
   在后台页面自定义RSS地址和各类深度加工参数)
 
 ## 快速开始
@@ -56,7 +56,8 @@ FeedCraft中的几个核心概念:
 - **introduction**: 调用AI为文章生成摘要,附加在原文开头
 - **summary**: 调用AI总结文章主要内容,附加在原文开头
 - **translate-title**: 调用AI翻译文章标题
-- **translate-content**: 调用AI翻译文章内容
+- **translate-content**: 调用AI翻译文章内容, 只输出翻译后内容
+- **translate-content-immersive**: 调用AI翻译文章内容, 沉浸式翻译模式, 每个原文段落后面添加翻译后内容
 - **ignore-advertorial**: 调用AI对文章进行筛选, 排除营销软文
 
 你可以使用提供的demo站点快速开始体验 :
@@ -70,6 +71,13 @@ https://feed-craft.colinx.one
 (部分RSS订阅软件不会自动进行字符转义, 你可能需要把 input_url 后面的内容进行手动转义,
 结果为
 `https://feed-craft.colinx.one/craft/translate-title?input_url=https%3A%2F%2Ffeeds.feedburner.com%2Fvisualcapitalist` )
+
+你可以使用下面几个 RSS 快速进行测试
+
+- 全英文，有全文
+  https://feeds.feedburner.com/visualcapitalist
+- 全英文，无全文
+  https://ourworldindata.org/atom.xml
 
 *注意: Demo站点仅供体验使用
 
@@ -132,30 +140,10 @@ services:
     restart: unless-stopped
 ```
 
-## 关于FeedCraft
+## 关于 FeedCraft
 
 FeedCraft 的名称和Logo参考并致敬两款游戏: MineCraft和塞尔达, 初衷和愿景是做一个简单易用、同时足够灵活, 能够有更多可能性的RSS工具.
 使用问题、建议等欢迎在Discussion区讨论交流
-
-## RoadMap
-
-- [x] common openai api calling
-- [x] translate article and title
-- [x] feed limit support
-- [x] feed natural language filter support
-- [x] craft flow
-- [x] feed custom keyword filter support
-- [ ] feed merge support
-
-## 测试用例
-
-你可以使用下面几个 rss 快速进行测试
-
-- 全英文，有全文
-  https://feeds.feedburner.com/visualcapitalist
-
-- 全英文，无全文
-  https://ourworldindata.org/atom.xml
 
 ## 许可
 
