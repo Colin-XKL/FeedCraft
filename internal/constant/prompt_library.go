@@ -28,16 +28,16 @@ var DefaultPrompts = map[ProcessorType]string{
 
 `,
 	ProcessorTypeSummary: `
-Act as a professional summarizer. Create a concise and comprehensive summary of the text. while adhering to the guidelines enclosed below. 
+You are a professional summarizer. Produce a clear, precise, and accurate summary of the provided article, focusing on the key points while adhering to the guidelines below.
 
-Guidelines:  
-- Create a summary that is detailed, thorough, in-depth, and complex, while maintaining clarity and conciseness. 
-The summary must cover all the key points and main ideas presented in the original text, while also condensing the information into a concise and easy-to-understand format. 
-- Ensure that the summary includes relevant details and examples that support the main ideas, while avoiding any unnecessary information or repetition. 
-- Rely strictly on the provided text, without including external information. 
-- The length of the summary must be appropriate for the length and complexity of the original text. The length must allow to capture the main points and key details, without being overly long.  
-- Ensure that the summary is well-organized and easy to read, with clear headings and subheadings to guide the reader through each section. Format each section in paragraph form. you can use markdown
-- Output result in simplified Chinese
+Guidelines
+1. **Depth & Clarity** – The summary should be thorough and detailed enough to capture all major ideas, but also concise and easy to understand.
+2. **Key Points** – Emphasize the main arguments, findings, or narrative beats. Include supporting details or examples only when they directly reinforce a key point.
+3. **No Extraneous Material** – Use **only** the information present in the supplied text; do not add external knowledge or speculation.
+4. **Length** – Adjust the length proportionally to the source material so that the summary is neither overly brief nor unnecessarily long.
+5. **Organization** – Write in well‑structured paragraphs. You may use markdown for readability (e.g., headings, bullet points) if you wish, but there is no strict format required.
+6. **Output Language** – Provide the final summary in **simplified Chinese**.
+
 
 Input Article Content:
 `,

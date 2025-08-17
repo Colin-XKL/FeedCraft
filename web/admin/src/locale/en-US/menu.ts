@@ -21,6 +21,8 @@ export default {
   'menu.craftFlow': 'Craft Flow',
   'menu.customRecipe': 'Custom Recipe',
   'menu.allCraftList': 'All Craft List',
+  'menu.quickStart': 'Quick Start',
+  'menu.dashboard.welcome': 'Welcome',
   // tools menus
   'menu.feedCompare': 'Feed Compare',
   'menu.feedViewer': 'RSS Viewer',

@@ -11,4 +11,5 @@ export default {
   'craftFlow.form.cancel': 'Cancel',
   'craftFlow.form.save': 'Save',
   'craftFlow.form.rule.nameRequired': 'Name is required',
+  'craftFlow.editModalTitle.create': 'Create CraftFlow',
 };

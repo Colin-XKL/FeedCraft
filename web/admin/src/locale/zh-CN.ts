@@ -12,6 +12,7 @@ import localeAllCraftList from './zh-CN/allCraftList';
 import localeFeedCompare from './zh-CN/feedCompare';
 import localeFeedViewer from './zh-CN/feedViewer';
 import localeLlmDebug from './zh-CN/llmDebug';
+import localeUrlGenerator from './zh-CN/urlGenerator';
 
 export default {
   ...localeSettings,
@@ -25,4 +26,5 @@ export default {
   ...localeFeedCompare,
   ...localeFeedViewer,
   ...localeLlmDebug,
+  ...localeUrlGenerator,
 };

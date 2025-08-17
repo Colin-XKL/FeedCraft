@@ -2,7 +2,7 @@
   <a-select
     v-model="selectedCraftFlow"
     :multiple="mode === 'multiple'"
-    placeholder="Select Craft Flow"
+    :placeholder="t('feedCompare.selectCraftFlow.placeholder')"
     allow-create
     allow-clear
   >
@@ -52,7 +52,9 @@
     listSysCraftAtoms,
   } from '@/api/craft_flow';
   import { listCraftAtoms } from '@/api/craft_atom';
+  import { useI18n } from 'vue-i18n';
 
+  const { t } = useI18n();
   const props = defineProps<{
     modelValue: string[];
     mode: 'single' | 'multiple';
