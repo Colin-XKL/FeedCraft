@@ -21,6 +21,8 @@ export default {
   'menu.craftFlow': 'Craft Flow',
   'menu.customRecipe': '自定义配方',
   'menu.allCraftList': '所有 Craft 列表',
+  'menu.quickStart': '快速开始',
+  'menu.dashboard.welcome': '欢迎页',
   // 调试菜单
   'menu.feedCompare': 'Feed 对比',
   'menu.feedViewer': 'RSS 预览',

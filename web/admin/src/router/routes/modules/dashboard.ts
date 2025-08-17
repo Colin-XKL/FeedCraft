@@ -17,9 +17,19 @@ const DASHBOARD: AppRouteRecordRaw = {
       name: 'Welcome',
       component: () => import('@/views/dashboard/welcome/welcome.vue'),
       meta: {
-        locale: 'menu.dashboard.workplace',
+        locale: 'menu.dashboard.welcome',
         requiresAuth: false,
         roles: ['*'],
+      },
+    },
+    {
+      path: 'quick_start',
+      name: 'QuickStartFeedCraftUrlGenerator',
+      component: () =>
+        import('@/views/dashboard/url_generator/url_generator.vue'),
+      meta: {
+        requiresAuth: false,
+        locale: 'menu.quickStart',
       },
     },
     {
