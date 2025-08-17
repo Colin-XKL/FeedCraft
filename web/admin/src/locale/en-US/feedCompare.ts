@@ -7,6 +7,9 @@ export default {
     compare: 'Compare',
     originalFeed: 'Original Feed',
     craftAppliedFeed: 'Craft Applied Feed',
+    selectCraftFlow: {
+      placeholder: 'Select CraftFlow',
+    },
     message: {
       inputRequired: 'Please enter a feed URL and select a craft',
       unknownError: 'Unknown Error',

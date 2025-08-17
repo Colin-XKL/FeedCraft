@@ -7,6 +7,9 @@ export default {
     compare: '对比',
     originalFeed: '原始 Feed',
     craftAppliedFeed: 'Craft 处理后的 Feed',
+    selectCraftFlow: {
+      placeholder: '选择 CraftFlow',
+    },
     message: {
       inputRequired: '请输入 feed URL 并选择一个 craft',
       unknownError: '未知错误',
