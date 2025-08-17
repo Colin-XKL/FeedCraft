@@ -53,13 +53,13 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import { Ref, ref } from 'vue';
   import CraftFlowSelect from '@/views/dashboard/craft_flow/CraftFlowSelect.vue';
   import { useI18n } from 'vue-i18n';
 
   const { t } = useI18n();
 
-  const selectedCraft = ref('proxy');
+  const selectedCraft = ref<string[]>([]);
   const customCraft = ref('');
   const inputUrl = ref('');
   const resultUrl = ref('');
