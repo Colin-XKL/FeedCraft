@@ -25,7 +25,7 @@ require (
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
 	go.uber.org/automaxprocs v1.6.0
-	gorm.io/gorm v1.25.12
+	gorm.io/gorm v1.31.0
 )
 
 require (
