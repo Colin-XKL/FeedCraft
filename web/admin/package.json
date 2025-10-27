@@ -38,7 +38,7 @@
     "mitt": "^3.0.0",
     "nprogress": "^0.2.0",
     "pinia": "^2.3.1",
-    "query-string": "^9.1.1",
+    "query-string": "^9.3.1",
     "rss-parser": "~3.13.0",
     "sortablejs": "^1.15.0",
     "vue": "^3.2.40",
