@@ -40,7 +40,7 @@
     "pinia": "^2.3.1",
     "query-string": "^9.3.1",
     "rss-parser": "~3.13.0",
-    "sortablejs": "^1.15.0",
+    "sortablejs": "^1.15.6",
     "vue": "^3.2.40",
     "vue-echarts": "^6.2.3",
     "vue-i18n": "^9.14.5",
