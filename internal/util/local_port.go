@@ -15,7 +15,7 @@ func GetLocalPort() int {
 	}
 	localPort, err := strconv.Atoi(localPortEnv)
 	if err != nil {
-		logrus.Error("invalid value for LOCAL_PORT environment variable: %v", err)
+		logrus.Errorf("invalid value for LOCAL_PORT environment variable: %v", err)
 		logrus.Warnf("using default port %d", localDefaultPort)
 		localPort = localDefaultPort
 	}

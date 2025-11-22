@@ -5,6 +5,8 @@ import (
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/util"
 	"fmt"
+	"strings"
+
 	"github.com/gorilla/feeds"
 	"github.com/sirupsen/logrus"
 )
@@ -59,7 +61,7 @@ func processItemContent(item *feeds.Item, processor TextProcessor) string {
 
 	if err != nil {
 		errMsg := fmt.Sprintf("process article content using processsor [%s] failed. err: %v", processor.GetName(), err)
-		logrus.Warnf(errMsg)
+		logrus.Warnf("%s", errMsg)
 		processedContent = errMsg
 	}
 
@@ -71,6 +73,13 @@ func NewLLMTextProcessor(processorType constant.ProcessorType, customPrompt stri
 	if prompt == "" {
 		prompt = constant.DefaultPrompts[processorType]
 	}
+
+	// If prompt contains %s, assume it needs the target language.
+	if strings.Contains(prompt, "%s") {
+		targetLangName := util.GetLanguageName(util.GetDefaultTargetLang())
+		prompt = fmt.Sprintf(prompt, targetLangName)
+	}
+
 	return &LLMTextProcessor{prompt: prompt, name: string(processorType)}
 }
 
