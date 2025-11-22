@@ -44,6 +44,18 @@ func CustomRecipe(c *gin.Context) {
 		return
 	}
 	path := GetPathForCustomRecipe(recipe)
+	outputType, _ := c.GetQuery("output_type")
+	if outputType == "atom" || outputType == "json" || outputType == "rss" {
+		parsedPath, err := url.Parse(path)
+		if err == nil {
+			query := parsedPath.Query()
+			query.Set("output_type", outputType)
+			parsedPath.RawQuery = query.Encode()
+			path = parsedPath.String()
+		} else {
+			logrus.Warnf("failed to parse path [%s], err: %v", path, err)
+		}
+	}
 	response, err := RetrieveCraftRecipeUsingPath(path)
 	logrus.Infof("add preheating task for recipe [%s]", recipeId)
 	Scheduler.ScheduleTask(recipeId)
@@ -53,7 +65,11 @@ func CustomRecipe(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
-	c.Data(http.StatusOK, "text/xml; charset=utf-8", response.Body())
+	contentType := response.Header().Get("Content-Type")
+	if len(contentType) == 0 {
+		contentType = "text/xml; charset=utf-8"
+	}
+	c.Data(http.StatusOK, contentType, response.Body())
 }
 
 func GetPathForCustomRecipe(recipe *dao.CustomRecipe) string {
