@@ -173,4 +173,3 @@ func ChangePassword(c *gin.Context) {
 
 	c.JSON(http.StatusOK, util.APIResponse[any]{Msg: "Password updated successfully"})
 }
-
