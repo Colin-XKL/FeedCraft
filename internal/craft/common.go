@@ -104,7 +104,7 @@ func CommonCraftHandlerUsingCraftOptionList(c *gin.Context, optionList []CraftOp
 		contentType = "application/feed+json"
 	default:
 		outputStr, err = craftedFeed.OutputFeed.ToRss()
-		contentType = "application/xml"
+		contentType = "application/rss+xml"
 	}
 
 	if err != nil {
