@@ -59,7 +59,7 @@ func processItemContent(item *feeds.Item, processor TextProcessor) string {
 
 	if err != nil {
 		errMsg := fmt.Sprintf("process article content using processsor [%s] failed. err: %v", processor.GetName(), err)
-		logrus.Warnf(errMsg)
+		logrus.Warn(errMsg)
 		processedContent = errMsg
 	}
 
