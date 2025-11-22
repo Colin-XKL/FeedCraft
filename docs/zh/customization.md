@@ -39,6 +39,22 @@
 -   **处理器：** `digest-and-translate` (上面创建的工作流)
 -   **结果：** 你会得到一个新的 FeedCraft URL，订阅它即可获得带全文、摘要和翻译的 Hacker News。
 
+### 输出格式 (Output Format)
+
+你可以通过在 URL 中添加 `output_type` 参数来指定输出格式。
+
+**支持的格式：**
+-   `rss`: 标准 RSS 2.0 格式（默认）
+-   `atom`: Atom 格式
+-   `json`: JSON Feed 格式
+
+**示例 URL：**
+-   RSS (默认): `http://localhost:10088/craft/my-flow?input_url=...`
+-   Atom: `http://localhost:10088/craft/my-flow?input_url=...&output_type=atom`
+-   JSON Feed: `http://localhost:10088/craft/my-flow?input_url=...&output_type=json`
+
+对于 **Recipe**，你也可以在生成的 URL 后面追加 `&output_type=json` 来获取 JSON Feed 格式的输出。
+
 ## 高级配置
 
 ### Docker 环境变量
