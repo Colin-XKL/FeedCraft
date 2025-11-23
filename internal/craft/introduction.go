@@ -4,7 +4,10 @@ import (
 	"FeedCraft/internal/adapter"
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/util"
+	"bytes"
 	"fmt"
+	"text/template"
+
 	"github.com/gorilla/feeds"
 	"github.com/sirupsen/logrus"
 )
@@ -59,7 +62,7 @@ func processItemContent(item *feeds.Item, processor TextProcessor) string {
 
 	if err != nil {
 		errMsg := fmt.Sprintf("process article content using processsor [%s] failed. err: %v", processor.GetName(), err)
-		logrus.Warnf(errMsg)
+		logrus.Warnf("%s", errMsg)
 		processedContent = errMsg
 	}
 
@@ -71,6 +74,29 @@ func NewLLMTextProcessor(processorType constant.ProcessorType, customPrompt stri
 	if prompt == "" {
 		prompt = constant.DefaultPrompts[processorType]
 	}
+
+	// Use text/template to inject target language
+	tmpl, err := template.New("prompt").Parse(prompt)
+	if err != nil {
+		logrus.Errorf("Failed to parse prompt template: %v, using raw prompt", err)
+		return &LLMTextProcessor{prompt: prompt, name: string(processorType)}
+	}
+
+	targetLangName := util.GetLanguageName(util.GetDefaultTargetLang())
+	data := struct {
+		TargetLang string
+	}{
+		TargetLang: targetLangName,
+	}
+
+	var tpl bytes.Buffer
+	if err := tmpl.Execute(&tpl, data); err != nil {
+		logrus.Errorf("Failed to execute prompt template: %v, using raw prompt", err)
+		return &LLMTextProcessor{prompt: prompt, name: string(processorType)}
+	}
+
+	prompt = tpl.String()
+
 	return &LLMTextProcessor{prompt: prompt, name: string(processorType)}
 }
 
