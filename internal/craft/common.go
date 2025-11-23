@@ -87,13 +87,32 @@ func CommonCraftHandlerUsingCraftOptionList(c *gin.Context, optionList []CraftOp
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	rssStr, err := craftedFeed.OutputFeed.ToRss()
+	outputType, _ := c.GetQuery("output_type")
+	if len(outputType) == 0 {
+		outputType = constant.OutputTypeRSS
+	}
+
+	var outputStr string
+	var contentType string
+
+	switch outputType {
+	case constant.OutputTypeAtom:
+		outputStr, err = craftedFeed.OutputFeed.ToAtom()
+		contentType = constant.ContentTypeAtom
+	case constant.OutputTypeJSON:
+		outputStr, err = craftedFeed.OutputFeed.ToJSON()
+		contentType = constant.ContentTypeJSON
+	default:
+		outputStr, err = craftedFeed.OutputFeed.ToRss()
+		contentType = constant.ContentTypeRSS
+	}
+
 	if err != nil {
 		c.String(500, err.Error())
 		return
 	}
-	c.Header("Content-Type", "application/xml")
-	c.String(200, rssStr)
+	c.Header("Content-Type", contentType)
+	c.String(200, outputStr)
 }
 
 type RawTransformer func(item *feeds.Item) (string, error)

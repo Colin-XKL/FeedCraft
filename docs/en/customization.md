@@ -39,6 +39,22 @@ A **Recipe** binds a specific RSS feed URL to a Craft or Craft Flow. This allows
 -   **Processor:** `digest-and-translate` (The flow created above)
 -   **Result:** You get a new FeedCraft URL that serves Hacker News with full text, summaries, and translation.
 
+### Output Format
+
+You can specify the output format by adding the `output_type` parameter to the URL.
+
+**Supported Formats:**
+-   `rss`: Standard RSS 2.0 format (default)
+-   `atom`: Atom format
+-   `json`: JSON Feed format
+
+**Example URLs:**
+-   RSS (default): `http://localhost:10088/craft/my-flow?input_url=...`
+-   Atom: `http://localhost:10088/craft/my-flow?input_url=...&output_type=atom`
+-   JSON Feed: `http://localhost:10088/craft/my-flow?input_url=...&output_type=json`
+
+For **Recipes**, you can also append `&output_type=json` to the generated URL to get the output in JSON Feed format.
+
 ## Advanced Configuration
 
 ### Docker Environment Variables
