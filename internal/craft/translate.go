@@ -3,20 +3,20 @@ package craft
 import (
 	"FeedCraft/internal/adapter"
 	"FeedCraft/internal/util"
-	"fmt"
-
+	"bytes"
 	"github.com/gorilla/feeds"
 	"github.com/sirupsen/logrus"
+	"text/template"
 )
 
-const translateArticleContentPrompt = "下面是一篇文章的内容,请将其翻译为%s. 如果文章内有图片或者链接尽量保留它们, 对于专有名词也请保持原样. 注意只需要输出翻译后的文章内容即可，不要包括其他无关的内容。"
+const translateArticleContentPrompt = "下面是一篇文章的内容,请将其翻译为{{.TargetLang}}. 如果文章内有图片或者链接尽量保留它们, 对于专有名词也请保持原样. 注意只需要输出翻译后的文章内容即可，不要包括其他无关的内容。"
 
-const translateArticleTitlePrompt = "下面是一篇文章的标题, 请将其翻译为%s. 对于专有名词等请保持原样。注意只需要输出一句翻译后的内容即可，不要包括其他无关的内容。"
+const translateArticleTitlePrompt = "下面是一篇文章的标题, 请将其翻译为{{.TargetLang}}. 对于专有名词等请保持原样。注意只需要输出一句翻译后的内容即可，不要包括其他无关的内容。"
 
 const immersiveTranslatePrompt = `
-你是一名精通多语言的翻译专家。请将输入的文章翻译为%s，按段落逐段处理，输出时每段原文后紧跟对应的译文，原文与译文之间留一空行。
+你是一名精通多语言的翻译专家。请将输入的文章翻译为{{.TargetLang}}，按段落逐段处理，输出时每段原文后紧跟对应的译文，原文与译文之间留一空行。
 
-- **语言范围**：任意语言的文章均可接受；若输入已经是%s，则直接原样输出，不进行翻译。
+- **语言范围**：任意语言的文章均可接受；若输入已经是{{.TargetLang}}，则直接原样输出，不进行翻译。
 - **资源保留**：代码块、内嵌图片、视频、音频等非文本资源保持原样，不进行翻译，且位置不变。  
 - **表格处理**：保留原文中的表格原样显示；在每个原始表格下方立即添加该表格的译本，保持相同的排版结构（行列、对齐、边框等）。
 - **格式保留**：完整保留原文的风格、语气以及所有排版格式（标题、子标题、项目符号列表、编号列表、代码块、表格等），使译文在版面上尽量与原文一致。  
@@ -60,21 +60,26 @@ func GetTranslateTitleCraftOptions(prompt string) []CraftOption {
 	targetLangCode := util.GetDefaultTargetLang()
 	targetLangName := util.GetLanguageName(targetLangCode)
 
-	// If prompt is the default one (which now contains %s), or if it contains %s, format it.
-	// Since we changed the constant to include %s, we should check if we need to format it.
-	// However, custom prompts might not have %s.
-	// If the passed prompt matches the constant template, we format it.
-	// But if it's custom, we leave it alone? The user might want dynamic language in custom prompt too.
-	// Let's assume if it contains %s we format it, otherwise we don't.
-	// Or simpler: if it is the default prompt (which we can't easily check if passed as value), we construct it.
-	// The caller `transTitleCraftLoadParam` handles the default.
-
-	// Logic: The `prompt` passed here is already selected.
-	// If it came from `transTitleCraftLoadParam`, it might be the raw constant string.
-	// We need to format it if it has %s.
 	finalPrompt := prompt
-	if prompt == translateArticleTitlePrompt {
-		finalPrompt = fmt.Sprintf(translateArticleTitlePrompt, targetLangName)
+	// Check if prompt matches our default constants (pointer comparison won't work well for strings, but value comparison does)
+	// Or better, just try to execute it as a template if it parses.
+	// For robustness, we always try to treat the prompt as a template if it contains {{.TargetLang}}.
+
+	tmpl, err := template.New("prompt").Parse(prompt)
+	if err == nil {
+		data := struct {
+			TargetLang string
+		}{
+			TargetLang: targetLangName,
+		}
+		var tpl bytes.Buffer
+		if err := tmpl.Execute(&tpl, data); err == nil {
+			finalPrompt = tpl.String()
+		} else {
+			logrus.Debugf("Failed to execute prompt template in translate: %v, using raw prompt", err)
+		}
+	} else {
+		logrus.Debugf("Failed to parse prompt template in translate: %v, using raw prompt", err)
 	}
 
 	transFunc := func(item *feeds.Item) (string, error) {
@@ -117,10 +122,19 @@ func GetTranslateContentCraftOptions(prompt string) []CraftOption {
 	targetLangName := util.GetLanguageName(targetLangCode)
 
 	finalPrompt := prompt
-	if prompt == translateArticleContentPrompt {
-		finalPrompt = fmt.Sprintf(translateArticleContentPrompt, targetLangName)
-	} else if prompt == immersiveTranslatePrompt {
-		finalPrompt = fmt.Sprintf(immersiveTranslatePrompt, targetLangName, targetLangName)
+	tmpl, err := template.New("prompt").Parse(prompt)
+	if err == nil {
+		data := struct {
+			TargetLang string
+		}{
+			TargetLang: targetLangName,
+		}
+		var tpl bytes.Buffer
+		if err := tmpl.Execute(&tpl, data); err == nil {
+			finalPrompt = tpl.String()
+		} else {
+			logrus.Debugf("Failed to execute prompt template in translate content: %v, using raw prompt", err)
+		}
 	}
 
 	transFunc := func(item *feeds.Item) (string, error) {
