@@ -89,22 +89,22 @@ func CommonCraftHandlerUsingCraftOptionList(c *gin.Context, optionList []CraftOp
 	}
 	outputType, _ := c.GetQuery("output_type")
 	if len(outputType) == 0 {
-		outputType = "rss"
+		outputType = constant.OutputTypeRSS
 	}
 
 	var outputStr string
 	var contentType string
 
 	switch outputType {
-	case "atom":
+	case constant.OutputTypeAtom:
 		outputStr, err = craftedFeed.OutputFeed.ToAtom()
-		contentType = "application/atom+xml"
-	case "json":
+		contentType = constant.ContentTypeAtom
+	case constant.OutputTypeJSON:
 		outputStr, err = craftedFeed.OutputFeed.ToJSON()
-		contentType = "application/feed+json"
+		contentType = constant.ContentTypeJSON
 	default:
 		outputStr, err = craftedFeed.OutputFeed.ToRss()
-		contentType = "application/rss+xml"
+		contentType = constant.ContentTypeRSS
 	}
 
 	if err != nil {

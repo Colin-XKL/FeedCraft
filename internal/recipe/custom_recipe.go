@@ -1,6 +1,7 @@
 package recipe
 
 import (
+	"FeedCraft/internal/constant"
 	"FeedCraft/internal/dao"
 	"FeedCraft/internal/util"
 	"errors"
@@ -45,7 +46,7 @@ func CustomRecipe(c *gin.Context) {
 	}
 	path := GetPathForCustomRecipe(recipe)
 	outputType, _ := c.GetQuery("output_type")
-	if outputType == "atom" || outputType == "json" || outputType == "rss" {
+	if outputType == constant.OutputTypeAtom || outputType == constant.OutputTypeJSON || outputType == constant.OutputTypeRSS {
 		parsedPath, err := url.Parse(path)
 		if err == nil {
 			query := parsedPath.Query()
