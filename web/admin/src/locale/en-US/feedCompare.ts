@@ -9,6 +9,11 @@ export default {
     craftAppliedFeed: 'Craft Applied Feed',
     selectCraftFlow: {
       placeholder: 'Select CraftFlow',
+      tabs: {
+        system: 'System Craft Templates',
+        user: 'User Craft Atoms',
+        flow: 'Craft Flows',
+      },
     },
     message: {
       inputRequired: 'Please enter a feed URL and select a craft',

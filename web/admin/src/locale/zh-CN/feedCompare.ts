@@ -9,6 +9,11 @@ export default {
     craftAppliedFeed: 'Craft 处理后的 Feed',
     selectCraftFlow: {
       placeholder: '选择 CraftFlow',
+      tabs: {
+        system: '系统 Craft Templates',
+        user: '用户 Craft Atoms',
+        flow: 'Craft Flows',
+      },
     },
     message: {
       inputRequired: '请输入 feed URL 并选择一个 craft',
