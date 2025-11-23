@@ -38,7 +38,7 @@ func cacheKeyForArticleTitle(item *feeds.Item) (string, error) {
 	return util.GetMD5Hash(item.Title), nil
 }
 func cacheKeyForArticleContent(item *feeds.Item) (string, error) {
-	return util.GetMD5Hash(item.Description + item.Description), nil
+	return util.GetMD5Hash(item.Description), nil
 }
 func cacheKeyForArticleLink(item *feeds.Item) (string, error) {
 	uniqLinkStr := item.Title
