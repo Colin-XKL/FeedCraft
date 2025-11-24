@@ -12,4 +12,5 @@ export default {
   'craftFlow.form.save': '保存',
   'craftFlow.form.rule.nameRequired': '名称为必填项',
   'craftFlow.editModalTitle.create': '创建 CraftFlow',
+  'craftFlow.editModalTitle.edit': '编辑 CraftFlow',
 };
