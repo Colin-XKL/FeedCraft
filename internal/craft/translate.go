@@ -26,10 +26,10 @@ const immersiveTranslatePrompt = `
 `
 
 func translateArticleTitle(title string, prompt string) (string, error) {
-	return adapter.CallLLMUsingContext(prompt, title)
+	return adapter.CallLLMUsingContext(prompt, title, util.ContentProcessOption{})
 }
 func translateArticleContent(content string, prompt string) (string, error) {
-	return adapter.CallLLMUsingContext(prompt, content)
+	return adapter.CallLLMUsingContext(prompt, content, util.ContentProcessOption{})
 }
 
 type ContentCacheKeyGenerator TransFunc
