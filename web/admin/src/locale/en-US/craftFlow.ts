@@ -12,4 +12,5 @@ export default {
   'craftFlow.form.save': 'Save',
   'craftFlow.form.rule.nameRequired': 'Name is required',
   'craftFlow.editModalTitle.create': 'Create CraftFlow',
+  'craftFlow.editModalTitle.edit': 'Edit CraftFlow',
 };
