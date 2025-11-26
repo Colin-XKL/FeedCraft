@@ -26,7 +26,7 @@ type LLMTextProcessor struct {
 }
 
 func (p *LLMTextProcessor) Process(original string) (string, error) {
-	return adapter.CallLLMUsingContext(p.prompt, original)
+	return adapter.CallLLMUsingContext(p.prompt, original, util.ContentProcessOption{})
 }
 func (p *LLMTextProcessor) Combine(original, processed string) string {
 	processedHTML := util.Markdown2HTML(processed)

@@ -5,7 +5,7 @@ go 1.24.0
 toolchain go1.24.2
 
 require (
-	github.com/JohannesKaufmann/html-to-markdown/v2 v2.3.3
+	github.com/JohannesKaufmann/html-to-markdown/v2 v2.4.0
 	github.com/abadojack/whatlanggo v1.0.1
 	github.com/getsentry/sentry-go v0.36.1
 	github.com/getsentry/sentry-go/gin v0.34.0

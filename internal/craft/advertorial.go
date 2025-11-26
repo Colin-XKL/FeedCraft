@@ -43,7 +43,11 @@ func CheckIfAdvertorial(content string, prompt string) bool {
 	if len(strings.TrimSpace(content)) < MinContentLength {
 		return false
 	}
-	result, err := adapter.CallLLMUsingContext(prompt, content)
+	option := util.ContentProcessOption{
+		RemoveImage: true,
+		ConvertToMd: true,
+	}
+	result, err := adapter.CallLLMUsingContext(prompt, content, option)
 	if err != nil {
 		logrus.Errorf("Error checking advertorial: %v", err)
 		return false
