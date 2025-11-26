@@ -1,0 +1,79 @@
+# 高级定制
+
+对于高级用户，FeedCraft 提供了一个管理后台来定制 RSS 的处理流程。
+
+## 访问后台
+
+1.  使用 Docker 部署 FeedCraft（参考快速开始）。
+2.  浏览器访问 `http://你的服务器IP:10088`。
+3.  使用默认凭据登录：
+    -   用户名：`admin`
+    -   密码：`adminadmin`
+    *(请登录后立即修改密码)*
+
+## 核心概念
+
+### 工艺 (Craft Atom)
+
+**Craft Atom** 是最小的处理单元。除了内置的工艺（如 `translate-title`, `fulltext`），你可以基于模版创建自定义的工艺。
+
+**示例：自定义翻译 Prompt**
+你可以基于 `translate-content` 模版创建一个名为 `translate-to-french` 的新工艺，并在参数中填入自定义的 Prompt，指示 AI 将内容翻译成法语。
+
+### 工艺流 (Craft Flow)
+
+**Craft Flow** 是多个 Craft Atom 的组合序列。这允许你将多个操作串联起来。
+
+**示例：全文 + 摘要 + 翻译**
+你可以定义一个名为 `digest-and-translate` 的工作流，包含以下步骤：
+1.  `fulltext` (提取正文)
+2.  `summary` (生成摘要)
+3.  `translate-content` (翻译内容)
+
+### 食谱 (Recipe)
+
+**Recipe** 将特定的 RSS 源 URL 与某个 Craft 或 Craft Flow 绑定。这允许你创建一个持久化的、经过定制的订阅源 URL。
+
+**示例：**
+-   **输入 URL：** `https://news.ycombinator.com/rss`
+-   **处理器：** `digest-and-translate` (上面创建的工作流)
+-   **结果：** 你会得到一个新的 FeedCraft URL，订阅它即可获得带全文、摘要和翻译的 Hacker News。
+
+## 高级配置
+
+### Docker 环境变量
+
+你可以在 `docker-compose.yml` 中使用环境变量配置 FeedCraft。
+
+-   **FC_PUPPETEER_HTTP_ENDPOINT**: Browserless/Chrome 实例的地址。`fulltext-plus` 功能必须。
+-   **FC_REDIS_URI**: Redis 连接地址。用于缓存，加快处理速度并减少 AI Token 消耗。
+-   **FC_OPENAI_AUTH_KEY**: OpenAI 或兼容服务（如 DeepSeek, Gemini 等）的 API Key。
+-   **FC_OPENAI_DEFAULT_MODEL**: 默认使用的模型（如 `gemini-pro`, `gpt-3.5-turbo`）。
+-   **FC_OPENAI_ENDPOINT**: API 接口地址。如果是兼容 OpenAI 的 API，通常以 `/v1` 结尾。
+
+### 外部服务
+
+为了发挥 FeedCraft 的全部功能，建议搭配 Redis 和 Browserless 部署。
+
+```yaml
+version: "3"
+services:
+  app.feed-craft:
+    # ... (参考快速开始)
+    environment:
+      FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000
+      FC_REDIS_URI: redis://service.redis:6379/
+      # ...
+
+  service.redis:
+    image: redis:6-alpine
+    container_name: feedcraft_redis
+    restart: always
+
+  service.browserless:
+    image: browserless/chrome
+    container_name: feedcraft_browserless
+    environment:
+      USE_CHROME_STABLE: true
+    restart: unless-stopped
+```

@@ -20,8 +20,8 @@ var DefaultPrompts = map[ProcessorType]string{
 语言风格：简洁有力，避免冗长或复杂表达。
 
 输出要求：
-语言要求：使用简体中文
-字数限制：中文不超过120字
+语言要求：使用{{.TargetLang}}
+字数限制：不超过120字
 语言风格：简洁、生动、引人入胜。口语化但专业，避免术语堆砌。
 
 请根据以下文章内容生成导读：
@@ -36,7 +36,7 @@ Guidelines
 3. **No Extraneous Material** – Use **only** the information present in the supplied text; do not add external knowledge or speculation.
 4. **Length** – Adjust the length proportionally to the source material so that the summary is neither overly brief nor unnecessarily long.
 5. **Organization** – Write in well‑structured paragraphs. You may use markdown for readability (e.g., headings, bullet points) if you wish, but there is no strict format required.
-6. **Output Language** – Provide the final summary in **simplified Chinese**.
+6. **Output Language** – Provide the final summary in **{{.TargetLang}}**.
 
 
 Input Article Content:

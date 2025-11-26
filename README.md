@@ -107,6 +107,7 @@ services:
       FC_OPENAI_AUTH_KEY: skxxxxxx # 鉴权的key
       FC_OPENAI_DEFAULT_MODEL: gemini-pro/chatgpt-3.5/... # 默认使用的模型
       FC_OPENAI_ENDPOINT: https://xxxxxx # OPENAI API 或兼容平台的API接口路径
+      FC_DEFAULT_TARGET_LANG: zh-CN # (Optional) LLM 处理任务的默认目标语言，如 zh-CN, en-US
 ```
 
 你也可以直接在一个compose文件中把redis等附加组件也一起部署好:
@@ -128,6 +129,7 @@ services:
       FC_OPENAI_AUTH_KEY: skxxxxxx # 鉴权的key
       FC_OPENAI_DEFAULT_MODEL: gemini-pro/chatgpt-3.5/... # 默认使用的模型
       FC_OPENAI_ENDPOINT: https://xxxxxx # OPENAI API 或兼容平台的API接口路径，需要以 “/v1” 结尾
+      FC_DEFAULT_TARGET_LANG: zh-CN # (Optional) LLM 处理任务的默认目标语言
   service.redis:
     image: redis:6-alpine
     container_name: feedcraft_redis
