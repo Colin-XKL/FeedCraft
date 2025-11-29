@@ -44,8 +44,8 @@ go build -o feed-craft ./cmd/main.go
 # Run the application
 ./feed-craft
 
-# Run tests
-go test ./internal/util/...
+# Run all tests
+go test ./...
 
 # Reset admin password
 ./feed-craft reset-password
@@ -102,7 +102,7 @@ The system includes numerous built-in craft templates in `internal/craft/entry.g
 
 - Unit tests are located alongside source files (e.g., `internal/util/language_test.go`)
 - Use `go test ./...` to run all tests
-- Frontend tests would be in `web/admin/` (if present)
+- The frontend project currently does not have test scripts configured. If tests are added, they would be located in `web/admin/`.
 
 ## Common Development Tasks
 
