@@ -14,8 +14,8 @@ const (
 
 // Retry Configuration
 const (
-	MaxRetries       = 3
-	RetryWaitTime    = 1 * time.Second
+	MaxRetries      = 3
+	RetryWaitTime   = 1 * time.Second
 	RetryMaxWaitTime = 5 * time.Second
 )
 
