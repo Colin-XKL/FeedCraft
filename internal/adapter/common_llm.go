@@ -83,17 +83,17 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 		}
 
 		// Check if it's a timeout, we might want to retry on timeout too if desired,
-        // but requirements emphasized 429. Standard HTTP errors often don't get exposed as *APIError by this lib easily for net errors.
+		// but requirements emphasized 429. Standard HTTP errors often don't get exposed as *APIError by this lib easily for net errors.
 		// However, given the context, we simply break for non-429 errors unless we want robust retry for everything.
-        // Let's stick to 429 specific handling as requested + maybe 5xx if possible to detect.
-        // go-openai returns *APIError for API responses.
+		// Let's stick to 429 specific handling as requested + maybe 5xx if possible to detect.
+		// go-openai returns *APIError for API responses.
 
-        if apiErr, ok := err.(*openai.APIError); ok {
-            if apiErr.HTTPStatusCode >= 500 {
-                 logrus.Warnf("LLM API Server Error (%d), retrying...", apiErr.HTTPStatusCode)
-                 continue
-            }
-        }
+		if apiErr, ok := err.(*openai.APIError); ok {
+			if apiErr.HTTPStatusCode >= 500 {
+				logrus.Warnf("LLM API Server Error (%d), retrying...", apiErr.HTTPStatusCode)
+				continue
+			}
+		}
 
 		// Stop retrying for other errors
 		break
