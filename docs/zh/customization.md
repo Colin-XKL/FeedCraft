@@ -47,9 +47,10 @@
 
 -   **FC_PUPPETEER_HTTP_ENDPOINT**: Browserless/Chrome 实例的地址。`fulltext-plus` 功能必须。
 -   **FC_REDIS_URI**: Redis 连接地址。用于缓存，加快处理速度并减少 AI Token 消耗。
--   **FC_OPENAI_AUTH_KEY**: OpenAI 或兼容服务（如 DeepSeek, Gemini 等）的 API Key。
--   **FC_OPENAI_DEFAULT_MODEL**: 默认使用的模型（如 `gemini-pro`, `gpt-3.5-turbo`）。
--   **FC_OPENAI_ENDPOINT**: API 接口地址。如果是兼容 OpenAI 的 API，通常以 `/v1` 结尾。
+-   **FC_LLM_API_KEY**: OpenAI 或兼容服务（如 DeepSeek, Gemini 等）的 API Key。
+-   **FC_LLM_API_MODEL**: 默认使用的模型（如 `gemini-pro`, `gpt-3.5-turbo`）。
+-   **FC_LLM_API_BASE**: API 接口地址。如果是兼容 OpenAI 的 API，通常以 `/v1` 结尾。
+-   **FC_LLM_API_TYPE**: (可选) `openai` (默认) 或 `ollama`.
 
 ### 外部服务
 
