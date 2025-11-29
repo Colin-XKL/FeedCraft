@@ -31,6 +31,7 @@
     "@vueuse/core": "^9.3.0",
     "axios": "^0.30.2",
     "dayjs": "^1.11.5",
+    "dompurify": "^3.3.0",
     "echarts": "^5.5.1",
     "events": "^3.3.0",
     "js-md5": "^0.8.3",
@@ -48,6 +49,7 @@
   },
   "devDependencies": {
     "@arco-plugins/vite-vue": "^1.4.5",
+    "@types/dompurify": "^3.0.5",
     "@types/lodash": "^4.14.186",
     "@types/mockjs": "^1.0.7",
     "@types/nprogress": "^0.2.0",
