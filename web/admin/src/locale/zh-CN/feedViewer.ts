@@ -6,6 +6,9 @@ export default {
     placeholder: '输入 RSS 源地址',
     preview: '预览',
     resultPreview: '结果预览',
+    viewMode: '预览模式',
+    viewModeNormal: '普通',
+    viewModeRich: '富文本',
     message: {
       unknownError: '未知错误',
     },
