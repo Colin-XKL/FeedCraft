@@ -104,9 +104,10 @@ services:
     environment:
       FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000 # 替换为你自己的 browserless 或其他浏览器实例地址
       FC_REDIS_URI: redis://service.redis:6379/ # 替换为你自己的redis 实例地址
-      FC_OPENAI_AUTH_KEY: skxxxxxx # 鉴权的key
-      FC_OPENAI_DEFAULT_MODEL: gemini-pro/chatgpt-3.5/... # 默认使用的模型
-      FC_OPENAI_ENDPOINT: https://xxxxxx # OPENAI API 或兼容平台的API接口路径
+      FC_LLM_API_BASE: https://xxxxxx # LLM API 接口路径，需要以 “/v1” 结尾
+      FC_LLM_API_KEY: skxxxxxx # 鉴权的key
+      FC_LLM_API_MODEL: gemini-pro/chatgpt-3.5/... # 默认使用的模型
+      FC_LLM_API_TYPE: openai # openai 或 ollama
       FC_DEFAULT_TARGET_LANG: zh-CN # (Optional) LLM 处理任务的默认目标语言，如 zh-CN, en-US
 ```
 
@@ -126,9 +127,10 @@ services:
     environment:
       FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000 # 替换为你自己的 browserless 或其他浏览器实例地址
       FC_REDIS_URI: redis://service.redis:6379/ # 替换为你自己的redis 实例地址
-      FC_OPENAI_AUTH_KEY: skxxxxxx # 鉴权的key
-      FC_OPENAI_DEFAULT_MODEL: gemini-pro/chatgpt-3.5/... # 默认使用的模型
-      FC_OPENAI_ENDPOINT: https://xxxxxx # OPENAI API 或兼容平台的API接口路径，需要以 “/v1” 结尾
+      FC_LLM_API_BASE: https://xxxxxx # LLM API 接口路径，需要以 “/v1” 结尾
+      FC_LLM_API_KEY: skxxxxxx # 鉴权的key
+      FC_LLM_API_MODEL: gemini-pro/chatgpt-3.5/... # 默认使用的模型
+      FC_LLM_API_TYPE: openai # openai 或 ollama
       FC_DEFAULT_TARGET_LANG: zh-CN # (Optional) LLM 处理任务的默认目标语言
   service.redis:
     image: redis:6-alpine

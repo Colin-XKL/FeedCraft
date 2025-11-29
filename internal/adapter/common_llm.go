@@ -26,20 +26,54 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 		log.Fatalf("get env client error.")
 	}
 
-	openAIEndpoint := envClient.GetString("OPENAI_ENDPOINT")
-	openAIAuthKey := envClient.GetString("OPENAI_AUTH_KEY")
-	openAIModel := model
-	if openAIModel == "" {
-		openAIModel = envClient.GetString("OPENAI_DEFAULT_MODEL")
-		//logrus.Info("model not specified, using default model from env:", openAIModel)
+	// 1. Load new standard env vars
+	llmApiType := envClient.GetString("LLM_API_TYPE")
+	if llmApiType == "" {
+		llmApiType = "openai"
+	}
+	llmApiBase := envClient.GetString("LLM_API_BASE")
+	llmApiKey := envClient.GetString("LLM_API_KEY")
+	llmApiModel := model
+	if llmApiModel == "" {
+		llmApiModel = envClient.GetString("LLM_API_MODEL")
 	}
 
-	conf := openai.DefaultConfig(openAIAuthKey)
-	if openAIEndpoint != "" {
-		//logrus.Info("using custom openai endpoint ", openAIEndpoint)
-		conf.BaseURL = openAIEndpoint
+	// 2. Load legacy env vars for compatibility
+	legacyEndpoint := envClient.GetString("OPENAI_ENDPOINT")
+	legacyAuthKey := envClient.GetString("OPENAI_AUTH_KEY")
+	legacyModel := envClient.GetString("OPENAI_DEFAULT_MODEL")
+
+	// 3. Fallback logic with deprecation warnings
+	if llmApiBase == "" && legacyEndpoint != "" {
+		llmApiBase = legacyEndpoint
+		logrus.Warn("FC_OPENAI_ENDPOINT is deprecated, please migrate to FC_LLM_API_BASE")
+	}
+
+	if llmApiKey == "" && legacyAuthKey != "" {
+		llmApiKey = legacyAuthKey
+		logrus.Warn("FC_OPENAI_AUTH_KEY is deprecated, please migrate to FC_LLM_API_KEY")
+	}
+
+	if llmApiModel == "" && legacyModel != "" {
+		llmApiModel = legacyModel
+		logrus.Warn("FC_OPENAI_DEFAULT_MODEL is deprecated, please migrate to FC_LLM_API_MODEL")
+	}
+
+	// 4. Configure client based on type
+	if llmApiType == "ollama" {
+		logrus.Debug("Using Ollama API compatibility mode")
+		if llmApiKey == "" {
+			llmApiKey = "ollama" // Ollama doesn't require a key, but library might check
+		}
+	}
+
+	conf := openai.DefaultConfig(llmApiKey)
+	if llmApiBase != "" {
+		conf.BaseURL = llmApiBase
 	} else {
-		logrus.Info("using default openai endpoint ")
+		if llmApiType == "openai" {
+			logrus.Info("using default openai endpoint")
+		}
 	}
 
 	client := openai.NewClientWithConfig(conf)
@@ -51,7 +85,7 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 	resp, err := client.CreateChatCompletion(
 		ctx,
 		openai.ChatCompletionRequest{
-			Model: openAIModel,
+			Model: llmApiModel,
 			Messages: []openai.ChatCompletionMessage{
 				{
 					Role:    openai.ChatMessageRoleUser,

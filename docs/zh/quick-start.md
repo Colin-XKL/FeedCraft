@@ -60,9 +60,9 @@ services:
     environment:
       FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000
       FC_REDIS_URI: redis://service.redis:6379/
-      FC_OPENAI_AUTH_KEY: skxxxxxx
-      FC_OPENAI_DEFAULT_MODEL: gemini-pro
-      FC_OPENAI_ENDPOINT: https://xxxxxx
+      FC_LLM_API_KEY: skxxxxxx
+      FC_LLM_API_MODEL: gemini-pro
+      FC_LLM_API_BASE: https://xxxxxx
 ```
 
 保存为 `docker-compose.yml` 并运行 `docker-compose up -d`。
