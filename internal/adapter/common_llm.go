@@ -98,5 +98,8 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("ChatCompletion error: %v\n", err)
 	}
+	if len(resp.Choices) == 0 {
+		return "", fmt.Errorf("ChatCompletion error: no choices in response")
+	}
 	return resp.Choices[0].Message.Content, nil
 }
