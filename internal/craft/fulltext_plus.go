@@ -36,7 +36,14 @@ func getRenderedHTML2(websiteUrl string, timeout time.Duration) (string, error) 
 		return "", err
 	}
 
-	client := resty.New().SetBaseURL(browserURI)
+	// Use resty client with timeout and retry
+	client := resty.New().
+		SetBaseURL(browserURI).
+		SetTimeout(timeout).
+		SetRetryCount(util.MaxRetries).
+		SetRetryWaitTime(util.RetryWaitTime).
+		SetRetryMaxWaitTime(util.RetryMaxWaitTime)
+
 	headers := map[string]string{
 		"Cache-Control": "no-cache",
 		"Content-Type":  "application/json",
@@ -66,7 +73,7 @@ func getRenderedHTML2(websiteUrl string, timeout time.Duration) (string, error) 
 func GetFulltextPlusCraftOptions() []CraftOption {
 	transFunc := func(item *feeds.Item) (string, error) {
 		link := item.Link.Href
-		return getRenderedHTML2(link, DefaultExtractFulltextTimeout)
+		return getRenderedHTML2(link, util.ExternalRequestTimeout)
 	}
 
 	cachedTransFunc := GetCommonCachedTransformer(cacheKeyForArticleLink, transFunc, "extract fulltext plus")
