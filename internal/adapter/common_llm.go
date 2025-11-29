@@ -19,6 +19,7 @@ Handle LLM calling and processing, support OpenAI and all compatible services.
 const UseDefaultModel = ""
 
 var llmCallTimeout = util.LLMRequestTimeout
+var llmCallTimeout = util.LLMRequestTimeout
 
 func SimpleLLMCall(model string, promptInput string) (string, error) {
 	envClient := util.GetEnvClient()
