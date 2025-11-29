@@ -6,6 +6,9 @@ export default {
     placeholder: 'Enter RSS feed address',
     preview: 'Preview',
     resultPreview: 'Result Preview',
+    viewMode: 'View Mode',
+    viewModeNormal: 'Normal',
+    viewModeRich: 'Rich Text',
     message: {
       unknownError: 'Unknown Error',
     },
