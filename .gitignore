@@ -68,41 +68,9 @@ go.work
 # *.iml
 # *.ipr
 
-# CMake
-cmake-build-*/
-
-# Mongo Explorer plugin
-.idea/**/mongoSettings.xml
-
 # File-based project format
 *.iws
 
-# IntelliJ
-out/
-
-# mpeltonen/sbt-idea plugin
-.idea_modules/
-
-# JIRA plugin
-atlassian-ide-plugin.xml
-
-# Cursive Clojure plugin
-.idea/replstate.xml
-
-# SonarLint plugin
-.idea/sonarlint/
-
-# Crashlytics plugin (for Android Studio and IntelliJ)
-com_crashlytics_export_strings.xml
-crashlytics.properties
-crashlytics-build.properties
-fabric.properties
-
-# Editor-based Rest Client
-.idea/httpRequests
-
-# Android studio 3.1+ serialized cache file
-.idea/caches/build_file_checksums.ser
 
 ### GoLand+all Patch ###
 # Ignore everything but code style settings and run configurations
@@ -119,9 +87,6 @@ fabric.properties
 .AppleDouble
 .LSOverride
 
-# Icon must end with two \r
-Icon
-
 
 # Thumbnails
 ._*
@@ -135,16 +100,6 @@ Icon
 .VolumeIcon.icns
 .com.apple.timemachine.donotpresent
 
-# Directories potentially created on remote AFP share
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
-
-### macOS Patch ###
-# iCloud generated files
-*.icloud
 
 ### VisualStudioCode ###
 .vscode/*
@@ -156,14 +111,6 @@ Temporary Items
 
 # Local History for Visual Studio Code
 .history/
-
-# Built Visual Studio Code Extensions
-*.vsix
-
-### VisualStudioCode Patch ###
-# Ignore all local history of files
-.history
-.ionide
 
 ### Vuejs ###
 # Recommended template: Node.gitignore
@@ -186,15 +133,11 @@ web/admin/dist
 main
 
 local.env
-run_local.sh
-run_local.ps1
-/data
-
-# Docker 构建和部署相关文件
-build.ps1
-push_docker.ps1
-docker-compose*.yml
 
 # 构建产生的二进制文件
+feed-craft
 feedcraft
 feedcraft.exe
+
+# temp
+.task
