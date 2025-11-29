@@ -65,6 +65,9 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 		if llmApiKey == "" {
 			llmApiKey = "ollama" // Ollama doesn't require a key, but library might check
 		}
+		if llmApiBase == "" {
+			return "", fmt.Errorf("FC_LLM_API_BASE must be set when using FC_LLM_API_TYPE='ollama'")
+		}
 	}
 
 	conf := openai.DefaultConfig(llmApiKey)
