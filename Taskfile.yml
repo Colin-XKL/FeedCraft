@@ -1,0 +1,159 @@
+version: '3'
+
+vars:
+  PROJECT_NAME: FeedCraft
+  BINARY_NAME: feed-craft
+
+tasks:
+  default:
+    cmds:
+      - task -l
+    silent: true
+
+  fetch-remote-tags:
+    desc: "Fetch tags from remote repository"
+    cmds:
+      - cmd: |
+          echo "Fetching tags from remote repository..."
+          git fetch --tags
+          echo "Tags fetched successfully"
+
+  info:
+    desc: "Show project information and current version"
+    cmds:
+      - cmd: |
+          echo "Project: {{.PROJECT_NAME}}"
+          if command -v git >/dev/null 2>&1; then
+            echo "Current Git Commit: $(git rev-parse --short HEAD 2>/dev/null || echo 'unknown')"
+            echo "Latest Tag: $(git describe --tags --abbrev=0 2>/dev/null || echo 'none')"
+            echo "Current Branch: $(git branch --show-current 2>/dev/null || echo 'unknown')"
+          else
+            echo "Git not available"
+          fi
+
+  version:
+    desc: "Show version information (reads from environment or git)"
+    cmds:
+      - cmd: |
+          if command -v git >/dev/null 2>&1; then
+            VERSION=$(git describe --tags --always 2>/dev/null || echo "v0.0.0-$(date +%Y%m%d)-$(git rev-parse --short HEAD 2>/dev/null || echo 'unknown')")
+            BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            GIT_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+            echo "Version: $VERSION"
+            echo "Build Time: $BUILD_TIME" 
+            echo "Git Commit: $GIT_COMMIT"
+          else
+            echo "Version: v0.0.0"
+            echo "Build Time: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "Git Commit: unknown"
+          fi
+
+  build-local:
+    desc: "Build the application with version injection (local)"
+    cmds:
+      - cmd: |
+          if command -v git >/dev/null 2>&1; then
+            VERSION=$(git describe --tags --always 2>/dev/null || echo "v0.0.0-$(date +%Y%m%d)-$(git rev-parse --short HEAD 2>/dev/null || echo 'unknown')")
+            BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            GIT_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+          else
+            VERSION="v0.0.0-$(date +%Y%m%d)-unknown"
+            BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+            GIT_COMMIT="unknown"
+          fi
+          echo "Building {{.BINARY_NAME}} version $VERSION"
+          go build -ldflags "-X main.Version=$VERSION -X main.BuildTime=$BUILD_TIME -X main.GitCommit=$GIT_COMMIT" -o {{.BINARY_NAME}} ./cmd/main.go
+          echo "Build completed: {{.BINARY_NAME}}"
+    sources:
+      - ./cmd/**/*.go
+      - ./internal/**/*.go
+    generates:
+      - ./{{.BINARY_NAME}}
+
+  release-patch:
+    desc: "Create a patch release (vX.Y.Z -> vX.Y.(Z+1))"
+    deps:
+      - fetch-remote-tags
+    preconditions:
+      - sh: git status --porcelain | grep -q "nothing to commit"
+        msg: "Working directory is not clean. Please commit your changes first."
+    cmds:
+      - cmd: |
+          current_version=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/v//' | sed 's/^v//' || echo "0.0.0")
+          IFS='.' read -r major minor patch <<< "$current_version"
+          new_patch=$((patch + 1))
+          new_version="v$major.$minor.$new_patch"
+          echo "Creating patch release: $new_version"
+          git tag -a $new_version -m "Release $new_version"
+          echo "Release tag $new_version created. Run 'git push origin $new_version' to push the tag."
+
+  release-minor:
+    desc: "Create a minor release (vX.Y.Z -> vX.(Y+1).0)"
+    deps:
+      - fetch-remote-tags
+    preconditions:
+      - sh: git status --porcelain | grep -q "nothing to commit"
+        msg: "Working directory is not clean. Please commit your changes first."
+    cmds:
+      - cmd: |
+          current_version=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/v//' | sed 's/^v//' || echo "0.0.0")
+          IFS='.' read -r major minor patch <<< "$current_version"
+          new_minor=$((minor + 1))
+          new_version="v$major.$new_minor.0"
+          echo "Creating minor release: $new_version"
+          git tag -a $new_version -m "Release $new_version"
+          echo "Release tag $new_version created. Run 'git push origin $new_version' to push the tag."
+
+  release-major:
+    desc: "Create a major release (vX.Y.Z -> v(X+1).0.0)"
+    deps:
+      - fetch-remote-tags
+    preconditions:
+      - sh: git status --porcelain | grep -q "nothing to commit"
+        msg: "Working directory is not clean. Please commit your changes first."
+    cmds:
+      - cmd: |
+          current_version=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/v//' | sed 's/^v//' || echo "0.0.0")
+          IFS='.' read -r major minor patch <<< "$current_version"
+          new_major=$((major + 1))
+          new_version="v$new_major.0.0"
+          echo "Creating major release: $new_version"
+          git tag -a $new_version -m "Release $new_version"
+          echo "Release tag $new_version created. Run 'git push origin $new_version' to push the tag."
+
+  release:
+    desc: "Interactive release creation - choose major, minor, or patch"
+    cmds:
+      - cmd: |
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "Current state is clean. Available:"
+            echo "1) Major (X.0.0)"
+            echo "2) Minor (X.Y.0)" 
+            echo "3) Patch (X.Y.Z)"
+            read -p "Enter choice (1-3): " choice
+            case $choice in
+              1) task: release-major ;;
+              2) task: release-minor ;;
+              3) task: release-patch ;;
+              *) echo "Invalid choice"; exit 1 ;;
+            esac
+          else
+            echo "Working directory is not clean. Please commit your changes first."
+            exit 1
+          fi
+
+  run:
+    desc: "Build and run the application locally"
+    deps:
+      - build-local
+    cmds:
+      - cmd: |
+          echo "Starting {{.PROJECT_NAME}}..."
+          ./{{.BINARY_NAME}}
+
+  clean:
+    desc: "Clean build artifacts"
+    cmds:
+      - cmd: |
+          rm -f {{.BINARY_NAME}}
+          echo "Cleaned build artifacts"

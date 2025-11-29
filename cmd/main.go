@@ -18,6 +18,13 @@ import (
 	_ "go.uber.org/automaxprocs"
 )
 
+// Variables to hold build-time information
+var (
+	Version   = "unknown" // Build version set at compile time
+	BuildTime = "unknown" // Build timestamp set at compile time
+	GitCommit = "unknown" // Git commit hash set at compile time
+)
+
 func init() {
 	logrus.Info("Preheating scheduler starting...")
 	// 设置预热任务函数
@@ -55,8 +62,19 @@ var resetPasswordCmd = &cobra.Command{
 	},
 }
 
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Print the version information",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Printf("FeedCraft Version: %s\n", Version)
+		fmt.Printf("Build Time: %s\n", BuildTime)
+		fmt.Printf("Git Commit: %s\n", GitCommit)
+	},
+}
+
 func init() {
 	rootCmd.AddCommand(resetPasswordCmd)
+	rootCmd.AddCommand(versionCmd)
 }
 
 func main() {
@@ -130,11 +148,14 @@ func startServer() {
 ==  █████╗  █████╗  █████╗  ██║  ██║██║     ██████╔╝███████║█████╗     ██║   
 ==  ██╔══╝  ██╔══╝  ██╔══╝  ██║  ██║██║     ██╔══██╗██╔══██║██╔══╝     ██║   
 ==  ██║     ███████╗███████╗██████╔╝╚██████╗██║  ██║██║  ██║██║        ██║   
-==  ╚═╝     ╚══════╝╚══════╝╚═════╝  ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝        ╚═╝   
-==  
+==  ╚═╝     ╚══════╝╚══════╝╚═════╝  ╚═════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═╝        ╚═╝
+==
 ==                           Welcome to FeedCraft!
 == Project Homepage: https://github.com/Colin-XKL/FeedCraft
 `)
+	fmt.Printf("== Version: %s\n", Version)
+	fmt.Printf("== Build Time: %s\n", BuildTime)
+	fmt.Printf("== Git Commit: %s\n", GitCommit)
 	fmt.Println("== Server listen at ", listenAddr)
 	fmt.Println("== Admin Default User: admin\n== Default Password: adminadmin")
 	fmt.Println("== Enjoy!")
