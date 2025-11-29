@@ -1,6 +1,7 @@
 package craft
 
 import (
+	"FeedCraft/internal/util"
 	"github.com/gorilla/feeds"
 	"github.com/mmcdole/gofeed"
 	"strings"
@@ -22,6 +23,7 @@ func NewCraftedFeedFromUrl(feedUrl string, options ...CraftOption) (CraftedFeed,
 	ingredient := CraftedFeed{originalFeedUrl: feedUrl}
 
 	fp := gofeed.NewParser()
+	fp.Client = util.HTTPClientWithTimeout(util.ExternalRequestTimeout)
 	parsedFeed, err := fp.ParseURL(feedUrl)
 	if err != nil {
 		return ingredient, err

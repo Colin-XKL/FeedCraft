@@ -11,12 +11,11 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"net/url"
-	"time"
 )
 
 var Scheduler *util.PreheatingScheduler
 
-var recipeMaxFetchTimeout = time.Minute * 10
+var recipeMaxFetchTimeout = util.LLMRequestTimeout
 
 func QueryCustomRecipeName(recipeName string) (*dao.CustomRecipe, error) {
 	db := util.GetDatabase()
