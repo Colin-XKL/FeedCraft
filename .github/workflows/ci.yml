@@ -24,6 +24,23 @@ jobs:
           version: latest
         continue-on-error: true
 
+  lint-frontend:
+    name: Lint Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - name: Install dependencies
+        run: |
+          cd web/admin
+          npm install
+      - name: Lint
+        run: |
+          cd web/admin
+          npm run lint
+
   build-and-test:
     name: Build and Test
     runs-on: ubuntu-latest

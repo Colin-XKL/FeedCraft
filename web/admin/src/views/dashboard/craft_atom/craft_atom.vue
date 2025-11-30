@@ -52,10 +52,16 @@
         <a-form-item :label="t('craftAtom.form.name')" field="name">
           <a-input v-model="editedCraftAtom.name" />
         </a-form-item>
-        <a-form-item :label="t('craftAtom.form.description')" field="description">
+        <a-form-item
+          :label="t('craftAtom.form.description')"
+          field="description"
+        >
           <a-textarea v-model="editedCraftAtom.description" />
         </a-form-item>
-        <a-form-item :label="t('craftAtom.form.template')" field="template_name">
+        <a-form-item
+          :label="t('craftAtom.form.template')"
+          field="template_name"
+        >
           <a-select
             v-model="editedCraftAtom.template_name"
             :options="templateOptions"
@@ -95,10 +101,16 @@
               <div v-for="(param, index) in formParams" :key="index">
                 <a-row :gutter="12">
                   <a-col :span="8">
-                    <a-input v-model="param.key" :placeholder="t('craftAtom.form.key')" />
+                    <a-input
+                      v-model="param.key"
+                      :placeholder="t('craftAtom.form.key')"
+                    />
                   </a-col>
                   <a-col :span="14">
-                    <a-textarea v-model="param.value" :placeholder="t('craftAtom.form.value')" />
+                    <a-textarea
+                      v-model="param.value"
+                      :placeholder="t('craftAtom.form.value')"
+                    />
                   </a-col>
                   <a-col :span="2">
                     <a-button type="text" @click="removeParam(index)">
@@ -111,7 +123,9 @@
               </div>
             </a-list>
 
-            <a-button type="dashed" @click="addParam">{{ t('craftAtom.form.addParam') }}</a-button>
+            <a-button type="dashed" @click="addParam">{{
+              t('craftAtom.form.addParam')
+            }}</a-button>
           </a-space>
         </a-form-item>
       </a-form>
@@ -125,7 +139,9 @@
           "
           >{{ t('craftAtom.form.cancel') }}
         </a-button>
-        <a-button type="primary" @click="saveCraftAtom">{{ t('craftAtom.form.save') }}</a-button>
+        <a-button type="primary" @click="saveCraftAtom">{{
+          t('craftAtom.form.save')
+        }}</a-button>
       </template>
     </a-modal>
   </div>
