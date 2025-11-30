@@ -27,12 +27,17 @@ module.exports = {
     'plugin:import/typescript',
     'plugin:vue/vue3-recommended',
     'plugin:prettier/recommended',
+    'plugin:@intlify/vue-i18n/recommended',
   ],
   settings: {
     'import/resolver': {
       typescript: {
         project: path.resolve(__dirname, './tsconfig.json'),
       },
+    },
+    'vue-i18n': {
+      localeDir: './src/locales-generated/*.{json,json5,yaml,yml}',
+      messageSyntaxVersion: '^9.0.0',
     },
   },
   rules: {
@@ -66,5 +71,8 @@ module.exports = {
     'no-param-reassign': 0,
     'prefer-regex-literals': 0,
     'import/no-extraneous-dependencies': 0,
+    // i18n
+    '@intlify/vue-i18n/no-missing-keys': 'error',
+    '@intlify/vue-i18n/no-raw-text': 'off',
   },
 };

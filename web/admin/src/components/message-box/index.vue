@@ -1,6 +1,6 @@
 <template>
   <a-spin style="display: block" :loading="loading">
-    <a-tabs v-model:activeKey="messageType" type="rounded" destroy-on-hide>
+    <a-tabs v-model:active-key="messageType" type="rounded" destroy-on-hide>
       <a-tab-pane v-for="item in tabList" :key="item.key">
         <template #title>
           <span> {{ item.title }}{{ formatUnreadLength(item.key) }} </span>
