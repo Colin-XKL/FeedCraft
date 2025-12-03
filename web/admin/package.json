@@ -27,7 +27,7 @@
     ]
   },
   "dependencies": {
-    "@arco-design/web-vue": "^2.44.7",
+    "@arco-design/web-vue": "^2.57.0",
     "@vueuse/core": "^9.3.0",
     "axios": "^0.30.2",
     "dayjs": "^1.11.5",
@@ -49,6 +49,7 @@
   },
   "devDependencies": {
     "@arco-plugins/vite-vue": "^1.4.5",
+    "@arco-themes/vue-colinx-studio": "^0.0.2",
     "@types/dompurify": "^3.0.5",
     "@types/lodash": "^4.14.186",
     "@types/mockjs": "^1.0.7",
