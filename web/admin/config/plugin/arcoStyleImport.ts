@@ -7,6 +7,8 @@
 import { vitePluginForArco } from '@arco-plugins/vite-vue';
 
 export default function configArcoStyleImportPlugin() {
-  const arcoResolverPlugin = vitePluginForArco({});
+  const arcoResolverPlugin = vitePluginForArco({
+    theme: '@arco-themes/vue-colinx-studio',
+  });
   return arcoResolverPlugin;
 }
