@@ -1,4 +1,6 @@
-# Quick Start
+---
+title: Quick Start
+---
 
 ## Introduction
 

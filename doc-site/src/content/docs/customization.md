@@ -1,4 +1,6 @@
-# High Level Customization
+---
+title: High Level Customization
+---
 
 For power users, FeedCraft offers a dashboard to customize how feeds are processed.
 
