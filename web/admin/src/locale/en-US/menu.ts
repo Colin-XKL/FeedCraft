@@ -26,6 +26,7 @@ export default {
   // tools menus
   'menu.feedCompare': 'Feed Compare',
   'menu.feedViewer': 'RSS Viewer',
+  'menu.rssGenerator': 'RSS Generator',
   'menu.llmDebug': 'LLM Debug',
   'menu.changePassword': 'Change Password',
   'menu.adCheckDebug': 'Ad/Advertorial Check',
