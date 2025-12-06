@@ -102,6 +102,9 @@ func RegisterRouters(router *gin.Engine) {
 		adminApi.GET("/craft-atoms/:name", controller.GetCraftAtom)
 		adminApi.PUT("/craft-atoms/:name", controller.UpdateCraftAtom)
 		adminApi.DELETE("/craft-atoms/:name", controller.DeleteCraftAtom)
+
+		adminApi.POST("/tools/fetch", controller.FetchURL)
+		adminApi.POST("/tools/parse", controller.ParseRSS)
 	}
 
 }
