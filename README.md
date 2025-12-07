@@ -144,6 +144,48 @@ services:
     restart: unless-stopped
 ```
 
+## 开发
+
+如果你想要在本地开发FeedCraft，可以按照以下步骤进行：
+
+### 环境设置
+
+1. 确保已安装以下依赖：
+   - Go 1.19+
+   - Node.js (推荐 18+)
+   - pnpm (安装方式: `npm install -g pnpm`)
+   - Task (安装方式: [https://taskfile.dev/installation/](https://taskfile.dev/installation/))
+
+2. 复制环境变量文件：
+   ```bash
+   cp .env.example .env
+   ```
+
+3. 根据需要编辑 `.env` 文件中的配置
+
+### 开发命令
+
+使用 Task 运行开发模式：
+
+```bash
+# 运行完整的开发环境（前端+后端）
+task dev
+
+# 只运行后端
+task dev-backend
+
+# 只运行前端
+task dev-frontend
+```
+
+### 前端开发
+
+前端项目位于 `web/admin` 目录下，使用 Vue 3 和 Arco Design。
+
+### 后端开发
+
+后端使用 Go 和 Gin 框架，API 文档可以通过启动服务后访问 `/docs` 查看。
+
 ## 关于 FeedCraft
 
 FeedCraft 的名称和Logo参考并致敬两款游戏: MineCraft和塞尔达, 初衷和愿景是做一个简单易用、同时足够灵活, 能够有更多可能性的RSS工具.
