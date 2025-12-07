@@ -164,6 +164,7 @@
   const htmlContent = ref('');
   const isSelectionMode = ref(true);
   const previewIframe = ref<HTMLIFrameElement | null>(null);
+  const currentHoverEl = ref<HTMLElement | null>(null);
 
   const config = reactive<{ [key: string]: string }>({
     item_selector: '',
@@ -258,9 +259,20 @@
 
   // --- Selector Generation Logic ---
 
-  // Simple path generator: ID -> Class -> Tag:nth-child
-  const getCssSelector = (el: HTMLElement): string => {
+  // Enhanced smart selector generator
+  const getCssSelector = (
+    el: HTMLElement,
+    isItemSelector = false
+  ): string => {
     if (!(el instanceof Element)) return '';
+
+    // 1. If ID exists, use it.
+    if (el.id) {
+      // Unless it's the item selector and we want to select multiples?
+      // Usually IDs are unique, so bad for list items.
+      if (!isItemSelector) return `#${el.id}`;
+    }
+
     const path: string[] = [];
     let currentEl: HTMLElement | null = el;
 
@@ -270,41 +282,102 @@
 
     while (currentEl && currentEl.nodeType === Node.ELEMENT_NODE) {
       let selector = currentEl.nodeName.toLowerCase();
-      if (currentEl.id) {
+
+      // Try to use class if available and meaningful
+      if (currentEl.classList.length > 0) {
+        // Filter out common utility classes (simplified heuristic)
+        const classes = Array.from(currentEl.classList).filter(
+          (c) =>
+            ![
+              'flex',
+              'row',
+              'col',
+              'grid',
+              'hidden',
+              'block',
+              'items-center',
+              'justify-center',
+            ].some((x) => c.includes(x))
+        );
+        if (classes.length > 0) {
+          selector += `.${classes.join('.')}`;
+        }
+      }
+
+      // If this is the *target* element (first in loop) and we are selecting List Item
+      if (currentEl === el && isItemSelector) {
+        // Do NOT add :nth-of-type to the target element itself
+        // This ensures we match all siblings
+      } else if (currentEl.id) {
+        // For parent path, or normal selection, use nth-of-type to be precise
         selector = `#${currentEl.id}`;
         path.unshift(selector);
-        break; // IDs are unique enough usually
+        break;
       } else {
+        // check siblings
         let sib = currentEl;
         let nth = 1;
         // eslint-disable-next-line no-cond-assign
         while ((sib = sib.previousElementSibling as HTMLElement)) {
-          if (sib.nodeName.toLowerCase() === selector) nth += 1;
+          if (
+            sib.nodeName.toLowerCase() === currentEl.nodeName.toLowerCase()
+          ) {
+            nth += 1;
+          }
         }
         if (nth !== 1) selector += `:nth-of-type(${nth})`;
       }
 
-      // Add class if valid and not too generic
-      if (currentEl.classList.length > 0) {
-        const className = currentEl.className.trim();
-        if (className && typeof className === 'string') {
-          selector += `.${className.split(/\s+/).join('.')}`;
-        }
-      }
-
       path.unshift(selector);
       currentEl = currentEl.parentNode as HTMLElement;
+
       // Stop if we hit the container or root
       if (!currentEl || currentEl === body || currentEl === html) break;
     }
+
     return path.join(' > ');
+  };
+
+  const updateHighlight = (target: HTMLElement) => {
+    // Remove old highlight
+    const doc = previewIframe.value?.contentDocument;
+    if (doc) {
+      const old = doc.querySelector('.fc-highlight');
+      if (old) old.classList.remove('fc-highlight');
+    }
+
+    // Add new highlight
+    target.classList.add('fc-highlight');
+    currentHoverEl.value = target;
   };
 
   const handleMouseOver = (e: Event) => {
     if (!isSelectionMode.value) return;
     const target = e.target as HTMLElement;
-    if (target) {
-      // Visual feedback handled by CSS
+    if (target && target !== currentHoverEl.value) {
+      updateHighlight(target);
+    }
+  };
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (!isSelectionMode.value || !currentHoverEl.value) return;
+
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const parent = currentHoverEl.value.parentElement;
+      if (
+        parent &&
+        parent.tagName !== 'BODY' &&
+        parent.tagName !== 'HTML'
+      ) {
+        updateHighlight(parent);
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      const child = currentHoverEl.value.firstElementChild as HTMLElement;
+      if (child) {
+        updateHighlight(child);
+      }
     }
   };
 
@@ -313,7 +386,9 @@
     e.preventDefault();
     e.stopPropagation();
 
-    const target = e.target as HTMLElement;
+    // Use currentHighlighted element instead of event target directly
+    // This allows picking parent via keyboard
+    const target = currentHoverEl.value || (e.target as HTMLElement);
     if (!target) return;
 
     if (!currentTargetField.value) {
@@ -323,15 +398,26 @@
       return;
     }
 
-    const fullSelector = getCssSelector(target);
+    // Determine if we are picking item selector
+    const isItemSelector = currentTargetField.value === 'item_selector';
+    const fullSelector = getCssSelector(target, isItemSelector);
 
     // Need access to iframe body to query selector
     const doc = previewIframe.value?.contentDocument;
     if (!doc) return;
 
-    if (currentTargetField.value === 'item_selector') {
+    if (isItemSelector) {
       config.item_selector = fullSelector;
-      Message.success(`Set Item Selector: ${fullSelector}`);
+
+      // Try to validate how many items matched
+      try {
+        const matches = doc.querySelectorAll(fullSelector);
+        Message.success(
+          `Set Item Selector: ${fullSelector} (${matches.length} matches)`
+        );
+      } catch (err) {
+        Message.success(`Set Item Selector: ${fullSelector}`);
+      }
     } else {
       // Relative selection
       if (!config.item_selector) {
@@ -394,14 +480,16 @@
       // Inject styles for hover effect
       const style = doc.createElement('style');
       style.textContent = `
-            * { cursor: pointer; }
-            *:hover { outline: 2px dashed #165dff !important; background-color: rgba(22, 93, 255, 0.05) !important; }
+            .fc-highlight { outline: 2px dashed #165dff !important; background-color: rgba(22, 93, 255, 0.05) !important; cursor: pointer; }
           `;
       doc.head.appendChild(style);
 
       // Attach listeners
       doc.addEventListener('click', handleClick);
       doc.addEventListener('mouseover', handleMouseOver);
+      doc.addEventListener('keydown', handleKeyDown);
+      // Ensure iframe can receive focus for key events
+      doc.body.setAttribute('tabindex', '0');
     }
   };
 </script>
