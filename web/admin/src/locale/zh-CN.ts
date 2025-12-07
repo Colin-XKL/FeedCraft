@@ -27,4 +27,5 @@ export default {
   ...localeFeedViewer,
   ...localeLlmDebug,
   ...localeUrlGenerator,
+  ...localeWorkplace,
 };
