@@ -24,15 +24,13 @@
         <!-- Left: HTML Preview / Interaction Area -->
         <a-col :span="14" class="h-full">
           <a-card class="preview-card" title="Page Preview">
-            <!-- eslint-disable-next-line vue/no-v-html -->
-            <div
+            <iframe
               v-if="htmlContent"
-              ref="previewContainer"
+              ref="previewIframe"
               class="html-preview"
-              @mouseover="handleMouseOver"
-              @click="handleClick"
-              v-html="htmlContent"
-            ></div>
+              :srcdoc="htmlContent"
+              @load="onIframeLoad"
+            ></iframe>
             <a-empty v-else description="No content loaded" />
           </a-card>
         </a-col>
@@ -165,7 +163,7 @@
   const parsing = ref(false);
   const htmlContent = ref('');
   const isSelectionMode = ref(true);
-  const previewContainer = ref<HTMLElement | null>(null);
+  const previewIframe = ref<HTMLIFrameElement | null>(null);
 
   const config = reactive<{ [key: string]: string }>({
     item_selector: '',
@@ -197,8 +195,21 @@
         url: url.value,
       })) as any;
       if (res.code === 0) {
-        const raw = res.data;
-        htmlContent.value = DOMPurify.sanitize(raw);
+        let raw = res.data;
+        // Inject base tag for relative links
+        const baseTag = `<base href="${url.value}" />`;
+        // Insert after <head> or at start
+        if (raw.toLowerCase().includes('<head>')) {
+          raw = raw.replace(/<head>/i, `<head>${baseTag}`);
+        } else {
+          raw = `${baseTag}${raw}`;
+        }
+
+        htmlContent.value = DOMPurify.sanitize(raw, {
+          WHOLE_DOCUMENT: true,
+          ADD_TAGS: ['link', 'style', 'head', 'meta', 'body', 'html', 'base'],
+          ADD_ATTR: ['href', 'rel', 'src', 'type'],
+        });
         Message.success('Page fetched successfully');
       } else {
         Message.error(res.msg || 'Fetch failed');
@@ -253,6 +264,10 @@
     const path: string[] = [];
     let currentEl: HTMLElement | null = el;
 
+    const doc = previewIframe.value?.contentDocument;
+    const body = doc?.body;
+    const html = doc?.documentElement;
+
     while (currentEl && currentEl.nodeType === Node.ELEMENT_NODE) {
       let selector = currentEl.nodeName.toLowerCase();
       if (currentEl.id) {
@@ -280,27 +295,20 @@
       path.unshift(selector);
       currentEl = currentEl.parentNode as HTMLElement;
       // Stop if we hit the container or root
-      if (
-        !currentEl ||
-        currentEl === previewContainer.value ||
-        currentEl.tagName === 'BODY' ||
-        currentEl.tagName === 'HTML'
-      )
-        break;
+      if (!currentEl || currentEl === body || currentEl === html) break;
     }
     return path.join(' > ');
   };
 
-  const handleMouseOver = (e: MouseEvent) => {
+  const handleMouseOver = (e: Event) => {
     if (!isSelectionMode.value) return;
     const target = e.target as HTMLElement;
-    if (!target) {
-      // do nothing
+    if (target) {
+      // Visual feedback handled by CSS
     }
-    // Visual feedback handled by CSS
   };
 
-  const handleClick = (e: MouseEvent) => {
+  const handleClick = (e: Event) => {
     if (!isSelectionMode.value) return;
     e.preventDefault();
     e.stopPropagation();
@@ -317,6 +325,10 @@
 
     const fullSelector = getCssSelector(target);
 
+    // Need access to iframe body to query selector
+    const doc = previewIframe.value?.contentDocument;
+    if (!doc) return;
+
     if (currentTargetField.value === 'item_selector') {
       config.item_selector = fullSelector;
       Message.success(`Set Item Selector: ${fullSelector}`);
@@ -330,8 +342,7 @@
       }
 
       // Check if target is inside an element matching item_selector
-      const container = previewContainer.value;
-      const items = container?.querySelectorAll(config.item_selector);
+      const items = doc.querySelectorAll(config.item_selector);
       let foundItem: HTMLElement | null = null;
 
       if (items) {
@@ -374,26 +385,33 @@
 
     currentTargetField.value = ''; // Reset picker state
   };
+
+  const onIframeLoad = () => {
+    const iframe = previewIframe.value;
+    if (iframe && iframe.contentDocument) {
+      const doc = iframe.contentDocument;
+
+      // Inject styles for hover effect
+      const style = doc.createElement('style');
+      style.textContent = `
+            * { cursor: pointer; }
+            *:hover { outline: 2px dashed #165dff !important; background-color: rgba(22, 93, 255, 0.05) !important; }
+          `;
+      doc.head.appendChild(style);
+
+      // Attach listeners
+      doc.addEventListener('click', handleClick);
+      doc.addEventListener('mouseover', handleMouseOver);
+    }
+  };
 </script>
 
 <style scoped>
   .html-preview {
     border: 1px solid #e5e6eb;
-    padding: 10px;
+    padding: 0; /* Remove padding for iframe */
+    width: 100%;
     height: 600px;
-    overflow-y: auto;
     background: white;
-    position: relative;
-  }
-
-  /* Add a hover effect for selection mode via global styles injection or scoped deep selector?
-   Scoped style won't apply to v-html content easily unless we use :deep()
-*/
-  .html-preview :deep(*) {
-    cursor: pointer;
-  }
-  .html-preview :deep(*:hover) {
-    outline: 1px dashed #165dff;
-    background-color: rgba(22, 93, 255, 0.05);
   }
 </style>
