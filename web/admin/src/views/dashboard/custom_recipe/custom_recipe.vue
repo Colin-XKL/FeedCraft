@@ -34,17 +34,20 @@
           v-if="record.is_active"
           :content="
             t('customRecipe.status.activeTooltip', {
-              time: dayjs(record.last_accessed_at).format('YYYY-MM-DD HH:mm:ss'),
+              time: dayjs(record.last_accessed_at).format(
+                'YYYY-MM-DD HH:mm:ss'
+              ),
             })
           "
         >
-          <a-tag color="green" :default-checked="true">{{ t('customRecipe.status.active') }}</a-tag>
+          <a-tag color="green" :default-checked="true">{{
+            t('customRecipe.status.active')
+          }}</a-tag>
         </a-tooltip>
-        <a-tooltip
-          v-else
-          :content="t('customRecipe.status.inactiveTooltip')"
-        >
-          <a-tag color="gray" :default-checked="true">{{ t('customRecipe.status.inactive') }}</a-tag>
+        <a-tooltip v-else :content="t('customRecipe.status.inactiveTooltip')">
+          <a-tag color="gray" :default-checked="true">{{
+            t('customRecipe.status.inactive')
+          }}</a-tag>
         </a-tooltip>
       </template>
       <template #actions="{ record }">
@@ -60,8 +63,12 @@
           >
             {{ t('customRecipe.edit') }}
           </a-button>
-          <a-button @click="deleteRecipe(record.id)">{{ t('customRecipe.delete') }}</a-button>
-          <a-link :href="`${baseUrl}/recipe/${record?.id}`">{{ t('customRecipe.link') }}</a-link>
+          <a-button @click="deleteRecipe(record.id)">{{
+            t('customRecipe.delete')
+          }}</a-button>
+          <a-link :href="`${baseUrl}/recipe/${record?.id}`">{{
+            t('customRecipe.link')
+          }}</a-link>
         </a-space>
       </template>
     </a-table>
@@ -83,7 +90,10 @@
         <a-form-item :label="t('customRecipe.form.name')" field="id">
           <a-input v-model="form.id" :disabled="isUpdating" />
         </a-form-item>
-        <a-form-item :label="t('customRecipe.form.description')" field="description">
+        <a-form-item
+          :label="t('customRecipe.form.description')"
+          field="description"
+        >
           <a-input v-model="form.description" />
         </a-form-item>
         <a-form-item :label="t('customRecipe.form.craft')" field="craft">
@@ -103,7 +113,9 @@
           "
           >{{ t('customRecipe.form.cancel') }}
         </a-button>
-        <a-button type="primary" @click="saveRecipe">{{ t('customRecipe.form.save') }}</a-button>
+        <a-button type="primary" @click="saveRecipe">{{
+          t('customRecipe.form.save')
+        }}</a-button>
       </template>
     </a-modal>
   </div>

@@ -209,7 +209,20 @@
         htmlContent.value = DOMPurify.sanitize(raw, {
           WHOLE_DOCUMENT: true,
           ADD_TAGS: ['link', 'style', 'head', 'meta', 'body', 'html', 'base'],
-          ADD_ATTR: ['href', 'rel', 'src', 'type'],
+          ADD_ATTR: [
+            'href',
+            'rel',
+            'src',
+            'type',
+            'class',
+            'id',
+            'style',
+            'title',
+            'alt',
+            'target',
+            'width',
+            'height',
+          ],
         });
         Message.success('Page fetched successfully');
       } else {
@@ -260,10 +273,7 @@
   // --- Selector Generation Logic ---
 
   // Enhanced smart selector generator
-  const getCssSelector = (
-    el: HTMLElement,
-    isItemSelector = false
-  ): string => {
+  const getCssSelector = (el: HTMLElement, isItemSelector = false): string => {
     if (!(el instanceof Element)) return '';
 
     // 1. If ID exists, use it.
@@ -319,9 +329,7 @@
         let nth = 1;
         // eslint-disable-next-line no-cond-assign
         while ((sib = sib.previousElementSibling as HTMLElement)) {
-          if (
-            sib.nodeName.toLowerCase() === currentEl.nodeName.toLowerCase()
-          ) {
+          if (sib.nodeName.toLowerCase() === currentEl.nodeName.toLowerCase()) {
             nth += 1;
           }
         }
@@ -365,11 +373,7 @@
     if (e.key === 'ArrowUp') {
       e.preventDefault();
       const parent = currentHoverEl.value.parentElement;
-      if (
-        parent &&
-        parent.tagName !== 'BODY' &&
-        parent.tagName !== 'HTML'
-      ) {
+      if (parent && parent.tagName !== 'BODY' && parent.tagName !== 'HTML') {
         updateHighlight(parent);
       }
     } else if (e.key === 'ArrowDown') {

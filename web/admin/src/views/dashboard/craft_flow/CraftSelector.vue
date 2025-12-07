@@ -35,9 +35,9 @@
       <div class="flex items-center">
         <!-- Clear Icon (only single mode, has selection, and allowClear is true) -->
         <icon-close-circle
-            v-if="allowClear && mode === 'single' && hasSelection"
-            class="text-[var(--color-text-3)] hover:text-[var(--color-text-2)] mr-2 z-10"
-            @click.stop="handleClear"
+          v-if="allowClear && mode === 'single' && hasSelection"
+          class="text-[var(--color-text-3)] hover:text-[var(--color-text-2)] mr-2 z-10"
+          @click.stop="handleClear"
         />
         <icon-down class="text-[var(--color-text-3)]" />
       </div>
@@ -61,7 +61,10 @@
       </div>
 
       <a-tabs default-active-key="sys">
-        <a-tab-pane key="sys" :title="t('feedCompare.selectCraftFlow.tabs.system')">
+        <a-tab-pane
+          key="sys"
+          :title="t('feedCompare.selectCraftFlow.tabs.system')"
+        >
           <div
             class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto p-1"
           >
@@ -100,7 +103,10 @@
             </div>
           </div>
         </a-tab-pane>
-        <a-tab-pane key="user" :title="t('feedCompare.selectCraftFlow.tabs.user')">
+        <a-tab-pane
+          key="user"
+          :title="t('feedCompare.selectCraftFlow.tabs.user')"
+        >
           <div
             class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto p-1"
           >
@@ -139,7 +145,10 @@
             </div>
           </div>
         </a-tab-pane>
-        <a-tab-pane key="flow" :title="t('feedCompare.selectCraftFlow.tabs.flow')">
+        <a-tab-pane
+          key="flow"
+          :title="t('feedCompare.selectCraftFlow.tabs.flow')"
+        >
           <div
             class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto p-1"
           >
