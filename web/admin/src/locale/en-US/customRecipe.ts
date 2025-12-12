@@ -5,6 +5,7 @@ export default {
   'customRecipe.create': 'Create Custom Recipe',
   'customRecipe.edit': 'Edit',
   'customRecipe.delete': 'Delete',
+  'customRecipe.deleteConfirm': 'Are you sure you want to delete this recipe?',
   'customRecipe.link': 'Link',
   'customRecipe.status.active': 'Active',
   'customRecipe.status.inactive': 'Inactive',
