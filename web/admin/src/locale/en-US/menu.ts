@@ -31,4 +31,5 @@ export default {
   'menu.adCheckDebug': 'Ad/Advertorial Check',
   // other menu
   'menu.llmApiDebug': 'LLM API Debug',
+  'menu.tools.dependencies': 'Dependencies Status',
 };

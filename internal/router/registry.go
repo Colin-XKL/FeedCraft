@@ -102,6 +102,8 @@ func RegisterRouters(router *gin.Engine) {
 		adminApi.GET("/craft-atoms/:name", controller.GetCraftAtom)
 		adminApi.PUT("/craft-atoms/:name", controller.UpdateCraftAtom)
 		adminApi.DELETE("/craft-atoms/:name", controller.DeleteCraftAtom)
+
+		adminApi.GET("/dependencies", controller.GetDependencyStatus)
 	}
 
 }

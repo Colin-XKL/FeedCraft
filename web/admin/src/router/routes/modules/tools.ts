@@ -49,6 +49,15 @@ const TOOLS: AppRouteRecordRaw = {
         requiresAuth: true,
       },
     },
+    {
+      path: 'dependencies',
+      name: 'Dependencies',
+      component: () => import('@/views/tools/dependencies/index.vue'),
+      meta: {
+        locale: 'menu.tools.dependencies',
+        requiresAuth: true,
+      },
+    },
   ],
 };
 

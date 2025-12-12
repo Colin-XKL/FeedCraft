@@ -13,6 +13,7 @@ import localeFeedCompare from './zh-CN/feedCompare';
 import localeFeedViewer from './zh-CN/feedViewer';
 import localeLlmDebug from './zh-CN/llmDebug';
 import localeUrlGenerator from './zh-CN/urlGenerator';
+import localeMonitor from './zh-CN/monitor';
 
 export default {
   ...localeSettings,
@@ -27,4 +28,5 @@ export default {
   ...localeFeedViewer,
   ...localeLlmDebug,
   ...localeUrlGenerator,
+  ...localeMonitor,
 };
