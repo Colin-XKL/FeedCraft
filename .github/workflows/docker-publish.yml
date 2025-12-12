@@ -1,21 +1,14 @@
-name: Docker Release
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
+name: Docker Build & Release
 
 on:
-#  schedule:
-#    - cron: '35 3 * * *'
   push:
-    branches: [ "main" ]
+    branches: ["main", "dev"]
     # Publish semver tags as releases.
-    tags: [ 'v*.*', 'v*.*.*' ]
+    tags: ["v*.*", "v*.*.*"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main", "dev"]
   release:
-    types: [ published, edited ]
+    types: [published, edited]
 
 env:
   # Use docker.io for Docker Hub if empty
@@ -23,7 +16,6 @@ env:
   # github.repository as <account>/<repo>
   IMAGE_NAME: colin-xkl/feed-craft
   DOCKERHUB_IMAGE_NAME: colinxkl/feed-craft
-
 
 jobs:
   build:
@@ -80,9 +72,12 @@ jobs:
           tags: |
             # set latest tag for default branch
             type=raw,value=latest,enable={{is_default_branch}}
-            type=edge,branch=dev
+            # set dev tag for dev branch
+            type=raw,value=dev,enable={{is_branch 'dev'}}
             type=pep440,pattern={{major}}.{{minor}},enable={{is_default_branch}}
             type=pep440,pattern={{version}},enable={{is_default_branch}}
+            # tag with branch name for other branches
+            type=ref,event=branch
           flavor: latest=false
 
       # Build and push Docker image with Buildx (don't push on PR)
@@ -96,11 +91,10 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          platforms: ${{ (github.event_name == 'pull_request' || github.ref != 'refs/heads/main') && 'linux/amd64' || 'linux/amd64,linux/arm64' }}
+          platforms: ${{ (github.event_name == 'pull_request' || (github.ref != 'refs/heads/main' && github.ref != 'refs/heads/dev')) && 'linux/amd64' || 'linux/amd64,linux/arm64' }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: true
-
 
       # Sign the resulting Docker image digest except on PRs.
       # This will only write to the public Rekor transparency log when the Docker
