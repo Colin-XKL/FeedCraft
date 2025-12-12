@@ -39,9 +39,12 @@
           <a-button type="outline" @click="editBtnHandler(record)"
             >{{ t('craftFlow.edit') }}
           </a-button>
-          <a-button status="danger" @click="deleteCraftFlowHandler(record.name)"
-            >{{ t('craftFlow.delete') }}
-          </a-button>
+          <a-popconfirm
+            :content="t('craftFlow.deleteConfirm')"
+            @ok="deleteCraftFlowHandler(record.name)"
+          >
+            <a-button status="danger">{{ t('craftFlow.delete') }}</a-button>
+          </a-popconfirm>
         </a-space>
       </template>
     </a-table>
@@ -63,7 +66,10 @@
         <a-form-item :label="t('craftFlow.form.name')" field="name">
           <a-input v-model="editedCraftFlow.name" />
         </a-form-item>
-        <a-form-item :label="t('craftFlow.form.description')" field="description">
+        <a-form-item
+          :label="t('craftFlow.form.description')"
+          field="description"
+        >
           <a-textarea v-model="editedCraftFlow.description" />
         </a-form-item>
         <a-form-item :label="t('craftFlow.form.flow')" field="craftFlowConfig">
@@ -83,7 +89,9 @@
           "
           >{{ t('craftFlow.form.cancel') }}
         </a-button>
-        <a-button type="primary" @click="saveCraftFlow">{{ t('craftFlow.form.save') }}</a-button>
+        <a-button type="primary" @click="saveCraftFlow">{{
+          t('craftFlow.form.save')
+        }}</a-button>
       </template>
     </a-modal>
   </div>
