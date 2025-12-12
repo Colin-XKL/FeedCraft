@@ -5,6 +5,7 @@ export default {
   'customRecipe.create': '创建自定义Recipe',
   'customRecipe.edit': '编辑',
   'customRecipe.delete': '删除',
+  'customRecipe.deleteConfirm': '确认删除该配方吗？',
   'customRecipe.link': '链接',
   'customRecipe.status.active': '活跃',
   'customRecipe.status.inactive': '不活跃',

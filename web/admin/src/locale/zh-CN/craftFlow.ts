@@ -5,6 +5,7 @@ export default {
   'craftFlow.create': '创建 CraftFlow',
   'craftFlow.edit': '编辑',
   'craftFlow.delete': '删除',
+  'craftFlow.deleteConfirm': '确认删除该 CraftFlow 吗？',
   'craftFlow.form.name': '名称',
   'craftFlow.form.description': '描述',
   'craftFlow.form.flow': '流程',

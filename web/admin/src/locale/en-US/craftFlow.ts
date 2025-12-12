@@ -5,6 +5,7 @@ export default {
   'craftFlow.create': 'Create CraftFlow',
   'craftFlow.edit': 'Edit',
   'craftFlow.delete': 'Delete',
+  'craftFlow.deleteConfirm': 'Are you sure you want to delete this craft flow?',
   'craftFlow.form.name': 'Name',
   'craftFlow.form.description': 'Description',
   'craftFlow.form.flow': 'Flow',
