@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math/rand"
+	"strings"
 	"time"
 
 	"github.com/sashabaranov/go-openai"
@@ -83,26 +85,44 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 	if client == nil {
 		return "", fmt.Errorf("new openai client error")
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), llmCallTimeout)
-	defer cancel()
-	resp, err := client.CreateChatCompletion(
-		ctx,
-		openai.ChatCompletionRequest{
-			Model: llmApiModel,
-			Messages: []openai.ChatCompletionMessage{
-				{
-					Role:    openai.ChatMessageRoleUser,
-					Content: promptInput,
+
+	modelList := strings.Split(llmApiModel, ",")
+	rand.Shuffle(len(modelList), func(i, j int) {
+		modelList[i], modelList[j] = modelList[j], modelList[i]
+	})
+
+	var lastErr error
+	for _, model := range modelList {
+		model = strings.TrimSpace(model)
+		if model == "" {
+			continue
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), llmCallTimeout)
+		resp, err := client.CreateChatCompletion(
+			ctx,
+			openai.ChatCompletionRequest{
+				Model: model,
+				Messages: []openai.ChatCompletionMessage{
+					{
+						Role:    openai.ChatMessageRoleUser,
+						Content: promptInput,
+					},
 				},
 			},
-		},
-	)
+		)
+		cancel()
 
-	if err != nil {
-		return "", fmt.Errorf("ChatCompletion error: %v\n", err)
+		if err == nil {
+			if len(resp.Choices) > 0 {
+				return resp.Choices[0].Message.Content, nil
+			}
+			err = fmt.Errorf("no choices in response")
+		}
+
+		lastErr = err
+		logrus.Warnf("LLM call failed with model %s: %v", model, err)
 	}
-	if len(resp.Choices) == 0 {
-		return "", fmt.Errorf("ChatCompletion error: no choices in response")
-	}
-	return resp.Choices[0].Message.Content, nil
+
+	return "", fmt.Errorf("all models failed, last error: %v", lastErr)
 }
