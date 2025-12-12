@@ -1,8 +1,10 @@
 package craft
 
 import (
+	"fmt"
 	"github.com/gorilla/feeds"
 	"github.com/mmcdole/gofeed"
+	"github.com/sirupsen/logrus"
 	"strings"
 )
 
@@ -56,7 +58,10 @@ func GetArticleContentProcessor(transFunc TransFunc) FeedItemProcessor {
 	return func(item *feeds.Item, payload ExtraPayload) error {
 		transformed, err := transFunc(item)
 		if err != nil {
-			return err
+			logrus.Errorf("failed to process article content for item [%s]. err: %v", item.Title, err)
+			item.Content = fmt.Sprintf("Error processing content: %T", err)
+			item.Description = item.Content
+			return nil
 		}
 		item.Content = transformed
 		item.Description = transformed
@@ -68,7 +73,9 @@ func GetArticleTitleProcessor(transFunc TransFunc) FeedItemProcessor {
 	return func(item *feeds.Item, payload ExtraPayload) error {
 		transformed, err := transFunc(item)
 		if err != nil {
-			return err
+			logrus.Errorf("failed to process article title for item [%s]. err: %v", item.Title, err)
+			item.Title = fmt.Sprintf("Error processing title: %T", err)
+			return nil
 		}
 		item.Title = transformed
 		return nil

@@ -84,12 +84,14 @@ func CommonCraftHandlerUsingCraftOptionList(c *gin.Context, optionList []CraftOp
 		optionList...,
 	)
 	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
+		logrus.Errorf("failed to craft feed from url [%s]. err: %v", feedUrl, err)
+		c.String(http.StatusInternalServerError, "Internal Server Error")
 		return
 	}
 	rssStr, err := craftedFeed.OutputFeed.ToRss()
 	if err != nil {
-		c.String(500, err.Error())
+		logrus.Errorf("failed to generate rss for url [%s]. err: %v", feedUrl, err)
+		c.String(500, "Internal Server Error")
 		return
 	}
 	c.Header("Content-Type", "application/xml")

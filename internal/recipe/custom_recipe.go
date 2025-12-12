@@ -50,7 +50,13 @@ func CustomRecipe(c *gin.Context) {
 
 	if err != nil {
 		logrus.Errorf("error making request to %s: %s", path, err)
-		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
+		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: "Internal Server Error"})
+		return
+	}
+
+	if response.StatusCode() != http.StatusOK {
+		logrus.Errorf("request to %s failed with status %d. body: %s", path, response.StatusCode(), response.Body())
+		c.Data(response.StatusCode(), "text/plain; charset=utf-8", response.Body())
 		return
 	}
 	c.Data(http.StatusOK, "text/xml; charset=utf-8", response.Body())
