@@ -13,6 +13,7 @@ import localeFeedCompare from './en-US/feedCompare';
 import localeFeedViewer from './en-US/feedViewer';
 import localeLlmDebug from './en-US/llmDebug';
 import localeUrlGenerator from './en-US/urlGenerator';
+import localeMonitor from './en-US/monitor';
 
 export default {
   ...localeSettings,
@@ -27,5 +28,6 @@ export default {
   ...localeFeedViewer,
   ...localeLlmDebug,
   ...localeUrlGenerator,
+  ...localeMonitor,
   ...localeWorkplace,
 };

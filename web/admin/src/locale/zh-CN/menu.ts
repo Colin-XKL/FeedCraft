@@ -31,4 +31,5 @@ export default {
   'menu.llmApiDebug': 'LLM API 调试',
   // 其他
   'menu.changePassword': '修改密码',
+  'menu.tools.dependencies': '依赖服务状态',
 };
