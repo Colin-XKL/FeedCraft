@@ -152,7 +152,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive } from 'vue';
+  import { ref, reactive, onBeforeUnmount } from 'vue';
   import axios from 'axios';
   import DOMPurify from 'dompurify';
   import { Message } from '@arco-design/web-vue';
@@ -165,6 +165,10 @@
   const isSelectionMode = ref(true);
   const previewIframe = ref<HTMLIFrameElement | null>(null);
   const currentHoverEl = ref<HTMLElement | null>(null);
+
+  // Variables to store references for cleanup
+  const iframeDoc = ref<Document | null>(null);
+  const injectedStyle = ref<HTMLStyleElement | null>(null);
 
   const config = reactive<{ [key: string]: string }>({
     item_selector: '',
@@ -496,12 +500,17 @@
     if (iframe && iframe.contentDocument) {
       const doc = iframe.contentDocument;
 
+      // Store reference to iframe document
+      iframeDoc.value = doc;
+
       // Inject styles for hover effect
       const style = doc.createElement('style');
       style.textContent = `
             .fc-highlight { outline: 2px dashed #165dff !important; background-color: rgba(22, 93, 255, 0.05) !important; cursor: pointer; }
           `;
       doc.head.appendChild(style);
+      // Store reference to style element for later cleanup
+      injectedStyle.value = style;
 
       // Attach listeners
       doc.addEventListener('click', handleClick);
@@ -511,6 +520,26 @@
       doc.body.setAttribute('tabindex', '0');
     }
   };
+
+  // Clean up event listeners, injected styles, and attributes when component unmounts
+  onBeforeUnmount(() => {
+    if (iframeDoc.value) {
+      // Remove event listeners
+      iframeDoc.value.removeEventListener('click', handleClick);
+      iframeDoc.value.removeEventListener('mouseover', handleMouseOver);
+      iframeDoc.value.removeEventListener('keydown', handleKeyDown);
+
+      // Remove injected style element if it exists
+      if (injectedStyle.value && iframeDoc.value.head.contains(injectedStyle.value)) {
+        iframeDoc.value.head.removeChild(injectedStyle.value);
+      }
+
+      // Remove tabindex attribute if it exists
+      if (iframeDoc.value.body.hasAttribute('tabindex')) {
+        iframeDoc.value.body.removeAttribute('tabindex');
+      }
+    }
+  });
 </script>
 
 <style scoped>
