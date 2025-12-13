@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"strings"
 
-	htmltomarkdown "github.com/JohannesKaufmann/html-to-markdown/v2"
 	"github.com/gomarkdown/markdown"
 	"github.com/gomarkdown/markdown/html"
 	"github.com/gomarkdown/markdown/parser"
 	"github.com/gorilla/feeds"
-	"github.com/sirupsen/logrus"
 )
 
 // llmCaller is a variable to allow mocking in tests
@@ -18,6 +16,7 @@ var llmCaller = adapter.SimpleLLMCall
 
 const beautifyArticleContentPrompt = `
 You are a professional editor. Your task is to reformat the following article content into clean, standard Markdown.
+The input content is HTML.
 Follow these rules:
 1. Preserve the original meaning and wording. Do not summarize or rewrite the content unless necessary for clarity.
 2. Fix formatting issues like broken line breaks, excessive whitespace, or messy lists.
@@ -28,22 +27,15 @@ Follow these rules:
 `
 
 func beautifyArticleContent(content string, prompt string) (string, error) {
-	// 1. Convert HTML to Markdown using local library to save tokens and ensure structure
-	mdContent, err := htmltomarkdown.ConvertString(content)
-	if err != nil {
-		logrus.Errorf("Error converting HTML to Markdown before LLM call: %v", err)
-		// If conversion fails, maybe just pass the original content (though prompt expects markdown/text)
-		mdContent = content
-	}
-
-	// 2. Call LLM to beautify the Markdown
-	finalPrompt := fmt.Sprintf("%s\n\n---\n\n%s", prompt, mdContent)
-
+	// 1. Prepare prompt with original HTML content
 	// Check if content is empty
-	if strings.TrimSpace(mdContent) == "" {
+	if strings.TrimSpace(content) == "" {
 		return "", fmt.Errorf("empty content")
 	}
 
+	finalPrompt := fmt.Sprintf("%s\n\n---\n\n%s", prompt, content)
+
+	// 2. Call LLM to beautify the content and convert to Markdown
 	beautifiedMd, err := llmCaller(adapter.UseDefaultModel, finalPrompt)
 	if err != nil {
 		return "", err
