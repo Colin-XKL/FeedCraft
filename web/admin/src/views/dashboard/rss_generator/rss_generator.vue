@@ -38,77 +38,112 @@
         <!-- Right: Configuration & Result -->
         <a-col :span="10" class="h-full">
           <a-card class="config-card" title="RSS Configuration">
+            <a-alert type="info" class="mb-4" show-icon>
+              1. Select a generic list item first (e.g. an article card).<br />
+              2. Then select the title, link, etc. inside that item.
+            </a-alert>
             <a-form :model="config" layout="vertical">
-              <a-form-item label="List Item Selector">
-                <a-input v-model="config.item_selector">
-                  <template #suffix>
-                    <a-button
-                      size="mini"
-                      type="text"
-                      @click="setTargetField('item_selector')"
-                    >
-                      <icon-select-all /> Pick
-                    </a-button>
-                  </template>
-                </a-input>
-              </a-form-item>
-              <a-form-item label="Title Selector (Relative)">
-                <a-input v-model="config.title_selector">
-                  <template #suffix>
-                    <a-button
-                      size="mini"
-                      type="text"
-                      @click="setTargetField('title_selector')"
-                    >
-                      <icon-select-all /> Pick
-                    </a-button>
-                  </template>
-                </a-input>
-              </a-form-item>
-              <a-form-item label="Link Selector (Relative)">
-                <a-input v-model="config.link_selector">
-                  <template #suffix>
-                    <a-button
-                      size="mini"
-                      type="text"
-                      @click="setTargetField('link_selector')"
-                    >
-                      <icon-select-all /> Pick
-                    </a-button>
-                  </template>
-                </a-input>
-              </a-form-item>
-              <a-form-item label="Date Selector (Relative)">
-                <a-input v-model="config.date_selector">
-                  <template #suffix>
-                    <a-button
-                      size="mini"
-                      type="text"
-                      @click="setTargetField('date_selector')"
-                    >
-                      <icon-select-all /> Pick
-                    </a-button>
-                  </template>
-                </a-input>
-              </a-form-item>
-              <a-form-item label="Content Selector (Relative)">
-                <a-input v-model="config.content_selector">
-                  <template #suffix>
-                    <a-button
-                      size="mini"
-                      type="text"
-                      @click="setTargetField('content_selector')"
-                    >
-                      <icon-select-all /> Pick
-                    </a-button>
-                  </template>
-                </a-input>
-              </a-form-item>
+              <div class="mb-4 p-3 bg-gray-50 rounded border border-gray-100">
+                <div class="font-bold mb-2 text-gray-700">
+                  Step 1: Define List Item
+                </div>
+                <a-form-item label="List Item Selector">
+                  <a-input v-model="config.item_selector">
+                    <template #suffix>
+                      <a-button
+                        size="mini"
+                        type="text"
+                        @click="setTargetField('item_selector')"
+                      >
+                        <icon-select-all /> Pick
+                      </a-button>
+                    </template>
+                  </a-input>
+                </a-form-item>
+              </div>
+
+              <div
+                class="mb-4 p-3 bg-gray-50 rounded border border-gray-100"
+                :class="{ 'opacity-60': !config.item_selector }"
+              >
+                <div class="font-bold mb-2 text-gray-700">
+                  Step 2: Map Fields (Relative)
+                </div>
+                <a-form-item label="Title Selector">
+                  <a-input
+                    v-model="config.title_selector"
+                    :disabled="!config.item_selector"
+                  >
+                    <template #suffix>
+                      <a-button
+                        size="mini"
+                        type="text"
+                        :disabled="!config.item_selector"
+                        @click="setTargetField('title_selector')"
+                      >
+                        <icon-select-all /> Pick
+                      </a-button>
+                    </template>
+                  </a-input>
+                </a-form-item>
+                <a-form-item label="Link Selector">
+                  <a-input
+                    v-model="config.link_selector"
+                    :disabled="!config.item_selector"
+                  >
+                    <template #suffix>
+                      <a-button
+                        size="mini"
+                        type="text"
+                        :disabled="!config.item_selector"
+                        @click="setTargetField('link_selector')"
+                      >
+                        <icon-select-all /> Pick
+                      </a-button>
+                    </template>
+                  </a-input>
+                </a-form-item>
+                <a-form-item label="Date Selector">
+                  <a-input
+                    v-model="config.date_selector"
+                    :disabled="!config.item_selector"
+                  >
+                    <template #suffix>
+                      <a-button
+                        size="mini"
+                        type="text"
+                        :disabled="!config.item_selector"
+                        @click="setTargetField('date_selector')"
+                      >
+                        <icon-select-all /> Pick
+                      </a-button>
+                    </template>
+                  </a-input>
+                </a-form-item>
+                <a-form-item label="Content Selector">
+                  <a-input
+                    v-model="config.content_selector"
+                    :disabled="!config.item_selector"
+                  >
+                    <template #suffix>
+                      <a-button
+                        size="mini"
+                        type="text"
+                        :disabled="!config.item_selector"
+                        @click="setTargetField('content_selector')"
+                      >
+                        <icon-select-all /> Pick
+                      </a-button>
+                    </template>
+                  </a-input>
+                </a-form-item>
+              </div>
 
               <a-space>
                 <a-button
                   type="primary"
                   :loading="parsing"
+                  :disabled="!config.item_selector"
                   @click="handlePreview"
                 >
                   Preview RSS Items
@@ -530,7 +565,10 @@
       iframeDoc.value.removeEventListener('keydown', handleKeyDown);
 
       // Remove injected style element if it exists
-      if (injectedStyle.value && iframeDoc.value.head.contains(injectedStyle.value)) {
+      if (
+        injectedStyle.value &&
+        iframeDoc.value.head.contains(injectedStyle.value)
+      ) {
         iframeDoc.value.head.removeChild(injectedStyle.value);
       }
 
