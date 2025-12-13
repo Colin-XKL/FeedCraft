@@ -27,9 +27,12 @@
           <a-button type="outline" @click="editBtnHandler(record)"
             >{{ t('craftAtom.edit') }}
           </a-button>
-          <a-button status="danger" @click="deleteCraftAtomHandler(record.name)"
-            >{{ t('craftAtom.delete') }}
-          </a-button>
+          <a-popconfirm
+            :content="t('craftAtom.deleteConfirm')"
+            @ok="deleteCraftAtomHandler(record.name)"
+          >
+            <a-button status="danger">{{ t('craftAtom.delete') }}</a-button>
+          </a-popconfirm>
         </a-space>
       </template>
     </a-table>

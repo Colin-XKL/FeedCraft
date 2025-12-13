@@ -63,9 +63,12 @@
           >
             {{ t('customRecipe.edit') }}
           </a-button>
-          <a-button @click="deleteRecipe(record.id)">{{
-            t('customRecipe.delete')
-          }}</a-button>
+          <a-popconfirm
+            :content="t('customRecipe.deleteConfirm')"
+            @ok="deleteRecipe(record.id)"
+          >
+            <a-button status="danger">{{ t('customRecipe.delete') }}</a-button>
+          </a-popconfirm>
           <a-link :href="`${baseUrl}/recipe/${record?.id}`">{{
             t('customRecipe.link')
           }}</a-link>

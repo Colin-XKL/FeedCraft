@@ -39,9 +39,12 @@
           <a-button type="outline" @click="editBtnHandler(record)"
             >{{ t('craftFlow.edit') }}
           </a-button>
-          <a-button status="danger" @click="deleteCraftFlowHandler(record.name)"
-            >{{ t('craftFlow.delete') }}
-          </a-button>
+          <a-popconfirm
+            :content="t('craftFlow.deleteConfirm')"
+            @ok="deleteCraftFlowHandler(record.name)"
+          >
+            <a-button status="danger">{{ t('craftFlow.delete') }}</a-button>
+          </a-popconfirm>
         </a-space>
       </template>
     </a-table>

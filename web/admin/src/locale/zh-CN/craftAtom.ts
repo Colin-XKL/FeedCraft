@@ -5,6 +5,7 @@ export default {
   'craftAtom.create': '新建 CraftAtom',
   'craftAtom.edit': '编辑',
   'craftAtom.delete': '删除',
+  'craftAtom.deleteConfirm': '确认删除该 CraftAtom 吗？',
   'craftAtom.editModalTitle.edit': '编辑 Craft Atom',
   'craftAtom.editModalTitle.create': '创建 Craft Atom',
   'craftAtom.form.name': '名称',

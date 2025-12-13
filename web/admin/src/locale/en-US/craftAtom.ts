@@ -5,6 +5,7 @@ export default {
   'craftAtom.create': 'Create CraftAtom',
   'craftAtom.edit': 'Edit',
   'craftAtom.delete': 'Delete',
+  'craftAtom.deleteConfirm': 'Are you sure you want to delete this craft atom?',
   'craftAtom.editModalTitle.edit': 'Edit Craft Atom',
   'craftAtom.editModalTitle.create': 'Create Craft Atom',
   'craftAtom.form.name': 'Name',
