@@ -8,6 +8,7 @@ export interface CraftAtom {
 }
 
 const adminApiBase = '/api/admin';
+const publicApiBase = '/api';
 
 // Define the API base URL
 const craftAtomApiBase = `${adminApiBase}/craft-atoms`;
@@ -39,5 +40,5 @@ export function deleteCraftAtom(name: string): Promise<AxiosResponse<void>> {
 
 // List all CraftAtoms
 export function listCraftAtoms(): Promise<AxiosResponse<CraftAtom[]>> {
-  return axios.get<CraftAtom[]>(craftAtomApiBase);
+  return axios.get<CraftAtom[]>(`${publicApiBase}/craft-atoms`);
 }

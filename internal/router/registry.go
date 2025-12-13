@@ -55,6 +55,9 @@ func RegisterRouters(router *gin.Engine) {
 	{
 		public.POST("/login", controller.LoginAuth)
 		public.GET("/list-all-craft", controller.ListAllCraft)
+		public.GET("/craft-flows", controller.ListCraftFlows)
+		public.GET("/sys-craft-atoms", controller.ListSysCraftAtoms)
+		public.GET("/craft-atoms", controller.ListCraftAtoms)
 	}
 
 	craftRouters := router.Group("/craft")
@@ -88,16 +91,13 @@ func RegisterRouters(router *gin.Engine) {
 		adminApi.PUT("/users/:username", controller.UpdateUser)
 		adminApi.DELETE("/users/:username", controller.DeleteUser)
 
-		adminApi.GET("/craft-flows", controller.ListCraftFlows)
 		adminApi.POST("/craft-flows", controller.CreateCraftFlow)
 		adminApi.GET("/craft-flows/:name", controller.GetCraftFlow)
 		adminApi.PUT("/craft-flows/:name", controller.UpdateCraftFlow)
 		adminApi.DELETE("/craft-flows/:name", controller.DeleteCraftFlow)
 
-		adminApi.GET("/sys-craft-atoms", controller.ListSysCraftAtoms)
 		adminApi.GET("/craft-templates", controller.ListCraftTemplates)
 
-		adminApi.GET("/craft-atoms", controller.ListCraftAtoms)
 		adminApi.POST("/craft-atoms", controller.CreateCraftAtom)
 		adminApi.GET("/craft-atoms/:name", controller.GetCraftAtom)
 		adminApi.PUT("/craft-atoms/:name", controller.UpdateCraftAtom)
