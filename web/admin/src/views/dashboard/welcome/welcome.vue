@@ -2,12 +2,16 @@
   <div class="p-8 w-full">
     <div class="h-screen flex items-center justify-center">
       <div>
-        <img :src="logo" style="height: 8rem; width: 8rem" />
+        <img
+          :src="logo"
+          alt="FeedCraft Logo"
+          style="height: 8rem; width: 8rem"
+        />
         <h1 class="text-3xl my-4 font-light"
           >Welcome To
           <span class="font-bold"
             ><span style="color: #4d4f5a">Feed</span
-            ><span style="color: #79f1bf">Craft</span></span
+            ><span style="color: #0d9488">Craft</span></span
           ></h1
         >
         <p class="text-xl"
@@ -16,19 +20,34 @@
         <a-row :gutter="20" class="my-8" style="min-width: 64rem">
           <a-col :span="8">
             <a-card title="项目主页" :bordered="false" hoverable>
-              <a-link href="https://github.com/Colin-XKL/FeedCraft" icon
+              <a-link
+                href="https://github.com/Colin-XKL/FeedCraft"
+                target="_blank"
+                rel="noopener noreferrer"
+                icon
                 >Colin-XKL/FeedCraft
               </a-link>
             </a-card>
           </a-col>
           <a-col :span="8">
             <a-card title="更多RSS" :bordered="false" hoverable>
-              <a-link href="https://docs.rsshub.app" icon>RSSHub Doc</a-link>
+              <a-link
+                href="https://docs.rsshub.app"
+                target="_blank"
+                rel="noopener noreferrer"
+                icon
+              >
+                RSSHub Doc
+              </a-link>
             </a-card>
           </a-col>
           <a-col :span="8">
             <a-card title="了解RSS" :bordered="false" hoverable>
-              <a-link href="https://sspai.com/post/56391" icon
+              <a-link
+                href="https://sspai.com/post/56391"
+                target="_blank"
+                rel="noopener noreferrer"
+                icon
                 >RSS 入门指南 - sspai
               </a-link>
             </a-card>
@@ -85,6 +104,8 @@
             >
               <a-link
                 href="https://github.com/Colin-XKL/FeedCraft/discussions"
+                target="_blank"
+                rel="noopener noreferrer"
                 icon
                 >Github Discussion
               </a-link>
