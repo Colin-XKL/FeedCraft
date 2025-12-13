@@ -92,6 +92,12 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		ParamTemplateDefine: llmFilterCraftParamTmpl,
 		OptionFunc:          llmFilterCraftLoadParam,
 	}
+	sysCraftTempList["llm-filter"] = CraftTemplate{
+		Name:                "llm-filter",
+		Description:         "使用 LLM 根据自定义条件过滤文章 (如果满足条件则排除)",
+		ParamTemplateDefine: llmFilterGenericParamTmpl,
+		OptionFunc:          llmFilterGenericLoadParam,
+	}
 	sysCraftTempList["translate-title"] = CraftTemplate{
 		Name:                "translate-title",
 		Description:         "使用 LLM 将标题翻译为中文",

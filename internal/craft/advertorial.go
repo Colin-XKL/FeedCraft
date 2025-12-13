@@ -1,15 +1,12 @@
 package craft
 
 import (
-	"FeedCraft/internal/adapter"
 	"FeedCraft/internal/util"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/feeds"
 	"github.com/samber/lo"
-	"github.com/sirupsen/logrus"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -39,21 +36,8 @@ const promptCheckIfAdvertorial = "请阅读下面的文章, 并判断是不是�
 
 // CheckIfAdvertorial 判断是否为软文, 非常有把握则返回true, 如果不是或者不确定或是发生错误则返回false
 func CheckIfAdvertorial(content string, prompt string) bool {
-	const MinContentLength = 20
-	if len(strings.TrimSpace(content)) < MinContentLength {
-		return false
-	}
-	option := util.ContentProcessOption{
-		RemoveImage: true,
-		ConvertToMd: true,
-	}
-	result, err := adapter.CallLLMUsingContext(prompt, content, option)
-	if err != nil {
-		logrus.Errorf("Error checking advertorial: %v", err)
-		return false
-	}
-	logrus.Infof("advertorial check: [%s]", result)
-	return strings.TrimSpace(result) == "true"
+	res, _ := CheckConditionWithLLM(content, prompt)
+	return res
 }
 
 func GetIgnoreAdvertorialCraftOptions(prompt string) []CraftOption {
@@ -68,8 +52,17 @@ func OptionIgnoreAdvertorial(prompt string) CraftOption {
 	return func(feed *feeds.Feed, payload ExtraPayload) error {
 		items := feed.Items
 		filtered := lo.Filter(items, func(item *feeds.Item, index int) bool {
-			content := item.Content //TODO handle description and content field correctly
-			return CheckIfAdvertorial(content, prompt)
+			// 如果 content 为空，尝试使用 description
+			content := item.Content
+			if len(content) == 0 {
+				content = item.Description
+			}
+			// 如果判断为真（是广告），则过滤掉（返回false表示保留？lo.Filter是保留符合条件的）
+			// CheckIfAdvertorial 返回 true 表示是广告
+			// lo.Filter keep elements that return true.
+			// So we want to keep elements that are NOT advertorials.
+			// Return !CheckIfAdvertorial
+			return !CheckIfAdvertorial(content, prompt)
 		})
 		feed.Items = filtered
 		return nil
