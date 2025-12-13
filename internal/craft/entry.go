@@ -110,6 +110,12 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		ParamTemplateDefine: immersiveTranslateParamTmpl,
 		OptionFunc:          immersiveTranslateLoadParam,
 	}
+	sysCraftTempList["beautify-content"] = CraftTemplate{
+		Name:                "beautify-content",
+		Description:         "使用 LLM 美化文章排版，去除广告和无关信息",
+		ParamTemplateDefine: beautifyContentParamTmpl,
+		OptionFunc:          beautifyContentCraftLoadParam,
+	}
 	return sysCraftTempList
 }
 
