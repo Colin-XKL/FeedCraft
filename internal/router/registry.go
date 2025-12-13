@@ -55,6 +55,9 @@ func RegisterRouters(router *gin.Engine) {
 	{
 		public.POST("/login", controller.LoginAuth)
 		public.GET("/list-all-craft", controller.ListAllCraft)
+		public.GET("/craft-flows", controller.ListCraftFlows)
+		public.GET("/sys-craft-atoms", controller.ListSysCraftAtoms)
+		public.GET("/craft-atoms", controller.ListCraftAtoms)
 	}
 
 	craftRouters := router.Group("/craft")
