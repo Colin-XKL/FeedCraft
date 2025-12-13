@@ -274,13 +274,13 @@
 
   // Enhanced smart selector generator
   const getCssSelector = (el: HTMLElement, isItemSelector = false): string => {
-    if (!(el instanceof Element)) return '';
+    if (!el || el.nodeType !== Node.ELEMENT_NODE) return '';
 
     // 1. If ID exists, use it.
     if (el.id) {
       // Unless it's the item selector and we want to select multiples?
       // Usually IDs are unique, so bad for list items.
-      if (!isItemSelector) return `#${el.id}`;
+      if (!isItemSelector) return `#${CSS.escape(el.id)}`;
     }
 
     const path: string[] = [];
@@ -307,10 +307,11 @@
               'block',
               'items-center',
               'justify-center',
-            ].some((x) => c.includes(x))
+              'fc-highlight',
+            ].includes(c)
         );
         if (classes.length > 0) {
-          selector += `.${classes.join('.')}`;
+          selector += `.${classes.map((c) => CSS.escape(c)).join('.')}`;
         }
       }
 
@@ -320,7 +321,7 @@
         // This ensures we match all siblings
       } else if (currentEl.id) {
         // For parent path, or normal selection, use nth-of-type to be precise
-        selector = `#${currentEl.id}`;
+        selector = `#${CSS.escape(currentEl.id)}`;
         path.unshift(selector);
         break;
       } else {
@@ -361,8 +362,17 @@
 
   const handleMouseOver = (e: Event) => {
     if (!isSelectionMode.value) return;
-    const target = e.target as HTMLElement;
-    if (target && target !== currentHoverEl.value) {
+    let target = e.target as HTMLElement;
+    // Handle text nodes
+    if (target && target.nodeType === 3) {
+      target = target.parentElement as HTMLElement;
+    }
+
+    if (
+      target &&
+      target.nodeType === Node.ELEMENT_NODE &&
+      target !== currentHoverEl.value
+    ) {
       updateHighlight(target);
     }
   };
@@ -392,8 +402,13 @@
 
     // Use currentHighlighted element instead of event target directly
     // This allows picking parent via keyboard
-    const target = currentHoverEl.value || (e.target as HTMLElement);
-    if (!target) return;
+    let target = currentHoverEl.value || (e.target as HTMLElement);
+    // Handle text nodes
+    if (target && target.nodeType === 3) {
+      target = target.parentElement as HTMLElement;
+    }
+
+    if (!target || target.nodeType !== Node.ELEMENT_NODE) return;
 
     if (!currentTargetField.value) {
       Message.info(
