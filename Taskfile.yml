@@ -4,6 +4,11 @@ vars:
   PROJECT_NAME: FeedCraft
   BINARY_NAME: feed-craft
 
+dotenv:
+  - .env
+  - .env.local
+  - .env.example
+
 tasks:
   default:
     cmds:
@@ -40,7 +45,7 @@ tasks:
             BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
             GIT_COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
             echo "Version: $VERSION"
-            echo "Build Time: $BUILD_TIME" 
+            echo "Build Time: $BUILD_TIME"
             echo "Git Commit: $GIT_COMMIT"
           else
             echo "Version: v0.0.0"
@@ -48,8 +53,9 @@ tasks:
             echo "Git Commit: unknown"
           fi
 
-  build-local:
-    desc: "Build the application with version injection (local)"
+  # Backend Build Commands
+  backend-build:
+    desc: "Build only the backend application with version injection"
     cmds:
       - cmd: |
           if command -v git >/dev/null 2>&1; then
@@ -61,14 +67,45 @@ tasks:
             BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
             GIT_COMMIT="unknown"
           fi
-          echo "Building {{.BINARY_NAME}} version $VERSION"
+          echo "Building {{.BINARY_NAME}} backend version $VERSION"
           go build -ldflags "-X main.Version=$VERSION -X main.BuildTime=$BUILD_TIME -X main.GitCommit=$GIT_COMMIT" -o {{.BINARY_NAME}} ./cmd/main.go
-          echo "Build completed: {{.BINARY_NAME}}"
+          echo "Backend build completed: {{.BINARY_NAME}}"
     sources:
       - ./cmd/**/*.go
       - ./internal/**/*.go
     generates:
       - ./{{.BINARY_NAME}}
+
+  build-local:
+    desc: "Build the application with version injection (local) - alias for backend-build"
+    cmds:
+      - task: backend-build
+
+  # Frontend Build Commands
+  frontend-build:
+    desc: "Build only the frontend application"
+    cmds:
+      - cmd: |
+          echo "Building frontend application..."
+          if [ -f web/admin/package.json ]; then
+            cd web/admin && pnpm build
+          else
+            echo "Frontend directory not found. Please ensure web/admin directory exists."
+            exit 1
+          fi
+    sources:
+      - web/admin/src/**/*
+      - web/admin/package.json
+      - web/admin/vite.config.*
+    generates:
+      - web/admin/dist/**
+
+  # Combined Build Command
+  build:
+    desc: "Build both frontend and backend applications"
+    deps:
+      - frontend-build
+      - backend-build
 
   release-patch:
     desc: "Create a patch release (vX.Y.Z -> vX.Y.(Z+1))"
@@ -99,7 +136,7 @@ tasks:
           current_version=$(git describe --tags --abbrev=0 2>/dev/null | sed 's/v//' | sed 's/^v//' || echo "0.0.0")
           IFS='.' read -r major minor patch <<< "$current_version"
           new_minor=$((minor + 1))
-          new_version="v$major.$new_minor.0"
+          new_version="v$major.$minor.0"
           echo "Creating minor release: $new_version"
           git tag -a $new_version -m "Release $new_version"
           echo "Release tag $new_version created. Run 'git push origin $new_version' to push the tag."
@@ -128,7 +165,7 @@ tasks:
           if [ -z "$(git status --porcelain)" ]; then
             echo "Current state is clean. Available:"
             echo "1) Major (X.0.0)"
-            echo "2) Minor (X.Y.0)" 
+            echo "2) Minor (X.Y.0)"
             echo "3) Patch (X.Y.Z)"
             read -p "Enter choice (1-3): " choice
             case $choice in
@@ -145,7 +182,7 @@ tasks:
   run:
     desc: "Build and run the application locally"
     deps:
-      - build-local
+      - backend-build
     cmds:
       - cmd: |
           echo "Starting {{.PROJECT_NAME}}..."
@@ -156,4 +193,53 @@ tasks:
     cmds:
       - cmd: |
           rm -f {{.BINARY_NAME}}
+          if [ -d "web/admin/dist" ]; then
+            rm -rf web/admin/dist
+          fi
           echo "Cleaned build artifacts"
+
+  # Backend Development Commands
+  backend-dev:
+    desc: "Run development mode - starts only the backend"
+    cmds:
+      - cmd: |
+          echo "Starting backend development mode..."
+          echo "Backend will run on {{.LISTEN_ADDR | default ":8080"}}"
+          go run ./cmd/main.go
+
+  dev-backend:
+    desc: "Run development mode - starts only the backend (alias for backward compatibility)"
+    cmds:
+      - task: backend-dev
+
+  # Frontend Development Commands
+  frontend-dev:
+    desc: "Run development mode - starts only the frontend"
+    cmds:
+      - cmd: |
+          echo "Starting frontend development mode..."
+          echo "Frontend will run on http://localhost:{{.FRONTEND_PORT | default "5173"}}"
+          if [ -f web/admin/package.json ]; then
+            cd web/admin && pnpm dev
+          else
+            echo "Frontend directory not found. Please ensure web/admin directory exists."
+            exit 1
+          fi
+
+  dev-frontend:
+    desc: "Run development mode - starts only the frontend (alias for backward compatibility)"
+    cmds:
+      - task: frontend-dev
+
+  # Combined Development Commands
+  dev:
+    desc: "Run development mode - starts both backend and frontend in parallel"
+    cmds:
+      - cmd: |
+          echo "Starting development mode..."
+          echo "Backend will run on {{.LISTEN_ADDR | default ":8080"}}"
+          echo "Frontend will run on http://localhost:{{.FRONTEND_PORT | default "5173"}}"
+          # Run backend and frontend in parallel
+          (go run ./cmd/main.go) &
+          (cd web/admin && pnpm dev) &
+          wait

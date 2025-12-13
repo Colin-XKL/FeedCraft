@@ -87,7 +87,9 @@
         )}`
       );
     } catch (error) {
-      Message.warning(error?.toString() ?? t('feedCompare.message.unknownError'));
+      Message.warning(
+        error?.toString() ?? t('feedCompare.message.unknownError')
+      );
       console.error(error);
     } finally {
       isLoading.value = false;
