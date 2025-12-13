@@ -12,6 +12,7 @@ import (
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
+	"github.com/sirupsen/logrus"
 )
 
 type FetchReq struct {
@@ -156,8 +157,14 @@ func ParseRSS(c *gin.Context) {
 			}
 		}
 		if req.ContentSelector != "" {
-			html, _ := s.Find(req.ContentSelector).Html()
-			item.Content = html // Return HTML for content
+			html, err := s.Find(req.ContentSelector).Html()
+			if err != nil {
+				logrus.Infof("Warning: Failed to extract content using selector '%s' for item %d in feed %s: %v",
+					req.ContentSelector, i, req.URL, err)
+				item.Content = "" // Leave content empty on error
+			} else {
+				item.Content = html // Return HTML for content
+			}
 		}
 
 		items = append(items, item)
