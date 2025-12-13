@@ -58,6 +58,7 @@ FeedCraft中的几个核心概念:
 - **translate-title**: 调用AI翻译文章标题
 - **translate-content**: 调用AI翻译文章内容, 只输出翻译后内容
 - **translate-content-immersive**: 调用AI翻译文章内容, 沉浸式翻译模式, 每个原文段落后面添加翻译后内容
+- **beautify-content**: 调用AI美化文章排版，去除广告和无关信息
 - **ignore-advertorial**: 调用AI对文章进行筛选, 排除营销软文
 
 你可以使用提供的demo站点快速开始体验 :
