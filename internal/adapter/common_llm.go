@@ -9,8 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sashabaranov/go-openai"
 	"github.com/sirupsen/logrus"
+	"github.com/tmc/langchaingo/llms"
+	"github.com/tmc/langchaingo/llms/ollama"
+	"github.com/tmc/langchaingo/llms/openai"
 )
 
 /*
@@ -61,29 +63,16 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 		logrus.Warn("FC_OPENAI_DEFAULT_MODEL is deprecated, please migrate to FC_LLM_API_MODEL")
 	}
 
-	// 4. Configure client based on type
+	// 4. Validate configuration for Ollama
 	if llmApiType == "ollama" {
-		logrus.Debug("Using Ollama API compatibility mode")
-		if llmApiKey == "" {
-			llmApiKey = "ollama" // Ollama doesn't require a key, but library might check
-		}
+		logrus.Debug("Using Ollama API provider")
 		if llmApiBase == "" {
 			return "", fmt.Errorf("FC_LLM_API_BASE must be set when using FC_LLM_API_TYPE='ollama'")
 		}
-	}
-
-	conf := openai.DefaultConfig(llmApiKey)
-	if llmApiBase != "" {
-		conf.BaseURL = llmApiBase
 	} else {
-		if llmApiType == "openai" {
+		if llmApiBase == "" {
 			logrus.Info("using default openai endpoint")
 		}
-	}
-
-	client := openai.NewClientWithConfig(conf)
-	if client == nil {
-		return "", fmt.Errorf("new openai client error")
 	}
 
 	modelList := strings.Split(llmApiModel, ",")
@@ -92,36 +81,55 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 	})
 
 	var lastErr error
-	for _, model := range modelList {
-		model = strings.TrimSpace(model)
-		if model == "" {
+	for _, currentModel := range modelList {
+		currentModel = strings.TrimSpace(currentModel)
+		if currentModel == "" {
+			continue
+		}
+
+		var llm llms.Model
+		var err error
+
+		if llmApiType == "ollama" {
+			llm, err = ollama.New(
+				ollama.WithServerURL(llmApiBase),
+				ollama.WithModel(currentModel),
+			)
+		} else {
+			opts := []openai.Option{
+				openai.WithToken(llmApiKey),
+				openai.WithModel(currentModel),
+			}
+			if llmApiBase != "" {
+				opts = append(opts, openai.WithBaseURL(llmApiBase))
+			}
+			llm, err = openai.New(opts...)
+		}
+
+		if err != nil {
+			lastErr = err
+			logrus.Warnf("Failed to initialize LLM client for model %s: %v", currentModel, err)
 			continue
 		}
 
 		ctx, cancel := context.WithTimeout(context.Background(), llmCallTimeout)
-		resp, err := client.CreateChatCompletion(
-			ctx,
-			openai.ChatCompletionRequest{
-				Model: model,
-				Messages: []openai.ChatCompletionMessage{
-					{
-						Role:    openai.ChatMessageRoleUser,
-						Content: promptInput,
-					},
-				},
-			},
-		)
+
+		content := []llms.MessageContent{
+			llms.TextParts(llms.ChatMessageTypeHuman, promptInput),
+		}
+
+		resp, err := llm.GenerateContent(ctx, content)
 		cancel()
 
 		if err == nil {
 			if len(resp.Choices) > 0 {
-				return resp.Choices[0].Message.Content, nil
+				return resp.Choices[0].Content, nil
 			}
 			err = fmt.Errorf("no choices in response")
 		}
 
 		lastErr = err
-		logrus.Warnf("LLM call failed with model %s: %v", model, err)
+		logrus.Warnf("LLM call failed with model %s: %v", currentModel, err)
 	}
 
 	return "", fmt.Errorf("all models failed, last error: %v", lastErr)
