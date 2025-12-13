@@ -36,8 +36,9 @@
                 target="_blank"
                 rel="noopener noreferrer"
                 icon
-                >RSSHub Doc</a-link
               >
+                RSSHub Doc
+              </a-link>
             </a-card>
           </a-col>
           <a-col :span="8">
