@@ -141,3 +141,4 @@ feedcraft.exe
 
 # temp
 .task
+.env

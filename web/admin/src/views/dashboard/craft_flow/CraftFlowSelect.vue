@@ -4,7 +4,7 @@
     :mode="mode"
     :placeholder="t('feedCompare.selectCraftFlow.placeholder')"
     allow-clear
-    @update:modelValue="onUpdate"
+    @update:model-value="onUpdate"
   />
 </template>
 

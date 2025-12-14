@@ -49,6 +49,16 @@ const TOOLS: AppRouteRecordRaw = {
         requiresAuth: true,
       },
     },
+    {
+      path: 'rss-generator',
+      name: 'RssGenerator',
+      component: () =>
+        import('@/views/dashboard/rss_generator/rss_generator.vue'),
+      meta: {
+        locale: 'menu.rssGenerator',
+        requiresAuth: true,
+      },
+    },
   ],
 };
 
