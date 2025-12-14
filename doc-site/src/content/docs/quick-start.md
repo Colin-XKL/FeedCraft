@@ -34,6 +34,9 @@ Here are some basic Craft Atoms you can use immediately:
 - **translate-content-immersive**: Uses AI to translate content in immersive mode (paragraph by paragraph).
 - **ignore-advertorial**: Uses AI to filter out advertorials.
 
+### Tools
+- **RSS Generator**: Built-in visual tool to turn any website into an RSS feed. Simply point and click to select elements and generate CSS selectors.
+
 ### Examples
 
 1.  **Translate titles of a feed:**

@@ -61,6 +61,9 @@ FeedCraft中的几个核心概念:
 - **beautify-content**: 调用AI美化文章排版，去除广告和无关信息
 - **ignore-advertorial**: 调用AI对文章进行筛选, 排除营销软文
 
+### 工具
+- **RSS 生成器**: 内置可视化工具，可将任何网站转换为 RSS 订阅源。通过简单的点击选择元素，自动生成 CSS 选择器。
+
 你可以使用提供的demo站点快速开始体验 :
 https://feed-craft.colinx.one
 
