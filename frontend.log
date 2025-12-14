@@ -1,0 +1,57 @@
+
+> feed-craft-admin-panel@1.0.0 dev
+> vite --config ./config/vite.config.dev.ts
+
+
+  VITE v3.2.11  ready in 2570 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+12:13:12 PM [vite] warning:
+/app/web/admin/src/api/interceptor.ts
+  44:7  warning  Unexpected console statement  no-console
+
+✖ 1 problem (0 errors, 1 warning)
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/api/interceptor.ts
+12:13:13 PM [vite] warning:
+/app/web/admin/src/locale/zh-CN.ts
+  4:8  warning  'localeWorkplace' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 1 problem (0 errors, 1 warning)
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/locale/zh-CN.ts
+12:13:26 PM [vite] warning:
+/app/web/admin/src/views/tools/dependencies/index.vue
+   7:26  warning  Replace `·:title="$t('monitor.dependencies.name')"·data-index="name"` with `⏎············:title="$t('monitor.dependencies.name')"⏎············data-index="name"⏎·········`                                                                                                          prettier/prettier
+   8:26  warning  Replace `·:title="$t('monitor.dependencies.configured')"·data-index="configured"` with `⏎············:title="$t('monitor.dependencies.configured')"⏎············data-index="configured"⏎··········`                                                                                 prettier/prettier
+  11:19  warning  Replace `·record.configured·?·$t('monitor.dependencies.yes')·:·$t('monitor.dependencies.no')` with `⏎··················record.configured⏎····················?·$t('monitor.dependencies.yes')⏎····················:·$t('monitor.dependencies.no')⏎···············`                  prettier/prettier
+  15:26  warning  Replace `·:title="$t('monitor.dependencies.healthy')"·data-index="healthy"` with `⏎············:title="$t('monitor.dependencies.healthy')"⏎············data-index="healthy"⏎··········`                                                                                             prettier/prettier
+  17:21  warning  Replace `·v-if="record.configured"·:color="record.healthy·?·'green'·:·'red'"` with `⏎················v-if="record.configured"⏎················:color="record.healthy·?·'green'·:·'red'"⏎··············`                                                                             prettier/prettier
+  18:19  warning  Replace `·record.healthy·?·$t('monitor.dependencies.healthy')·:·$t('monitor.dependencies.unhealthy')` with `⏎··················record.healthy⏎····················?·$t('monitor.dependencies.healthy')⏎····················:·$t('monitor.dependencies.unhealthy')⏎···············`  prettier/prettier
+  23:26  warning  Replace `·:title="$t('monitor.dependencies.message')"·data-index="message"` with `⏎············:title="$t('monitor.dependencies.message')"⏎············data-index="message"⏎·········`                                                                                              prettier/prettier
+  35:11  warning  't' is assigned a value but never used                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+
+✖ 8 problems (0 errors, 8 warnings)
+  0 errors and 7 warnings potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/views/tools/dependencies/index.vue
+12:13:26 PM [vite] warning:
+/app/web/admin/src/views/tools/dependencies/index.vue
+   7:26  warning  Replace `·:title="$t('monitor.dependencies.name')"·data-index="name"` with `⏎············:title="$t('monitor.dependencies.name')"⏎············data-index="name"⏎·········`                                                                                                          prettier/prettier
+   8:26  warning  Replace `·:title="$t('monitor.dependencies.configured')"·data-index="configured"` with `⏎············:title="$t('monitor.dependencies.configured')"⏎············data-index="configured"⏎··········`                                                                                 prettier/prettier
+  11:19  warning  Replace `·record.configured·?·$t('monitor.dependencies.yes')·:·$t('monitor.dependencies.no')` with `⏎··················record.configured⏎····················?·$t('monitor.dependencies.yes')⏎····················:·$t('monitor.dependencies.no')⏎···············`                  prettier/prettier
+  15:26  warning  Replace `·:title="$t('monitor.dependencies.healthy')"·data-index="healthy"` with `⏎············:title="$t('monitor.dependencies.healthy')"⏎············data-index="healthy"⏎··········`                                                                                             prettier/prettier
+  17:21  warning  Replace `·v-if="record.configured"·:color="record.healthy·?·'green'·:·'red'"` with `⏎················v-if="record.configured"⏎················:color="record.healthy·?·'green'·:·'red'"⏎··············`                                                                             prettier/prettier
+  18:19  warning  Replace `·record.healthy·?·$t('monitor.dependencies.healthy')·:·$t('monitor.dependencies.unhealthy')` with `⏎··················record.healthy⏎····················?·$t('monitor.dependencies.healthy')⏎····················:·$t('monitor.dependencies.unhealthy')⏎···············`  prettier/prettier
+  23:26  warning  Replace `·:title="$t('monitor.dependencies.message')"·data-index="message"` with `⏎············:title="$t('monitor.dependencies.message')"⏎············data-index="message"⏎·········`                                                                                              prettier/prettier
+  35:11  warning  't' is assigned a value but never used                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+
+✖ 8 problems (0 errors, 8 warnings)
+  0 errors and 7 warnings potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/views/tools/dependencies/index.vue?vue&type=style&index=0&scoped=80b4ef50&lang.less

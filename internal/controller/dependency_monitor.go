@@ -4,10 +4,13 @@ import (
 	"FeedCraft/internal/util"
 	"context"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/go-resty/resty/v2"
 	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/go-resty/resty/v2"
+	"github.com/redis/go-redis/v9"
+	"github.com/sashabaranov/go-openai"
 )
 
 type DependencyStatus struct {
@@ -21,15 +24,17 @@ func GetDependencyStatus(c *gin.Context) {
 	statuses := []DependencyStatus{}
 	envClient := util.GetEnvClient()
 
-	// 1. Database
+	// 1. Database (SQLite)
 	dbStatus := DependencyStatus{Name: "Database (SQLite)"}
 	dbPath := envClient.GetString("DB_SQLITE_PATH")
 	if dbPath != "" {
 		dbStatus.Configured = true
+		// Safe check: relying on app startup for DB init, but avoiding util fatal call if possible.
+		// Since util.GetDatabase is singleton with fatal, we trust app state if running.
 		db := util.GetDatabase()
 		sqlDB, err := db.DB()
 		if err != nil {
-			dbStatus.Message = fmt.Sprintf("Failed to get sql.DB: %v", err)
+			dbStatus.Message = fmt.Sprintf("Failed to get underlying DB: %v", err)
 		} else {
 			if err := sqlDB.Ping(); err != nil {
 				dbStatus.Message = fmt.Sprintf("Ping failed: %v", err)
@@ -48,13 +53,12 @@ func GetDependencyStatus(c *gin.Context) {
 	redisURI := envClient.GetString("REDIS_URI")
 	if redisURI != "" {
 		redisStatus.Configured = true
-		// Note: GetRedisClient calls log.Fatal if parse fails, so we trust it parses if env is set,
-		// but to be safe and avoid crashing, we might want to manually parse or try/catch if it was possible in Go.
-		// Given the util implementation, we assume if URI is present it's valid enough to try connecting.
-		// Wait, GetRedisClient does log.Fatalf if parse fails. This is risky.
-		// But I cannot change util in this step. I'll rely on env being correct or app would have crashed on startup anyway.
-		rdb := util.GetRedisClient()
-		if rdb != nil {
+		// Manual connection to avoid log.Fatal in util.GetRedisClient
+		opts, err := redis.ParseURL(redisURI)
+		if err != nil {
+			redisStatus.Message = fmt.Sprintf("Invalid Redis URI: %v", err)
+		} else {
+			rdb := redis.NewClient(opts)
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 			defer cancel()
 			if _, err := rdb.Ping(ctx).Result(); err != nil {
@@ -62,6 +66,7 @@ func GetDependencyStatus(c *gin.Context) {
 			} else {
 				redisStatus.Healthy = true
 				redisStatus.Message = "Connected"
+				rdb.Close()
 			}
 		}
 	} else {
@@ -71,28 +76,71 @@ func GetDependencyStatus(c *gin.Context) {
 
 	// 3. LLM Service
 	llmStatus := DependencyStatus{Name: "LLM Service"}
-	// Check for various keys
 	llmType := envClient.GetString("LLM_API_TYPE")
+	if llmType == "" {
+		llmType = "openai"
+	}
+	llmBase := envClient.GetString("LLM_API_BASE")
 	llmKey := envClient.GetString("LLM_API_KEY")
-	// Backwards compatibility
+	llmModel := envClient.GetString("LLM_API_MODEL")
+
+	// Legacy fallback
+	if llmBase == "" {
+		llmBase = envClient.GetString("OPENAI_ENDPOINT")
+	}
 	if llmKey == "" {
 		llmKey = envClient.GetString("OPENAI_AUTH_KEY")
 	}
+	if llmModel == "" {
+		llmModel = envClient.GetString("OPENAI_DEFAULT_MODEL")
+	}
 
 	if llmType == "ollama" {
-		llmStatus.Configured = true // Ollama might not need key
-	} else if llmKey != "" {
-		llmStatus.Configured = true
+		if llmBase != "" {
+			llmStatus.Configured = true
+		} else {
+			llmStatus.Message = "FC_LLM_API_BASE required for Ollama"
+		}
+	} else {
+		if llmKey != "" {
+			llmStatus.Configured = true
+		} else {
+			llmStatus.Message = "FC_LLM_API_KEY not set"
+		}
 	}
 
 	if llmStatus.Configured {
-		// We don't make a live call to save tokens/time, but we could add a specific test button later.
-		// For now, assume healthy if configured.
-		// Or maybe check if BaseURL is reachable?
-		llmStatus.Healthy = true // Placeholder for now
-		llmStatus.Message = "Configured (Health check skipped)"
-	} else {
-		llmStatus.Message = "FC_LLM_API_KEY / FC_OPENAI_AUTH_KEY not set"
+		conf := openai.DefaultConfig(llmKey)
+		if llmBase != "" {
+			conf.BaseURL = llmBase
+		}
+		// In Ollama mode, key might be empty, which is fine for local instances,
+		// but go-openai might strictly require a non-empty string for some calls.
+		// We set a dummy key if empty to satisfy client init, as Ollama ignores it.
+		if llmType == "ollama" && llmKey == "" {
+			// Do not attempt to set APIToken field directly as it doesn't exist on Config struct in this version
+			// Instead, create a config with a dummy key initially if needed,
+			// or just let DefaultConfig handle it (which requires a key).
+			conf = openai.DefaultConfig("ollama")
+			conf.BaseURL = llmBase
+		}
+
+		client := openai.NewClientWithConfig(conf)
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+
+		models, err := client.ListModels(ctx)
+		if err != nil {
+			llmStatus.Message = fmt.Sprintf("Health check failed: %v", err)
+		} else {
+			if len(models.Models) > 0 {
+				llmStatus.Healthy = true
+				llmStatus.Message = fmt.Sprintf("Connected (Available models: %d)", len(models.Models))
+			} else {
+				llmStatus.Healthy = true
+				llmStatus.Message = "Connected (No models found)"
+			}
+		}
 	}
 	statuses = append(statuses, llmStatus)
 
@@ -101,16 +149,12 @@ func GetDependencyStatus(c *gin.Context) {
 	pupEndpoint := envClient.GetString("PUPPETEER_HTTP_ENDPOINT")
 	if pupEndpoint != "" {
 		pupStatus.Configured = true
-		// Try to connect to the endpoint
 		client := resty.New()
 		client.SetTimeout(2 * time.Second)
-		// Usually /version is a safe endpoint for browserless, or just GET /
-		// The craft code uses it for /content.
 		resp, err := client.R().Get(pupEndpoint)
 		if err != nil {
 			pupStatus.Message = fmt.Sprintf("Connection failed: %v", err)
 		} else {
-			// even 404 means it's reachable
 			if resp.StatusCode() >= 200 && resp.StatusCode() < 500 {
 				pupStatus.Healthy = true
 				pupStatus.Message = "Connected"
