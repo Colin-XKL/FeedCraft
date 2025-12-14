@@ -23,15 +23,29 @@
       <a-row :gutter="16" class="main-area">
         <!-- Left: HTML Preview / Interaction Area -->
         <a-col :span="14" class="h-full">
-          <a-card class="preview-card" title="Page Preview">
+          <a-card class="preview-card">
+            <template #title>
+              Page Preview
+              <a-tooltip
+                content="In selection mode, use Up/Down arrow keys to select parent/child elements"
+              >
+                <icon-info-circle
+                  class="ml-2 cursor-help text-[var(--color-text-3)]"
+                />
+              </a-tooltip>
+            </template>
             <iframe
               v-if="htmlContent"
               ref="previewIframe"
+              title="Page Preview"
               class="html-preview"
               :srcdoc="htmlContent"
               @load="onIframeLoad"
             ></iframe>
-            <a-empty v-else description="No content loaded" />
+            <a-empty
+              v-else
+              description="Enter a URL above and click Fetch Page"
+            />
           </a-card>
         </a-col>
 
@@ -45,6 +59,7 @@
                     <a-button
                       size="mini"
                       type="text"
+                      aria-label="Select item selector from preview"
                       @click="setTargetField('item_selector')"
                     >
                       <icon-select-all /> Pick
@@ -58,6 +73,7 @@
                     <a-button
                       size="mini"
                       type="text"
+                      aria-label="Select title selector from preview"
                       @click="setTargetField('title_selector')"
                     >
                       <icon-select-all /> Pick
@@ -71,6 +87,7 @@
                     <a-button
                       size="mini"
                       type="text"
+                      aria-label="Select link selector from preview"
                       @click="setTargetField('link_selector')"
                     >
                       <icon-select-all /> Pick
@@ -84,6 +101,7 @@
                     <a-button
                       size="mini"
                       type="text"
+                      aria-label="Select date selector from preview"
                       @click="setTargetField('date_selector')"
                     >
                       <icon-select-all /> Pick
@@ -97,6 +115,7 @@
                     <a-button
                       size="mini"
                       type="text"
+                      aria-label="Select content selector from preview"
                       @click="setTargetField('content_selector')"
                     >
                       <icon-select-all /> Pick
@@ -156,7 +175,10 @@
   import axios from 'axios';
   import DOMPurify from 'dompurify';
   import { Message } from '@arco-design/web-vue';
-  import { IconSelectAll } from '@arco-design/web-vue/es/icon';
+  import {
+    IconSelectAll,
+    IconInfoCircle,
+  } from '@arco-design/web-vue/es/icon';
 
   const url = ref('');
   const fetching = ref(false);
