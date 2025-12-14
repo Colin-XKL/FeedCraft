@@ -50,7 +50,7 @@ You can configure FeedCraft using environment variables in your `docker-compose.
 -   **FC_PUPPETEER_HTTP_ENDPOINT**: URL of a browserless/chrome instance. Required for `fulltext-plus`.
 -   **FC_REDIS_URI**: Redis connection string. Used for caching to speed up processing and reduce AI costs.
 -   **FC_LLM_API_KEY**: API Key for OpenAI or compatible services (DeepSeek, Gemini, etc.).
--   **FC_LLM_API_MODEL**: The default model to use (e.g., `gemini-pro`, `gpt-3.5-turbo`).
+-   **FC_LLM_API_MODEL**: The default model to use (e.g., `gemini-pro`, `gpt-3.5-turbo`). **Supports multiple models:** You can provide a comma-separated list of models (e.g., `gpt-3.5-turbo,gpt-4`). FeedCraft will randomly select one for each request and automatically retry with others if a call fails.
 -   **FC_LLM_API_BASE**: The API endpoint. Must end with `/v1` if using OpenAI compatible APIs.
 -   **FC_LLM_API_TYPE**: (Optional) `openai` (default) or `ollama`.
 
