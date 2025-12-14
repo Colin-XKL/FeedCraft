@@ -1,6 +1,9 @@
 <template>
-  <div class="container">
-    <Breadcrumb :items="['menu.tools', 'menu.rssGenerator']" />
+  <div class="container py-8 px-16">
+    <x-header
+      title="RSS 生成器"
+      description="直接在页面上进行框选, 快速生成RSS"
+    ></x-header>
     <div class="content-wrapper">
       <!-- Top Bar: URL Input -->
       <a-card class="mb-4">
@@ -192,6 +195,7 @@
   import DOMPurify from 'dompurify';
   import { Message } from '@arco-design/web-vue';
   import { IconSelectAll } from '@arco-design/web-vue/es/icon';
+  import XHeader from '@/components/header/x-header.vue';
 
   const IGNORED_CLASSES = [
     'flex',
