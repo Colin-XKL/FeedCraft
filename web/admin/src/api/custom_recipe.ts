@@ -4,7 +4,9 @@ export interface CustomRecipe {
   id: string;
   description?: string;
   craft: string;
-  feed_url: string;
+  // feed_url: string; // Deprecated
+  source_type: string;
+  source_config: string;
   is_active?: boolean;
   last_accessed_at?: string;
 }
