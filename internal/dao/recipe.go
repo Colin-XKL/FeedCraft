@@ -12,12 +12,27 @@ type BaseModelWithoutPK struct {
 	DeletedAt sql.NullTime `gorm:"index" json:"deleted_at,omitempty"`
 }
 
+// CustomRecipe represents the original recipe structure.
 type CustomRecipe struct {
 	BaseModelWithoutPK
 	ID          string `gorm:"primaryKey" json:"id,omitempty" binding:"required"`
 	Description string `json:"description,omitempty"`
 	Craft       string `json:"craft" binding:"required"`
 	FeedURL     string `json:"feed_url" binding:"required"`
+}
+
+// CustomRecipeV2 represents the new, refactored recipe structure.
+type CustomRecipeV2 struct {
+	BaseModelWithoutPK
+	ID           string `gorm:"primaryKey" json:"id,omitempty" binding:"required"`
+	Description  string `json:"description,omitempty"`
+	Craft        string `json:"craft" binding:"required"`
+	SourceType   string `gorm:"type:varchar(50);not null;default:'rss'"`
+	SourceConfig string `gorm:"type:text"`
+}
+
+func (CustomRecipeV2) TableName() string {
+	return "custom_recipes_v2"
 }
 
 // CreateCustomRecipe creates a new CustomRecipe record
@@ -29,6 +44,16 @@ func CreateCustomRecipe(db *gorm.DB, recipe *CustomRecipe) error {
 func GetCustomRecipeByID(db *gorm.DB, id string) (*CustomRecipe, error) {
 	var recipe CustomRecipe
 	// 添加日志记录查询的 ID
+	if id == "" {
+		return nil, gorm.ErrRecordNotFound
+	}
+	result := db.Where("id = ?", id).First(&recipe)
+	return &recipe, result.Error
+}
+
+// GetCustomRecipeByIDV2 retrieves a V2 CustomRecipe record by its ID
+func GetCustomRecipeByIDV2(db *gorm.DB, id string) (*CustomRecipeV2, error) {
+	var recipe CustomRecipeV2
 	if id == "" {
 		return nil, gorm.ErrRecordNotFound
 	}

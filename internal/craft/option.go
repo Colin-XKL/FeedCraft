@@ -1,9 +1,10 @@
 package craft
 
 import (
+	"strings"
+
 	"github.com/gorilla/feeds"
 	"github.com/mmcdole/gofeed"
-	"strings"
 )
 
 type CraftedFeed struct {
@@ -27,6 +28,12 @@ func NewCraftedFeedFromUrl(feedUrl string, options ...CraftOption) (CraftedFeed,
 		return ingredient, err
 	}
 	ingredient.parsedFeed = parsedFeed
+
+	return NewCraftedFeedFromGofeed(parsedFeed, feedUrl, options...)
+}
+
+func NewCraftedFeedFromGofeed(parsedFeed *gofeed.Feed, feedUrl string, options ...CraftOption) (CraftedFeed, error) {
+	ingredient := CraftedFeed{originalFeedUrl: feedUrl, parsedFeed: parsedFeed}
 
 	byPass := func(item *gofeed.Item) string {
 		content := item.Content
