@@ -193,6 +193,18 @@
   import { Message } from '@arco-design/web-vue';
   import { IconSelectAll } from '@arco-design/web-vue/es/icon';
 
+  const IGNORED_CLASSES = [
+    'flex',
+    'row',
+    'col',
+    'grid',
+    'hidden',
+    'block',
+    'items-center',
+    'justify-center',
+    'fc-highlight',
+  ];
+
   const url = ref('');
   const fetching = ref(false);
   const parsing = ref(false);
@@ -336,18 +348,7 @@
       if (currentEl.classList.length > 0) {
         // Filter out common utility classes (simplified heuristic)
         const classes = Array.from(currentEl.classList).filter(
-          (c) =>
-            ![
-              'flex',
-              'row',
-              'col',
-              'grid',
-              'hidden',
-              'block',
-              'items-center',
-              'justify-center',
-              'fc-highlight',
-            ].includes(c)
+          (c) => !IGNORED_CLASSES.includes(c)
         );
         if (classes.length > 0) {
           selector += `.${classes.map((c) => CSS.escape(c)).join('.')}`;
@@ -510,7 +511,12 @@
           while (curr && curr !== foundItem) {
             let selector = curr.tagName.toLowerCase();
             if (curr.classList.length > 0) {
-              selector += `.${Array.from(curr.classList)[0]}`; // take first class
+              const validClasses = Array.from(curr.classList).filter(
+                (c) => !IGNORED_CLASSES.includes(c)
+              );
+              if (validClasses.length > 0) {
+                selector += `.${CSS.escape(validClasses[0])}`; // take first valid class
+              }
             }
             relPath.unshift(selector);
             curr = curr.parentNode as HTMLElement;
