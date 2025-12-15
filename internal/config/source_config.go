@@ -19,6 +19,7 @@ type HtmlParserConfig struct {
 	ItemSelector string `json:"item_selector"`
 	Title        string `json:"title"`
 	Link         string `json:"link"`
+	Date         string `json:"date,omitempty"`
 	Description  string `json:"description,omitempty"`
 	// ... other field selectors
 }
@@ -28,6 +29,7 @@ type JsonParserConfig struct {
 	ItemsIterator string `json:"items_iterator"`
 	Title         string `json:"title"`
 	Link          string `json:"link"`
+	Date          string `json:"date,omitempty"`
 	Description   string `json:"description,omitempty"`
 	// ... other fields
 }

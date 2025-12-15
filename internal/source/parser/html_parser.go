@@ -14,13 +14,17 @@ type HtmlParser struct {
 }
 
 func (p *HtmlParser) Parse(data []byte) (*gofeed.Feed, error) {
+	if p == nil || p.Config == nil {
+		return nil, fmt.Errorf("parser config is nil")
+	}
+
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(data))
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse html: %w", err)
 	}
 
 	feed := &gofeed.Feed{}
-	
+
 	// Basic feed metadata (can be overridden by FeedMetaConfig later)
 	// For now, we might try to extract title from <title> if not provided via overrides
 	feed.Title = doc.Find("title").Text()
@@ -41,6 +45,18 @@ func (p *HtmlParser) Parse(data []byte) (*gofeed.Feed, error) {
 			} else {
 				item.Link = strings.TrimSpace(linkSel.Text())
 			}
+		}
+
+		// Date
+		if p.Config.Date != "" {
+			dateSel := s.Find(p.Config.Date)
+			dateStr := strings.TrimSpace(dateSel.Text())
+			if dateStr == "" {
+				if val, exists := dateSel.Attr("datetime"); exists {
+					dateStr = val
+				}
+			}
+			item.Published = dateStr
 		}
 
 		// Description
