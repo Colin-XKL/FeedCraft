@@ -102,8 +102,15 @@
         <a-form-item :label="t('customRecipe.form.craft')" field="craft">
           <a-input v-model="form.craft" />
         </a-form-item>
-        <a-form-item :label="t('customRecipe.form.feedURL')" field="feed_url">
-          <a-input v-model="form.feed_url" />
+        <a-form-item :label="t('customRecipe.form.sourceType')" field="source_type">
+          <a-select v-model="form.source_type">
+            <a-option value="rss">RSS</a-option>
+            <a-option value="html">HTML</a-option>
+            <a-option value="json">JSON</a-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item :label="t('customRecipe.form.sourceConfig')" field="source_config">
+          <a-textarea v-model="form.source_config" :auto-size="{minRows:3, maxRows:10}" />
         </a-form-item>
       </a-form>
       <template #footer>
@@ -148,7 +155,8 @@
     id: '',
     description: '',
     craft: '',
-    feed_url: '',
+    source_type: 'rss',
+    source_config: '',
   });
   const editing = ref(false);
   const selectedRecipe = ref<CustomRecipe | null>(null);
@@ -160,7 +168,13 @@
     { title: t('customRecipe.form.description'), dataIndex: 'description' },
     { title: t('customRecipe.form.craft'), dataIndex: 'craft' },
     { title: t('customRecipe.status.active'), slotName: 'status' },
-    { title: t('customRecipe.form.feedURL'), dataIndex: 'feed_url' },
+    { title: t('customRecipe.form.sourceType'), dataIndex: 'source_type' },
+    { 
+      title: t('customRecipe.form.sourceConfig'), 
+      dataIndex: 'source_config',
+      ellipsis: true,
+      tooltip: true
+    },
     { title: t('customRecipe.edit'), slotName: 'actions' },
   ];
 
@@ -189,10 +203,17 @@
         trigger: 'blur',
       },
     ],
-    feed_url: [
+    source_type: [
       {
         required: true,
-        message: t('customRecipe.form.rule.feedURLRequired'),
+        message: t('customRecipe.form.rule.sourceTypeRequired'),
+        trigger: 'change',
+      },
+    ],
+    source_config: [
+      {
+        required: true,
+        message: t('customRecipe.form.rule.sourceConfigRequired'),
         trigger: 'blur',
       },
     ],
@@ -204,7 +225,8 @@
       id: recipe.id,
       description: recipe.description,
       craft: recipe.craft,
-      feed_url: recipe.feed_url,
+      source_type: recipe.source_type,
+      source_config: recipe.source_config,
     };
     showModal.value = true;
   };
@@ -215,14 +237,15 @@
         await updateCustomRecipe(form.value);
         selectedRecipe.value.description = form.value.description;
         selectedRecipe.value.craft = form.value.craft;
-        selectedRecipe.value.feed_url = form.value.feed_url;
+        selectedRecipe.value.source_type = form.value.source_type;
+        selectedRecipe.value.source_config = form.value.source_config;
       }
     } else {
       await createCustomRecipe(form.value as CustomRecipe);
       await listCustomRecipes();
     }
     showModal.value = false;
-    form.value = { id: '', description: '', craft: '', feed_url: '' };
+    form.value = { id: '', description: '', craft: '', source_type: 'rss', source_config: '' };
     editing.value = false;
     isUpdating.value = false;
     selectedRecipe.value = null;
@@ -238,7 +261,8 @@
       id: '',
       description: '',
       craft: '',
-      feed_url: '',
+      source_type: 'rss',
+      source_config: '',
     };
   }
 </script>
