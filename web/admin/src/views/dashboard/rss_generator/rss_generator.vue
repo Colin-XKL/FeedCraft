@@ -1,5 +1,5 @@
 <template>
-  <div class="container py-8 px-16">
+  <div class="py-8 px-16">
     <x-header
       title="RSS Generator Wizard"
       description="Create a custom RSS feed from any webpage in 4 simple steps."
