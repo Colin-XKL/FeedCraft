@@ -20,7 +20,7 @@ export default defineConfig({
       sidebar: [
         {
           label: 'Documentation',
-          autogenerate: { directory: '.' },
+          autogenerate: { directory: 'guides' },
         },
       ],
     }),
