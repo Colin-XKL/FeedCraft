@@ -89,7 +89,6 @@ func migrateRecipesToV2(db *gorm.DB) {
 	logrus.Info("recipe migration to v2 completed.")
 }
 
-
 var defaultAdminUsername = "admin"
 var defaultPassword = "adminadmin" // default defaultPassword string
 

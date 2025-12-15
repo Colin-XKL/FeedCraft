@@ -64,7 +64,7 @@ func (p *HtmlParser) Parse(data []byte) (*gofeed.Feed, error) {
 			item.Description = strings.TrimSpace(s.Find(p.Config.Description).Text())
 			// fall back to content if description is empty, or maybe we want Content specifically?
 			// gofeed.Item has Description and Content.
-			item.Content = item.Description 
+			item.Content = item.Description
 		}
 
 		feed.Items = append(feed.Items, item)

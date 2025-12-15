@@ -46,7 +46,7 @@ func (p *JsonParser) Parse(data []byte) (*gofeed.Feed, error) {
 				item.Title = fmt.Sprintf("%v", val)
 			}
 		}
-		
+
 		if p.Config.Link != "" {
 			if val := traverse(itemNode, p.Config.Link); val != nil {
 				item.Link = fmt.Sprintf("%v", val)
