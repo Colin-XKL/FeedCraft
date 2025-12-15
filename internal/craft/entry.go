@@ -7,8 +7,11 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/feeds"
+	"github.com/mmcdole/gofeed"
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
+
 	"gorm.io/gorm"
 )
 
@@ -147,16 +150,35 @@ func GetCraftAtomDict() map[string]dao.CraftAtom {
 
 func Entry(c *gin.Context) {
 	craftName := c.Param("craft-name")
-	craftAtomDict := GetCraftAtomDict()
-	craftTmplDict := GetSysCraftTemplateDict()
 	db := util.GetDatabase()
 
-	craftOptionList, err := inner(db, &craftAtomDict, &craftTmplDict, craftName, 0)
+	craftOptionList, err := getCraftOptions(db, craftName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 	CommonCraftHandlerUsingCraftOptionList(c, craftOptionList)
+}
+
+func ProcessFeed(feed *gofeed.Feed, feedURL string, craftName string) (*feeds.Feed, error) {
+	db := util.GetDatabase()
+	craftOptionList, err := getCraftOptions(db, craftName)
+	if err != nil {
+		return nil, err
+	}
+
+	craftedFeed, err := NewCraftedFeedFromGofeed(feed, feedURL, craftOptionList...)
+	if err != nil {
+		return nil, err
+	}
+
+	return craftedFeed.OutputFeed, nil
+}
+
+func getCraftOptions(db *gorm.DB, craftName string) ([]CraftOption, error) {
+	craftAtomDict := GetCraftAtomDict()
+	craftTmplDict := GetSysCraftTemplateDict()
+	return inner(db, &craftAtomDict, &craftTmplDict, craftName, 0)
 }
 
 const MaxCallDepth = 5

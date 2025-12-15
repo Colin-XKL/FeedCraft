@@ -13,14 +13,14 @@ import (
 )
 
 func CreateCustomRecipe(c *gin.Context) {
-	var recipeData dao.CustomRecipe
+	var recipeData dao.CustomRecipeV2
 	if err := c.ShouldBindJSON(&recipeData); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 	db := util.GetDatabase()
 
-	if err := dao.CreateCustomRecipe(db, &recipeData); err != nil {
+	if err := dao.CreateCustomRecipeV2(db, &recipeData); err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
@@ -32,7 +32,7 @@ func GetCustomRecipe(c *gin.Context) {
 	id := c.Param("id")
 	db := util.GetDatabase()
 
-	recipeData, err := dao.GetCustomRecipeByID(db, id)
+	recipeData, err := dao.GetCustomRecipeByIDV2(db, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "Recipe not found"})
@@ -50,26 +50,28 @@ type RecipeInfo struct {
 	ID             string    `json:"id,omitempty" binding:"required"`
 	Description    string    `json:"description,omitempty"`
 	Craft          string    `json:"craft" binding:"required"`
-	FeedURL        string    `json:"feed_url" binding:"required"`
+	SourceType     string    `json:"source_type"`
+	SourceConfig   string    `json:"source_config"`
 	IsActive       bool      `json:"is_active" `
 	LastAccessedAt time.Time `json:"last_accessed_at"`
 }
 
 func ListCustomRecipe(c *gin.Context) {
 	db := util.GetDatabase()
-	recipeList, err := dao.ListCustomRecipe(db)
+	recipeList, err := dao.ListCustomRecipeV2(db)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 
-	recipeInfoList := lo.Map(recipeList, func(item *dao.CustomRecipe, index int) RecipeInfo {
+	recipeInfoList := lo.Map(recipeList, func(item *dao.CustomRecipeV2, index int) RecipeInfo {
 		recipeStatus := recipe.Scheduler.GetContextInfo(item.ID)
 		return RecipeInfo{
 			ID:             item.ID,
 			Description:    item.Description,
 			Craft:          item.Craft,
-			FeedURL:        item.FeedURL,
+			SourceType:     item.SourceType,
+			SourceConfig:   item.SourceConfig,
 			IsActive:       recipeStatus.IsActive,
 			LastAccessedAt: recipeStatus.LastRequestTime,
 		}
@@ -79,14 +81,14 @@ func ListCustomRecipe(c *gin.Context) {
 
 func UpdateCustomRecipe(c *gin.Context) {
 	id := c.Param("id")
-	var recipeData dao.CustomRecipe
+	var recipeData dao.CustomRecipeV2
 	if err := c.ShouldBindJSON(&recipeData); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 	db := util.GetDatabase()
 
-	_, err := dao.GetCustomRecipeByID(db, id)
+	_, err := dao.GetCustomRecipeByIDV2(db, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "Recipe not found"})
@@ -96,7 +98,7 @@ func UpdateCustomRecipe(c *gin.Context) {
 		return
 	}
 
-	if err := dao.UpdateCustomRecipe(db, &recipeData); err != nil {
+	if err := dao.UpdateCustomRecipeV2(db, &recipeData); err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
@@ -108,7 +110,7 @@ func DeleteCustomRecipe(c *gin.Context) {
 	id := c.Param("id")
 	db := util.GetDatabase()
 
-	if err := dao.DeleteCustomRecipe(db, id); err != nil {
+	if err := dao.DeleteCustomRecipeV2(db, id); err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}

@@ -30,6 +30,12 @@ func NewCraftedFeedFromUrl(feedUrl string, options ...CraftOption) (CraftedFeed,
 	}
 	ingredient.parsedFeed = parsedFeed
 
+	return NewCraftedFeedFromGofeed(parsedFeed, feedUrl, options...)
+}
+
+func NewCraftedFeedFromGofeed(parsedFeed *gofeed.Feed, feedUrl string, options ...CraftOption) (CraftedFeed, error) {
+	ingredient := CraftedFeed{originalFeedUrl: feedUrl, parsedFeed: parsedFeed}
+
 	byPass := func(item *gofeed.Item) string {
 		content := item.Content
 		if len(content) == 0 {

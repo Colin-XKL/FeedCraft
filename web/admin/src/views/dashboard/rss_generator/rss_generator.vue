@@ -1,249 +1,399 @@
 <template>
-  <div class="container py-8 px-16">
+  <div class="py-8 px-16">
     <x-header
-      title="RSS 生成器"
-      description="直接在页面上进行框选, 快速生成RSS"
+      title="RSS Generator Wizard"
+      description="Create a custom RSS feed from any webpage in 4 simple steps."
     ></x-header>
+
     <div class="content-wrapper">
-      <!-- Top Bar: URL Input -->
-      <a-card class="mb-4">
-        <a-space>
-          <a-input
-            v-model="url"
-            placeholder="Enter URL to fetch"
-            style="width: 400px"
-            @keyup.enter="handleFetch"
-          />
-          <a-button type="primary" :loading="fetching" @click="handleFetch">
-            Fetch Page
-          </a-button>
-          <a-button @click="toggleMode">
-            {{ isSelectionMode ? 'Selection Mode' : 'Preview Mode' }}
-          </a-button>
-        </a-space>
-      </a-card>
+      <a-card class="wizard-card">
+        <a-steps :current="currentStep" class="mb-8">
+          <a-step title="Target URL" description="Enter webpage URL" />
+          <a-step title="Extract Rules" description="Select content" />
+          <a-step title="Feed Metadata" description="Define feed info" />
+          <a-step title="Save Recipe" description="Review and save" />
+        </a-steps>
 
-      <a-row :gutter="16" class="main-area">
-        <!-- Left: HTML Preview / Interaction Area -->
-        <a-col :span="14" class="h-full">
-          <a-card class="preview-card" title="Page Preview">
-            <iframe
-              v-if="htmlContent"
-              ref="previewIframe"
-              class="html-preview"
-              :srcdoc="htmlContent"
-              @load="onIframeLoad"
-            ></iframe>
-            <a-empty v-else description="No content loaded" />
-          </a-card>
-        </a-col>
-
-        <!-- Right: Configuration & Result -->
-        <a-col :span="10" class="h-full">
-          <a-card class="config-card" title="RSS Configuration">
-            <a-alert type="info" class="mb-4" show-icon>
-              1. Select a generic list item first (e.g. an article card).<br />
-              2. Then select the title, link, etc. inside that item.
-            </a-alert>
-            <a-form :model="config" layout="vertical">
-              <div class="mb-4 p-3 bg-gray-50 rounded border border-gray-100">
-                <div class="font-bold mb-2 text-gray-700">
-                  Step 1: Define List Item
-                </div>
-                <a-form-item label="List Item Selector">
-                  <a-input v-model="config.item_selector">
-                    <template #suffix>
-                      <a-button
-                        size="mini"
-                        type="text"
-                        @click="setTargetField('item_selector')"
-                      >
-                        <icon-select-all /> Pick
-                      </a-button>
-                    </template>
-                  </a-input>
-                </a-form-item>
-              </div>
-
-              <div
-                class="mb-4 p-3 bg-gray-50 rounded border border-gray-100"
-                :class="{ 'opacity-60': !config.item_selector }"
+        <!-- STEP 1: URL Input -->
+        <div v-show="currentStep === 1" class="step-content">
+          <a-form layout="vertical" class="max-w-xl mx-auto">
+            <a-form-item
+              label="Target Webpage URL"
+              help="Enter the full URL of the page you want to turn into an RSS feed."
+            >
+              <a-input
+                v-model="url"
+                placeholder="https://example.com/blog"
+                size="large"
+                allow-clear
+                @keyup.enter="fetchAndNext"
+              />
+            </a-form-item>
+            <div class="text-center mt-8">
+              <a-button
+                type="primary"
+                size="large"
+                :loading="fetching"
+                :disabled="!url"
+                @click="fetchAndNext"
               >
-                <div class="font-bold mb-2 text-gray-700">
-                  Step 2: Map Fields (Relative)
-                </div>
-                <a-form-item label="Title Selector">
-                  <a-input
-                    v-model="config.title_selector"
-                    :disabled="!config.item_selector"
-                  >
-                    <template #suffix>
-                      <a-button
-                        size="mini"
-                        type="text"
-                        :disabled="!config.item_selector"
-                        @click="setTargetField('title_selector')"
-                      >
-                        <icon-select-all /> Pick
-                      </a-button>
-                    </template>
-                  </a-input>
-                </a-form-item>
-                <a-form-item label="Link Selector">
-                  <a-input
-                    v-model="config.link_selector"
-                    :disabled="!config.item_selector"
-                  >
-                    <template #suffix>
-                      <a-button
-                        size="mini"
-                        type="text"
-                        :disabled="!config.item_selector"
-                        @click="setTargetField('link_selector')"
-                      >
-                        <icon-select-all /> Pick
-                      </a-button>
-                    </template>
-                  </a-input>
-                </a-form-item>
-                <a-form-item label="Date Selector">
-                  <a-input
-                    v-model="config.date_selector"
-                    :disabled="!config.item_selector"
-                  >
-                    <template #suffix>
-                      <a-button
-                        size="mini"
-                        type="text"
-                        :disabled="!config.item_selector"
-                        @click="setTargetField('date_selector')"
-                      >
-                        <icon-select-all /> Pick
-                      </a-button>
-                    </template>
-                  </a-input>
-                </a-form-item>
-                <a-form-item label="Content Selector">
-                  <a-input
-                    v-model="config.content_selector"
-                    :disabled="!config.item_selector"
-                  >
-                    <template #suffix>
-                      <a-button
-                        size="mini"
-                        type="text"
-                        :disabled="!config.item_selector"
-                        @click="setTargetField('content_selector')"
-                      >
-                        <icon-select-all /> Pick
-                      </a-button>
-                    </template>
-                  </a-input>
-                </a-form-item>
+                Fetch & Next <icon-arrow-right />
+              </a-button>
+            </div>
+          </a-form>
+        </div>
+
+        <!-- STEP 2: Extraction Rules -->
+        <div v-show="currentStep === 2" class="step-content h-full">
+          <a-row :gutter="16" class="h-full">
+            <!-- Left: Preview Component -->
+            <a-col :span="14" class="h-full flex flex-col">
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-bold">Page Preview</span>
+                <a-tag v-if="isSelectionMode" color="blue"
+                  >Selection Mode On</a-tag
+                >
               </div>
 
-              <a-space>
-                <a-button
-                  type="primary"
-                  :loading="parsing"
-                  :disabled="!config.item_selector"
-                  @click="handlePreview"
-                >
-                  Preview RSS Items
-                </a-button>
-                <a-button @click="clearConfig">Clear</a-button>
-              </a-space>
-            </a-form>
-          </a-card>
+              <!-- Use the extracted HtmlPreview component -->
+              <HtmlPreview
+                ref="previewRef"
+                class="flex-1"
+                :html-content="htmlContent"
+                :is-selection-mode="isSelectionMode"
+                @select="handleElementSelect"
+              />
+            </a-col>
 
-          <a-card class="result-card mt-4" title="Extracted Items">
-            <div v-if="parsedItems.length > 0">
-              <a-collapse>
-                <a-collapse-item
-                  v-for="(item, idx) in parsedItems"
-                  :key="idx"
-                  :header="item.title || 'No Title'"
-                >
-                  <p><strong>Link:</strong> {{ item.link }}</p>
-                  <p><strong>Date:</strong> {{ item.date }}</p>
-                  <div class="content-preview">
-                    <strong>Content Preview:</strong>
-                    <div
-                      style="
-                        max-height: 100px;
-                        overflow: hidden;
-                        text-overflow: ellipsis;
-                      "
+            <!-- Right: Config & Preview -->
+            <a-col :span="10" class="h-full flex flex-col">
+              <div class="flex-1 overflow-y-auto pr-2">
+                <a-alert type="info" class="mb-4">
+                  1. Click "Pick" and select an element in the preview.<br />
+                  2. Click "Run Preview" to verify extracted data.
+                </a-alert>
+
+                <a-form :model="config" layout="vertical">
+                  <a-card
+                    title="1. List Item (Required)"
+                    size="small"
+                    class="mb-4 border-blue-100"
+                  >
+                    <a-form-item label="CSS Selector">
+                      <a-input
+                        v-model="config.item_selector"
+                        placeholder=".article-card"
+                      >
+                        <template #suffix>
+                          <a-button
+                            size="mini"
+                            type="primary"
+                            status="success"
+                            @click="setTargetField('item_selector')"
+                          >
+                            <icon-select-all /> Pick
+                          </a-button>
+                        </template>
+                      </a-input>
+                    </a-form-item>
+                  </a-card>
+
+                  <a-card
+                    title="2. Fields (Relative)"
+                    size="small"
+                    :class="{ 'opacity-50': !config.item_selector }"
+                  >
+                    <a-form-item label="Title">
+                      <a-input
+                        v-model="config.title_selector"
+                        :disabled="!config.item_selector"
+                      >
+                        <template #suffix>
+                          <a-button
+                            size="mini"
+                            @click="setTargetField('title_selector')"
+                            :disabled="!config.item_selector"
+                            >Pick</a-button
+                          >
+                        </template>
+                      </a-input>
+                    </a-form-item>
+                    <a-form-item label="Link">
+                      <a-input
+                        v-model="config.link_selector"
+                        :disabled="!config.item_selector"
+                      >
+                        <template #suffix>
+                          <a-button
+                            size="mini"
+                            @click="setTargetField('link_selector')"
+                            :disabled="!config.item_selector"
+                            >Pick</a-button
+                          >
+                        </template>
+                      </a-input>
+                    </a-form-item>
+                    <a-form-item label="Date (Optional)">
+                      <a-input
+                        v-model="config.date_selector"
+                        :disabled="!config.item_selector"
+                      >
+                        <template #suffix>
+                          <a-button
+                            size="mini"
+                            @click="setTargetField('date_selector')"
+                            :disabled="!config.item_selector"
+                            >Pick</a-button
+                          >
+                        </template>
+                      </a-input>
+                    </a-form-item>
+                    <a-form-item label="Description (Optional)">
+                      <a-input
+                        v-model="config.description_selector"
+                        :disabled="!config.item_selector"
+                      >
+                        <template #suffix>
+                          <a-button
+                            size="mini"
+                            @click="setTargetField('description_selector')"
+                            :disabled="!config.item_selector"
+                            >Pick</a-button
+                          >
+                        </template>
+                      </a-input>
+                    </a-form-item>
+                  </a-card>
+                </a-form>
+
+                <!-- Immediate Preview Results -->
+                <div v-if="parsedItems.length > 0" class="mt-4">
+                  <a-divider orientation="left"
+                    >Preview Results ({{ parsedItems.length }})</a-divider
+                  >
+                  <a-collapse :default-active-key="[0]">
+                    <a-collapse-item
+                      v-for="(item, idx) in parsedItems"
+                      :key="idx"
+                      :header="item.title || '(No Title)'"
                     >
-                      {{ item.content }}
-                    </div>
-                  </div>
-                </a-collapse-item>
-              </a-collapse>
+                      <div class="text-xs text-gray-500 mb-1">{{
+                        item.link
+                      }}</div>
+                      <div class="text-xs text-gray-400 mb-2">{{
+                        item.date
+                      }}</div>
+                      <div class="text-sm text-gray-600 truncate">{{
+                        item.content || item.description
+                      }}</div>
+                    </a-collapse-item>
+                  </a-collapse>
+                </div>
+              </div>
+
+              <!-- Actions Footer -->
+              <div
+                class="flex justify-between mt-4 pt-4 border-t border-gray-100 bg-white"
+              >
+                <a-button @click="prevStep">Back</a-button>
+                <a-space>
+                  <a-button
+                    type="outline"
+                    :loading="parsing"
+                    :disabled="!config.item_selector"
+                    @click="runPreview"
+                  >
+                    Run Preview
+                  </a-button>
+                  <a-button
+                    type="primary"
+                    :disabled="parsedItems.length === 0"
+                    @click="nextStep"
+                  >
+                    Next Step
+                  </a-button>
+                </a-space>
+              </div>
+            </a-col>
+          </a-row>
+        </div>
+
+        <!-- STEP 3: Feed Metadata -->
+        <div v-show="currentStep === 3" class="step-content">
+          <div class="max-w-2xl mx-auto">
+            <a-alert title="Extraction Configured" type="success" class="mb-6">
+              Rules defined! Extracted {{ parsedItems.length }} items. Now set
+              the feed metadata.
+            </a-alert>
+
+            <a-form :model="feedMeta" layout="vertical">
+              <a-form-item label="Feed Title" required>
+                <a-input
+                  v-model="feedMeta.title"
+                  placeholder="e.g. My Tech Blog RSS"
+                />
+              </a-form-item>
+              <a-form-item label="Feed Description">
+                <a-textarea
+                  v-model="feedMeta.description"
+                  placeholder="A brief description of this feed..."
+                />
+              </a-form-item>
+              <a-form-item label="Site Link">
+                <a-input
+                  v-model="feedMeta.link"
+                  placeholder="Original website URL"
+                />
+              </a-form-item>
+              <a-row :gutter="16">
+                <a-col :span="12">
+                  <a-form-item label="Author Name">
+                    <a-input v-model="feedMeta.author_name" />
+                  </a-form-item>
+                </a-col>
+                <a-col :span="12">
+                  <a-form-item label="Author Email">
+                    <a-input v-model="feedMeta.author_email" />
+                  </a-form-item>
+                </a-col>
+              </a-row>
+            </a-form>
+
+            <div class="flex justify-between mt-8">
+              <a-button @click="prevStep">Back</a-button>
+              <a-button type="primary" @click="nextStep">Next</a-button>
             </div>
-            <a-empty v-else description="No items extracted yet" />
-          </a-card>
-        </a-col>
-      </a-row>
+          </div>
+        </div>
+
+        <!-- STEP 4: Save -->
+        <div v-show="currentStep === 4" class="step-content">
+          <div class="max-w-xl mx-auto">
+            <a-card title="Review & Save Recipe" class="border-blue-100">
+              <a-descriptions :column="1" title="Summary" bordered>
+                <a-descriptions-item label="Source URL">{{
+                  url
+                }}</a-descriptions-item>
+                <a-descriptions-item label="Feed Title">{{
+                  feedMeta.title
+                }}</a-descriptions-item>
+                <a-descriptions-item label="Item Count"
+                  >{{ parsedItems.length }} items detected</a-descriptions-item
+                >
+              </a-descriptions>
+
+              <a-divider />
+
+              <a-form :model="recipeMeta" layout="vertical" class="mt-6">
+                <a-form-item
+                  label="Recipe Unique ID"
+                  required
+                  help="e.g., 'tech-news-daily'"
+                >
+                  <a-input v-model="recipeMeta.id" placeholder="my-recipe-id" />
+                </a-form-item>
+                <a-form-item label="Internal Description">
+                  <a-textarea
+                    v-model="recipeMeta.description"
+                    placeholder="Notes for yourself..."
+                  />
+                </a-form-item>
+
+                <div class="mt-8 text-center">
+                  <a-button
+                    type="primary"
+                    long
+                    size="large"
+                    status="success"
+                    :loading="saving"
+                    @click="handleSaveRecipe"
+                  >
+                    <icon-save /> Confirm & Save
+                  </a-button>
+                </div>
+              </a-form>
+            </a-card>
+
+            <div class="flex justify-start mt-8">
+              <a-button @click="prevStep">Back</a-button>
+            </div>
+          </div>
+        </div>
+      </a-card>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive, onBeforeUnmount } from 'vue';
+  import { ref, reactive } from 'vue';
   import axios from 'axios';
   import DOMPurify from 'dompurify';
   import { Message } from '@arco-design/web-vue';
-  import { IconSelectAll } from '@arco-design/web-vue/es/icon';
+  import {
+    IconSelectAll,
+    IconArrowRight,
+    IconSave,
+  } from '@arco-design/web-vue/es/icon';
   import XHeader from '@/components/header/x-header.vue';
+  import { createCustomRecipe } from '@/api/custom_recipe';
+  import { useRouter } from 'vue-router';
 
-  const IGNORED_CLASSES = [
-    'flex',
-    'row',
-    'col',
-    'grid',
-    'hidden',
-    'block',
-    'items-center',
-    'justify-center',
-    'fc-highlight',
-  ];
+  // Import extracted utils and components
+  import { getCssSelector, IGNORED_CLASSES } from './utils/selector';
+  import HtmlPreview from './components/HtmlPreview.vue';
 
+  const router = useRouter();
+
+  // --- State ---
+  const currentStep = ref(1);
   const url = ref('');
   const fetching = ref(false);
   const parsing = ref(false);
+  const saving = ref(false);
   const htmlContent = ref('');
+  const parsedItems = ref<any[]>([]);
+
+  // Selection State
   const isSelectionMode = ref(true);
-  const previewIframe = ref<HTMLIFrameElement | null>(null);
-  const currentHoverEl = ref<HTMLElement | null>(null);
+  const currentTargetField = ref<string>('');
+  const previewRef = ref<InstanceType<typeof HtmlPreview> | null>(null);
 
-  // Variables to store references for cleanup
-  const iframeDoc = ref<Document | null>(null);
-  const injectedStyle = ref<HTMLStyleElement | null>(null);
-
+  // Config State
   const config = reactive<{ [key: string]: string }>({
     item_selector: '',
     title_selector: '',
     link_selector: '',
     date_selector: '',
-    content_selector: '',
+    description_selector: '',
   });
 
-  const parsedItems = ref<any[]>([]);
-  const currentTargetField = ref<string>(''); // Field currently being picked
+  // Step 3 State
+  const feedMeta = reactive({
+    title: '',
+    link: '',
+    description: '',
+    author_name: '',
+    author_email: '',
+  });
 
-  const toggleMode = () => {
-    isSelectionMode.value = !isSelectionMode.value;
+  // Step 4 State
+  const recipeMeta = reactive({
+    id: '',
+    description: '',
+  });
+
+  // --- Actions ---
+
+  const nextStep = () => {
+    currentStep.value += 1;
   };
 
-  const setTargetField = (field: string) => {
-    currentTargetField.value = field;
-    Message.info(
-      `Please click an element in the preview to select selector for ${field}`
-    );
+  const prevStep = () => {
+    if (currentStep.value > 1) currentStep.value -= 1;
   };
 
-  const handleFetch = async () => {
+  // Step 1 -> 2
+  const fetchAndNext = async () => {
     if (!url.value) return;
     fetching.value = true;
     try {
@@ -252,15 +402,12 @@
       })) as any;
       if (res.code === 0) {
         let raw = res.data;
-        // Inject base tag for relative links
         const baseTag = `<base href="${url.value}" />`;
-        // Insert after <head> or at start
         if (raw.toLowerCase().includes('<head>')) {
           raw = raw.replace(/<head>/i, `<head>${baseTag}`);
         } else {
           raw = `${baseTag}${raw}`;
         }
-
         htmlContent.value = DOMPurify.sanitize(raw, {
           WHOLE_DOCUMENT: true,
           ADD_TAGS: ['link', 'style', 'head', 'meta', 'body', 'html', 'base'],
@@ -279,7 +426,9 @@
             'height',
           ],
         });
-        Message.success('Page fetched successfully');
+
+        feedMeta.link = url.value; // Auto-fill
+        nextStep();
       } else {
         Message.error(res.msg || 'Fetch failed');
       }
@@ -290,312 +439,185 @@
     }
   };
 
-  const handlePreview = async () => {
-    if (!config.item_selector) {
-      Message.warning('Please set at least the Item Selector');
-      return;
-    }
+  // Step 2 -> 3
+  const runPreview = async () => {
+    if (!config.item_selector) return;
     parsing.value = true;
     try {
       const res = (await axios.post('/api/admin/tools/parse', {
         html: htmlContent.value,
         url: url.value,
-        ...config,
+        item_selector: config.item_selector,
+        title_selector: config.title_selector,
+        link_selector: config.link_selector,
+        date_selector: config.date_selector,
+        content_selector: config.description_selector,
       })) as any;
 
       if (res.code === 0) {
         parsedItems.value = res.data;
+        if (parsedItems.value.length === 0) {
+          Message.warning('No items matched. Please check your selectors.');
+          return;
+        }
         Message.success(`Extracted ${parsedItems.value.length} items`);
+        // Do not auto-advance. Let user check preview first.
       } else {
         Message.error(res.msg || 'Parse failed');
       }
     } catch (err) {
-      Message.error('Error parsing RSS');
+      Message.error('Error parsing content');
     } finally {
       parsing.value = false;
     }
   };
 
-  const clearConfig = () => {
-    config.item_selector = '';
-    config.title_selector = '';
-    config.link_selector = '';
-    config.date_selector = '';
-    config.content_selector = '';
-    parsedItems.value = [];
-  };
-
-  // --- Selector Generation Logic ---
-
-  // Enhanced smart selector generator
-  const getCssSelector = (el: HTMLElement, isItemSelector = false): string => {
-    if (!el || el.nodeType !== Node.ELEMENT_NODE) return '';
-
-    // 1. If ID exists, use it.
-    if (el.id) {
-      // Unless it's the item selector and we want to select multiples?
-      // Usually IDs are unique, so bad for list items.
-      if (!isItemSelector) return `#${CSS.escape(el.id)}`;
-    }
-
-    const path: string[] = [];
-    let currentEl: HTMLElement | null = el;
-
-    const doc = previewIframe.value?.contentDocument;
-    const body = doc?.body;
-    const html = doc?.documentElement;
-
-    while (currentEl && currentEl.nodeType === Node.ELEMENT_NODE) {
-      let selector = currentEl.nodeName.toLowerCase();
-
-      // Try to use class if available and meaningful
-      if (currentEl.classList.length > 0) {
-        // Filter out common utility classes (simplified heuristic)
-        const classes = Array.from(currentEl.classList).filter(
-          (c) => !IGNORED_CLASSES.includes(c)
-        );
-        if (classes.length > 0) {
-          selector += `.${classes.map((c) => CSS.escape(c)).join('.')}`;
-        }
-      }
-
-      // If this is the *target* element (first in loop) and we are selecting List Item
-      if (currentEl === el && isItemSelector) {
-        // Do NOT add :nth-of-type to the target element itself
-        // This ensures we match all siblings
-      } else if (currentEl.id) {
-        // For parent path, or normal selection, use nth-of-type to be precise
-        selector = `#${CSS.escape(currentEl.id)}`;
-        path.unshift(selector);
-        break;
-      } else {
-        // check siblings
-        let sib = currentEl;
-        let nth = 1;
-        // eslint-disable-next-line no-cond-assign
-        while ((sib = sib.previousElementSibling as HTMLElement)) {
-          if (sib.nodeName.toLowerCase() === currentEl.nodeName.toLowerCase()) {
-            nth += 1;
-          }
-        }
-        if (nth !== 1) selector += `:nth-of-type(${nth})`;
-      }
-
-      path.unshift(selector);
-      currentEl = currentEl.parentNode as HTMLElement;
-
-      // Stop if we hit the container or root
-      if (!currentEl || currentEl === body || currentEl === html) break;
-    }
-
-    return path.join(' > ');
-  };
-
-  const updateHighlight = (target: HTMLElement) => {
-    // Remove old highlight
-    const doc = previewIframe.value?.contentDocument;
-    if (doc) {
-      const old = doc.querySelector('.fc-highlight');
-      if (old) old.classList.remove('fc-highlight');
-    }
-
-    // Add new highlight
-    target.classList.add('fc-highlight');
-    currentHoverEl.value = target;
-  };
-
-  const handleMouseOver = (e: Event) => {
-    if (!isSelectionMode.value) return;
-    let target = e.target as HTMLElement;
-    // Handle text nodes
-    if (target && target.nodeType === 3) {
-      target = target.parentElement as HTMLElement;
-    }
-
-    if (
-      target &&
-      target.nodeType === Node.ELEMENT_NODE &&
-      target !== currentHoverEl.value
-    ) {
-      updateHighlight(target);
-    }
-  };
-
-  const handleKeyDown = (e: KeyboardEvent) => {
-    if (!isSelectionMode.value || !currentHoverEl.value) return;
-
-    if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      const parent = currentHoverEl.value.parentElement;
-      if (parent && parent.tagName !== 'BODY' && parent.tagName !== 'HTML') {
-        updateHighlight(parent);
-      }
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      const child = currentHoverEl.value.firstElementChild as HTMLElement;
-      if (child) {
-        updateHighlight(child);
-      }
-    }
-  };
-
-  const handleClick = (e: Event) => {
-    if (!isSelectionMode.value) return;
-    e.preventDefault();
-    e.stopPropagation();
-
-    // Use currentHighlighted element instead of event target directly
-    // This allows picking parent via keyboard
-    let target = currentHoverEl.value || (e.target as HTMLElement);
-    // Handle text nodes
-    if (target && target.nodeType === 3) {
-      target = target.parentElement as HTMLElement;
-    }
-
-    if (!target || target.nodeType !== Node.ELEMENT_NODE) return;
-
-    if (!currentTargetField.value) {
-      Message.info(
-        'Select a field (Pick button) first before clicking an element.'
-      );
+  // Step 4: Save
+  const handleSaveRecipe = async () => {
+    if (!recipeMeta.id) {
+      Message.warning('Recipe Name (ID) is required');
       return;
     }
 
-    // Determine if we are picking item selector
-    const isItemSelector = currentTargetField.value === 'item_selector';
-    const fullSelector = getCssSelector(target, isItemSelector);
+    saving.value = true;
 
-    // Need access to iframe body to query selector
-    const doc = previewIframe.value?.contentDocument;
+    // Construct SourceConfig JSON based on Scenario D
+    const sourceConfig = {
+      type: 'html',
+      http_fetcher: {
+        url: url.value,
+      },
+      html_parser: {
+        item_selector: config.item_selector,
+        title: config.title_selector,
+        link: config.link_selector,
+        description: config.description_selector,
+      },
+      feed_meta: {
+        title: feedMeta.title,
+        link: feedMeta.link,
+        description: feedMeta.description,
+        author_name: feedMeta.author_name,
+        author_email: feedMeta.author_email,
+      },
+    };
+
+    try {
+      await createCustomRecipe({
+        id: recipeMeta.id,
+        description: recipeMeta.description,
+        craft: 'proxy', // Default craft flow
+        source_type: 'html',
+        source_config: JSON.stringify(sourceConfig),
+      });
+
+      Message.success('Recipe saved successfully!');
+      router.push({ name: 'CustomRecipe' }); // Navigate to custom recipe page
+    } catch (err: any) {
+      Message.error(`Failed to save recipe: ${err.message || err}`);
+    } finally {
+      saving.value = false;
+    }
+  };
+
+  // --- Selection Logic ---
+
+  const setTargetField = (field: string) => {
+    currentTargetField.value = field;
+    Message.info(
+      `Click an element in the preview to pick selector for: ${field}`
+    );
+  };
+
+  // This function now receives the RAW DOM element from HtmlPreview
+  const handleElementSelect = (target: HTMLElement) => {
+    if (!currentTargetField.value) {
+      Message.warning('Please click a "Pick" button on the right first.');
+      return;
+    }
+
+    // Use the extracted utility, passing the iframe document for context checks
+    const doc = previewRef.value?.contentDocument;
+    const isItemSelector = currentTargetField.value === 'item_selector';
+
+    // Calculate full absolute selector first
+    const fullSelector = getCssSelector(
+      target,
+      doc || undefined,
+      isItemSelector
+    );
+
     if (!doc) return;
 
     if (isItemSelector) {
       config.item_selector = fullSelector;
-
-      // Try to validate how many items matched
       try {
         const matches = doc.querySelectorAll(fullSelector);
         Message.success(
-          `Set Item Selector: ${fullSelector} (${matches.length} matches)`
+          `Matched ${matches.length} items with: ${fullSelector}`
         );
-      } catch (err) {
+      } catch {
         Message.success(`Set Item Selector: ${fullSelector}`);
       }
     } else {
-      // Relative selection
+      // Relative selection logic
       if (!config.item_selector) {
-        Message.warning(
-          'Please set List Item Selector first to calculate relative path.'
-        );
+        Message.warning('Set List Item Selector first!');
         return;
       }
 
-      // Check if target is inside an element matching item_selector
+      // Find which item container this target belongs to
       const items = doc.querySelectorAll(config.item_selector);
       let foundItem: HTMLElement | null = null;
 
-      if (items) {
-        for (let i = 0; i < items.length; i += 1) {
-          if (items[i].contains(target)) {
-            foundItem = items[i] as HTMLElement;
-            break;
-          }
+      for (let i = 0; i < items.length; i += 1) {
+        if (items[i].contains(target)) {
+          foundItem = items[i] as HTMLElement;
+          break;
         }
       }
 
       if (foundItem) {
         if (target === foundItem) {
-          config[currentTargetField.value] = ''; // "this"
-          Message.info(
-            "Selected the item itself. Leave empty to use item's direct text/attr?"
-          );
+          config[currentTargetField.value] = '.'; // "this" - explicit dot for backend
+          Message.info('Selected the item container itself.');
         } else {
+          // Calculate relative path
           const relPath: string[] = [];
           let curr: HTMLElement = target;
+
           while (curr && curr !== foundItem) {
             let selector = curr.tagName.toLowerCase();
             if (curr.classList.length > 0) {
               const validClasses = Array.from(curr.classList).filter(
                 (c) => !IGNORED_CLASSES.includes(c)
               );
-              if (validClasses.length > 0) {
-                selector += `.${CSS.escape(validClasses[0])}`; // take first valid class
-              }
+              if (validClasses.length > 0)
+                selector += `.${CSS.escape(validClasses[0])}`;
             }
             relPath.unshift(selector);
             curr = curr.parentNode as HTMLElement;
           }
+
           config[currentTargetField.value] = relPath.join(' ');
-          Message.success(
-            `Set ${currentTargetField.value} (relative): ${relPath.join(' ')}`
-          );
+          Message.success(`Set relative path: ${relPath.join(' ')}`);
         }
       } else {
-        Message.warning(
-          'Clicked element is not inside any element matching the List Item Selector'
-        );
+        Message.warning('Selection must be inside a matched List Item!');
       }
     }
 
-    currentTargetField.value = ''; // Reset picker state
+    currentTargetField.value = ''; // Reset picker
   };
-
-  const onIframeLoad = () => {
-    const iframe = previewIframe.value;
-    if (iframe && iframe.contentDocument) {
-      const doc = iframe.contentDocument;
-
-      // Store reference to iframe document
-      iframeDoc.value = doc;
-
-      // Inject styles for hover effect
-      const style = doc.createElement('style');
-      style.textContent = `
-            .fc-highlight { outline: 2px dashed #165dff !important; background-color: rgba(22, 93, 255, 0.05) !important; cursor: pointer; }
-          `;
-      doc.head.appendChild(style);
-      // Store reference to style element for later cleanup
-      injectedStyle.value = style;
-
-      // Attach listeners
-      doc.addEventListener('click', handleClick);
-      doc.addEventListener('mouseover', handleMouseOver);
-      doc.addEventListener('keydown', handleKeyDown);
-      // Ensure iframe can receive focus for key events
-      doc.body.setAttribute('tabindex', '0');
-    }
-  };
-
-  // Clean up event listeners, injected styles, and attributes when component unmounts
-  onBeforeUnmount(() => {
-    if (iframeDoc.value) {
-      // Remove event listeners
-      iframeDoc.value.removeEventListener('click', handleClick);
-      iframeDoc.value.removeEventListener('mouseover', handleMouseOver);
-      iframeDoc.value.removeEventListener('keydown', handleKeyDown);
-
-      // Remove injected style element if it exists
-      if (
-        injectedStyle.value &&
-        iframeDoc.value.head.contains(injectedStyle.value)
-      ) {
-        iframeDoc.value.head.removeChild(injectedStyle.value);
-      }
-
-      // Remove tabindex attribute if it exists
-      if (iframeDoc.value.body.hasAttribute('tabindex')) {
-        iframeDoc.value.body.removeAttribute('tabindex');
-      }
-    }
-  });
 </script>
 
 <style scoped>
-  .html-preview {
-    border: 1px solid #e5e6eb;
-    padding: 0; /* Remove padding for iframe */
-    width: 100%;
+  .wizard-card {
+    min-height: 700px;
+  }
+
+  .step-content {
+    margin-top: 24px;
     height: 600px;
-    background: white;
   }
 </style>
