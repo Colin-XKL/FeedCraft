@@ -32,42 +32,64 @@ func (p *HtmlParser) Parse(data []byte) (*gofeed.Feed, error) {
 	doc.Find(p.Config.ItemSelector).Each(func(i int, s *goquery.Selection) {
 		item := &gofeed.Item{}
 
+		// Helper to extract selection based on selector
+		// If selector is "." or empty, use current 's'
+		// Otherwise find descendant
+		getSelection := func(selector string) *goquery.Selection {
+			trimmedSelector := strings.TrimSpace(selector)
+			if trimmedSelector == "" || trimmedSelector == "." {
+				return s
+			}
+			return s.Find(trimmedSelector)
+		}
+
 		// Title
 		if p.Config.Title != "" {
-			item.Title = strings.TrimSpace(s.Find(p.Config.Title).Text())
+			item.Title = strings.TrimSpace(getSelection(p.Config.Title).Text())
 		}
 
 		// Link
 		if p.Config.Link != "" {
-			linkSel := s.Find(p.Config.Link)
-			if href, exists := linkSel.Attr("href"); exists {
+			sel := getSelection(p.Config.Link)
+			if href, exists := sel.Attr("href"); exists {
 				item.Link = href
 			} else {
-				item.Link = strings.TrimSpace(linkSel.Text())
+				item.Link = strings.TrimSpace(sel.Text())
 			}
 		}
 
 		// Date
 		if p.Config.Date != "" {
-			dateSel := s.Find(p.Config.Date)
-			dateStr := strings.TrimSpace(dateSel.Text())
+			sel := getSelection(p.Config.Date)
+			dateStr := strings.TrimSpace(sel.Text())
 			if dateStr == "" {
-				if val, exists := dateSel.Attr("datetime"); exists {
+				if val, exists := sel.Attr("datetime"); exists {
 					dateStr = val
 				}
 			}
 			item.Published = dateStr
 		}
 
-		// Description
+		// Description (plain text)
 		if p.Config.Description != "" {
-			item.Description = strings.TrimSpace(s.Find(p.Config.Description).Text())
-			// fall back to content if description is empty, or maybe we want Content specifically?
-			// gofeed.Item has Description and Content.
-			item.Content = item.Description
+			item.Description = strings.TrimSpace(getSelection(p.Config.Description).Text())
+		}
+
+		// Content (rich HTML)
+		if p.Config.Content != "" {
+			sel := getSelection(p.Config.Content)
+			html, err := sel.Html()
+			if err != nil {
+				// Log error but don't fail, just leave content empty
+				// logrus.Warnf("Failed to extract content for item: %v", err)
+				item.Content = ""
+			} else {
+				item.Content = html
+			}
 		}
 
 		feed.Items = append(feed.Items, item)
+
 	})
 
 	return feed, nil

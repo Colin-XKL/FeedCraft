@@ -21,6 +21,7 @@ type HtmlParserConfig struct {
 	Link         string `json:"link"`
 	Date         string `json:"date,omitempty"`
 	Description  string `json:"description,omitempty"`
+	Content      string `json:"content,omitempty"`
 	// ... other field selectors
 }
 
