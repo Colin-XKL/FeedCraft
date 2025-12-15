@@ -448,10 +448,10 @@
         html: htmlContent.value,
         url: url.value,
         item_selector: config.item_selector,
-        title: config.title_selector,
-        link: config.link_selector,
-        date: config.date_selector,
-        description: config.description_selector,
+        title_selector: config.title_selector,
+        link_selector: config.link_selector,
+        date_selector: config.date_selector,
+        content_selector: config.description_selector,
       })) as any;
 
       if (res.code === 0) {
