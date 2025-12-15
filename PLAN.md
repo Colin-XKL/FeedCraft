@@ -144,9 +144,9 @@ type JSONOptions struct {
 ### Phase 1: 基础设施重构 (Foundation)
 **目标**：建立新的接口体系，并迁移现有的 RSS 功能，确保系统不退化。
 
-1.  **数据库迁移**：
-    - 修改 `Recipe` 表，废弃 `input_url`，新增 `source_type` (varchar) 和 `source_config` (json/text)。
-    - 编写迁移脚本：将旧 `input_url` 转换为 `type: "rss", config: { "url": "..." }`。
+1.  **数据库迁移（蓝绿部署策略）**：
+    - **创建新表**: 不修改现有 `custom_recipes` 表。而是创建一张新的 `custom_recipes_v2` 表，包含 `SourceType` (varchar) 和 `SourceConfig` (json/text) 等新字段。
+    - **编写迁移脚本**: 编写脚本从旧的 `custom_recipes` 表中读取 `FeedURL` 数据，将其转换为 `type: "rss", config: { "url": "..." }` 的 `SourceConfig` 格式，并插入到新的 `custom_recipes_v2` 表中。此过程是非破坏性的，不触碰原表。
 2.  **核心接口实现**：
     - 定义上述 `Source`, `Fetcher`, `Parser` 接口。
     - 实现 `SourceRegistry` (全局注册中心)。
@@ -155,6 +155,7 @@ type JSONOptions struct {
     - *注意*：RSS 源可以直接实现 `Source` 接口（调用 `gofeed.ParseURL`），也可以拆分为 `HttpFetcher` + `RSSParser`。为了架构统一，建议采用拆分模式。
 4.  **对接 Controller**：
     - 修改业务层代码，从“读取 URL”变为“通过 Factory 创建 Source 并调用 Generate”。
+    - **更新 Controller 逻辑**: `internal/recipe/custom_recipe.go` 中的 `CustomRecipe` 处理函数将不再使用旧的 `FeedURL` 或进行自循环 HTTP 请求。它将直接从 `custom_recipes_v2` 表中获取 `CustomRecipeV2` 记录，通过 `SourceFactory` 创建 `Source` 实例并调用 `Generate()` 方法获取原始 Feed，然后将该 Feed 直接传递给 `craft` 包的 `ProcessFeed` 函数进行处理。`cmd/main.go` 中的预热调度器也将更新以使用新的 V2 逻辑。
 
 ### Phase 2: 通用能力构建 (Generic Capabilities)
 **目标**：实现 `PipelineSource` 模式，并落地 HTML 和 JSON 场景。
@@ -198,3 +199,257 @@ type JSONOptions struct {
     - 限制 Fetcher 的最大响应体积，防止内存溢出。
 3.  **兼容性**：确保 Phase 1 的迁移完全兼容旧版数据，用户无感知。
 4.  **扩展性预留**：Parser 接口设计时，除了 `Parse([]byte)`，未来可能需要传入 `BaseURL` 用于处理相对路径链接（HTML 场景常见问题）。建议在 Parser 结构体初始化时注入 Context 或 Config。
+
+---
+
+## 7. 具体实现方案 (Detailed Implementation Plan)
+
+本章节将 `PLAN` 中定义的架构蓝图转化为具体的文件、代码和修改点。
+
+### 7.1 新包和目录结构
+
+我们将创建 `internal/source` 包来存放所有数据源生成相关的逻辑。
+
+```
+internal/
+├───source/
+│   ├─── source.go         # Source, SourceFactory 核心接口定义
+│   ├─── registry.go       # 全局 Source Registry 实现
+│   ├─── pipeline.go       # PipelineSource 通用实现
+│   ├─── types.go          # 所有配置结构体 (SourceConfig, HTMLOptions etc.)
+│   │
+│   ├─── rss.go            # RSS Source 的 Factory 和实现
+│   ├─── html.go           # HTML Source 的 Factory
+│   ├─── json.go           # JSON Source 的 Factory
+│   │
+│   ├─── fetcher/
+│   │    ├── fetcher.go     # Fetcher 接口定义
+│   │    └── http_fetcher.go  # 基于 http.Get 的简单实现
+│   │    └── curl_fetcher.go  # 基于 curl 命令的实现
+│   │
+│   └─── parser/
+│        ├── parser.go      # Parser 接口定义
+│        ├── rss_parser.go    # 将 XML/RSS byte 解析为 Feed
+│        ├── html_parser.go   # 基于 goquery 的 HTML 解析器
+│        └── json_parser.go   # 基于 gjson 的 JSON 解析器
+│
+└───dao/
+    └─── recipe.go         # [修改]
+    └─── migrate.go        # [修改]
+└───controller/
+    └─── craft_flow.go     # [修改]
+```
+
+### 7.2 核心定义实现 (Code Definitions)
+
+**File: `internal/source/types.go`**
+```go
+package source
+
+import (
+    "encoding/json"
+    "gorm.io/gorm"
+)
+
+// SourceConfig 是 Recipe.SourceConfig 字段的 Go 结构。
+type SourceConfig struct {
+    Type   string          `json:"type"`            // "rss", "html", "json"
+    Config json.RawMessage `json:"config"`          // 特定类型的配置
+}
+
+// RSSOptions 是 Type="rss" 时的配置。
+type RSSOptions struct {
+    URL string `json:"url"`
+}
+
+// HTMLOptions 是 Type="html" 时的配置。
+type HTMLOptions struct {
+    URL          string            `json:"url"`
+    ItemSelector string            `json:"item_selector"` // 列表项选择器
+    Title        string            `json:"title"`         // 标题选择器
+    Link         string            `json:"link"`          // 链接选择器 (可选, 默认为 item 的 href)
+    Description  string            `json:"description"`   // 描述选择器 (可选)
+    // ... 其他字段选择器
+}
+
+// JSONOptions 是 Type="json" 时的配置。
+type JSONOptions struct {
+    URL            string            `json:"url"`      // 请求 URL
+    CurlCmd        string            `json:"curl_cmd"` // 或完整的 curl 命令
+    ItemsIterator  string            `json:"items_iterator"` // 列表项的 gjson-path
+    Title          string            `json:"title"`          // 标题的 gjson-path
+    Link           string            `json:"link"`           // 链接的 gjson-path
+    Description    string            `json:"description"`    // 描述的 gjson-path
+    // ... 其他字段
+}
+
+// SearchOptions ...
+```
+
+**File: `internal/source/source.go`, `fetcher/fetcher.go`, `parser/parser.go`**
+- 这些文件将包含 `PLAN` 第 4 节中定义的 `Source`, `SourceFactory`, `Fetcher`, `Parser` 接口的 Go 代码。
+
+**File: `internal/source/registry.go`**
+```go
+package source
+
+import (
+    "fmt"
+    "sync"
+)
+
+var (
+    registry = make(map[string]SourceFactory)
+    lock     = new(sync.RWMutex)
+)
+
+// Register a new source factory. Panics if type is already registered.
+func Register(sourceType string, factory SourceFactory) {
+    lock.Lock()
+    defer lock.Unlock()
+    if _, exists := registry[sourceType]; exists {
+        panic(fmt.Sprintf("source factory for type '%s' already registered", sourceType))
+    }
+    registry[sourceType] = factory
+}
+
+// Get a source factory by type.
+func Get(sourceType string) (SourceFactory, error) {
+    lock.RLock()
+    defer lock.RUnlock()
+    factory, ok := registry[sourceType]
+    if !ok {
+        return nil, fmt.Errorf("no source factory registered for type '%s'", sourceType)
+    }
+    return factory, nil
+}
+```
+
+### 7.3 Phase 1: 基础设施重构 (具体步骤)
+
+1.  **数据库模型修改（蓝绿部署策略）**:
+    **File: `internal/dao/recipe.go`**
+    - `CustomRecipe` 结构体保持不变，对应 `custom_recipes` 表。
+    - 新增 `CustomRecipeV2` 结构体，包含 `SourceType` 和 `SourceConfig` 字段，并使用 `TableName()` 方法将其映射到 `custom_recipes_v2` 表。
+
+    ```go
+    // CustomRecipe represents the original recipe structure.
+    type CustomRecipe struct {
+        BaseModelWithoutPK
+        ID          string `gorm:"primaryKey" json:"id,omitempty" binding:"required"`
+        Description string `json:"description,omitempty"`
+        Craft       string `json:"craft" binding:"required"`
+        FeedURL     string `json:"feed_url" binding:"required"`
+    }
+
+    // CustomRecipeV2 represents the new, refactored recipe structure.
+    type CustomRecipeV2 struct {
+        BaseModelWithoutPK
+        ID           string `gorm:"primaryKey" json:"id,omitempty" binding:"required"`
+        Description  string `json:"description,omitempty"`
+        Craft        string `json:"craft" binding:"required"`
+        SourceType   string `gorm:"type:varchar(50);not null;default:'rss'"`
+        SourceConfig string `gorm:"type:text"`
+    }
+
+    func (CustomRecipeV2) TableName() string {
+        return "custom_recipes_v2"
+    }
+
+    // 新增 GetCustomRecipeByIDV2 等 DAO 函数来操作 CustomRecipeV2
+    func GetCustomRecipeByIDV2(db *gorm.DB, id string) (*CustomRecipeV2, error) { /* ... */ }
+    // ...
+    ```
+
+2.  **编写迁移逻辑**:
+    **File: `internal/dao/migrate.go`**
+    - `MigrateDatabases` 函数将 `AutoMigrate` 新的 `CustomRecipeV2` 表。
+    - 新增 `migrateRecipesToV2` 函数，该函数将从 `custom_recipes` 表读取所有 `CustomRecipe` 记录。
+    - 对于每条记录，将其 `FeedURL` 转换为 `SourceConfig` 格式，并构建 `CustomRecipeV2` 记录。
+    - 将新构建的 `CustomRecipeV2` 记录插入到 `custom_recipes_v2` 表中，并在插入前检查记录是否存在，以避免重复迁移。原有的修改和删除列的逻辑已被移除。
+
+3.  **实现 RSS Source**：
+    **File: `internal/source/fetcher/http_fetcher.go`** -> `HttpFetcher` 实现。
+    **File: `internal/source/parser/rss_parser.go`** -> `RssParser` 实现，内部使用 `gofeed.NewParser().Parse(bytes.NewReader(data))`。
+    **File: `internal/source/rss.go`**
+
+    ```go
+    package source
+
+    import (
+        "encoding/json"
+        // ... 其他 imports
+    )
+
+    func init() {
+        Register("rss", rssSourceFactory)
+    }
+
+    func rssSourceFactory(config json.RawMessage) (Source, error) {
+        var opts RSSOptions
+        if err := json.Unmarshal(config, &opts); err != nil {
+            return nil, fmt.Errorf("invalid rss config: %w", err)
+        }
+
+        return &PipelineSource{
+            Fetcher: &fetcher.HttpFetcher{URL: opts.URL},
+            Parser:  &parser.RssParser{},
+        }, nil
+    }
+    ```
+
+4.  **对接 Controller**:
+    **File: `internal/recipe/custom_recipe.go`**
+    - `CustomRecipe` 处理函数将修改为通过 `dao.GetCustomRecipeByIDV2` 从新的 `custom_recipes_v2` 表中获取 `CustomRecipeV2` 记录。
+    - 然后，它将解析 `SourceConfig`，通过 `SourceFactory` 创建 `Source` 实例，并调用 `Generate()` 方法生成原始 `*gofeed.Feed`。
+    - 接着，该原始 `*gofeed.Feed` 将直接传递给 `craft.ProcessFeed` 函数进行加工。
+    - 原有通过自循环 HTTP 请求来触发 CraftFlow 的低效机制已被完全移除。
+    - `cmd/main.go` 中的预热调度器也将更新以使用新的 V2 逻辑。
+
+### 7.4 Phase 2: 通用能力构建 (具体步骤)
+
+1.  **实现 `HtmlSelectorParser`**:
+    **File: `internal/source/parser/html_parser.go`**
+
+    ```go
+    package parser
+    import "github.com/PuerkitoBio/goquery"
+    
+    type HtmlParser struct {
+        BaseURL string // 用于补全相对链接
+        Opts    source.HTMLOptions
+    }
+
+    func (p *HtmlParser) Parse(data []byte) (*gofeed.Feed, error) {
+        doc, err := goquery.NewDocumentFromReader(bytes.NewReader(data))
+        if err != nil { /* ... */ }
+
+        feed := &gofeed.Feed{Title: doc.Find("title").First().Text()}
+        var items []*gofeed.Item
+
+        doc.Find(p.Opts.ItemSelector).Each(func(i int, s *goquery.Selection) {
+            title := s.Find(p.Opts.Title).Text()
+            link, _ := s.Find(p.Opts.Link).Attr("href")
+            // ... 处理相对链接: url.Parse(p.BaseURL).ResolveReference(link)
+            
+            items = append(items, &gofeed.Item{Title: title, Link: link, ...})
+        })
+
+        feed.Items = items
+        return feed, nil
+    }
+    ```
+
+2.  **实现 `JsonPathParser`**:
+    **File: `internal/source/parser/json_parser.go`**
+    - 推荐使用 `github.com/tidwall/gjson`。
+    - 解析逻辑与 `HtmlParser` 类似，但使用 `gjson.Get(jsonData, p.Opts.ItemsIterator)` 来遍历 `items`，并用 `item.Get(p.Opts.Title)` 来提取字段。
+
+3.  **注册新的 Factory**:
+    **File: `internal/source/html.go`** & **`internal/source/json.go`**
+    - 仿照 `rss.go`，创建 `htmlSourceFactory` 和 `jsonSourceFactory`。
+    - `htmlSourceFactory` 将组合 `fetcher.HttpFetcher` 和 `parser.HtmlParser`。
+    - `jsonSourceFactory` 将组合 `fetcher.CurlFetcher` (或 `HttpFetcher`) 和 `parser.JsonPathParser`。
+    - 在各自的 `init()` 函数中调用 `source.Register(...)`。
+
+至此，一个清晰、可执行的开发路线图已经建立。后续的 Phase 3 和 4 可在此基础上继续展开。
