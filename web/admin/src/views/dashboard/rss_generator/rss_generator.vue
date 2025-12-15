@@ -194,7 +194,10 @@
   import axios from 'axios';
   import DOMPurify from 'dompurify';
   import { Message } from '@arco-design/web-vue';
-  import { IconSelectAll } from '@arco-design/web-vue/es/icon';
+  import {
+    IconSelectAll,
+    IconQuestionCircle,
+  } from '@arco-design/web-vue/es/icon';
   import XHeader from '@/components/header/x-header.vue';
 
   const IGNORED_CLASSES = [
