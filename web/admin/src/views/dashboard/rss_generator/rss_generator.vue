@@ -512,7 +512,7 @@
       });
 
       Message.success('Recipe saved successfully!');
-      router.push({ name: 'CustomRecipes' }); // Assuming route exists or will exist
+      router.push({ name: 'CustomRecipe' }); // Navigate to custom recipe page
     } catch (err: any) {
       Message.error(`Failed to save recipe: ${err.message || err}`);
     } finally {

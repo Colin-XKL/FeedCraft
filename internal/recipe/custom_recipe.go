@@ -9,6 +9,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -31,7 +32,7 @@ func ProcessRecipeByID(ctx context.Context, recipeId string) (*feeds.Feed, error
 	// 1. Parse SourceConfig to get the source of the feed
 	var sourceConfig config.SourceConfig
 	if err := json.Unmarshal([]byte(recipe.SourceConfig), &sourceConfig); err != nil {
-		return nil, errors.New("invalid source config")
+		return nil, fmt.Errorf("invalid source config: %w", err)
 	}
 
 	// ... (rest of the function uses sourceConfig)
