@@ -2,6 +2,7 @@
   <div class="craft-selector">
     <!-- Trigger Input -->
     <div
+      v-if="!$slots.default"
       class="trigger-input w-full border border-[var(--color-neutral-3)] rounded bg-[var(--color-bg-2)] px-3 py-1.5 min-h-[32px] cursor-pointer flex items-center justify-between hover:border-[rgb(var(--primary-6))] transition-colors"
       tabindex="0"
       @click="openModal"
@@ -41,6 +42,9 @@
         />
         <icon-down class="text-[var(--color-text-3)]" />
       </div>
+    </div>
+    <div v-else @click="openModal">
+      <slot></slot>
     </div>
 
     <!-- Selection Modal -->

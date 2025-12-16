@@ -15,6 +15,11 @@
           () => {
             showEditModal = true;
             isUpdating = false;
+            editedCraftFlow = {
+              name: '',
+              description: '',
+              craftList: [],
+            };
           }
         "
         >{{ t('craftFlow.create') }}
@@ -73,10 +78,7 @@
           <a-textarea v-model="editedCraftFlow.description" />
         </a-form-item>
         <a-form-item :label="t('craftFlow.form.flow')" field="craftFlowConfig">
-          <CraftFlowSelect
-            v-model="editedCraftFlow.craftList"
-            mode="multiple"
-          />
+          <CraftFlowEditor v-model="editedCraftFlow.craftList" />
         </a-form-item>
       </a-form>
       <template #footer>
@@ -99,7 +101,7 @@
 
 <script setup lang="ts">
   import XHeader from '@/components/header/x-header.vue';
-  import { computed, onBeforeMount, ref } from 'vue';
+  import { onBeforeMount, ref } from 'vue';
   import {
     CraftFlow,
     createCraftFlow,
@@ -110,7 +112,7 @@
   } from '@/api/craft_flow';
   import { listCraftAtoms } from '@/api/craft_atom';
   import { namingValidator } from '@/utils/validator';
-  import CraftFlowSelect from '@/views/dashboard/craft_flow/CraftFlowSelect.vue';
+  import CraftFlowEditor from '@/views/dashboard/craft_flow/CraftFlowEditor.vue';
   import { useI18n } from 'vue-i18n';
 
   const { t } = useI18n();
@@ -131,6 +133,7 @@
   const editedCraftFlow = ref<any>({
     name: '',
     description: '',
+    craftList: [], // craftList should be initialized
     craft_flow_config: [],
   });
   // const showCreateModal = ref(false);
@@ -143,33 +146,18 @@
     { title: t('craftFlow.form.flow'), slotName: 'craft-flow-item-list' },
     { title: t('craftFlow.edit'), slotName: 'actions' },
   ];
-  const optionList = computed(() => {
-    const mapper = (item: any) => {
-      return {
-        value: item.name,
-        label: item.description?.length
-          ? `${item.name} (${item.description})`
-          : item.name,
-      };
-    };
-    return [
-      {
-        label: 'System Craft Atoms',
-        options: sysCraftAtomList.value.map(mapper),
-      },
-      {
-        label: 'Craft Atoms',
-        options: craftAtomList.value.map(mapper),
-      },
-      {
-        label: 'Craft Flows',
-        options: craftFlows.value.map(mapper),
-      },
-    ];
-  });
 
   const editBtnHandler = (craftFlow: CraftFlow) => {
-    editedCraftFlow.value = { ...craftFlow };
+    // Clone and ensure craftList exists
+    const craftFlowCopy = { ...craftFlow } as any;
+    if (!craftFlowCopy.craftList && craftFlowCopy.craft_flow_config) {
+      craftFlowCopy.craftList = craftFlowCopy.craft_flow_config.map(
+        (c: any) => c.craft_name
+      );
+    } else if (!craftFlowCopy.craftList) {
+      craftFlowCopy.craftList = [];
+    }
+    editedCraftFlow.value = craftFlowCopy;
     showEditModal.value = true;
     isUpdating.value = true;
   };
@@ -195,16 +183,20 @@
 
   async function listAllCraftFlow() {
     isLoading.value = true;
-    craftFlows.value = (await listCraftFlows()).data.map((item) => {
-      const ret = item;
-      const craftFlowConfigList = item.craft_flow_config ?? [];
-      ret.craftList =
-        craftFlowConfigList.map(
-          (craftConfigItem) => craftConfigItem.craft_name
-        ) ?? [];
-      return ret;
-    });
-    isLoading.value = false;
+    try {
+      const res = await listCraftFlows();
+      craftFlows.value = res.data.map((item) => {
+        const ret = item as any;
+        const craftFlowConfigList = item.craft_flow_config ?? [];
+        ret.craftList =
+          craftFlowConfigList.map(
+            (craftConfigItem) => craftConfigItem.craft_name
+          ) ?? [];
+        return ret;
+      });
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   const saveCraftFlow = async () => {
@@ -222,6 +214,7 @@
     editedCraftFlow.value = {
       name: '',
       description: '',
+      craftList: [],
       craft_flow_config: [],
     };
   };
