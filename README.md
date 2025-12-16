@@ -19,7 +19,7 @@ Doc: [English](https://deepwiki.com/Colin-XKL/FeedCraft) | 简体中文
 
 **FeedCraft** is a powerful tool to process your rss feeds as a middleware, use it to translate your feed, extract
 fulltext, emulate browser
-to render js-heavy page, use llm such as google gemini to generate brief for your rss article, use natural language to
+to render js-heavy page, turn any webpage into RSS, use llm such as google gemini to generate brief for your rss article, use natural language to
 filter your rss feed, and more!
 
 **FeedCraft** 是一个简单、强大的RSS 源处理工具,他可以作为一个中间件处理你的RSS源.
@@ -30,6 +30,7 @@ Gemini来生成文章摘要、通过自然语言筛选文章等
 
 - 开源可自部署, 与现用任何RSS阅读器协同使用
 - AI Power, 可以接入所有Open AI接口兼容的LLM对RSS进行处理, 可自定义prompt
+- **RSS Generator**: 内置可视化 RSS 生成器，可以将任意网页（如博客列表）转换为 RSS 订阅源
 - 支持保存规则批量应用到不同的RSS源
 - 支持**便携模式**(portable mode, 即用即走, 只需要在原RSS地址前面加个前缀即可), 和**高级模式**(dock mode,
   在后台页面自定义RSS地址和各类深度加工参数)
