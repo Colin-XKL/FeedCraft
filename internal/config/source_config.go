@@ -8,8 +8,9 @@ import (
 
 // HttpFetcherConfig holds the configuration for a simple HTTP GET fetcher.
 type HttpFetcherConfig struct {
-	URL     string            `json:"url"`
-	Headers map[string]string `json:"headers,omitempty"`
+	URL            string            `json:"url"`
+	Headers        map[string]string `json:"headers,omitempty"`
+	UseBrowserless bool              `json:"use_browserless,omitempty"`
 }
 
 // --- Parser-specific Configurations ---

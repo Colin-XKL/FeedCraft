@@ -1,0 +1,61 @@
+package util
+
+import (
+	"fmt"
+	"net/url"
+	"time"
+
+	"github.com/go-resty/resty/v2"
+	"github.com/sirupsen/logrus"
+)
+
+type BrowserRenderReq struct {
+	URL                 string           `json:"url"`
+	RejectResourceTypes []string         `json:"rejectResourceTypes,omitempty"`
+	WaitForSelector     *WaitForSelector `json:"waitForSelector,omitempty"`
+}
+
+type WaitForSelector struct {
+	Selector  string `json:"selector"`
+	TimeoutMs int64  `json:"timeout"`
+}
+
+// GetBrowserlessContent fetches the rendered HTML content of a URL using the browserless service.
+// It relies on the PUPPETEER_HTTP_ENDPOINT environment variable.
+func GetBrowserlessContent(websiteUrl string, timeout time.Duration) (string, error) {
+	envClient := GetEnvClient()
+	browserURI := envClient.GetString("PUPPETEER_HTTP_ENDPOINT")
+	if browserURI == "" {
+		// Log warning instead of fatal, as this might be called in contexts where we want to handle the error
+		logrus.Errorf("puppeteer websocket endpoint PUPPETEER_HTTP_ENDPOINT not found in env")
+		return "", fmt.Errorf("browserless service not configured (PUPPETEER_HTTP_ENDPOINT missing)")
+	}
+	// Since we are moving to a utility, returning an error is better.
+	// But if the env is missing, it's a configuration error.
+	// I'll stick to error return.
+
+	_, err := url.Parse(websiteUrl)
+	if err != nil {
+		logrus.Errorf("parse url failed: %v", err)
+		return "", err
+	}
+
+	client := resty.New().SetBaseURL(browserURI)
+	client.SetTimeout(timeout)
+
+	headers := map[string]string{
+		"Cache-Control": "no-cache",
+		"Content-Type":  "application/json",
+	}
+	reqBody := BrowserRenderReq{
+		URL:                 websiteUrl,
+		RejectResourceTypes: []string{"image"},
+	}
+
+	response, err := client.R().SetHeaders(headers).SetBody(reqBody).Post("/content")
+	if err != nil {
+		return "", err
+	}
+
+	return response.String(), nil
+}
