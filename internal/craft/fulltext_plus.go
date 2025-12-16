@@ -11,7 +11,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-
 func getRenderedHTML2(websiteUrl string, timeout time.Duration) (string, error) {
 	content, err := util.GetBrowserlessContent(websiteUrl, timeout)
 	if err != nil {
