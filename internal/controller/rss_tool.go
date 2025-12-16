@@ -134,36 +134,50 @@ func ParseRSS(c *gin.Context) {
 
 	doc.Find(req.ItemSelector).Each(func(i int, s *goquery.Selection) {
 		item := ParsedItem{}
+
+		// Helper to extract selection based on selector
+		// If selector is "." or empty (though frontend sends . now), use current 's'
+		// Otherwise find descendant
+		getSelection := func(selector string) *goquery.Selection {
+			if selector == "" || selector == "." {
+				return s
+			}
+			return s.Find(selector)
+		}
+
 		if req.TitleSelector != "" {
-			item.Title = strings.TrimSpace(s.Find(req.TitleSelector).Text())
+			item.Title = strings.TrimSpace(getSelection(req.TitleSelector).Text())
 		}
 		if req.LinkSelector != "" {
+			sel := getSelection(req.LinkSelector)
 			// Try to get href
-			href, exists := s.Find(req.LinkSelector).Attr("href")
+			href, exists := sel.Attr("href")
 			if exists {
 				item.Link = href
 			} else {
-				item.Link = strings.TrimSpace(s.Find(req.LinkSelector).Text())
+				item.Link = strings.TrimSpace(sel.Text())
 			}
 		}
 		if req.DateSelector != "" {
-			item.Date = strings.TrimSpace(s.Find(req.DateSelector).Text())
+			sel := getSelection(req.DateSelector)
+			item.Date = strings.TrimSpace(sel.Text())
 			// Check datetime attr if text is empty
 			if item.Date == "" {
-				val, exists := s.Find(req.DateSelector).Attr("datetime")
+				val, exists := sel.Attr("datetime")
 				if exists {
 					item.Date = val
 				}
 			}
 		}
 		if req.ContentSelector != "" {
-			html, err := s.Find(req.ContentSelector).Html()
+			sel := getSelection(req.ContentSelector)
+			html, err := sel.Html()
 			if err != nil {
 				logrus.Infof("Warning: Failed to extract content using selector '%s' for item %d in feed %s: %v",
 					req.ContentSelector, i, req.URL, err)
-				item.Content = "" // Leave content empty on error
+				item.Content = ""
 			} else {
-				item.Content = html // Return HTML for content
+				item.Content = html
 			}
 		}
 
