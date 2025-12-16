@@ -26,7 +26,19 @@
       <a-row :gutter="16" class="main-area">
         <!-- Left: HTML Preview / Interaction Area -->
         <a-col :span="14" class="h-full">
-          <a-card class="preview-card" title="Page Preview">
+          <a-card class="preview-card">
+            <template #title>
+              <div class="flex items-center">
+                <span>Page Preview</span>
+                <a-tooltip
+                  content="Click to select elements. Use 'Up'/'Down' arrow keys to navigate parent/child elements."
+                >
+                  <icon-question-circle
+                    class="ml-2 cursor-help text-gray-400"
+                  />
+                </a-tooltip>
+              </div>
+            </template>
             <iframe
               v-if="htmlContent"
               ref="previewIframe"
