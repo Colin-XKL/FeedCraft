@@ -16,7 +16,8 @@ import (
 )
 
 type FetchReq struct {
-	URL string `json:"url" binding:"required"`
+	URL            string `json:"url" binding:"required"`
+	UseBrowserless bool   `json:"use_browserless"`
 }
 
 type ParseReq struct {
@@ -70,12 +71,23 @@ func FetchURL(c *gin.Context) {
 		return
 	}
 
-	// Try standard HTTP request first (simulating a browser user agent)
-	client := resty.New()
-	client.SetTimeout(craft.DefaultExtractFulltextTimeout)
-	resp, err := client.R().
-		SetHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36").
-		Get(req.URL)
+	var htmlContent string
+	var err error
+
+	if req.UseBrowserless {
+		htmlContent, err = util.GetBrowserlessContent(req.URL, craft.DefaultExtractFulltextTimeout)
+	} else {
+		// Try standard HTTP request first (simulating a browser user agent)
+		client := resty.New()
+		client.SetTimeout(craft.DefaultExtractFulltextTimeout)
+		var resp *resty.Response
+		resp, err = client.R().
+			SetHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36").
+			Get(req.URL)
+		if err == nil {
+			htmlContent = resp.String()
+		}
+	}
 
 	if err != nil {
 		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "Fetch failed: " + err.Error()})
@@ -84,7 +96,7 @@ func FetchURL(c *gin.Context) {
 
 	c.JSON(http.StatusOK, util.APIResponse[string]{
 		StatusCode: 0,
-		Data:       resp.String(),
+		Data:       htmlContent,
 	})
 }
 

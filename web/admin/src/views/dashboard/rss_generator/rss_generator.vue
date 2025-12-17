@@ -29,6 +29,12 @@
                 @keyup.enter="fetchAndNext"
               />
             </a-form-item>
+            <a-form-item
+              label="Enhanced Mode (Browserless)"
+              help="Enable this to use a headless browser for rendering content (useful for JS-heavy sites)."
+            >
+              <a-switch v-model="enhancedMode" />
+            </a-form-item>
             <div class="text-center mt-8">
               <a-button
                 type="primary"
@@ -347,6 +353,7 @@
   // --- State ---
   const currentStep = ref(1);
   const url = ref('');
+  const enhancedMode = ref(false);
   const fetching = ref(false);
   const parsing = ref(false);
   const saving = ref(false);
@@ -399,6 +406,7 @@
     try {
       const res = (await axios.post('/api/admin/tools/fetch', {
         url: url.value,
+        use_browserless: enhancedMode.value,
       })) as any;
       if (res.code === 0) {
         let raw = res.data;
@@ -486,6 +494,7 @@
       type: 'html',
       http_fetcher: {
         url: url.value,
+        use_browserless: enhancedMode.value,
       },
       html_parser: {
         item_selector: config.item_selector,
