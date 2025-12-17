@@ -29,6 +29,7 @@ This step allows you to map HTML elements to RSS feed fields.
 2.  **List Item Selector (Required)**:
     -   Click the **Pick** button next to "CSS Selector".
     -   In the preview pane, click on a container element that represents a *single article* or item in the list.
+    -   **Tip:** Use the **Up Arrow** (↑) or **Down Arrow** (↓) keys on your keyboard to select the parent or child element of the currently highlighted area. This is useful for fine-tuning your selection.
     -   The system will attempt to auto-calculate a CSS selector.
 3.  **Field Selectors**:
     -   Once the Item Selector is set, you can map the relative fields.
