@@ -34,7 +34,9 @@
           v-for="(item, index) in record.craft_flow_config"
           :key="index"
         >
-          <a-tag color="arcoblue">{{ item.craft_name }}</a-tag>
+          <a-tooltip :content="getCraftDescription(item.craft_name)">
+            <a-tag color="arcoblue">{{ item.craft_name }}</a-tag>
+          </a-tooltip>
           >
         </template>
         <a-tag>结束</a-tag>
@@ -101,7 +103,7 @@
 
 <script setup lang="ts">
   import XHeader from '@/components/header/x-header.vue';
-  import { onBeforeMount, ref } from 'vue';
+  import { onBeforeMount, ref, computed } from 'vue';
   import {
     CraftFlow,
     createCraftFlow,
@@ -227,6 +229,21 @@
 
   async function listAllCraftAtoms() {
     craftAtomList.value = (await listCraftAtoms()).data;
+  }
+
+  const craftDescriptionMap = computed(() => {
+    const map = new Map<string, string>();
+    sysCraftAtomList.value.forEach((item: any) => {
+      map.set(item.name, item.description);
+    });
+    craftAtomList.value.forEach((item: any) => {
+      map.set(item.name, item.description);
+    });
+    return map;
+  });
+
+  function getCraftDescription(name: string) {
+    return craftDescriptionMap.value.get(name) || '';
   }
 
   onBeforeMount(() => {
