@@ -33,9 +33,13 @@
                 <a-tooltip
                   content="Click to select elements. Use 'Up'/'Down' arrow keys to navigate parent/child elements."
                 >
-                  <icon-question-circle
-                    class="ml-2 cursor-help text-gray-400"
-                  />
+                  <button
+                    type="button"
+                    class="ml-2 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-help"
+                    aria-label="Help: Click to select elements. Use 'Up'/'Down' arrow keys to navigate parent/child elements."
+                  >
+                    <icon-question-circle />
+                  </button>
                 </a-tooltip>
               </div>
             </template>
