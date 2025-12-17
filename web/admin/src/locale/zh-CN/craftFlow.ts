@@ -14,4 +14,7 @@ export default {
   'craftFlow.form.rule.nameRequired': '名称为必填项',
   'craftFlow.editModalTitle.create': '创建 CraftFlow',
   'craftFlow.editModalTitle.edit': '编辑 CraftFlow',
+  'craftFlow.editor.empty': '暂无步骤',
+  'craftFlow.editor.addPlaceholder': '选择一个步骤添加',
+  'craftFlow.editor.add': '添加步骤',
 };

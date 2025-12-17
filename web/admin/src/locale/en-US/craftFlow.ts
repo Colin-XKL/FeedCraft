@@ -14,4 +14,7 @@ export default {
   'craftFlow.form.rule.nameRequired': 'Name is required',
   'craftFlow.editModalTitle.create': 'Create CraftFlow',
   'craftFlow.editModalTitle.edit': 'Edit CraftFlow',
+  'craftFlow.editor.empty': 'No craft atoms in this flow yet',
+  'craftFlow.editor.addPlaceholder': 'Select a craft atom to add',
+  'craftFlow.editor.add': 'Add Step',
 };
