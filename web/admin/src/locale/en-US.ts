@@ -1,8 +1,3 @@
-import localeMessageBox from '@/components/message-box/locale/en-US';
-import localeLogin from '@/views/login/locale/en-US';
-
-import localeWorkplace from '@/views/dashboard/workplace/locale/en-US';
-
 import localeSettings from './en-US/settings';
 import localeMenu from './en-US/menu';
 import localeCraftAtom from './en-US/craftAtom';
@@ -13,11 +8,12 @@ import localeFeedCompare from './en-US/feedCompare';
 import localeFeedViewer from './en-US/feedViewer';
 import localeLlmDebug from './en-US/llmDebug';
 import localeUrlGenerator from './en-US/urlGenerator';
+import localeLogin from './en-US/login';
+import localeWorkplace from './en-US/workplace';
+import localeMessageBox from './en-US/messageBox';
 
 export default {
   ...localeSettings,
-  ...localeMessageBox,
-  ...localeLogin,
   ...localeMenu,
   ...localeCraftAtom,
   ...localeCraftFlow,
@@ -27,5 +23,7 @@ export default {
   ...localeFeedViewer,
   ...localeLlmDebug,
   ...localeUrlGenerator,
+  ...localeLogin,
   ...localeWorkplace,
+  ...localeMessageBox,
 };
