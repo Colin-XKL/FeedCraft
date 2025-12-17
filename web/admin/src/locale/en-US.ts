@@ -28,4 +28,5 @@ export default {
   ...localeLlmDebug,
   ...localeUrlGenerator,
   ...localeWorkplace,
+  'menu.jsonRssGenerator': 'JSON RSS Generator',
 };

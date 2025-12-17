@@ -105,6 +105,10 @@ func RegisterRouters(router *gin.Engine) {
 
 		adminApi.POST("/tools/fetch", controller.FetchURL)
 		adminApi.POST("/tools/parse", controller.ParseRSS)
+
+		adminApi.POST("/tools/json/fetch", controller.FetchJson)
+		adminApi.POST("/tools/json/parse", controller.ParseJsonRSS)
+		adminApi.POST("/tools/json/parse_curl", controller.ParseCurl)
 	}
 
 }
