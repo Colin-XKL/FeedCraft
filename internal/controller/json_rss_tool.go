@@ -151,18 +151,18 @@ func FetchJson(c *gin.Context) {
 			return
 		}
 	} else {
-        // Maybe it's a list or valid json value
-        var v interface{}
-        if json.Unmarshal(resp.Body(), &v) == nil {
-             if err := json.Indent(&prettyJSON, resp.Body(), "", "  "); err == nil {
-			    c.JSON(http.StatusOK, util.APIResponse[string]{
-				    StatusCode: 0,
-				    Data:       prettyJSON.String(),
-			    })
-			    return
-		    }
-        }
-    }
+		// Maybe it's a list or valid json value
+		var v interface{}
+		if json.Unmarshal(resp.Body(), &v) == nil {
+			if err := json.Indent(&prettyJSON, resp.Body(), "", "  "); err == nil {
+				c.JSON(http.StatusOK, util.APIResponse[string]{
+					StatusCode: 0,
+					Data:       prettyJSON.String(),
+				})
+				return
+			}
+		}
+	}
 
 	c.JSON(http.StatusOK, util.APIResponse[string]{
 		StatusCode: 0,
@@ -202,66 +202,66 @@ func ParseJsonRSS(c *gin.Context) {
 			return
 		}
 		// If v is a slice, we iterate it. If it's a single object, we take it.
-        // Usually list selector should return an array.
-        // If the selector returns multiple results (like .items[]), append them.
-        // If it returns one array (like .items), we should iterate that array.
+		// Usually list selector should return an array.
+		// If the selector returns multiple results (like .items[]), append them.
+		// If it returns one array (like .items), we should iterate that array.
 
-        // gojq behavior:
-        // .items returns [obj, obj] -> v is []interface{}
-        // .items[] returns obj, obj... -> v is interface{} (called multiple times)
+		// gojq behavior:
+		// .items returns [obj, obj] -> v is []interface{}
+		// .items[] returns obj, obj... -> v is interface{} (called multiple times)
 
-        if arr, ok := v.([]interface{}); ok {
-            rawItems = append(rawItems, arr...)
-        } else {
-            rawItems = append(rawItems, v)
-        }
+		if arr, ok := v.([]interface{}); ok {
+			rawItems = append(rawItems, arr...)
+		} else {
+			rawItems = append(rawItems, v)
+		}
 	}
 
 	var parsedItems []ParsedItem
 
 	// Parse other selectors for each item
-    // We need to pre-compile selectors for performance, though not critical here
-    compile := func(q string) (*gojq.Query, error) {
-        if q == "" {
-            return nil, nil
-        }
-        return gojq.Parse(q)
-    }
+	// We need to pre-compile selectors for performance, though not critical here
+	compile := func(q string) (*gojq.Query, error) {
+		if q == "" {
+			return nil, nil
+		}
+		return gojq.Parse(q)
+	}
 
-    titleQ, _ := compile(req.TitleSelector)
-    linkQ, _ := compile(req.LinkSelector)
-    dateQ, _ := compile(req.DateSelector)
-    contentQ, _ := compile(req.ContentSelector)
+	titleQ, _ := compile(req.TitleSelector)
+	linkQ, _ := compile(req.LinkSelector)
+	dateQ, _ := compile(req.DateSelector)
+	contentQ, _ := compile(req.ContentSelector)
 
-    runQuery := func(q *gojq.Query, obj interface{}) string {
-        if q == nil {
-            return ""
-        }
-        iter := q.Run(obj)
-        v, ok := iter.Next()
-        if !ok {
-            return ""
-        }
-        if err, ok := v.(error); ok {
-            return "Error: " + err.Error()
-        }
-        // Convert v to string
-        if s, ok := v.(string); ok {
-            return s
-        }
-        // If not string, maybe json representation
-        b, _ := json.Marshal(v)
-        return string(b)
-    }
+	runQuery := func(q *gojq.Query, obj interface{}) string {
+		if q == nil {
+			return ""
+		}
+		iter := q.Run(obj)
+		v, ok := iter.Next()
+		if !ok {
+			return ""
+		}
+		if err, ok := v.(error); ok {
+			return "Error: " + err.Error()
+		}
+		// Convert v to string
+		if s, ok := v.(string); ok {
+			return s
+		}
+		// If not string, maybe json representation
+		b, _ := json.Marshal(v)
+		return string(b)
+	}
 
 	for _, rawItem := range rawItems {
 		item := ParsedItem{}
-        item.Title = runQuery(titleQ, rawItem)
-        item.Link = runQuery(linkQ, rawItem)
-        item.Date = runQuery(dateQ, rawItem)
-        item.Content = runQuery(contentQ, rawItem)
+		item.Title = runQuery(titleQ, rawItem)
+		item.Link = runQuery(linkQ, rawItem)
+		item.Date = runQuery(dateQ, rawItem)
+		item.Content = runQuery(contentQ, rawItem)
 
-        parsedItems = append(parsedItems, item)
+		parsedItems = append(parsedItems, item)
 	}
 
 	c.JSON(http.StatusOK, util.APIResponse[[]ParsedItem]{
