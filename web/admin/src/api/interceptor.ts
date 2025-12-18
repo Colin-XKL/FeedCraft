@@ -5,11 +5,13 @@ import { useUserStore } from '@/store';
 import { getToken } from '@/utils/auth';
 import { useRouter } from 'vue-router';
 
-export interface HttpResponse<T = unknown> {
-  status?: number;
-  msg: string;
-  code: number;
-  data?: T;
+export namespace util {
+  export interface APIResponse<T = any> {
+    status?: number;
+    msg: string;
+    code: number;
+    data: T;
+  }
 }
 
 if (import.meta.env.VITE_API_BASE_URL) {
@@ -38,7 +40,7 @@ axios.interceptors.request.use(
 );
 // add response interceptors
 axios.interceptors.response.use(
-  (response: AxiosResponse<HttpResponse>) => {
+  (response: AxiosResponse<util.APIResponse>) => {
     const res = response.data;
     if (res.status && res.status >= 400 && res.status <= 500) {
       console.log('login required');
