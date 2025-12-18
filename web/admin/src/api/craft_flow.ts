@@ -14,6 +14,7 @@ export interface CraftFlow {
 }
 
 const adminApiBase = '/api/admin';
+const publicApiBase = '/api';
 
 // Define the API base URL
 const craftFlowApiBase = `${adminApiBase}/craft-flows`;
@@ -45,14 +46,14 @@ export function deleteCraftFlow(name: string): Promise<AxiosResponse<void>> {
 
 // List all CraftFlows
 export function listCraftFlows(): Promise<AxiosResponse<CraftFlow[]>> {
-  return axios.get<CraftFlow[]>(craftFlowApiBase);
+  return axios.get<CraftFlow[]>(`${publicApiBase}/craft-flows`);
 }
 
 export function listSysCraftAtoms(): Promise<
   AxiosResponse<{ name: string; description: string }[]>
 > {
   return axios.get<{ name: string; description: string }[]>(
-    `${adminApiBase}/sys-craft-atoms`
+    `${publicApiBase}/sys-craft-atoms`
   );
 }
 
