@@ -222,10 +222,26 @@ func ParseJsonRSS(c *gin.Context) {
 		return gojq.Parse(q)
 	}
 
-	titleQ, _ := compile(req.TitleSelector)
-	linkQ, _ := compile(req.LinkSelector)
-	dateQ, _ := compile(req.DateSelector)
-	contentQ, _ := compile(req.ContentSelector)
+	titleQ, err := compile(req.TitleSelector)
+	if err != nil {
+		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "invalid TitleSelector: " + err.Error()})
+		return
+	}
+	linkQ, err := compile(req.LinkSelector)
+	if err != nil {
+		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "invalid LinkSelector: " + err.Error()})
+		return
+	}
+	dateQ, err := compile(req.DateSelector)
+	if err != nil {
+		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "invalid DateSelector: " + err.Error()})
+		return
+	}
+	contentQ, err := compile(req.ContentSelector)
+	if err != nil {
+		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "invalid ContentSelector: " + err.Error()})
+		return
+	}
 
 	runQuery := func(q *gojq.Query, obj interface{}) string {
 		if q == nil {
