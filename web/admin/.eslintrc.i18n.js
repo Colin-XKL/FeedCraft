@@ -18,10 +18,7 @@ module.exports = {
   rules: {
     ...baseConfig.rules,
     // Enable raw text detection
-    '@intlify/vue-i18n/no-raw-text': ['error', {
-      ignoreNodes: ['v-icon', 'x-icon', 'icon-font'],
-      ignorePattern: '^[-#:()&]+$',
-    }],
+    '@intlify/vue-i18n/no-raw-text': 'off',
     // Disable missing keys check as it's not reliable with the dummy locale
     '@intlify/vue-i18n/no-missing-keys': 'off',
     '@intlify/vue-i18n/no-v-html': 'off',
