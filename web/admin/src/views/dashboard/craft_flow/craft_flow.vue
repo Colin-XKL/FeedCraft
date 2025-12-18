@@ -34,7 +34,9 @@
           v-for="(item, index) in record.craft_flow_config"
           :key="index"
         >
-          <a-tag color="arcoblue">{{ item.craft_name }}</a-tag>
+          <a-tooltip :content="getCraftDescription(item.craft_name)">
+            <a-tag color="arcoblue">{{ item.craft_name }}</a-tag>
+          </a-tooltip>
           >
         </template>
         <a-tag>结束</a-tag>
@@ -63,6 +65,7 @@
       "
     >
       <a-form
+        ref="formRef"
         :model="editedCraftFlow"
         :rules="rules"
         :label-col="{ span: 6 }"
@@ -91,7 +94,7 @@
           "
           >{{ t('craftFlow.form.cancel') }}
         </a-button>
-        <a-button type="primary" @click="saveCraftFlow">{{
+        <a-button type="primary" :loading="saving" @click="saveCraftFlow">{{
           t('craftFlow.form.save')
         }}</a-button>
       </template>
@@ -101,7 +104,7 @@
 
 <script setup lang="ts">
   import XHeader from '@/components/header/x-header.vue';
-  import { onBeforeMount, ref } from 'vue';
+  import { onBeforeMount, ref, computed } from 'vue';
   import {
     CraftFlow,
     createCraftFlow,
@@ -114,6 +117,7 @@
   import { namingValidator } from '@/utils/validator';
   import CraftFlowEditor from '@/views/dashboard/craft_flow/CraftFlowEditor.vue';
   import { useI18n } from 'vue-i18n';
+  import { Message } from '@arco-design/web-vue';
 
   const { t } = useI18n();
 
@@ -129,6 +133,8 @@
   };
 
   const isLoading = ref(false);
+  const saving = ref(false);
+  const formRef = ref();
   const craftFlows = ref<CraftFlow[]>([]);
   const editedCraftFlow = ref<any>({
     name: '',
@@ -200,23 +206,34 @@
   }
 
   const saveCraftFlow = async () => {
-    if (isUpdating.value) {
-      await updateCraftFlow(
-        editedCraftFlow.value.name,
-        transformCraftForOption(editedCraftFlow.value)
-      );
-    } else {
-      await createCraftFlow(transformCraftForOption(editedCraftFlow.value));
+    const res = await formRef.value?.validate();
+    if (res) return;
+
+    saving.value = true;
+    try {
+      if (isUpdating.value) {
+        await updateCraftFlow(
+          editedCraftFlow.value.name,
+          transformCraftForOption(editedCraftFlow.value)
+        );
+      } else {
+        await createCraftFlow(transformCraftForOption(editedCraftFlow.value));
+      }
+      Message.success(t('craftFlow.form.saveSuccess'));
+      showEditModal.value = false;
+      await listAllCraftFlow();
+      isUpdating.value = false;
+      editedCraftFlow.value = {
+        name: '',
+        description: '',
+        craftList: [],
+        craft_flow_config: [],
+      };
+    } catch (err) {
+      // Error handling is done by interceptor or default handling
+    } finally {
+      saving.value = false;
     }
-    showEditModal.value = false;
-    await listAllCraftFlow();
-    isUpdating.value = false;
-    editedCraftFlow.value = {
-      name: '',
-      description: '',
-      craftList: [],
-      craft_flow_config: [],
-    };
   };
   const sysCraftAtomList = ref<any>([]);
   const craftAtomList = ref<any>([]);
@@ -227,6 +244,21 @@
 
   async function listAllCraftAtoms() {
     craftAtomList.value = (await listCraftAtoms()).data;
+  }
+
+  const craftDescriptionMap = computed(() => {
+    const map = new Map<string, string>();
+    sysCraftAtomList.value.forEach((item: any) => {
+      map.set(item.name, item.description);
+    });
+    craftAtomList.value.forEach((item: any) => {
+      map.set(item.name, item.description);
+    });
+    return map;
+  });
+
+  function getCraftDescription(name: string) {
+    return craftDescriptionMap.value.get(name) || '';
   }
 
   onBeforeMount(() => {
