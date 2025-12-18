@@ -19,13 +19,17 @@ RSS 生成器允许你：
 
 ### 第一步：目标 URL (Target URL)
 
-输入你想要抓取的网页完整 URL（例如博客列表或新闻网站），然后点击 **Fetch & Next**。
+1.  输入你想要抓取的网页完整 URL（例如博客列表或新闻网站）。
+2.  **(可选) 增强模式 (Enhanced Mode)**：如果目标网站严重依赖 JavaScript 来渲染内容，请开启 "增强模式 (Browserless)"。这将使用无头浏览器来获取页面。
+3.  点击 **Fetch & Next**。
 
 ### 第二步：提取规则 (Extract Rules)
 
 此步骤允许你将 HTML 元素映射到 RSS 订阅源字段。
 
-1.  **页面预览 (Page Preview)**：等待页面在预览窗格中加载。
+1.  **页面预览 (Page Preview)**：左侧窗格显示渲染后的网页。
+    *   **选择模式 (Selection Mode)**：当处于激活状态时（由蓝色标签指示），点击预览中的元素将生成选择器。
+    *   **键盘快捷键 (Keyboard Shortcuts)**：使用 `Arrow Up` (上箭头) 选择父元素，使用 `Arrow Down` (下箭头) 选择第一个子元素。这对于微调选择非常有用。
 2.  **列表项选择器 (List Item Selector) - 必填**：
     -   点击 "CSS Selector" 旁边的 **Pick** 按钮。
     -   在预览窗格中，点击代表列表中*单个文章*或条目的容器元素。
