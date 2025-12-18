@@ -230,10 +230,7 @@
     fetching.value = true;
     try {
       const res = await fetchJson(fetchReq);
-      // The interceptor might unwrap 'data', but our backend returns string in data.
-      // If the backend returns APIResponse<string>, the interceptor typically returns T.
-      // Let's assume res is string based on api definition
-      jsonContent.value = res as unknown as string;
+      jsonContent.value = res.data;
       Message.success('Fetched successfully');
     } finally {
       fetching.value = false;
@@ -248,8 +245,8 @@
         json_content: jsonContent.value,
         ...parseReq,
       });
-      parsedItems.value = res;
-      Message.success(`Parsed ${res.length} items`);
+      parsedItems.value = res.data;
+      Message.success(`Parsed ${res.data.length} items`);
     } finally {
       parsing.value = false;
     }
