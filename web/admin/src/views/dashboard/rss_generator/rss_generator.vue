@@ -33,15 +33,21 @@
                 <a-tooltip
                   content="Click to select elements. Use 'Up'/'Down' arrow keys to navigate parent/child elements."
                 >
-                  <icon-question-circle
-                    class="ml-2 cursor-help text-gray-400"
-                  />
+                  <span
+                    role="button"
+                    tabindex="0"
+                    aria-label="Help: How to select elements"
+                    class="ml-2 inline-flex cursor-help text-gray-400 focus:outline-none focus:text-blue-500 transition-colors"
+                  >
+                    <icon-question-circle />
+                  </span>
                 </a-tooltip>
               </div>
             </template>
             <iframe
               v-if="htmlContent"
               ref="previewIframe"
+              title="Website Preview"
               class="html-preview"
               :srcdoc="htmlContent"
               @load="onIframeLoad"
@@ -59,15 +65,16 @@
             </a-alert>
             <a-form :model="config" layout="vertical">
               <div class="mb-4 p-3 bg-gray-50 rounded border border-gray-100">
-                <div class="font-bold mb-2 text-gray-700">
+                <h3 class="font-bold mb-2 text-gray-700 text-base">
                   Step 1: Define List Item
-                </div>
+                </h3>
                 <a-form-item label="List Item Selector">
                   <a-input v-model="config.item_selector">
                     <template #suffix>
                       <a-button
                         size="mini"
                         type="text"
+                        aria-label="Pick list item selector"
                         @click="setTargetField('item_selector')"
                       >
                         <icon-select-all /> Pick
@@ -81,9 +88,9 @@
                 class="mb-4 p-3 bg-gray-50 rounded border border-gray-100"
                 :class="{ 'opacity-60': !config.item_selector }"
               >
-                <div class="font-bold mb-2 text-gray-700">
+                <h3 class="font-bold mb-2 text-gray-700 text-base">
                   Step 2: Map Fields (Relative)
-                </div>
+                </h3>
                 <a-form-item label="Title Selector">
                   <a-input
                     v-model="config.title_selector"
@@ -94,6 +101,7 @@
                         size="mini"
                         type="text"
                         :disabled="!config.item_selector"
+                        aria-label="Pick title selector"
                         @click="setTargetField('title_selector')"
                       >
                         <icon-select-all /> Pick
@@ -111,6 +119,7 @@
                         size="mini"
                         type="text"
                         :disabled="!config.item_selector"
+                        aria-label="Pick link selector"
                         @click="setTargetField('link_selector')"
                       >
                         <icon-select-all /> Pick
@@ -128,6 +137,7 @@
                         size="mini"
                         type="text"
                         :disabled="!config.item_selector"
+                        aria-label="Pick date selector"
                         @click="setTargetField('date_selector')"
                       >
                         <icon-select-all /> Pick
@@ -145,6 +155,7 @@
                         size="mini"
                         type="text"
                         :disabled="!config.item_selector"
+                        aria-label="Pick content selector"
                         @click="setTargetField('content_selector')"
                       >
                         <icon-select-all /> Pick
