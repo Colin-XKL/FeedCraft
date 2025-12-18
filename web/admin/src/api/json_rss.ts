@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { util } from './interceptor';
+import { APIResponse } from './types';
 
 export interface JsonFetchReq {
   method: string;
@@ -24,22 +24,22 @@ export interface ParsedItem {
   content: string;
 }
 
-export function parseCurl(curlCommand: string): Promise<util.APIResponse<JsonFetchReq>> {
-  return axios.post<util.APIResponse<JsonFetchReq>>(
+export function parseCurl(curlCommand: string): Promise<APIResponse<JsonFetchReq>> {
+  return axios.post<APIResponse<JsonFetchReq>>(
     '/api/admin/tools/json/parse_curl',
     {
       curl_command: curlCommand,
     }
-  ) as unknown as Promise<util.APIResponse<JsonFetchReq>>;
+  ) as unknown as Promise<APIResponse<JsonFetchReq>>;
 }
 
-export function fetchJson(req: JsonFetchReq): Promise<util.APIResponse<string>> {
-  return axios.post<util.APIResponse<string>>('/api/admin/tools/json/fetch', req) as unknown as Promise<util.APIResponse<string>>;
+export function fetchJson(req: JsonFetchReq): Promise<APIResponse<string>> {
+  return axios.post<APIResponse<string>>('/api/admin/tools/json/fetch', req) as unknown as Promise<APIResponse<string>>;
 }
 
-export function parseJsonRss(req: JsonParseReq): Promise<util.APIResponse<ParsedItem[]>> {
-  return axios.post<util.APIResponse<ParsedItem[]>>(
+export function parseJsonRss(req: JsonParseReq): Promise<APIResponse<ParsedItem[]>> {
+  return axios.post<APIResponse<ParsedItem[]>>(
     '/api/admin/tools/json/parse',
     req
-  ) as unknown as Promise<util.APIResponse<ParsedItem[]>>;
+  ) as unknown as Promise<APIResponse<ParsedItem[]>>;
 }

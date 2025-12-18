@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import { util } from './interceptor';
+import { APIResponse } from './types';
 
 export interface CraftFlowItem {
   craft_name: string;
@@ -22,48 +22,48 @@ const craftFlowApiBase = `${adminApiBase}/craft-flows`;
 // Create a CraftFlow
 export function createCraftFlow(
   craftFlow: CraftFlow
-): Promise<util.APIResponse<CraftFlow>> {
-  return axios.post<util.APIResponse<CraftFlow>>(craftFlowApiBase, craftFlow) as unknown as Promise<util.APIResponse<CraftFlow>>;
+): Promise<APIResponse<CraftFlow>> {
+  return axios.post<APIResponse<CraftFlow>>(craftFlowApiBase, craftFlow) as unknown as Promise<APIResponse<CraftFlow>>;
 }
 
 // Get a CraftFlow by name
 export function getCraftFlow(
   name: string
-): Promise<util.APIResponse<CraftFlow>> {
-  return axios.get<util.APIResponse<CraftFlow>>(`${craftFlowApiBase}/${name}`) as unknown as Promise<util.APIResponse<CraftFlow>>;
+): Promise<APIResponse<CraftFlow>> {
+  return axios.get<APIResponse<CraftFlow>>(`${craftFlowApiBase}/${name}`) as unknown as Promise<APIResponse<CraftFlow>>;
 }
 
 // Update a CraftFlow
 export function updateCraftFlow(
   name: string,
   craftFlow: CraftFlow
-): Promise<util.APIResponse<CraftFlow>> {
-  return axios.put<util.APIResponse<CraftFlow>>(
+): Promise<APIResponse<CraftFlow>> {
+  return axios.put<APIResponse<CraftFlow>>(
     `${craftFlowApiBase}/${name}`,
     craftFlow
-  ) as unknown as Promise<util.APIResponse<CraftFlow>>;
+  ) as unknown as Promise<APIResponse<CraftFlow>>;
 }
 
 // Delete a CraftFlow
 export function deleteCraftFlow(
   name: string
-): Promise<util.APIResponse<void>> {
-  return axios.delete<util.APIResponse<void>>(`${craftFlowApiBase}/${name}`) as unknown as Promise<util.APIResponse<void>>;
+): Promise<APIResponse<void>> {
+  return axios.delete<APIResponse<void>>(`${craftFlowApiBase}/${name}`) as unknown as Promise<APIResponse<void>>;
 }
 
 // List all CraftFlows
 export function listCraftFlows(): Promise<
-  util.APIResponse<CraftFlow[]>
+  APIResponse<CraftFlow[]>
 > {
-  return axios.get<util.APIResponse<CraftFlow[]>>(craftFlowApiBase) as unknown as Promise<util.APIResponse<CraftFlow[]>>;
+  return axios.get<APIResponse<CraftFlow[]>>(craftFlowApiBase) as unknown as Promise<APIResponse<CraftFlow[]>>;
 }
 
 export function listSysCraftAtoms(): Promise<
-  util.APIResponse<{ name: string; description: string }[]>
+  APIResponse<{ name: string; description: string }[]>
 > {
   return axios.get<
-    util.APIResponse<{ name: string; description: string }[]>
-  >(`${adminApiBase}/sys-craft-atoms`) as unknown as Promise<util.APIResponse<{ name: string; description: string }[]>>;
+    APIResponse<{ name: string; description: string }[]>
+  >(`${adminApiBase}/sys-craft-atoms`) as unknown as Promise<APIResponse<{ name: string; description: string }[]>>;
 }
 
 interface ParamTemplate {
@@ -79,9 +79,9 @@ interface CraftTemplate {
 }
 
 export function listCraftTemplates(): Promise<
-  util.APIResponse<CraftTemplate[]>
+  APIResponse<CraftTemplate[]>
 > {
-  return axios.get<util.APIResponse<CraftTemplate[]>>(
+  return axios.get<APIResponse<CraftTemplate[]>>(
     `${adminApiBase}/craft-templates`
-  ) as unknown as Promise<util.APIResponse<CraftTemplate[]>>;
+  ) as unknown as Promise<APIResponse<CraftTemplate[]>>;
 }

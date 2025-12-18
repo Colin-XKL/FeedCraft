@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { util } from './interceptor';
+import { APIResponse } from './types';
 
 export interface CustomRecipe {
   id: string;
@@ -14,30 +14,30 @@ export interface CustomRecipe {
 
 const adminApiBase = '/api/admin';
 
-export function getCustomRecipes(): Promise<util.APIResponse<CustomRecipe[]>> {
-  return axios.get<util.APIResponse<CustomRecipe[]>>(`${adminApiBase}/recipes`) as unknown as Promise<util.APIResponse<CustomRecipe[]>>;
+export function getCustomRecipes(): Promise<APIResponse<CustomRecipe[]>> {
+  return axios.get<APIResponse<CustomRecipe[]>>(`${adminApiBase}/recipes`) as unknown as Promise<APIResponse<CustomRecipe[]>>;
 }
 
-export function getCustomRecipeById(id: string): Promise<util.APIResponse<CustomRecipe>> {
-  return axios.get<util.APIResponse<CustomRecipe>>(
+export function getCustomRecipeById(id: string): Promise<APIResponse<CustomRecipe>> {
+  return axios.get<APIResponse<CustomRecipe>>(
     `${adminApiBase}/recipes/${id}`
-  ) as unknown as Promise<util.APIResponse<CustomRecipe>>;
+  ) as unknown as Promise<APIResponse<CustomRecipe>>;
 }
 
-export function createCustomRecipe(data: CustomRecipe): Promise<util.APIResponse<CustomRecipe>> {
-  return axios.post<util.APIResponse<CustomRecipe>>(
+export function createCustomRecipe(data: CustomRecipe): Promise<APIResponse<CustomRecipe>> {
+  return axios.post<APIResponse<CustomRecipe>>(
     `${adminApiBase}/recipes`,
     data
-  ) as unknown as Promise<util.APIResponse<CustomRecipe>>;
+  ) as unknown as Promise<APIResponse<CustomRecipe>>;
 }
 
-export function updateCustomRecipe(data: CustomRecipe): Promise<util.APIResponse<CustomRecipe>> {
-  return axios.put<util.APIResponse<CustomRecipe>>(
+export function updateCustomRecipe(data: CustomRecipe): Promise<APIResponse<CustomRecipe>> {
+  return axios.put<APIResponse<CustomRecipe>>(
     `${adminApiBase}/recipes/${data.id}`,
     data
-  ) as unknown as Promise<util.APIResponse<CustomRecipe>>;
+  ) as unknown as Promise<APIResponse<CustomRecipe>>;
 }
 
-export function deleteCustomRecipe(id: string): Promise<util.APIResponse<void>> {
-  return axios.delete<util.APIResponse<void>>(`${adminApiBase}/recipes/${id}`) as unknown as Promise<util.APIResponse<void>>;
+export function deleteCustomRecipe(id: string): Promise<APIResponse<void>> {
+  return axios.delete<APIResponse<void>>(`${adminApiBase}/recipes/${id}`) as unknown as Promise<APIResponse<void>>;
 }

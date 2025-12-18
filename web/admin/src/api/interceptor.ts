@@ -4,15 +4,7 @@ import { Message, Modal } from '@arco-design/web-vue';
 import { useUserStore } from '@/store';
 import { getToken } from '@/utils/auth';
 import { useRouter } from 'vue-router';
-
-export namespace util {
-  export interface APIResponse<T = any> {
-    status?: number;
-    msg: string;
-    code: number;
-    data: T;
-  }
-}
+import { APIResponse } from './types';
 
 if (import.meta.env.VITE_API_BASE_URL) {
   axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL;
@@ -40,10 +32,9 @@ axios.interceptors.request.use(
 );
 // add response interceptors
 axios.interceptors.response.use(
-  (response: AxiosResponse<util.APIResponse>) => {
+  (response: AxiosResponse<APIResponse>) => {
     const res = response.data;
     if (res.status && res.status >= 400 && res.status <= 500) {
-      console.log('login required');
       Message.error('login required');
       const router = useRouter();
       router.push({ name: 'login' });

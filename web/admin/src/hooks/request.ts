@@ -1,6 +1,6 @@
 import { ref, UnwrapRef } from 'vue';
 import { AxiosResponse } from 'axios';
-import { util } from '@/api/interceptor';
+import { APIResponse } from '@/api/types';
 import useLoading from './loading';
 
 // use to fetch list
@@ -9,7 +9,7 @@ import useLoading from './loading';
 // example: useRequest(api.bind(null, {}))
 
 export default function useRequest<T>(
-  api: () => Promise<util.APIResponse>,
+  api: () => Promise<APIResponse>,
   defaultValue = [] as unknown as T,
   isLoading = true
 ) {
