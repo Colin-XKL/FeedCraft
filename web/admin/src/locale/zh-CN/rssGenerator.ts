@@ -76,4 +76,5 @@ export default {
   'rssGenerator.msg.selectedContainer': '选择了项目容器本身。',
   'rssGenerator.msg.setRelativePath': '设置相对路径：{path}',
   'rssGenerator.msg.insideListItem': '选择必须在匹配的列表项内部！',
+  'rssGenerator.msg.listSelectedNextTitle': '列表项已选中。现在请选择文章标题。',
 };

@@ -82,4 +82,6 @@ export default {
   'rssGenerator.msg.setRelativePath': 'Set relative path: {path}',
   'rssGenerator.msg.insideListItem':
     'Selection must be inside a matched List Item!',
+  'rssGenerator.msg.listSelectedNextTitle':
+    'List items selected. Now please select the Article Title.',
 };
