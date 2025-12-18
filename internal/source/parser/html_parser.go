@@ -51,7 +51,7 @@ func (p *HtmlParser) Parse(data []byte) (*gofeed.Feed, error) {
 		// Link
 		if p.Config.Link != "" {
 			sel := getSelection(p.Config.Link)
-			
+
 			var link string
 			// Try to get href from the element itself
 			if href, exists := sel.Attr("href"); exists {
@@ -83,7 +83,7 @@ func (p *HtmlParser) Parse(data []byte) (*gofeed.Feed, error) {
 					link = text
 				}
 			}
-			
+
 			item.Link = link
 		}
 
