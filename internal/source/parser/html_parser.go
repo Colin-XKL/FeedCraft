@@ -51,11 +51,40 @@ func (p *HtmlParser) Parse(data []byte) (*gofeed.Feed, error) {
 		// Link
 		if p.Config.Link != "" {
 			sel := getSelection(p.Config.Link)
+			
+			var link string
+			// Try to get href from the element itself
 			if href, exists := sel.Attr("href"); exists {
-				item.Link = href
+				link = href
 			} else {
-				item.Link = strings.TrimSpace(sel.Text())
+				// If not found, try to find a child 'a' tag
+				childA := sel.Find("a").First()
+				if childA.Length() > 0 {
+					if href, exists := childA.Attr("href"); exists {
+						link = href
+					}
+				}
+
+				// If still not found, try to find a parent 'a' tag (closest ancestor)
+				if link == "" {
+					parentA := sel.Closest("a")
+					if parentA.Length() > 0 {
+						if href, exists := parentA.Attr("href"); exists {
+							link = href
+						}
+					}
+				}
 			}
+
+			// Fallback to text if still empty, BUT only if it looks like a URL (no spaces)
+			if link == "" {
+				text := strings.TrimSpace(sel.Text())
+				if text != "" && !strings.ContainsAny(text, " \t\n") {
+					link = text
+				}
+			}
+			
+			item.Link = link
 		}
 
 		// Date

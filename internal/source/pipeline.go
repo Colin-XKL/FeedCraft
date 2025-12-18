@@ -4,6 +4,7 @@ import (
 	"FeedCraft/internal/config"
 	"FeedCraft/internal/source/fetcher"
 	"FeedCraft/internal/source/parser"
+	"FeedCraft/internal/util"
 	"context"
 	"fmt"
 	"github.com/mmcdole/gofeed"
@@ -29,6 +30,18 @@ func (p *PipelineSource) Generate(ctx context.Context) (*gofeed.Feed, error) {
 	feed, err := p.Parser.Parse(raw)
 	if err != nil {
 		return nil, fmt.Errorf("parse failed: %w", err)
+	}
+
+	// 2.5 Resolve relative URLs
+	baseURL := p.BaseURL()
+	if baseURL != "" {
+		for _, item := range feed.Items {
+			if item.Link != "" {
+				if absURL, err := util.BuildAbsoluteURL(baseURL, item.Link); err == nil {
+					item.Link = absURL
+				}
+			}
+		}
 	}
 
 	// 3. Apply metadata overrides from config
