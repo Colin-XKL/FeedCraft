@@ -125,12 +125,6 @@ func FetchJson(c *gin.Context) {
 		resp, err = r.Get(req.URL)
 	case "POST":
 		resp, err = r.Post(req.URL)
-	case "PUT":
-		resp, err = r.Put(req.URL)
-	case "DELETE":
-		resp, err = r.Delete(req.URL)
-	case "PATCH":
-		resp, err = r.Patch(req.URL)
 	default:
 		resp, err = r.Execute(method, req.URL)
 	}

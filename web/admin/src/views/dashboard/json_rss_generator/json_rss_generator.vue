@@ -35,8 +35,6 @@
                 <a-select v-model="fetchReq.method">
                   <a-option>GET</a-option>
                   <a-option>POST</a-option>
-                  <a-option>PUT</a-option>
-                  <a-option>DELETE</a-option>
                 </a-select>
               </a-form-item>
             </a-col>
