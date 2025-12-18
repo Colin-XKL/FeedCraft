@@ -11,6 +11,7 @@ export default {
   'craftFlow.form.flow': '流程',
   'craftFlow.form.cancel': '取消',
   'craftFlow.form.save': '保存',
+  'craftFlow.form.saveSuccess': '保存成功',
   'craftFlow.form.rule.nameRequired': '名称为必填项',
   'craftFlow.editModalTitle.create': '创建 CraftFlow',
   'craftFlow.editModalTitle.edit': '编辑 CraftFlow',

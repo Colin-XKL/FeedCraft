@@ -65,6 +65,7 @@
       "
     >
       <a-form
+        ref="formRef"
         :model="editedCraftFlow"
         :rules="rules"
         :label-col="{ span: 6 }"
@@ -93,7 +94,7 @@
           "
           >{{ t('craftFlow.form.cancel') }}
         </a-button>
-        <a-button type="primary" @click="saveCraftFlow">{{
+        <a-button type="primary" :loading="saving" @click="saveCraftFlow">{{
           t('craftFlow.form.save')
         }}</a-button>
       </template>
@@ -116,6 +117,7 @@
   import { namingValidator } from '@/utils/validator';
   import CraftFlowEditor from '@/views/dashboard/craft_flow/CraftFlowEditor.vue';
   import { useI18n } from 'vue-i18n';
+  import { Message } from '@arco-design/web-vue';
 
   const { t } = useI18n();
 
@@ -131,6 +133,8 @@
   };
 
   const isLoading = ref(false);
+  const saving = ref(false);
+  const formRef = ref();
   const craftFlows = ref<CraftFlow[]>([]);
   const editedCraftFlow = ref<any>({
     name: '',
@@ -202,23 +206,34 @@
   }
 
   const saveCraftFlow = async () => {
-    if (isUpdating.value) {
-      await updateCraftFlow(
-        editedCraftFlow.value.name,
-        transformCraftForOption(editedCraftFlow.value)
-      );
-    } else {
-      await createCraftFlow(transformCraftForOption(editedCraftFlow.value));
+    const res = await formRef.value?.validate();
+    if (res) return;
+
+    saving.value = true;
+    try {
+      if (isUpdating.value) {
+        await updateCraftFlow(
+          editedCraftFlow.value.name,
+          transformCraftForOption(editedCraftFlow.value)
+        );
+      } else {
+        await createCraftFlow(transformCraftForOption(editedCraftFlow.value));
+      }
+      Message.success(t('craftFlow.form.saveSuccess'));
+      showEditModal.value = false;
+      await listAllCraftFlow();
+      isUpdating.value = false;
+      editedCraftFlow.value = {
+        name: '',
+        description: '',
+        craftList: [],
+        craft_flow_config: [],
+      };
+    } catch (err) {
+      // Error handling is done by interceptor or default handling
+    } finally {
+      saving.value = false;
     }
-    showEditModal.value = false;
-    await listAllCraftFlow();
-    isUpdating.value = false;
-    editedCraftFlow.value = {
-      name: '',
-      description: '',
-      craftList: [],
-      craft_flow_config: [],
-    };
   };
   const sysCraftAtomList = ref<any>([]);
   const craftAtomList = ref<any>([]);
