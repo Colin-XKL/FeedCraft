@@ -30,4 +30,5 @@ export default {
   ...localeUrlGenerator,
   ...localeRssGenerator,
   ...localeWorkplace,
+  'menu.jsonRssGenerator': 'JSON RSS 生成器',
 };

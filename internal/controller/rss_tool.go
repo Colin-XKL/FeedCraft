@@ -162,12 +162,52 @@ func ParseRSS(c *gin.Context) {
 		}
 		if req.LinkSelector != "" {
 			sel := getSelection(req.LinkSelector)
-			// Try to get href
+			// Try to get href from the element itself
 			href, exists := sel.Attr("href")
 			if exists {
 				item.Link = href
 			} else {
-				item.Link = strings.TrimSpace(sel.Text())
+				// If not found, try to find a child 'a' tag
+				childA := sel.Find("a").First()
+				if childA.Length() > 0 {
+					href, exists = childA.Attr("href")
+					if exists {
+						item.Link = href
+					}
+				}
+
+				// If still not found, try to find a parent 'a' tag (closest ancestor)
+				if item.Link == "" {
+					parentA := sel.Closest("a")
+					if parentA.Length() > 0 {
+						href, exists = parentA.Attr("href")
+						if exists {
+							item.Link = href
+						}
+					}
+				}
+			}
+
+			// Fallback to text if still empty, BUT only if it looks like a URL (no spaces)
+			if item.Link == "" {
+				text := strings.TrimSpace(sel.Text())
+				if text != "" && !strings.ContainsAny(text, " \t\n") {
+					item.Link = text
+				}
+			}
+
+			// Try to resolve relative URL to absolute URL
+			if req.URL != "" && item.Link != "" {
+				if absURL, err := util.BuildAbsoluteURL(req.URL, item.Link); err == nil {
+					item.Link = absURL
+				}
+			}
+
+			// Final validation: Ensure it is a valid HTTP/HTTPS URL
+			if item.Link != "" {
+				if u, err := url.Parse(item.Link); err != nil || (u.Scheme != "http" && u.Scheme != "https") {
+					item.Link = ""
+				}
 			}
 		}
 		if req.DateSelector != "" {
