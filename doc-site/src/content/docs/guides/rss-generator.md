@@ -5,6 +5,8 @@ description: Turn any webpage into an RSS feed using the visual selector.
 
 FeedCraft includes a visual **RSS Generator Wizard** that allows you to create RSS feeds from websites that don't provide them natively.
 
+> **Note:** This tool is designed for HTML pages. If you need to process a JSON API, use the [JSON RSS Generator](/guides/json-rss-generator/) instead.
+
 ## Overview
 
 The RSS Generator allows you to:
