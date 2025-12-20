@@ -4,10 +4,10 @@ import (
 	"FeedCraft/internal/config"
 	"context"
 	"fmt"
-	"io"
-	"net/http"
 	"net/url"
 	"strings"
+
+	"github.com/go-resty/resty/v2"
 )
 
 func init() {
@@ -45,29 +45,24 @@ func (p *SearXNGProvider) Fetch(ctx context.Context, query string) ([]byte, erro
 
 	fullURL := fmt.Sprintf("%s/search?%s", baseURL, params.Encode())
 
-	req, err := http.NewRequestWithContext(ctx, "GET", fullURL, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
+	client := resty.New()
+	req := client.R().SetContext(ctx)
 
 	// Add Authorization header if API Key is present (useful for private instances with Basic/Bearer auth)
 	if p.Config.APIKey != "" {
-		req.Header.Set("Authorization", "Bearer "+p.Config.APIKey)
+		req.SetHeader("Authorization", "Bearer "+p.Config.APIKey)
 	}
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := req.Get(fullURL)
 	if err != nil {
 		return nil, fmt.Errorf("search request failed: %w", err)
 	}
-	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("search provider returned status %d: %s", resp.StatusCode, string(body))
+	if resp.IsError() {
+		return nil, fmt.Errorf("search provider returned status %d: %s", resp.StatusCode(), resp.String())
 	}
 
-	return io.ReadAll(resp.Body)
+	return resp.Body(), nil
 }
 
 func (p *SearXNGProvider) GetDefaultParserConfig() *config.JsonParserConfig {
