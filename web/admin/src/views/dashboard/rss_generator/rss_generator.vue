@@ -188,7 +188,11 @@
                 </a-form>
 
                 <!-- Immediate Preview Results -->
-                <div v-if="parsedItems.length > 0" class="mt-4">
+                <div
+                  v-if="parsedItems.length > 0"
+                  ref="resultsRef"
+                  class="mt-4"
+                >
                   <a-divider orientation="left"
                     >{{ $t('rssGenerator.step2.previewResults') }} ({{
                       parsedItems.length
@@ -382,7 +386,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive } from 'vue';
+  import { ref, reactive, nextTick } from 'vue';
   import axios from 'axios';
   import DOMPurify from 'dompurify';
   import { Message } from '@arco-design/web-vue';
@@ -417,6 +421,7 @@
   const isSelectionMode = ref(true);
   const currentTargetField = ref<string>('');
   const previewRef = ref<InstanceType<typeof HtmlPreview> | null>(null);
+  const resultsRef = ref<HTMLElement | null>(null);
 
   // Config State
   const config = reactive<{ [key: string]: string }>({
@@ -450,6 +455,11 @@
 
   const prevStep = () => {
     if (currentStep.value > 1) currentStep.value -= 1;
+  };
+
+  const setTargetField = (field: string) => {
+    currentTargetField.value = field;
+    Message.info(t('rssGenerator.msg.pickInfo', { field }));
   };
 
   // Step 1 -> 2
@@ -490,6 +500,7 @@
 
         feedMeta.link = url.value; // Auto-fill
         nextStep();
+        setTargetField('item_selector');
       } else {
         Message.error(res.msg || t('rssGenerator.msg.fetchFailed'));
       }
@@ -525,6 +536,12 @@
           t('rssGenerator.msg.extracted', { count: parsedItems.value.length })
         );
         // Do not auto-advance. Let user check preview first.
+        nextTick(() => {
+          resultsRef.value?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        });
       } else {
         Message.error(res.msg || t('rssGenerator.msg.parseFailed'));
       }
@@ -588,11 +605,6 @@
 
   // --- Selection Logic ---
 
-  const setTargetField = (field: string) => {
-    currentTargetField.value = field;
-    Message.info(t('rssGenerator.msg.pickInfo', { field }));
-  };
-
   // This function now receives the RAW DOM element from HtmlPreview
   const handleElementSelect = (target: HTMLElement) => {
     if (!currentTargetField.value) {
@@ -620,7 +632,6 @@
         Message.success(
           t('rssGenerator.msg.matchedItems', {
             count: matches.length,
-            selector: fullSelector,
           })
         );
       } catch {
@@ -628,6 +639,8 @@
           t('rssGenerator.msg.setItemSelector', { selector: fullSelector })
         );
       }
+      currentTargetField.value = 'title_selector';
+      Message.info(t('rssGenerator.msg.listSelectedNextTitle'));
     } else {
       // Relative selection logic
       if (!config.item_selector) {
