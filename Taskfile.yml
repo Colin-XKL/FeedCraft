@@ -228,3 +228,20 @@ tasks:
           (go run ./cmd/main.go) &
           (cd web/admin && pnpm dev) &
           wait
+# Documentation Site Commands
+  docs-dev:
+    desc: "Run documentation site in development mode"
+    cmds:
+      - cmd: |
+          echo "Starting documentation site development mode..."
+          echo "Documentation site will run on http://localhost:4321"
+          cd doc-site && pnpm run dev
+
+  docs-build:
+    desc: "Build the documentation site"
+    cmds:
+      - cmd: |
+          echo "Building documentation site..."
+          cd doc-site && pnpm install && pnpm run build
+          echo "Documentation site build completed"
+

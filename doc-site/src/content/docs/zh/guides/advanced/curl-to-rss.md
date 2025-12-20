@@ -1,5 +1,5 @@
 ---
-title: JSON RSS 生成器
+title: 从CURL语句生成RSS
 description: 使用 jq 选择器将任意 JSON API 响应转换为 RSS 订阅源。
 ---
 
