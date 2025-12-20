@@ -20,6 +20,8 @@ export default {
   'rssGenerator.step1.button': 'Fetch & Next',
   'rssGenerator.step2.pagePreview': 'Page Preview',
   'rssGenerator.step2.selectionModeOn': 'Selection Mode On',
+  'rssGenerator.step2.enhanceMode': 'Enhanced Mode',
+  'rssGenerator.step2.enhanceMode.tooltip': 'If the preview looks different from what you see in your browser (e.g., missing content), it likely means the page uses JavaScript. Enable Enhance Mode to fix this.',
   'rssGenerator.step2.alert.l1':
     '1. Click "Pick" and select an element in the preview.',
   'rssGenerator.step2.alert.l2':

@@ -1,0 +1,490 @@
+
+> feed-craft-admin-panel@1.0.0 dev /app/web/admin
+> vite --config ./config/vite.config.dev.ts
+
+
+  VITE v3.2.11  ready in 1774 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+6:36:37 AM [vite] warning:
+/app/web/admin/src/api/interceptor.ts
+  44:7  warning  Unexpected console statement  no-console
+
+✖ 1 problem (0 errors, 1 warning)
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/api/interceptor.ts
+6:36:40 AM [vite] warning:
+/app/web/admin/src/locale/en-US/customRecipe.ts
+  38:3  warning  Insert `⏎`  prettier/prettier
+
+✖ 1 problem (0 errors, 1 warning)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/locale/en-US/customRecipe.ts
+6:36:40 AM [vite] warning:
+/app/web/admin/src/locale/en-US/feedViewer.ts
+  4:25  warning  Insert `⏎···`  prettier/prettier
+
+✖ 1 problem (0 errors, 1 warning)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/locale/en-US/feedViewer.ts
+6:36:40 AM [vite] warning:
+/app/web/admin/src/locale/en-US/rssGenerator.ts
+  24:44  warning  Insert `⏎···`  prettier/prettier
+
+✖ 1 problem (0 errors, 1 warning)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/locale/en-US/rssGenerator.ts
+6:36:40 AM [vite] warning:
+/app/web/admin/src/locale/zh-CN/rssGenerator.ts
+  23:44  warning  Insert `⏎···`  prettier/prettier
+  74:35  warning  Delete `⏎···`  prettier/prettier
+  81:44  warning  Insert `⏎···`  prettier/prettier
+
+✖ 3 problems (0 errors, 3 warnings)
+  0 errors and 3 warnings potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/locale/zh-CN/rssGenerator.ts
+6:36:40 AM [vite] warning:
+/app/web/admin/src/locale/zh-CN/customRecipe.ts
+  37:3  warning  Insert `⏎`  prettier/prettier
+
+✖ 1 problem (0 errors, 1 warning)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/locale/zh-CN/customRecipe.ts
+Browserslist: caniuse-lite is outdated. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+6:36:48 AM [vite] warning:
+/app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+   72:92  warning  Attribute "size" should go before "@change"                                                                                                                                                                                        vue/attributes-order
+  142:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  157:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  172:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  187:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  209:30  error    Parsing error: Expected to be an alias, but got empty                                                                                                                                                                              vue/no-parsing-error
+  209:45  warning  Attribute 'parsedItems"' must be hyphenated                                                                                                                                                                                        vue/attribute-hyphenation
+  209:56  error    Parsing error: unexpected-character-in-attribute-name                                                                                                                                                                              vue/no-parsing-error
+  210:23  warning  Attribute ":key" should go before "parsedItems""                                                                                                                                                                                   vue/attributes-order
+  210:23  error    Expected 'v-bind:key' directive to use the variables which are defined by the 'v-for' directive                                                                                                                                    vue/valid-v-for
+  222:22  warning  Parsing error: Unexpected closing tag "a-collapse-item". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags  prettier/prettier
+  471:31  error    Type boolean trivially inferred from a boolean literal, remove type annotation                                                                                                                                                     @typescript-eslint/no-inferrable-types
+
+✖ 12 problems (4 errors, 8 warnings)
+  1 error and 7 warnings potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+6:36:48 AM [vite] Internal server error:
+/app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+   72:92  warning  Attribute "size" should go before "@change"                                                                                                                                                                                        vue/attributes-order
+  142:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  157:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  172:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  187:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  209:30  error    Parsing error: Expected to be an alias, but got empty                                                                                                                                                                              vue/no-parsing-error
+  209:45  warning  Attribute 'parsedItems"' must be hyphenated                                                                                                                                                                                        vue/attribute-hyphenation
+  209:56  error    Parsing error: unexpected-character-in-attribute-name                                                                                                                                                                              vue/no-parsing-error
+  210:23  warning  Attribute ":key" should go before "parsedItems""                                                                                                                                                                                   vue/attributes-order
+  210:23  error    Expected 'v-bind:key' directive to use the variables which are defined by the 'v-for' directive                                                                                                                                    vue/valid-v-for
+  222:22  warning  Parsing error: Unexpected closing tag "a-collapse-item". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags  prettier/prettier
+  471:31  error    Type boolean trivially inferred from a boolean literal, remove type annotation                                                                                                                                                     @typescript-eslint/no-inferrable-types
+
+✖ 12 problems (4 errors, 8 warnings)
+  1 error and 7 warnings potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+      at formatError (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40359:46)
+      at TransformContext.error (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40355:19)
+      at TransformContext.transform (/app/web/admin/node_modules/.pnpm/vite-plugin-eslint@1.8.1_eslint@8.57.0_vite@3.2.11_@types+node@16.18.97_less@4.2.0_/node_modules/vite-plugin-eslint/dist/index.js:1:2469)
+      at async Object.transform (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40612:30)
+      at async loadAndTransform (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:36998:29)
+6:37:05 AM [vite] warning:
+/app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+   72:92  warning  Attribute "size" should go before "@change"                                                                                                                                                                                        vue/attributes-order
+  142:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  157:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  172:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  187:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  209:30  error    Parsing error: Expected to be an alias, but got empty                                                                                                                                                                              vue/no-parsing-error
+  209:45  warning  Attribute 'parsedItems"' must be hyphenated                                                                                                                                                                                        vue/attribute-hyphenation
+  209:56  error    Parsing error: unexpected-character-in-attribute-name                                                                                                                                                                              vue/no-parsing-error
+  210:23  warning  Attribute ":key" should go before "parsedItems""                                                                                                                                                                                   vue/attributes-order
+  210:23  error    Expected 'v-bind:key' directive to use the variables which are defined by the 'v-for' directive                                                                                                                                    vue/valid-v-for
+  222:22  warning  Parsing error: Unexpected closing tag "a-collapse-item". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags  prettier/prettier
+  471:31  error    Type boolean trivially inferred from a boolean literal, remove type annotation                                                                                                                                                     @typescript-eslint/no-inferrable-types
+
+✖ 12 problems (4 errors, 8 warnings)
+  1 error and 7 warnings potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+6:37:05 AM [vite] Internal server error:
+/app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+   72:92  warning  Attribute "size" should go before "@change"                                                                                                                                                                                        vue/attributes-order
+  142:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  157:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  172:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  187:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  209:30  error    Parsing error: Expected to be an alias, but got empty                                                                                                                                                                              vue/no-parsing-error
+  209:45  warning  Attribute 'parsedItems"' must be hyphenated                                                                                                                                                                                        vue/attribute-hyphenation
+  209:56  error    Parsing error: unexpected-character-in-attribute-name                                                                                                                                                                              vue/no-parsing-error
+  210:23  warning  Attribute ":key" should go before "parsedItems""                                                                                                                                                                                   vue/attributes-order
+  210:23  error    Expected 'v-bind:key' directive to use the variables which are defined by the 'v-for' directive                                                                                                                                    vue/valid-v-for
+  222:22  warning  Parsing error: Unexpected closing tag "a-collapse-item". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags  prettier/prettier
+  471:31  error    Type boolean trivially inferred from a boolean literal, remove type annotation                                                                                                                                                     @typescript-eslint/no-inferrable-types
+
+✖ 12 problems (4 errors, 8 warnings)
+  1 error and 7 warnings potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+      at formatError (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40359:46)
+      at TransformContext.error (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40355:19)
+      at TransformContext.transform (/app/web/admin/node_modules/.pnpm/vite-plugin-eslint@1.8.1_eslint@8.57.0_vite@3.2.11_@types+node@16.18.97_less@4.2.0_/node_modules/vite-plugin-eslint/dist/index.js:1:2469)
+      at async Object.transform (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40612:30)
+      at async loadAndTransform (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:36998:29)
+6:37:22 AM [vite] warning:
+/app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+   72:92  warning  Attribute "size" should go before "@change"                                                                                                                                                                                        vue/attributes-order
+  142:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  157:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  172:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  187:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  209:30  error    Parsing error: Expected to be an alias, but got empty                                                                                                                                                                              vue/no-parsing-error
+  209:45  warning  Attribute 'parsedItems"' must be hyphenated                                                                                                                                                                                        vue/attribute-hyphenation
+  209:56  error    Parsing error: unexpected-character-in-attribute-name                                                                                                                                                                              vue/no-parsing-error
+  210:23  warning  Attribute ":key" should go before "parsedItems""                                                                                                                                                                                   vue/attributes-order
+  210:23  error    Expected 'v-bind:key' directive to use the variables which are defined by the 'v-for' directive                                                                                                                                    vue/valid-v-for
+  222:22  warning  Parsing error: Unexpected closing tag "a-collapse-item". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags  prettier/prettier
+  471:31  error    Type boolean trivially inferred from a boolean literal, remove type annotation                                                                                                                                                     @typescript-eslint/no-inferrable-types
+
+✖ 12 problems (4 errors, 8 warnings)
+  1 error and 7 warnings potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+6:37:22 AM [vite] Internal server error:
+/app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+   72:92  warning  Attribute "size" should go before "@change"                                                                                                                                                                                        vue/attributes-order
+  142:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  157:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  172:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  187:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  209:30  error    Parsing error: Expected to be an alias, but got empty                                                                                                                                                                              vue/no-parsing-error
+  209:45  warning  Attribute 'parsedItems"' must be hyphenated                                                                                                                                                                                        vue/attribute-hyphenation
+  209:56  error    Parsing error: unexpected-character-in-attribute-name                                                                                                                                                                              vue/no-parsing-error
+  210:23  warning  Attribute ":key" should go before "parsedItems""                                                                                                                                                                                   vue/attributes-order
+  210:23  error    Expected 'v-bind:key' directive to use the variables which are defined by the 'v-for' directive                                                                                                                                    vue/valid-v-for
+  222:22  warning  Parsing error: Unexpected closing tag "a-collapse-item". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags  prettier/prettier
+  471:31  error    Type boolean trivially inferred from a boolean literal, remove type annotation                                                                                                                                                     @typescript-eslint/no-inferrable-types
+
+✖ 12 problems (4 errors, 8 warnings)
+  1 error and 7 warnings potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+      at formatError (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40359:46)
+      at TransformContext.error (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40355:19)
+      at TransformContext.transform (/app/web/admin/node_modules/.pnpm/vite-plugin-eslint@1.8.1_eslint@8.57.0_vite@3.2.11_@types+node@16.18.97_less@4.2.0_/node_modules/vite-plugin-eslint/dist/index.js:1:2469)
+      at async Object.transform (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40612:30)
+      at async loadAndTransform (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:36998:29)
+6:37:51 AM [vite] warning:
+/app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+   72:92  warning  Attribute "size" should go before "@change"                                                                                                                                                                                        vue/attributes-order
+  142:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  157:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  172:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  187:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  209:30  error    Parsing error: Expected to be an alias, but got empty                                                                                                                                                                              vue/no-parsing-error
+  209:45  warning  Attribute 'parsedItems"' must be hyphenated                                                                                                                                                                                        vue/attribute-hyphenation
+  209:56  error    Parsing error: unexpected-character-in-attribute-name                                                                                                                                                                              vue/no-parsing-error
+  210:23  warning  Attribute ":key" should go before "parsedItems""                                                                                                                                                                                   vue/attributes-order
+  210:23  error    Expected 'v-bind:key' directive to use the variables which are defined by the 'v-for' directive                                                                                                                                    vue/valid-v-for
+  222:22  warning  Parsing error: Unexpected closing tag "a-collapse-item". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags  prettier/prettier
+  471:31  error    Type boolean trivially inferred from a boolean literal, remove type annotation                                                                                                                                                     @typescript-eslint/no-inferrable-types
+
+✖ 12 problems (4 errors, 8 warnings)
+  1 error and 7 warnings potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+6:37:51 AM [vite] Internal server error:
+/app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+   72:92  warning  Attribute "size" should go before "@change"                                                                                                                                                                                        vue/attributes-order
+  142:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  157:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  172:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  187:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  209:30  error    Parsing error: Expected to be an alias, but got empty                                                                                                                                                                              vue/no-parsing-error
+  209:45  warning  Attribute 'parsedItems"' must be hyphenated                                                                                                                                                                                        vue/attribute-hyphenation
+  209:56  error    Parsing error: unexpected-character-in-attribute-name                                                                                                                                                                              vue/no-parsing-error
+  210:23  warning  Attribute ":key" should go before "parsedItems""                                                                                                                                                                                   vue/attributes-order
+  210:23  error    Expected 'v-bind:key' directive to use the variables which are defined by the 'v-for' directive                                                                                                                                    vue/valid-v-for
+  222:22  warning  Parsing error: Unexpected closing tag "a-collapse-item". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags  prettier/prettier
+  471:31  error    Type boolean trivially inferred from a boolean literal, remove type annotation                                                                                                                                                     @typescript-eslint/no-inferrable-types
+
+✖ 12 problems (4 errors, 8 warnings)
+  1 error and 7 warnings potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+      at formatError (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40359:46)
+      at TransformContext.error (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40355:19)
+      at TransformContext.transform (/app/web/admin/node_modules/.pnpm/vite-plugin-eslint@1.8.1_eslint@8.57.0_vite@3.2.11_@types+node@16.18.97_less@4.2.0_/node_modules/vite-plugin-eslint/dist/index.js:1:2469)
+      at async Object.transform (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40612:30)
+      at async loadAndTransform (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:36998:29)
+6:38:48 AM [vite] warning:
+/app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+   72:92  warning  Attribute "size" should go before "@change"                                                                                                                                                                                        vue/attributes-order
+  142:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  157:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  172:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  187:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  209:30  error    Parsing error: Expected to be an alias, but got empty                                                                                                                                                                              vue/no-parsing-error
+  209:45  warning  Attribute 'parsedItems"' must be hyphenated                                                                                                                                                                                        vue/attribute-hyphenation
+  209:56  error    Parsing error: unexpected-character-in-attribute-name                                                                                                                                                                              vue/no-parsing-error
+  210:23  warning  Attribute ":key" should go before "parsedItems""                                                                                                                                                                                   vue/attributes-order
+  210:23  error    Expected 'v-bind:key' directive to use the variables which are defined by the 'v-for' directive                                                                                                                                    vue/valid-v-for
+  222:22  warning  Parsing error: Unexpected closing tag "a-collapse-item". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags  prettier/prettier
+  471:31  error    Type boolean trivially inferred from a boolean literal, remove type annotation                                                                                                                                                     @typescript-eslint/no-inferrable-types
+
+✖ 12 problems (4 errors, 8 warnings)
+  1 error and 7 warnings potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+6:38:48 AM [vite] Internal server error:
+/app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+   72:92  warning  Attribute "size" should go before "@change"                                                                                                                                                                                        vue/attributes-order
+  142:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  157:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  172:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  187:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  209:30  error    Parsing error: Expected to be an alias, but got empty                                                                                                                                                                              vue/no-parsing-error
+  209:45  warning  Attribute 'parsedItems"' must be hyphenated                                                                                                                                                                                        vue/attribute-hyphenation
+  209:56  error    Parsing error: unexpected-character-in-attribute-name                                                                                                                                                                              vue/no-parsing-error
+  210:23  warning  Attribute ":key" should go before "parsedItems""                                                                                                                                                                                   vue/attributes-order
+  210:23  error    Expected 'v-bind:key' directive to use the variables which are defined by the 'v-for' directive                                                                                                                                    vue/valid-v-for
+  222:22  warning  Parsing error: Unexpected closing tag "a-collapse-item". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags  prettier/prettier
+  471:31  error    Type boolean trivially inferred from a boolean literal, remove type annotation                                                                                                                                                     @typescript-eslint/no-inferrable-types
+
+✖ 12 problems (4 errors, 8 warnings)
+  1 error and 7 warnings potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+      at formatError (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40359:46)
+      at TransformContext.error (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40355:19)
+      at TransformContext.transform (/app/web/admin/node_modules/.pnpm/vite-plugin-eslint@1.8.1_eslint@8.57.0_vite@3.2.11_@types+node@16.18.97_less@4.2.0_/node_modules/vite-plugin-eslint/dist/index.js:1:2469)
+      at async Object.transform (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40612:30)
+      at async loadAndTransform (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:36998:29)
+6:39:23 AM [vite] warning:
+/app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+   72:92  warning  Attribute "size" should go before "@change"                                                                                                                                                                                        vue/attributes-order
+  142:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  157:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  172:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  187:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  209:30  error    Parsing error: Expected to be an alias, but got empty                                                                                                                                                                              vue/no-parsing-error
+  209:45  warning  Attribute 'parsedItems"' must be hyphenated                                                                                                                                                                                        vue/attribute-hyphenation
+  209:56  error    Parsing error: unexpected-character-in-attribute-name                                                                                                                                                                              vue/no-parsing-error
+  210:23  warning  Attribute ":key" should go before "parsedItems""                                                                                                                                                                                   vue/attributes-order
+  210:23  error    Expected 'v-bind:key' directive to use the variables which are defined by the 'v-for' directive                                                                                                                                    vue/valid-v-for
+  222:22  warning  Parsing error: Unexpected closing tag "a-collapse-item". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags  prettier/prettier
+  471:31  error    Type boolean trivially inferred from a boolean literal, remove type annotation                                                                                                                                                     @typescript-eslint/no-inferrable-types
+
+✖ 12 problems (4 errors, 8 warnings)
+  1 error and 7 warnings potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+6:39:23 AM [vite] Internal server error:
+/app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+   72:92  warning  Attribute "size" should go before "@change"                                                                                                                                                                                        vue/attributes-order
+  142:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  157:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  172:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  187:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                    vue/attributes-order
+  209:30  error    Parsing error: Expected to be an alias, but got empty                                                                                                                                                                              vue/no-parsing-error
+  209:45  warning  Attribute 'parsedItems"' must be hyphenated                                                                                                                                                                                        vue/attribute-hyphenation
+  209:56  error    Parsing error: unexpected-character-in-attribute-name                                                                                                                                                                              vue/no-parsing-error
+  210:23  warning  Attribute ":key" should go before "parsedItems""                                                                                                                                                                                   vue/attributes-order
+  210:23  error    Expected 'v-bind:key' directive to use the variables which are defined by the 'v-for' directive                                                                                                                                    vue/valid-v-for
+  222:22  warning  Parsing error: Unexpected closing tag "a-collapse-item". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags  prettier/prettier
+  471:31  error    Type boolean trivially inferred from a boolean literal, remove type annotation                                                                                                                                                     @typescript-eslint/no-inferrable-types
+
+✖ 12 problems (4 errors, 8 warnings)
+  1 error and 7 warnings potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+      at formatError (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40359:46)
+      at TransformContext.error (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40355:19)
+      at TransformContext.transform (/app/web/admin/node_modules/.pnpm/vite-plugin-eslint@1.8.1_eslint@8.57.0_vite@3.2.11_@types+node@16.18.97_less@4.2.0_/node_modules/vite-plugin-eslint/dist/index.js:1:2469)
+      at async Object.transform (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40612:30)
+      at async loadAndTransform (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:36998:29)
+6:40:36 AM [vite] warning:
+/app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+   70:45  warning  Replace `·$t('rssGenerator.step2.enhanceMode')` with `⏎······················$t('rssGenerator.step2.enhanceMode')⏎···················`                                                                                                                                                   prettier/prettier
+   71:31  warning  Replace `·:content="$t('rssGenerator.step2.enhanceMode.tooltip')">` with `⏎······················:content="$t('rssGenerator.step2.enhanceMode.tooltip')"`                                                                                                                                prettier/prettier
+   72:20  warning  Replace `·····<a-switch·v-model="enhancedMode"·size="small"·@change="handleEnhanceModeChange">` with `·>⏎······················<a-switch⏎························v-model="enhancedMode"⏎························size="small"⏎························@change="handleEnhanceModeChange"`  prettier/prettier
+   73:3   warning  Insert `····················>⏎`                                                                                                                                                                                                                                                          prettier/prettier
+  142:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                                                                          vue/attributes-order
+  157:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                                                                          vue/attributes-order
+  172:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                                                                          vue/attributes-order
+  187:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                                                                          vue/attributes-order
+  471:31  error    Type boolean trivially inferred from a boolean literal, remove type annotation                                                                                                                                                                                                           @typescript-eslint/no-inferrable-types
+  472:5   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  473:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  474:5   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  475:1   warning  Replace `········` with `······`                                                                                                                                                                                                                                                         prettier/prettier
+  476:9   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  477:1   warning  Replace `··········` with `········`                                                                                                                                                                                                                                                     prettier/prettier
+  478:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  479:7   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  480:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  481:9   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  482:1   warning  Replace `··········` with `········`                                                                                                                                                                                                                                                     prettier/prettier
+  483:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  484:9   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  485:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  486:9   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  487:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  488:11  warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  489:1   warning  Replace `············` with `··········`                                                                                                                                                                                                                                                 prettier/prettier
+  490:11  warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  491:13  warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  492:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  493:13  warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  494:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  495:13  warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  496:1   warning  Replace `··············` with `············`                                                                                                                                                                                                                                             prettier/prettier
+  497:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  498:13  warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  499:1   warning  Replace `··············` with `············`                                                                                                                                                                                                                                             prettier/prettier
+  500:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  501:13  warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  502:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  503:11  warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  504:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  506:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  507:1   warning  Delete `··········`                                                                                                                                                                                                                                                                      prettier/prettier
+  508:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  509:1   warning  Replace `··············` with `··········`                                                                                                                                                                                                                                               prettier/prettier
+  510:1   warning  Delete `····`                                                                                                                                                                                                                                                                            prettier/prettier
+  511:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  512:7   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  513:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  514:7   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  515:1   warning  Replace `······` with `····`                                                                                                                                                                                                                                                             prettier/prettier
+  516:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  517:5   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  518:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  519:5   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  528:5   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  529:4   warning  Replace `⏎` with `;`                                                                                                                                                                                                                                                                     prettier/prettier
+
+✖ 58 problems (1 error, 57 warnings)
+  1 error and 57 warnings potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+6:40:36 AM [vite] Internal server error:
+/app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+   70:45  warning  Replace `·$t('rssGenerator.step2.enhanceMode')` with `⏎······················$t('rssGenerator.step2.enhanceMode')⏎···················`                                                                                                                                                   prettier/prettier
+   71:31  warning  Replace `·:content="$t('rssGenerator.step2.enhanceMode.tooltip')">` with `⏎······················:content="$t('rssGenerator.step2.enhanceMode.tooltip')"`                                                                                                                                prettier/prettier
+   72:20  warning  Replace `·····<a-switch·v-model="enhancedMode"·size="small"·@change="handleEnhanceModeChange">` with `·>⏎······················<a-switch⏎························v-model="enhancedMode"⏎························size="small"⏎························@change="handleEnhanceModeChange"`  prettier/prettier
+   73:3   warning  Insert `····················>⏎`                                                                                                                                                                                                                                                          prettier/prettier
+  142:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                                                                          vue/attributes-order
+  157:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                                                                          vue/attributes-order
+  172:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                                                                          vue/attributes-order
+  187:29  warning  Attribute ":disabled" should go before "@click"                                                                                                                                                                                                                                          vue/attributes-order
+  471:31  error    Type boolean trivially inferred from a boolean literal, remove type annotation                                                                                                                                                                                                           @typescript-eslint/no-inferrable-types
+  472:5   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  473:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  474:5   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  475:1   warning  Replace `········` with `······`                                                                                                                                                                                                                                                         prettier/prettier
+  476:9   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  477:1   warning  Replace `··········` with `········`                                                                                                                                                                                                                                                     prettier/prettier
+  478:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  479:7   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  480:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  481:9   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  482:1   warning  Replace `··········` with `········`                                                                                                                                                                                                                                                     prettier/prettier
+  483:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  484:9   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  485:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  486:9   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  487:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  488:11  warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  489:1   warning  Replace `············` with `··········`                                                                                                                                                                                                                                                 prettier/prettier
+  490:11  warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  491:13  warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  492:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  493:13  warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  494:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  495:13  warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  496:1   warning  Replace `··············` with `············`                                                                                                                                                                                                                                             prettier/prettier
+  497:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  498:13  warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  499:1   warning  Replace `··············` with `············`                                                                                                                                                                                                                                             prettier/prettier
+  500:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  501:13  warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  502:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  503:11  warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  504:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  506:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  507:1   warning  Delete `··········`                                                                                                                                                                                                                                                                      prettier/prettier
+  508:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  509:1   warning  Replace `··············` with `··········`                                                                                                                                                                                                                                               prettier/prettier
+  510:1   warning  Delete `····`                                                                                                                                                                                                                                                                            prettier/prettier
+  511:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  512:7   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  513:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  514:7   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  515:1   warning  Replace `······` with `····`                                                                                                                                                                                                                                                             prettier/prettier
+  516:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  517:5   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  518:1   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  519:5   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  528:5   warning  Delete `··`                                                                                                                                                                                                                                                                              prettier/prettier
+  529:4   warning  Replace `⏎` with `;`                                                                                                                                                                                                                                                                     prettier/prettier
+
+✖ 58 problems (1 error, 57 warnings)
+  1 error and 57 warnings potentially fixable with the `--fix` option.
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/views/dashboard/rss_generator/rss_generator.vue
+      at formatError (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40359:46)
+      at TransformContext.error (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40355:19)
+      at TransformContext.transform (/app/web/admin/node_modules/.pnpm/vite-plugin-eslint@1.8.1_eslint@8.57.0_vite@3.2.11_@types+node@16.18.97_less@4.2.0_/node_modules/vite-plugin-eslint/dist/index.js:1:2469)
+      at async Object.transform (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:40612:30)
+      at async loadAndTransform (file:///app/web/admin/node_modules/.pnpm/vite@3.2.11_@types+node@16.18.97_less@4.2.0/node_modules/vite/dist/node/chunks/dep-3e87c7b2.js:36998:29)
+6:41:18 AM [vite] warning:
+/app/web/admin/src/views/dashboard/rss_generator/components/HtmlPreview.vue
+  15:34  warning  'watch' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 1 problem (0 errors, 1 warning)
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/views/dashboard/rss_generator/components/HtmlPreview.vue
+6:41:18 AM [vite] warning:
+/app/web/admin/src/views/dashboard/rss_generator/components/HtmlPreview.vue
+  15:34  warning  'watch' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 1 problem (0 errors, 1 warning)
+
+  Plugin: vite-plugin-eslint
+  File: /app/web/admin/src/views/dashboard/rss_generator/components/HtmlPreview.vue?vue&type=style&index=0&scoped=adf30048&lang.css

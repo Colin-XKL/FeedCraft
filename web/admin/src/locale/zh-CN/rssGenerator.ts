@@ -19,6 +19,8 @@ export default {
   'rssGenerator.step1.button': '获取并下一步',
   'rssGenerator.step2.pagePreview': '页面预览',
   'rssGenerator.step2.selectionModeOn': '选择模式开启',
+  'rssGenerator.step2.enhanceMode': '增强模式',
+  'rssGenerator.step2.enhanceMode.tooltip': '如果在没有开启enhance mode 的情况下, 预览页面显示不正常, 和自己在浏览器单独窗口里面看到的页面不一致, 说明页面的主要内容是js渲染的, 需要启用enhance mode 才能正常使用feedcraft 的html to rss 功能生成rss',
   'rssGenerator.step2.alert.l1': '1. 点击 "拾取" 并在预览中选择一个元素。',
   'rssGenerator.step2.alert.l2': '2. 点击 "运行预览" 以验证提取的数据。',
   'rssGenerator.step2.card1.title': '1. 列表项 (必填)',
