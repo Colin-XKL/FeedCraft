@@ -9,6 +9,7 @@ import (
 	"FeedCraft/internal/util"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -41,6 +42,10 @@ func RegisterRouters(router *gin.Engine) {
 	//})
 
 	router.NoRoute(func(c *gin.Context) {
+		if strings.HasPrefix(c.Request.URL.Path, "/api") {
+			c.JSON(http.StatusNotFound, gin.H{"code": 404, "msg": "Page not found"})
+			return
+		}
 		c.File("./web/index.html")
 	})
 
