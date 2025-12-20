@@ -9,20 +9,20 @@
       <a-card class="wizard-card">
         <a-steps :current="currentStep" class="mb-8">
           <a-step
-            :title="$t('rssGenerator.step.targetUrl')"
-            :description="$t('rssGenerator.step.targetUrl.desc')"
+            :title="$t('htmlToRss.step.targetUrl')"
+            :description="$t('htmlToRss.step.targetUrl.desc')"
           />
           <a-step
-            :title="$t('rssGenerator.step.extractRules')"
-            :description="$t('rssGenerator.step.extractRules.desc')"
+            :title="$t('htmlToRss.step.extractRules')"
+            :description="$t('htmlToRss.step.extractRules.desc')"
           />
           <a-step
-            :title="$t('rssGenerator.step.feedMetadata')"
-            :description="$t('rssGenerator.step.feedMetadata.desc')"
+            :title="$t('htmlToRss.step.feedMetadata')"
+            :description="$t('htmlToRss.step.feedMetadata.desc')"
           />
           <a-step
-            :title="$t('rssGenerator.step.saveRecipe')"
-            :description="$t('rssGenerator.step.saveRecipe.desc')"
+            :title="$t('htmlToRss.step.saveRecipe')"
+            :description="$t('htmlToRss.step.saveRecipe.desc')"
           />
         </a-steps>
 
@@ -30,12 +30,12 @@
         <div v-show="currentStep === 1" class="step-content">
           <a-form layout="vertical" class="max-w-xl mx-auto">
             <a-form-item
-              :label="$t('rssGenerator.step1.label')"
-              :help="$t('rssGenerator.step1.help')"
+              :label="$t('htmlToRss.step1.label')"
+              :help="$t('htmlToRss.step1.help')"
             >
               <a-input
                 v-model="url"
-                :placeholder="$t('rssGenerator.step1.placeholder')"
+                :placeholder="$t('htmlToRss.step1.placeholder')"
                 size="large"
                 allow-clear
                 @keyup.enter="fetchAndNext"
@@ -49,7 +49,7 @@
                 :disabled="!url"
                 @click="fetchAndNext"
               >
-                {{ $t('rssGenerator.step1.button') }} <icon-arrow-right />
+                {{ $t('htmlToRss.step1.button') }} <icon-arrow-right />
               </a-button>
             </div>
           </a-form>
@@ -63,15 +63,15 @@
               <div class="flex justify-between items-center mb-2">
                 <div class="flex items-center gap-2">
                   <span class="font-bold">{{
-                    $t('rssGenerator.step2.pagePreview')
+                    $t('htmlToRss.step2.pagePreview')
                   }}</span>
                   <a-divider direction="vertical" />
                   <div class="flex items-center gap-2">
                     <span class="text-sm">{{
-                      $t('rssGenerator.step2.enhanceMode')
+                      $t('htmlToRss.step2.enhanceMode')
                     }}</span>
                     <a-tooltip
-                      :content="$t('rssGenerator.step2.enhanceMode.tooltip')"
+                      :content="$t('htmlToRss.step2.enhanceMode.tooltip')"
                     >
                       <a-switch
                         v-model="enhancedMode"
@@ -83,7 +83,7 @@
                   </div>
                 </div>
                 <a-tag v-if="isSelectionMode" color="blue">{{
-                  $t('rssGenerator.step2.selectionModeOn')
+                  $t('htmlToRss.step2.selectionModeOn')
                 }}</a-tag>
               </div>
 
@@ -103,17 +103,17 @@
             <a-col :span="10" class="h-full flex flex-col">
               <div class="flex-1 overflow-y-auto pr-2">
                 <a-alert type="info" class="mb-4">
-                  {{ $t('rssGenerator.step2.alert.l1') }}<br />
-                  {{ $t('rssGenerator.step2.alert.l2') }}
+                  {{ $t('htmlToRss.step2.alert.l1') }}<br />
+                  {{ $t('htmlToRss.step2.alert.l2') }}
                 </a-alert>
 
                 <a-form :model="config" layout="vertical">
                   <a-card
-                    :title="$t('rssGenerator.step2.card1.title')"
+                    :title="$t('htmlToRss.step2.card1.title')"
                     size="small"
                     class="mb-4 border-blue-100"
                   >
-                    <a-form-item :label="$t('rssGenerator.step2.cssSelector')">
+                    <a-form-item :label="$t('htmlToRss.step2.cssSelector')">
                       <a-input
                         v-model="config.item_selector"
                         placeholder=".article-card"
@@ -126,7 +126,7 @@
                             @click="setTargetField('item_selector')"
                           >
                             <icon-select-all />
-                            {{ $t('rssGenerator.step2.pick') }}
+                            {{ $t('htmlToRss.step2.pick') }}
                           </a-button>
                         </template>
                       </a-input>
@@ -134,11 +134,11 @@
                   </a-card>
 
                   <a-card
-                    :title="$t('rssGenerator.step2.card2.title')"
+                    :title="$t('htmlToRss.step2.card2.title')"
                     size="small"
                     :class="{ 'opacity-50': !config.item_selector }"
                   >
-                    <a-form-item :label="$t('rssGenerator.step2.title')">
+                    <a-form-item :label="$t('htmlToRss.step2.title')">
                       <a-input
                         v-model="config.title_selector"
                         :disabled="!config.item_selector"
@@ -148,12 +148,12 @@
                             size="mini"
                             :disabled="!config.item_selector"
                             @click="setTargetField('title_selector')"
-                            >{{ $t('rssGenerator.step2.pick') }}</a-button
+                            >{{ $t('htmlToRss.step2.pick') }}</a-button
                           >
                         </template>
                       </a-input>
                     </a-form-item>
-                    <a-form-item :label="$t('rssGenerator.step2.link')">
+                    <a-form-item :label="$t('htmlToRss.step2.link')">
                       <a-input
                         v-model="config.link_selector"
                         :disabled="!config.item_selector"
@@ -163,12 +163,12 @@
                             size="mini"
                             :disabled="!config.item_selector"
                             @click="setTargetField('link_selector')"
-                            >{{ $t('rssGenerator.step2.pick') }}</a-button
+                            >{{ $t('htmlToRss.step2.pick') }}</a-button
                           >
                         </template>
                       </a-input>
                     </a-form-item>
-                    <a-form-item :label="$t('rssGenerator.step2.date')">
+                    <a-form-item :label="$t('htmlToRss.step2.date')">
                       <a-input
                         v-model="config.date_selector"
                         :disabled="!config.item_selector"
@@ -178,12 +178,12 @@
                             size="mini"
                             :disabled="!config.item_selector"
                             @click="setTargetField('date_selector')"
-                            >{{ $t('rssGenerator.step2.pick') }}</a-button
+                            >{{ $t('htmlToRss.step2.pick') }}</a-button
                           >
                         </template>
                       </a-input>
                     </a-form-item>
-                    <a-form-item :label="$t('rssGenerator.step2.description')">
+                    <a-form-item :label="$t('htmlToRss.step2.description')">
                       <a-input
                         v-model="config.description_selector"
                         :disabled="!config.item_selector"
@@ -193,7 +193,7 @@
                             size="mini"
                             :disabled="!config.item_selector"
                             @click="setTargetField('description_selector')"
-                            >{{ $t('rssGenerator.step2.pick') }}</a-button
+                            >{{ $t('htmlToRss.step2.pick') }}</a-button
                           >
                         </template>
                       </a-input>
@@ -208,7 +208,7 @@
                   class="mt-4"
                 >
                   <a-divider orientation="left"
-                    >{{ $t('rssGenerator.step2.previewResults') }} ({{
+                    >{{ $t('htmlToRss.step2.previewResults') }} ({{
                       parsedItems.length
                     }})</a-divider
                   >
@@ -216,7 +216,7 @@
                     <a-collapse-item
                       v-for="(item, idx) in parsedItems"
                       :key="idx"
-                      :header="item.title || $t('rssGenerator.step2.noTitle')"
+                      :header="item.title || $t('htmlToRss.step2.noTitle')"
                     >
                       <div class="text-xs text-gray-500 mb-1">{{
                         item.link
@@ -237,7 +237,7 @@
                 class="flex justify-between mt-4 pt-4 border-t border-gray-100 bg-white"
               >
                 <a-button @click="prevStep">{{
-                  $t('rssGenerator.common.back')
+                  $t('htmlToRss.common.back')
                 }}</a-button>
                 <a-space>
                   <a-button
@@ -246,14 +246,14 @@
                     :disabled="!config.item_selector"
                     @click="runPreview"
                   >
-                    {{ $t('rssGenerator.step2.runPreview') }}
+                    {{ $t('htmlToRss.step2.runPreview') }}
                   </a-button>
                   <a-button
                     type="primary"
                     :disabled="parsedItems.length === 0"
                     @click="nextStep"
                   >
-                    {{ $t('rssGenerator.step2.nextStep') }}
+                    {{ $t('htmlToRss.step2.nextStep') }}
                   </a-button>
                 </a-space>
               </div>
@@ -265,44 +265,44 @@
         <div v-show="currentStep === 3" class="step-content">
           <div class="max-w-2xl mx-auto">
             <a-alert
-              :title="$t('rssGenerator.step3.alert.title')"
+              :title="$t('htmlToRss.step3.alert.title')"
               type="success"
               class="mb-6"
             >
               {{
-                $t('rssGenerator.step3.alert.desc', {
+                $t('htmlToRss.step3.alert.desc', {
                   count: parsedItems.length,
                 })
               }}
             </a-alert>
 
             <a-form :model="feedMeta" layout="vertical">
-              <a-form-item :label="$t('rssGenerator.step3.feedTitle')" required>
+              <a-form-item :label="$t('htmlToRss.step3.feedTitle')" required>
                 <a-input
                   v-model="feedMeta.title"
-                  :placeholder="$t('rssGenerator.step3.feedTitle.placeholder')"
+                  :placeholder="$t('htmlToRss.step3.feedTitle.placeholder')"
                 />
               </a-form-item>
-              <a-form-item :label="$t('rssGenerator.step3.feedDesc')">
+              <a-form-item :label="$t('htmlToRss.step3.feedDesc')">
                 <a-textarea
                   v-model="feedMeta.description"
-                  :placeholder="$t('rssGenerator.step3.feedDesc.placeholder')"
+                  :placeholder="$t('htmlToRss.step3.feedDesc.placeholder')"
                 />
               </a-form-item>
-              <a-form-item :label="$t('rssGenerator.step3.siteLink')">
+              <a-form-item :label="$t('htmlToRss.step3.siteLink')">
                 <a-input
                   v-model="feedMeta.link"
-                  :placeholder="$t('rssGenerator.step3.siteLink.placeholder')"
+                  :placeholder="$t('htmlToRss.step3.siteLink.placeholder')"
                 />
               </a-form-item>
               <a-row :gutter="16">
                 <a-col :span="12">
-                  <a-form-item :label="$t('rssGenerator.step3.authorName')">
+                  <a-form-item :label="$t('htmlToRss.step3.authorName')">
                     <a-input v-model="feedMeta.author_name" />
                   </a-form-item>
                 </a-col>
                 <a-col :span="12">
-                  <a-form-item :label="$t('rssGenerator.step3.authorEmail')">
+                  <a-form-item :label="$t('htmlToRss.step3.authorEmail')">
                     <a-input v-model="feedMeta.author_email" />
                   </a-form-item>
                 </a-col>
@@ -311,10 +311,10 @@
 
             <div class="flex justify-between mt-8">
               <a-button @click="prevStep">{{
-                $t('rssGenerator.common.back')
+                $t('htmlToRss.common.back')
               }}</a-button>
               <a-button type="primary" @click="nextStep">{{
-                $t('rssGenerator.common.next')
+                $t('htmlToRss.common.next')
               }}</a-button>
             </div>
           </div>
@@ -324,26 +324,26 @@
         <div v-show="currentStep === 4" class="step-content">
           <div class="max-w-xl mx-auto">
             <a-card
-              :title="$t('rssGenerator.step4.card.title')"
+              :title="$t('htmlToRss.step4.card.title')"
               class="border-blue-100"
             >
               <a-descriptions
                 :column="1"
-                :title="$t('rssGenerator.step4.summary')"
+                :title="$t('htmlToRss.step4.summary')"
                 bordered
               >
                 <a-descriptions-item
-                  :label="$t('rssGenerator.step4.sourceUrl')"
+                  :label="$t('htmlToRss.step4.sourceUrl')"
                   >{{ url }}</a-descriptions-item
                 >
                 <a-descriptions-item
-                  :label="$t('rssGenerator.step4.feedTitle')"
+                  :label="$t('htmlToRss.step4.feedTitle')"
                   >{{ feedMeta.title }}</a-descriptions-item
                 >
                 <a-descriptions-item
-                  :label="$t('rssGenerator.step4.itemCount')"
+                  :label="$t('htmlToRss.step4.itemCount')"
                   >{{
-                    $t('rssGenerator.step4.itemCount.value', {
+                    $t('htmlToRss.step4.itemCount.value', {
                       count: parsedItems.length,
                     })
                   }}</a-descriptions-item
@@ -354,20 +354,20 @@
 
               <a-form :model="recipeMeta" layout="vertical" class="mt-6">
                 <a-form-item
-                  :label="$t('rssGenerator.step4.recipeId')"
+                  :label="$t('htmlToRss.step4.recipeId')"
                   required
-                  :help="$t('rssGenerator.step4.recipeId.help')"
+                  :help="$t('htmlToRss.step4.recipeId.help')"
                 >
                   <a-input
                     v-model="recipeMeta.id"
-                    :placeholder="$t('rssGenerator.step4.recipeId.placeholder')"
+                    :placeholder="$t('htmlToRss.step4.recipeId.placeholder')"
                   />
                 </a-form-item>
-                <a-form-item :label="$t('rssGenerator.step4.internalDesc')">
+                <a-form-item :label="$t('htmlToRss.step4.internalDesc')">
                   <a-textarea
                     v-model="recipeMeta.description"
                     :placeholder="
-                      $t('rssGenerator.step4.internalDesc.placeholder')
+                      $t('htmlToRss.step4.internalDesc.placeholder')
                     "
                   />
                 </a-form-item>
@@ -381,7 +381,7 @@
                     :loading="saving"
                     @click="handleSaveRecipe"
                   >
-                    <icon-save /> {{ $t('rssGenerator.step4.confirmSave') }}
+                    <icon-save /> {{ $t('htmlToRss.step4.confirmSave') }}
                   </a-button>
                 </div>
               </a-form>
@@ -389,7 +389,7 @@
 
             <div class="flex justify-start mt-8">
               <a-button @click="prevStep">{{
-                $t('rssGenerator.common.back')
+                $t('htmlToRss.common.back')
               }}</a-button>
             </div>
           </div>
@@ -473,7 +473,7 @@
 
   const setTargetField = (field: string) => {
     currentTargetField.value = field;
-    Message.info(t('rssGenerator.msg.pickInfo', { field }));
+    Message.info(t('htmlToRss.msg.pickInfo', { field }));
   };
 
   const fetchContent = async (advanceStep = false) => {
@@ -518,10 +518,10 @@
           setTargetField('item_selector');
         }
       } else {
-        Message.error(res.msg || t('rssGenerator.msg.fetchFailed'));
+        Message.error(res.msg || t('htmlToRss.msg.fetchFailed'));
       }
     } catch (err) {
-      Message.error(t('rssGenerator.msg.errorFetching'));
+      Message.error(t('htmlToRss.msg.errorFetching'));
     } finally {
       fetching.value = false;
     }
@@ -554,11 +554,11 @@
       if (res.code === 0) {
         parsedItems.value = res.data;
         if (parsedItems.value.length === 0) {
-          Message.warning(t('rssGenerator.msg.noItems'));
+          Message.warning(t('htmlToRss.msg.noItems'));
           return;
         }
         Message.success(
-          t('rssGenerator.msg.extracted', { count: parsedItems.value.length })
+          t('htmlToRss.msg.extracted', { count: parsedItems.value.length })
         );
         // Do not auto-advance. Let user check preview first.
         nextTick(() => {
@@ -568,10 +568,10 @@
           });
         });
       } else {
-        Message.error(res.msg || t('rssGenerator.msg.parseFailed'));
+        Message.error(res.msg || t('htmlToRss.msg.parseFailed'));
       }
     } catch (err) {
-      Message.error(t('rssGenerator.msg.errorParsing'));
+      Message.error(t('htmlToRss.msg.errorParsing'));
     } finally {
       parsing.value = false;
     }
@@ -580,7 +580,7 @@
   // Step 4: Save
   const handleSaveRecipe = async () => {
     if (!recipeMeta.id) {
-      Message.warning(t('rssGenerator.msg.idRequired'));
+      Message.warning(t('htmlToRss.msg.idRequired'));
       return;
     }
 
@@ -617,11 +617,11 @@
         source_config: JSON.stringify(sourceConfig),
       });
 
-      Message.success(t('rssGenerator.msg.saveSuccess'));
+      Message.success(t('htmlToRss.msg.saveSuccess'));
       router.push({ name: 'CustomRecipe' }); // Navigate to custom recipe page
     } catch (err: any) {
       Message.error(
-        t('rssGenerator.msg.saveFailed', { msg: err.message || err })
+        t('htmlToRss.msg.saveFailed', { msg: err.message || err })
       );
     } finally {
       saving.value = false;
@@ -633,7 +633,7 @@
   // This function now receives the RAW DOM element from HtmlPreview
   const handleElementSelect = (target: HTMLElement) => {
     if (!currentTargetField.value) {
-      Message.warning(t('rssGenerator.msg.clickPickFirst'));
+      Message.warning(t('htmlToRss.msg.clickPickFirst'));
       return;
     }
 
@@ -655,21 +655,21 @@
       try {
         const matches = doc.querySelectorAll(fullSelector);
         Message.success(
-          t('rssGenerator.msg.matchedItems', {
+          t('htmlToRss.msg.matchedItems', {
             count: matches.length,
           })
         );
       } catch {
         Message.success(
-          t('rssGenerator.msg.setItemSelector', { selector: fullSelector })
+          t('htmlToRss.msg.setItemSelector', { selector: fullSelector })
         );
       }
       currentTargetField.value = 'title_selector';
-      Message.info(t('rssGenerator.msg.listSelectedNextTitle'));
+      Message.info(t('htmlToRss.msg.listSelectedNextTitle'));
     } else {
       // Relative selection logic
       if (!config.item_selector) {
-        Message.warning(t('rssGenerator.msg.setListItemFirst'));
+        Message.warning(t('htmlToRss.msg.setListItemFirst'));
         return;
       }
 
@@ -687,7 +687,7 @@
       if (foundItem) {
         if (target === foundItem) {
           config[currentTargetField.value] = '.'; // "this" - explicit dot for backend
-          Message.info(t('rssGenerator.msg.selectedContainer'));
+          Message.info(t('htmlToRss.msg.selectedContainer'));
         } else {
           // Calculate relative path
           const relPath: string[] = [];
@@ -708,11 +708,11 @@
 
           config[currentTargetField.value] = relPath.join(' ');
           Message.success(
-            t('rssGenerator.msg.setRelativePath', { path: relPath.join(' ') })
+            t('htmlToRss.msg.setRelativePath', { path: relPath.join(' ') })
           );
         }
       } else {
-        Message.warning(t('rssGenerator.msg.insideListItem'));
+        Message.warning(t('htmlToRss.msg.insideListItem'));
       }
     }
 

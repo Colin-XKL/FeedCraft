@@ -65,7 +65,17 @@ const TOOLS: AppRouteRecordRaw = {
       component: () =>
         import('@/views/dashboard/curl_to_rss/curl_to_rss.vue'),
       meta: {
-        locale: 'menu.jsonRssGenerator',
+        locale: 'menu.curlToRss',
+        requiresAuth: true,
+      },
+    },
+    {
+      path: 'search-to-rss',
+      name: 'SearchToRss',
+      component: () =>
+        import('@/views/dashboard/search_to_rss/index.vue'),
+      meta: {
+        locale: 'menu.searchToRss',
         requiresAuth: true,
       },
     },

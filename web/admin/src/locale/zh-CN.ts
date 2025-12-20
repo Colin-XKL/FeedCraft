@@ -13,7 +13,7 @@ import localeFeedCompare from './zh-CN/feedCompare';
 import localeFeedViewer from './zh-CN/feedViewer';
 import localeLlmDebug from './zh-CN/llmDebug';
 import localeUrlGenerator from './zh-CN/urlGenerator';
-import localeRssGenerator from './zh-CN/rssGenerator';
+import localeHtmlToRss from './zh-CN/htmlToRss';
 
 export default {
   ...localeSettings,
@@ -28,7 +28,6 @@ export default {
   ...localeFeedViewer,
   ...localeLlmDebug,
   ...localeUrlGenerator,
-  ...localeRssGenerator,
+  ...localeHtmlToRss,
   ...localeWorkplace,
-  'menu.jsonRssGenerator': 'JSON RSS 生成器',
 };

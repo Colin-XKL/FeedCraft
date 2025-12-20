@@ -30,7 +30,4 @@ export default {
   ...localeUrlGenerator,
   ...localeHtmlToRss,
   ...localeWorkplace,
-  'menu.htmlToRss': 'HTML to RSS',
-  'menu.curlToRss': 'CURL to RSS',
-  'menu.searchToRss': 'Search to RSS',
 };
