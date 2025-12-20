@@ -21,6 +21,11 @@ export interface ParsedItem {
   link: string;
   date: string;
   content: string;
+  description: string;
+}
+
+export interface SearchFetchReq {
+  query: string;
 }
 
 export function parseCurl(curlCommand: string) {
@@ -31,6 +36,10 @@ export function parseCurl(curlCommand: string) {
 
 export function fetchJson(req: JsonFetchReq) {
   return axios.post<string>('/api/admin/tools/json/fetch', req);
+}
+
+export function previewSearch(req: SearchFetchReq) {
+  return axios.post<ParsedItem[]>('/api/admin/tools/search/preview', req);
 }
 
 export function parseJsonRss(req: JsonParseReq) {
