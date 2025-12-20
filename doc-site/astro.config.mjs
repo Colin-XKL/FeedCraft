@@ -6,9 +6,9 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'FeedCraft',
-      defaultLocale: 'root',
+      defaultLocale: 'en',
       locales: {
-        root: {
+        en: {
           label: 'English',
           lang: 'en',
         },
