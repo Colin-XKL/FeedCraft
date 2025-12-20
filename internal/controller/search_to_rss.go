@@ -15,7 +15,7 @@ type SearchFetchReq struct {
 	Query string `json:"query"`
 }
 
-func PreviewSearchRSS(c *gin.Context) {
+func SearchPreview(c *gin.Context) {
 	var req SearchFetchReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
