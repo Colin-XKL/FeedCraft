@@ -1,6 +1,7 @@
 export default {
   'menu.customRecipe': '自定义配方',
   'customRecipe.description': '管理自定义配方，从各种来源生成 RSS 源。',
+  'customRecipe.viewConfig': '查看配置',
   'customRecipe.query': '查询',
   'customRecipe.create': '创建',
   'customRecipe.quickCreate': '快速创建',
