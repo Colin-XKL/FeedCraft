@@ -1,92 +1,106 @@
 <template>
   <div class="container">
     <a-card title="Search Provider Configuration">
-      <a-form :model="form" layout="vertical" @submit="handleSubmit">
+      <a-alert class="mb-4">
+        Configure the search provider used by the "Search to RSS" feature.
+        Currently supports LiteLLM-compatible search proxies.
+      </a-alert>
+
+      <a-form :model="form" @submit="handleSave" layout="vertical">
         <a-form-item
-          field="api_url"
-          label="API URL"
-          :rules="[{ required: true, message: 'API URL is required' }]"
+            label="Search Provider URL"
+            field="api_url"
+            required
+            tooltip="The base URL of the search provider (e.g. LiteLLM Proxy Search endpoint)."
         >
-          <a-input
-            v-model="form.api_url"
-            placeholder="e.g., https://api.litellm.ai/search"
-          />
+          <a-input v-model="form.api_url" placeholder="http://litellm-proxy:4000" />
         </a-form-item>
-        <a-form-item field="api_key" label="API Key">
-          <a-input-password
-            v-model="form.api_key"
-            placeholder="Enter API Key"
-          />
+
+        <a-form-item
+            label="API Key"
+            field="api_key"
+            tooltip="Optional API Key if the provider requires authentication."
+        >
+          <a-input-password v-model="form.api_key" placeholder="sk-..." />
         </a-form-item>
-        <a-form-item field="provider" label="Provider Type">
-          <a-select v-model="form.provider" placeholder="Select Provider">
-            <a-option value="litellm">LiteLLM Proxy</a-option>
-            <a-option value="other">Other (Generic)</a-option>
-          </a-select>
+
+        <a-form-item
+            label="Provider Name"
+            field="provider"
+            tooltip="e.g. 'google', 'brave', or empty for default."
+        >
+          <a-input v-model="form.provider" placeholder="google" />
         </a-form-item>
-        <a-form-item field="search_tool_name" label="Search Tool Name">
-          <a-input
-            v-model="form.search_tool_name"
-            placeholder="e.g. perplexity-search (Optional for LiteLLM)"
-          />
-        </a-form-item>
+
         <a-form-item>
-          <a-button type="primary" html-type="submit" :loading="loading"
-            >Save Configuration</a-button
-          >
+           <a-button type="primary" html-type="submit" :loading="saving">Save Configuration</a-button>
         </a-form-item>
       </a-form>
     </a-card>
   </div>
 </template>
 
-<script lang="ts" setup>
-  import { ref, onMounted } from 'vue';
-  import {
-    getSearchProviderConfig,
-    saveSearchProviderConfig,
-    SearchProviderConfig,
-  } from '@/api/settings';
-  import { Message } from '@arco-design/web-vue';
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue';
+import { Message } from '@arco-design/web-vue';
+import axios from 'axios';
 
-  const form = ref<SearchProviderConfig>({
-    api_url: '',
-    api_key: '',
-    provider: 'litellm',
-    search_tool_name: '',
-  });
-  const loading = ref(false);
+const form = reactive({
+  api_url: '',
+  api_key: '',
+  provider: '',
+});
 
-  const loadConfig = async () => {
-    try {
-      const { data } = await getSearchProviderConfig();
-      if (data) {
-        form.value = data;
-      }
-    } catch (err) {
-      // Message.error('Failed to load configuration');
+const saving = ref(false);
+
+const loadConfig = async () => {
+  try {
+    const res = await axios.get('/api/admin/settings/search-provider');
+    if (res.data) {
+        // The interceptor unwraps 'data' usually, but let's check structure
+        // If response is {code:0, data: {...}} -> res (interceptor) -> res.data
+        // Wait, interceptor logic says "API calls return the custom response body".
+        // If controller returns APIResponse[Data: cfg], then client gets {Data: cfg}.
+        // But the previous file accessed res.data.data.
+        // Let's assume standard Axios + interceptor returns the full object or data?
+        // Memory says: "API calls return the custom response body (e.g. { code, msg, data }) directly"
+        const data = res.data || {};
+        form.api_url = data.api_url || '';
+        form.api_key = data.api_key || '';
+        form.provider = data.provider || '';
     }
-  };
+  } catch (err) {
+    // ignore
+  }
+};
 
-  const handleSubmit = async () => {
-    loading.value = true;
-    try {
-      await saveSearchProviderConfig(form.value);
-      Message.success('Configuration saved successfully');
-    } catch (err) {
-      Message.error('Failed to save configuration');
-    } finally {
-      loading.value = false;
-    }
-  };
+const handleSave = async () => {
+  if (!form.api_url) {
+      Message.error('Provider URL is required');
+      return;
+  }
+  saving.value = true;
+  try {
+    await axios.post('/api/admin/settings/search-provider', {
+        api_url: form.api_url,
+        api_key: form.api_key,
+        provider: form.provider
+    });
+    Message.success('Configuration saved');
+  } catch (err) {
+    Message.error('Failed to save configuration');
+  } finally {
+    saving.value = false;
+  }
+};
 
-  onMounted(() => {
+onMounted(() => {
     loadConfig();
-  });
+});
 </script>
 
 <style scoped>
-  .container {
-    padding: 20px;
-  }
+.container {
+  padding: 20px;
+}
 </style>

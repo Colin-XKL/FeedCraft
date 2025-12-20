@@ -111,6 +111,10 @@ func RegisterRouters(router *gin.Engine) {
 		adminApi.POST("/tools/json/parse_curl", controller.ParseCurl)
 
 		adminApi.POST("/tools/search/preview", controller.PreviewSearchRSS)
+
+		// Settings Routes
+		adminApi.GET("/settings/search-provider", controller.GetSearchProviderConfig)
+		adminApi.POST("/settings/search-provider", controller.SaveSearchProviderConfig)
 	}
 
 }
