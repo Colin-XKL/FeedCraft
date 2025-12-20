@@ -1,4 +1,4 @@
-name: Golang Build
+name: Golang Test
 
 on:
   push:
@@ -10,20 +10,16 @@ permissions:
   contents: read
 
 jobs:
-  build-test:
-    name: Golang Building Test
+  build-and-test:
+    name: Golang Test
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go-version: ["1.24"]
-
     steps:
       - uses: actions/checkout@v4
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: "1.24"
 
       - name: Build
         run: go build -v ./...
