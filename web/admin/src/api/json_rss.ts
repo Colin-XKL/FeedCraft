@@ -23,6 +23,10 @@ export interface ParsedItem {
   content: string;
 }
 
+export interface SearchFetchReq {
+  query: string;
+}
+
 export function parseCurl(curlCommand: string) {
   return axios.post<JsonFetchReq>('/api/admin/tools/json/parse_curl', {
     curl_command: curlCommand,
@@ -31,6 +35,10 @@ export function parseCurl(curlCommand: string) {
 
 export function fetchJson(req: JsonFetchReq) {
   return axios.post<string>('/api/admin/tools/json/fetch', req);
+}
+
+export function fetchSearch(req: SearchFetchReq) {
+  return axios.post<string>('/api/admin/tools/search/fetch', req);
 }
 
 export function parseJsonRss(req: JsonParseReq) {
