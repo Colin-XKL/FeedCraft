@@ -188,7 +188,11 @@
                 </a-form>
 
                 <!-- Immediate Preview Results -->
-                <div v-if="parsedItems.length > 0" ref="resultsRef" class="mt-4">
+                <div
+                  v-if="parsedItems.length > 0"
+                  ref="resultsRef"
+                  class="mt-4"
+                >
                   <a-divider orientation="left"
                     >{{ $t('rssGenerator.step2.previewResults') }} ({{
                       parsedItems.length
@@ -533,7 +537,10 @@
         );
         // Do not auto-advance. Let user check preview first.
         nextTick(() => {
-          resultsRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          resultsRef.value?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
         });
       } else {
         Message.error(res.msg || t('rssGenerator.msg.parseFailed'));
@@ -625,7 +632,6 @@
         Message.success(
           t('rssGenerator.msg.matchedItems', {
             count: matches.length,
-            selector: fullSelector,
           })
         );
       } catch {
@@ -633,7 +639,7 @@
           t('rssGenerator.msg.setItemSelector', { selector: fullSelector })
         );
       }
-      setTargetField('title_selector');
+      currentTargetField.value = 'title_selector';
       Message.info(t('rssGenerator.msg.listSelectedNextTitle'));
     } else {
       // Relative selection logic

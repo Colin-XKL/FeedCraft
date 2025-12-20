@@ -75,7 +75,7 @@ export default {
     'Click an element in the preview to pick selector for: {field}',
   'rssGenerator.msg.clickPickFirst':
     'Please click a "Pick" button on the right first.',
-  'rssGenerator.msg.matchedItems': 'Matched {count} items with: {selector}',
+  'rssGenerator.msg.matchedItems': 'Matched {count} items',
   'rssGenerator.msg.setItemSelector': 'Set Item Selector: {selector}',
   'rssGenerator.msg.setListItemFirst': 'Set List Item Selector first!',
   'rssGenerator.msg.selectedContainer': 'Selected the item container itself.',

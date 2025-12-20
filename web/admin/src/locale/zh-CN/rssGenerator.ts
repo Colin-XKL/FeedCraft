@@ -70,7 +70,7 @@ export default {
   'rssGenerator.msg.pickInfo': '在预览中点击元素以拾取选择器：{field}',
   'rssGenerator.msg.clickPickFirst': '请先点击右侧的 "拾取" 按钮。',
   'rssGenerator.msg.matchedItems':
-    '匹配到 {count} 个项目，使用选择器：{selector}',
+    '匹配到 {count} 个项目',
   'rssGenerator.msg.setItemSelector': '设置项目选择器：{selector}',
   'rssGenerator.msg.setListItemFirst': '请先设置列表项选择器！',
   'rssGenerator.msg.selectedContainer': '选择了项目容器本身。',
