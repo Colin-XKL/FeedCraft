@@ -32,7 +32,7 @@ jobs:
 
       - name: Run Prettier
         # Check formatting for web files, markdown, config files, etc.
-        run: npx prettier --check "**/*.{js,jsx,ts,tsx,vue,css,scss,html,json,md,mdx,yml,yaml}" --ignore-path .gitignore
+        run: npx prettier --write "**/*.{js,jsx,ts,tsx,vue,css,scss,html,json,md,mdx,yml,yaml}" --ignore-path .gitignore
 
       - name: Commit changes
         if: github.event_name == 'pull_request'
