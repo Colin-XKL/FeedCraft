@@ -69,6 +69,16 @@ const TOOLS: AppRouteRecordRaw = {
         requiresAuth: true,
       },
     },
+    {
+      path: 'dependencies',
+      name: 'DependencyStatus',
+      component: () =>
+        import('@/views/dashboard/dependency_service/index.vue'),
+      meta: {
+        locale: 'menu.dependencyStatus',
+        requiresAuth: true,
+      },
+    },
   ],
 };
 
