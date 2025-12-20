@@ -23,14 +23,14 @@ const craftFlowApiBase = `${adminApiBase}/craft-flows`;
 export function createCraftFlow(
   craftFlow: CraftFlow
 ): Promise<APIResponse<CraftFlow>> {
-  return axios.post<APIResponse<CraftFlow>>(craftFlowApiBase, craftFlow) as unknown as Promise<APIResponse<CraftFlow>>;
+  return axios.post<APIResponse<CraftFlow>>(craftFlowApiBase, craftFlow).then(res => res.data);
 }
 
 // Get a CraftFlow by name
 export function getCraftFlow(
   name: string
 ): Promise<APIResponse<CraftFlow>> {
-  return axios.get<APIResponse<CraftFlow>>(`${craftFlowApiBase}/${name}`) as unknown as Promise<APIResponse<CraftFlow>>;
+  return axios.get<APIResponse<CraftFlow>>(`${craftFlowApiBase}/${name}`).then(res => res.data);
 }
 
 // Update a CraftFlow
@@ -41,21 +41,21 @@ export function updateCraftFlow(
   return axios.put<APIResponse<CraftFlow>>(
     `${craftFlowApiBase}/${name}`,
     craftFlow
-  ) as unknown as Promise<APIResponse<CraftFlow>>;
+  ).then(res => res.data);
 }
 
 // Delete a CraftFlow
 export function deleteCraftFlow(
   name: string
 ): Promise<APIResponse<void>> {
-  return axios.delete<APIResponse<void>>(`${craftFlowApiBase}/${name}`) as unknown as Promise<APIResponse<void>>;
+  return axios.delete<APIResponse<void>>(`${craftFlowApiBase}/${name}`).then(res => res.data);
 }
 
 // List all CraftFlows
 export function listCraftFlows(): Promise<
   APIResponse<CraftFlow[]>
 > {
-  return axios.get<APIResponse<CraftFlow[]>>(craftFlowApiBase) as unknown as Promise<APIResponse<CraftFlow[]>>;
+  return axios.get<APIResponse<CraftFlow[]>>(craftFlowApiBase).then(res => res.data);
 }
 
 export function listSysCraftAtoms(): Promise<
@@ -63,7 +63,7 @@ export function listSysCraftAtoms(): Promise<
 > {
   return axios.get<
     APIResponse<{ name: string; description: string }[]>
-  >(`${adminApiBase}/sys-craft-atoms`) as unknown as Promise<APIResponse<{ name: string; description: string }[]>>;
+  >(`${adminApiBase}/sys-craft-atoms`).then(res => res.data);
 }
 
 interface ParamTemplate {
@@ -83,5 +83,5 @@ export function listCraftTemplates(): Promise<
 > {
   return axios.get<APIResponse<CraftTemplate[]>>(
     `${adminApiBase}/craft-templates`
-  ) as unknown as Promise<APIResponse<CraftTemplate[]>>;
+  ).then(res => res.data);
 }

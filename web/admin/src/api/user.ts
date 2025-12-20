@@ -18,19 +18,19 @@ export function login(data: LoginData): Promise<APIResponse<LoginRes>> {
   return axios.post<APIResponse<LoginRes>>('/api/login', {
     username: data.username,
     md5_password: md5Password,
-  }) as unknown as Promise<APIResponse<LoginRes>>;
+  }).then(res => res.data);
 }
 
 export function logout(): Promise<APIResponse<LoginRes>> {
-  return axios.post<APIResponse<LoginRes>>('/api/user/logout') as unknown as Promise<APIResponse<LoginRes>>;
+  return axios.post<APIResponse<LoginRes>>('/api/user/logout').then(res => res.data);
 }
 
 export function getUserInfo(): Promise<APIResponse<UserState>> {
-  return axios.post<APIResponse<UserState>>('/api/admin/user/info') as unknown as Promise<APIResponse<UserState>>;
+  return axios.post<APIResponse<UserState>>('/api/admin/user/info').then(res => res.data);
 }
 
 export function getMenuList(): Promise<APIResponse<RouteRecordNormalized[]>> {
-  return axios.post<APIResponse<RouteRecordNormalized[]>>('/api/user/menu') as unknown as Promise<APIResponse<RouteRecordNormalized[]>>;
+  return axios.post<APIResponse<RouteRecordNormalized[]>>('/api/user/menu').then(res => res.data);
 }
 
 export interface ChangePasswordData {
@@ -46,5 +46,5 @@ export function changePassword(data: ChangePasswordData): Promise<APIResponse<an
     username: data.username,
     currentPassword: currentPasswordMd5,
     newPassword: newPasswordMd5,
-  }) as unknown as Promise<APIResponse<any>>;
+  }).then(res => res.data);
 }

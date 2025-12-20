@@ -35,20 +35,19 @@ export function parseCurl(curlCommand: string): Promise<APIResponse<JsonFetchReq
     {
       curl_command: curlCommand,
     }
-  ) as unknown as Promise<APIResponse<JsonFetchReq>>;
+  ).then(res => res.data);
 }
 
 export function fetchJson(req: JsonFetchReq): Promise<APIResponse<string>> {
-  return axios.post<APIResponse<string>>('/api/admin/tools/json/fetch', req) as unknown as Promise<APIResponse<string>>;
+  return axios.post<APIResponse<string>>('/api/admin/tools/json/fetch', req).then(res => res.data);
 }
 
 export function parseJsonRss(req: JsonParseReq): Promise<APIResponse<ParsedItem[]>> {
   return axios.post<APIResponse<ParsedItem[]>>(
     '/api/admin/tools/json/parse',
     req
-  ) as unknown as Promise<APIResponse<ParsedItem[]>>;
-  
-
+  ).then(res => res.data);
+}
 export function previewSearch(req: SearchFetchReq) {
   return axios.post<ParsedItem[]>('/api/admin/tools/search/preview', req);
 }
