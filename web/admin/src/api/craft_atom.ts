@@ -1,4 +1,5 @@
-import axios, { AxiosResponse } from 'axios';
+import axios from 'axios';
+import { APIResponse } from './types';
 
 export interface CraftAtom {
   name: string;
@@ -15,29 +16,38 @@ const craftAtomApiBase = `${adminApiBase}/craft-atoms`;
 // Create a CraftAtom
 export function createCraftAtom(
   craftAtom: CraftAtom
-): Promise<AxiosResponse<CraftAtom>> {
-  return axios.post<CraftAtom>(craftAtomApiBase, craftAtom);
+): Promise<APIResponse<CraftAtom>> {
+  return axios.post<APIResponse<CraftAtom>>(craftAtomApiBase, craftAtom).then(res => res.data);
 }
 
 // Get a CraftAtom by name
-export function getCraftAtom(name: string): Promise<AxiosResponse<CraftAtom>> {
-  return axios.get<CraftAtom>(`${craftAtomApiBase}/${name}`);
+export function getCraftAtom(
+  name: string
+): Promise<APIResponse<CraftAtom>> {
+  return axios.get<APIResponse<CraftAtom>>(`${craftAtomApiBase}/${name}`).then(res => res.data);
 }
 
 // Update a CraftAtom
 export function updateCraftAtom(
   name: string,
   craftAtom: CraftAtom
-): Promise<AxiosResponse<CraftAtom>> {
-  return axios.put<CraftAtom>(`${craftAtomApiBase}/${name}`, craftAtom);
+): Promise<APIResponse<CraftAtom>> {
+  return axios.put<APIResponse<CraftAtom>>(
+    `${craftAtomApiBase}/${name}`,
+    craftAtom
+  ).then(res => res.data);
 }
 
 // Delete a CraftAtom
-export function deleteCraftAtom(name: string): Promise<AxiosResponse<void>> {
-  return axios.delete<void>(`${craftAtomApiBase}/${name}`);
+export function deleteCraftAtom(
+  name: string
+): Promise<APIResponse<void>> {
+  return axios.delete<APIResponse<void>>(`${craftAtomApiBase}/${name}`).then(res => res.data);
 }
 
 // List all CraftAtoms
-export function listCraftAtoms(): Promise<AxiosResponse<CraftAtom[]>> {
-  return axios.get<CraftAtom[]>(craftAtomApiBase);
+export function listCraftAtoms(): Promise<
+  APIResponse<CraftAtom[]>
+> {
+  return axios.get<APIResponse<CraftAtom[]>>(craftAtomApiBase).then(res => res.data);
 }
