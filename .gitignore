@@ -142,3 +142,5 @@ feedcraft.exe
 # temp
 .task
 .env
+*.log
+**/*.log
