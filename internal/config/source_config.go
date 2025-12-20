@@ -13,6 +13,11 @@ type HttpFetcherConfig struct {
 	UseBrowserless bool              `json:"use_browserless,omitempty"`
 }
 
+// SearchFetcherConfig holds the configuration for search-based fetching.
+type SearchFetcherConfig struct {
+	Query string `json:"query"`
+}
+
 // --- Parser-specific Configurations ---
 
 // HtmlParserConfig holds the configuration for parsing HTML content.
@@ -60,7 +65,8 @@ type SourceConfig struct {
 	FeedMeta *FeedMetaConfig `json:"feed_meta,omitempty"`
 
 	// Fetcher configurations - only one should be non-nil for a given recipe.
-	HttpFetcher *HttpFetcherConfig `json:"http_fetcher,omitempty"`
+	HttpFetcher   *HttpFetcherConfig   `json:"http_fetcher,omitempty"`
+	SearchFetcher *SearchFetcherConfig `json:"search_fetcher,omitempty"`
 	// CurlFetcher *CurlFetcherConfig `json:"curl_fetcher,omitempty"` // Example for future use
 
 	// Parser configurations - only one should be non-nil for a given recipe.

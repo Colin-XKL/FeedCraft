@@ -13,12 +13,11 @@ export default {
   'rssGenerator.step1.label': '目标网页 URL',
   'rssGenerator.step1.help': '输入您想要转换为 RSS Feed 的页面的完整 URL。',
   'rssGenerator.step1.placeholder': 'https://example.com/blog',
-  'rssGenerator.step1.enhancedMode': '增强模式 (Browserless)',
-  'rssGenerator.step1.enhancedMode.help':
-    '启用此选项可使用无头浏览器渲染内容（适用于 JS 较多的网站）。',
   'rssGenerator.step1.button': '获取并下一步',
   'rssGenerator.step2.pagePreview': '页面预览',
   'rssGenerator.step2.selectionModeOn': '选择模式开启',
+  'rssGenerator.step2.enhanceMode': '增强模式',
+  'rssGenerator.step2.enhanceMode.tooltip': '如果在没有开启enhance mode 的情况下, 预览页面显示不正常, 和自己在浏览器单独窗口里面看到的页面不一致, 说明页面的主要内容是js渲染的, 需要启用enhance mode 才能正常使用feedcraft 的html to rss 功能生成rss',
   'rssGenerator.step2.alert.l1': '1. 点击 "拾取" 并在预览中选择一个元素。',
   'rssGenerator.step2.alert.l2': '2. 点击 "运行预览" 以验证提取的数据。',
   'rssGenerator.step2.card1.title': '1. 列表项 (必填)',
@@ -70,10 +69,11 @@ export default {
   'rssGenerator.msg.pickInfo': '在预览中点击元素以拾取选择器：{field}',
   'rssGenerator.msg.clickPickFirst': '请先点击右侧的 "拾取" 按钮。',
   'rssGenerator.msg.matchedItems':
-    '匹配到 {count} 个项目，使用选择器：{selector}',
+    '匹配到 {count} 个项目',
   'rssGenerator.msg.setItemSelector': '设置项目选择器：{selector}',
   'rssGenerator.msg.setListItemFirst': '请先设置列表项选择器！',
   'rssGenerator.msg.selectedContainer': '选择了项目容器本身。',
   'rssGenerator.msg.setRelativePath': '设置相对路径：{path}',
   'rssGenerator.msg.insideListItem': '选择必须在匹配的列表项内部！',
+  'rssGenerator.msg.listSelectedNextTitle': '列表项已选中。现在请选择文章标题。',
 };

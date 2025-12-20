@@ -22,6 +22,11 @@ export interface ParsedItem {
   link: string;
   date: string;
   content: string;
+  description: string;
+}
+
+export interface SearchFetchReq {
+  query: string;
 }
 
 export function parseCurl(curlCommand: string): Promise<APIResponse<JsonFetchReq>> {
@@ -42,4 +47,9 @@ export function parseJsonRss(req: JsonParseReq): Promise<APIResponse<ParsedItem[
     '/api/admin/tools/json/parse',
     req
   ) as unknown as Promise<APIResponse<ParsedItem[]>>;
+  
+
+export function previewSearch(req: SearchFetchReq) {
+  return axios.post<ParsedItem[]>('/api/admin/tools/search/preview', req);
 }
+

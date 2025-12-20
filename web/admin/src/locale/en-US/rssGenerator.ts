@@ -14,12 +14,11 @@ export default {
   'rssGenerator.step1.help':
     'Enter the full URL of the page you want to turn into an RSS feed.',
   'rssGenerator.step1.placeholder': 'https://example.com/blog',
-  'rssGenerator.step1.enhancedMode': 'Enhanced Mode (Browserless)',
-  'rssGenerator.step1.enhancedMode.help':
-    'Enable this to use a headless browser for rendering content (useful for JS-heavy sites).',
   'rssGenerator.step1.button': 'Fetch & Next',
   'rssGenerator.step2.pagePreview': 'Page Preview',
   'rssGenerator.step2.selectionModeOn': 'Selection Mode On',
+  'rssGenerator.step2.enhanceMode': 'Enhanced Mode',
+  'rssGenerator.step2.enhanceMode.tooltip': 'If the preview looks different from what you see in your browser (e.g., missing content), it likely means the page uses JavaScript. Enable Enhance Mode to fix this.',
   'rssGenerator.step2.alert.l1':
     '1. Click "Pick" and select an element in the preview.',
   'rssGenerator.step2.alert.l2':
@@ -75,11 +74,13 @@ export default {
     'Click an element in the preview to pick selector for: {field}',
   'rssGenerator.msg.clickPickFirst':
     'Please click a "Pick" button on the right first.',
-  'rssGenerator.msg.matchedItems': 'Matched {count} items with: {selector}',
+  'rssGenerator.msg.matchedItems': 'Matched {count} items',
   'rssGenerator.msg.setItemSelector': 'Set Item Selector: {selector}',
   'rssGenerator.msg.setListItemFirst': 'Set List Item Selector first!',
   'rssGenerator.msg.selectedContainer': 'Selected the item container itself.',
   'rssGenerator.msg.setRelativePath': 'Set relative path: {path}',
   'rssGenerator.msg.insideListItem':
     'Selection must be inside a matched List Item!',
+  'rssGenerator.msg.listSelectedNextTitle':
+    'List items selected. Now please select the Article Title.',
 };

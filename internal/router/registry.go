@@ -9,6 +9,7 @@ import (
 	"FeedCraft/internal/util"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -41,6 +42,10 @@ func RegisterRouters(router *gin.Engine) {
 	//})
 
 	router.NoRoute(func(c *gin.Context) {
+		if strings.HasPrefix(c.Request.URL.Path, "/api") {
+			c.JSON(http.StatusNotFound, gin.H{"code": 404, "msg": "Page not found"})
+			return
+		}
 		c.File("./web/index.html")
 	})
 
@@ -109,6 +114,12 @@ func RegisterRouters(router *gin.Engine) {
 		adminApi.POST("/tools/json/fetch", controller.FetchJson)
 		adminApi.POST("/tools/json/parse", controller.ParseJsonRSS)
 		adminApi.POST("/tools/json/parse_curl", controller.ParseCurl)
+
+		adminApi.POST("/tools/search/preview", controller.PreviewSearchRSS)
+
+		// Settings Routes
+		adminApi.GET("/settings/search-provider", controller.GetSearchProviderConfig)
+		adminApi.POST("/settings/search-provider", controller.SaveSearchProviderConfig)
 	}
 
 }

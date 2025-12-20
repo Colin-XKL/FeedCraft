@@ -41,12 +41,6 @@
                 @keyup.enter="fetchAndNext"
               />
             </a-form-item>
-            <a-form-item
-              :label="$t('rssGenerator.step1.enhancedMode')"
-              :help="$t('rssGenerator.step1.enhancedMode.help')"
-            >
-              <a-switch v-model="enhancedMode" />
-            </a-form-item>
             <div class="text-center mt-8">
               <a-button
                 type="primary"
@@ -67,22 +61,42 @@
             <!-- Left: Preview Component -->
             <a-col :span="14" class="h-full flex flex-col">
               <div class="flex justify-between items-center mb-2">
-                <span class="font-bold">{{
-                  $t('rssGenerator.step2.pagePreview')
-                }}</span>
+                <div class="flex items-center gap-2">
+                  <span class="font-bold">{{
+                    $t('rssGenerator.step2.pagePreview')
+                  }}</span>
+                  <a-divider direction="vertical" />
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm">{{
+                      $t('rssGenerator.step2.enhanceMode')
+                    }}</span>
+                    <a-tooltip
+                      :content="$t('rssGenerator.step2.enhanceMode.tooltip')"
+                    >
+                      <a-switch
+                        v-model="enhancedMode"
+                        size="small"
+                        @change="handleEnhanceModeChange"
+                      >
+                      </a-switch>
+                    </a-tooltip>
+                  </div>
+                </div>
                 <a-tag v-if="isSelectionMode" color="blue">{{
                   $t('rssGenerator.step2.selectionModeOn')
                 }}</a-tag>
               </div>
 
               <!-- Use the extracted HtmlPreview component -->
-              <HtmlPreview
-                ref="previewRef"
-                class="flex-1"
-                :html-content="htmlContent"
-                :is-selection-mode="isSelectionMode"
-                @select="handleElementSelect"
-              />
+              <a-spin :loading="fetching" class="h-full flex-1 flex flex-col">
+                <HtmlPreview
+                  ref="previewRef"
+                  class="flex-1"
+                  :html-content="htmlContent"
+                  :is-selection-mode="isSelectionMode"
+                  @select="handleElementSelect"
+                />
+              </a-spin>
             </a-col>
 
             <!-- Right: Config & Preview -->
@@ -132,8 +146,8 @@
                         <template #suffix>
                           <a-button
                             size="mini"
-                            @click="setTargetField('title_selector')"
                             :disabled="!config.item_selector"
+                            @click="setTargetField('title_selector')"
                             >{{ $t('rssGenerator.step2.pick') }}</a-button
                           >
                         </template>
@@ -147,8 +161,8 @@
                         <template #suffix>
                           <a-button
                             size="mini"
-                            @click="setTargetField('link_selector')"
                             :disabled="!config.item_selector"
+                            @click="setTargetField('link_selector')"
                             >{{ $t('rssGenerator.step2.pick') }}</a-button
                           >
                         </template>
@@ -162,8 +176,8 @@
                         <template #suffix>
                           <a-button
                             size="mini"
-                            @click="setTargetField('date_selector')"
                             :disabled="!config.item_selector"
+                            @click="setTargetField('date_selector')"
                             >{{ $t('rssGenerator.step2.pick') }}</a-button
                           >
                         </template>
@@ -177,8 +191,8 @@
                         <template #suffix>
                           <a-button
                             size="mini"
-                            @click="setTargetField('description_selector')"
                             :disabled="!config.item_selector"
+                            @click="setTargetField('description_selector')"
                             >{{ $t('rssGenerator.step2.pick') }}</a-button
                           >
                         </template>
@@ -188,7 +202,11 @@
                 </a-form>
 
                 <!-- Immediate Preview Results -->
-                <div v-if="parsedItems.length > 0" class="mt-4">
+                <div
+                  v-if="parsedItems.length > 0"
+                  ref="resultsRef"
+                  class="mt-4"
+                >
                   <a-divider orientation="left"
                     >{{ $t('rssGenerator.step2.previewResults') }} ({{
                       parsedItems.length
@@ -382,7 +400,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive } from 'vue';
+  import { ref, reactive, nextTick } from 'vue';
   import axios from 'axios';
   import DOMPurify from 'dompurify';
   import { Message } from '@arco-design/web-vue';
@@ -417,6 +435,7 @@
   const isSelectionMode = ref(true);
   const currentTargetField = ref<string>('');
   const previewRef = ref<InstanceType<typeof HtmlPreview> | null>(null);
+  const resultsRef = ref<HTMLElement | null>(null);
 
   // Config State
   const config = reactive<{ [key: string]: string }>({
@@ -452,8 +471,12 @@
     if (currentStep.value > 1) currentStep.value -= 1;
   };
 
-  // Step 1 -> 2
-  const fetchAndNext = async () => {
+  const setTargetField = (field: string) => {
+    currentTargetField.value = field;
+    Message.info(t('rssGenerator.msg.pickInfo', { field }));
+  };
+
+  const fetchContent = async (advanceStep = false) => {
     if (!url.value) return;
     fetching.value = true;
     try {
@@ -489,7 +512,11 @@
         });
 
         feedMeta.link = url.value; // Auto-fill
-        nextStep();
+
+        if (advanceStep) {
+          nextStep();
+          setTargetField('item_selector');
+        }
       } else {
         Message.error(res.msg || t('rssGenerator.msg.fetchFailed'));
       }
@@ -498,6 +525,15 @@
     } finally {
       fetching.value = false;
     }
+  };
+
+  // Step 1 -> 2
+  const fetchAndNext = async () => {
+    await fetchContent(true);
+  };
+
+  const handleEnhanceModeChange = async () => {
+    await fetchContent(false);
   };
 
   // Step 2 -> 3
@@ -525,6 +561,12 @@
           t('rssGenerator.msg.extracted', { count: parsedItems.value.length })
         );
         // Do not auto-advance. Let user check preview first.
+        nextTick(() => {
+          resultsRef.value?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        });
       } else {
         Message.error(res.msg || t('rssGenerator.msg.parseFailed'));
       }
@@ -588,11 +630,6 @@
 
   // --- Selection Logic ---
 
-  const setTargetField = (field: string) => {
-    currentTargetField.value = field;
-    Message.info(t('rssGenerator.msg.pickInfo', { field }));
-  };
-
   // This function now receives the RAW DOM element from HtmlPreview
   const handleElementSelect = (target: HTMLElement) => {
     if (!currentTargetField.value) {
@@ -620,7 +657,6 @@
         Message.success(
           t('rssGenerator.msg.matchedItems', {
             count: matches.length,
-            selector: fullSelector,
           })
         );
       } catch {
@@ -628,6 +664,8 @@
           t('rssGenerator.msg.setItemSelector', { selector: fullSelector })
         );
       }
+      currentTargetField.value = 'title_selector';
+      Message.info(t('rssGenerator.msg.listSelectedNextTitle'));
     } else {
       // Relative selection logic
       if (!config.item_selector) {
