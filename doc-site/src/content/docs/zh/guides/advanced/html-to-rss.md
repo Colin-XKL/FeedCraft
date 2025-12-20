@@ -1,5 +1,5 @@
 ---
-title: RSS 生成器
+title: 从HTML网页生成RSS
 description: 使用可视化选择器将任意网页转换为 RSS 订阅源。
 ---
 
