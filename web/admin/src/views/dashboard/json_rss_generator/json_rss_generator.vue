@@ -294,7 +294,7 @@
 
             <div class="flex justify-between mt-8">
               <a-button @click="prevStep">Back</a-button>
-              <a-button type="primary" @click="nextStep">Next</a-button>
+              <a-button type="primary" @click="handleStep3Next">Next</a-button>
             </div>
           </div>
         </div>
@@ -499,6 +499,10 @@
       Message.warning('Items Iterator selector is required');
       return;
     }
+    if (!parseReq.title_selector) {
+      Message.warning('Title selector is required');
+      return;
+    }
     parsing.value = true;
     try {
       const res = await parseJsonRss({
@@ -516,6 +520,15 @@
     } finally {
       parsing.value = false;
     }
+  };
+
+  // Step 3 Logic
+  const handleStep3Next = () => {
+    if (!feedMeta.title.trim()) {
+      Message.warning('Feed Title is required');
+      return;
+    }
+    nextStep();
   };
 
   // Step 4 Logic
