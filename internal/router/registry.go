@@ -108,14 +108,14 @@ func RegisterRouters(router *gin.Engine) {
 		adminApi.PUT("/craft-atoms/:name", controller.UpdateCraftAtom)
 		adminApi.DELETE("/craft-atoms/:name", controller.DeleteCraftAtom)
 
-		adminApi.POST("/tools/fetch", controller.FetchURL)
-		adminApi.POST("/tools/parse", controller.ParseRSS)
+		adminApi.POST("/tools/fetch", controller.HtmlFetch)
+		adminApi.POST("/tools/parse", controller.HtmlParse)
 
-		adminApi.POST("/tools/json/fetch", controller.FetchJson)
-		adminApi.POST("/tools/json/parse", controller.ParseJsonRSS)
-		adminApi.POST("/tools/json/parse_curl", controller.ParseCurl)
+		adminApi.POST("/tools/json/fetch", controller.CurlFetch)
+		adminApi.POST("/tools/json/parse", controller.CurlParse)
+		adminApi.POST("/tools/json/parse_curl", controller.CurlParseCmd)
 
-		adminApi.POST("/tools/search/preview", controller.PreviewSearchRSS)
+		adminApi.POST("/tools/search/preview", controller.SearchPreview)
 
 		// Settings Routes
 		adminApi.GET("/settings/search-provider", controller.GetSearchProviderConfig)

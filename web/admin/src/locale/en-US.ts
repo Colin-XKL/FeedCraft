@@ -13,7 +13,7 @@ import localeFeedCompare from './en-US/feedCompare';
 import localeFeedViewer from './en-US/feedViewer';
 import localeLlmDebug from './en-US/llmDebug';
 import localeUrlGenerator from './en-US/urlGenerator';
-import localeRssGenerator from './en-US/rssGenerator';
+import localeHtmlToRss from './en-US/htmlToRss';
 
 export default {
   ...localeSettings,
@@ -28,7 +28,6 @@ export default {
   ...localeFeedViewer,
   ...localeLlmDebug,
   ...localeUrlGenerator,
-  ...localeRssGenerator,
+  ...localeHtmlToRss,
   ...localeWorkplace,
-  'menu.jsonRssGenerator': 'JSON RSS Generator',
 };

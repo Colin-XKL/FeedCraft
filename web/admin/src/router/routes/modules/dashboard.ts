@@ -69,17 +69,7 @@ const DASHBOARD: AppRouteRecordRaw = {
         requiresAuth: true,
         locale: 'menu.allCraftList',
       },
-    },
-    {
-      path: 'search_rss_generator',
-      name: 'SearchRssGenerator',
-      component: () =>
-        import('@/views/dashboard/search_rss_generator/index.vue'),
-      meta: {
-        requiresAuth: true,
-        locale: 'menu.searchRssGenerator',
-      },
-    },
+    }
   ],
 };
 
