@@ -10,19 +10,19 @@ module.exports = {
   settings: {
     ...baseConfig.settings,
     'vue-i18n': {
-      // Point to the dummy locale to avoid parsing errors with complex TS files
-      localeDir: './src/locale/dummy/*.json',
+      // Use the generated JSON files to avoid parsing errors
+      localeDir: './src/locale/json/*.json',
       messageSyntaxVersion: '^9.0.0',
     },
   },
   rules: {
     ...baseConfig.rules,
-    // Enable raw text detection
+    // Enable raw text detection, but it is turned off by user request
     '@intlify/vue-i18n/no-raw-text': 'off',
-    // Disable missing keys check as it's not reliable with the dummy locale
-    '@intlify/vue-i18n/no-missing-keys': 'off',
+    // Enable missing keys check as requested
+    '@intlify/vue-i18n/no-missing-keys': 'error',
     '@intlify/vue-i18n/no-v-html': 'off',
-    // Disable other rules that rely on accurate locale files
+    // Disable other rules that might be too strict
     '@intlify/vue-i18n/no-unused-keys': 'off',
     '@intlify/vue-i18n/key-format-style': 'off',
     '@intlify/vue-i18n/no-dynamic-keys': 'off',
