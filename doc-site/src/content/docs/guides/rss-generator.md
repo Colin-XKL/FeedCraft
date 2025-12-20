@@ -22,14 +22,14 @@ The RSS Generator allows you to:
 ### Step 1: Target URL
 
 1.  Enter the full URL of the webpage you want to scrape (e.g., a blog list or news site).
-2.  **(Optional) Enhanced Mode**: Toggle "Enhanced Mode (Browserless)" if the target site relies heavily on JavaScript to render content. This uses a headless browser to fetch the page.
-3.  Click **Fetch & Next**.
+2.  Click **Fetch & Next**.
 
 ### Step 2: Extract Rules
 
 This step allows you to map HTML elements to RSS feed fields.
 
 1.  **Page Preview**: The left pane shows the rendered webpage.
+    *   **Enhanced Mode**: If the preview looks different from what you see in your browser (e.g., missing content), it likely means the page uses JavaScript. Toggle "Enhanced Mode" to use a headless browser to fetch and render the page.
     *   **Selection Mode**: When active (indicated by a blue tag), clicking elements in the preview will generate selectors.
     *   **Keyboard Shortcuts**: Use `Arrow Up` to select the parent element and `Arrow Down` to select the first child element. This is useful for fine-tuning your selection.
 2.  **List Item Selector (Required)**:
