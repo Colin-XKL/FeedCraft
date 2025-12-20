@@ -5,6 +5,8 @@ description: 使用可视化选择器将任意网页转换为 RSS 订阅源。
 
 FeedCraft 内置了可视化的 **RSS 生成向导 (RSS Generator Wizard)**，允许你为那些没有提供 RSS 的网站创建订阅源。
 
+> **注意：** 此工具专为 HTML 页面设计。如果你需要处理 JSON API，请使用 [JSON RSS 生成器](/zh/guides/json-rss-generator/)。
+
 ## 概览
 
 RSS 生成器允许你：
