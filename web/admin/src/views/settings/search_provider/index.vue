@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div  class="py-8 px-16">
     <a-card :title="$t('settings.searchProvider.title')">
       <a-alert class="mb-4">
         {{ $t('settings.searchProvider.alert') }}
