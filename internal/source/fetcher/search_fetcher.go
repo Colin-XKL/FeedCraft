@@ -5,12 +5,11 @@ import (
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/dao"
 	"FeedCraft/internal/util"
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
+
+	"github.com/go-resty/resty/v2"
 )
 
 type SearchFetcher struct {
@@ -34,36 +33,28 @@ func (f *SearchFetcher) Fetch(ctx context.Context) ([]byte, error) {
 	}
 
 	// 2. Prepare Request for LiteLLM Proxy (or similar)
-	reqBody := map[string]interface{}{
-		"query": f.Config.Query,
-	}
+	client := resty.New()
+	client.SetTimeout(constant.GlobalHttpTimeout)
 
-	jsonBody, err := json.Marshal(reqBody)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request body: %w", err)
-	}
+	req := client.R().
+		SetContext(ctx).
+		SetHeader("Content-Type", "application/json").
+		SetBody(map[string]interface{}{
+			"query": f.Config.Query,
+		})
 
-	req, err := http.NewRequestWithContext(ctx, "POST", providerConfig.APIUrl, bytes.NewBuffer(jsonBody))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json")
 	if providerConfig.APIKey != "" {
-		req.Header.Set("Authorization", "Bearer "+providerConfig.APIKey)
+		req.SetHeader("Authorization", "Bearer "+providerConfig.APIKey)
 	}
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err := req.Post(providerConfig.APIUrl)
 	if err != nil {
 		return nil, fmt.Errorf("search request failed: %w", err)
 	}
-	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("search provider returned status %d: %s", resp.StatusCode, string(body))
+	if resp.StatusCode() != http.StatusOK {
+		return nil, fmt.Errorf("search provider returned status %d: %s", resp.StatusCode(), resp.String())
 	}
 
-	return io.ReadAll(resp.Body)
+	return resp.Body(), nil
 }

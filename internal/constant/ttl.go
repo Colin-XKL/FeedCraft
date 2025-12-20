@@ -4,3 +4,5 @@ import "time"
 
 const FEED_EXPIRE = 3 * time.Minute
 const WebContentExpire = 7 * 24 * time.Hour
+const GlobalHttpTimeout = 30 * time.Second
+
