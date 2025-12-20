@@ -13,9 +13,6 @@ export default {
   'rssGenerator.step1.label': '目标网页 URL',
   'rssGenerator.step1.help': '输入您想要转换为 RSS Feed 的页面的完整 URL。',
   'rssGenerator.step1.placeholder': 'https://example.com/blog',
-  'rssGenerator.step1.enhancedMode': '增强模式 (Browserless)',
-  'rssGenerator.step1.enhancedMode.help':
-    '启用此选项可使用无头浏览器渲染内容（适用于 JS 较多的网站）。',
   'rssGenerator.step1.button': '获取并下一步',
   'rssGenerator.step2.pagePreview': '页面预览',
   'rssGenerator.step2.selectionModeOn': '选择模式开启',

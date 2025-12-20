@@ -14,9 +14,6 @@ export default {
   'rssGenerator.step1.help':
     'Enter the full URL of the page you want to turn into an RSS feed.',
   'rssGenerator.step1.placeholder': 'https://example.com/blog',
-  'rssGenerator.step1.enhancedMode': 'Enhanced Mode (Browserless)',
-  'rssGenerator.step1.enhancedMode.help':
-    'Enable this to use a headless browser for rendering content (useful for JS-heavy sites).',
   'rssGenerator.step1.button': 'Fetch & Next',
   'rssGenerator.step2.pagePreview': 'Page Preview',
   'rssGenerator.step2.selectionModeOn': 'Selection Mode On',
