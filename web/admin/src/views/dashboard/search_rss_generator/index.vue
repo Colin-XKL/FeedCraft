@@ -137,8 +137,8 @@ const handleFetch = async () => {
     const res = await fetchSearch(fetchReq);
     jsonContent.value = res.data;
     Message.success('Search results fetched');
-  } catch (err: any) {
-    Message.error(`Failed to fetch search results: ${err.message || err}`);
+  } catch (err) {
+    // handled by interceptor
   } finally {
     fetching.value = false;
   }
@@ -154,8 +154,8 @@ const handlePreview = async () => {
     });
     parsedItems.value = res.data;
     Message.success(`Parsed ${res.data.length} items`);
-  } catch (err: any) {
-    Message.error(`Failed to parse RSS: ${err.message || err}`);
+  } catch (err) {
+    // handled
   } finally {
     parsing.value = false;
   }
@@ -199,8 +199,8 @@ const handleSaveRecipe = async () => {
     Message.success('Recipe saved successfully');
     saveModalVisible.value = false;
     router.push({ name: 'CustomRecipe' });
-  } catch (err: any) {
-    Message.error(`Failed to save recipe: ${err.message || err}`);
+  } catch (err) {
+    console.error(err);
   }
 };
 </script>

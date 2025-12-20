@@ -18,7 +18,7 @@ func MigrateDatabases() {
 		&CustomRecipeV2{}, // Create the new V2 table
 		&CraftFlow{}, &CraftAtom{},
 		&User{}, // 确保 User 表被初始化
-		&KVStore{},
+		&SystemSetting{},
 	)
 	if err != nil {
 		logrus.Error("migrate database error.", err)

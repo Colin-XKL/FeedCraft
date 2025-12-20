@@ -12,36 +12,30 @@ import (
 
 func GetSearchProviderConfig(c *gin.Context) {
 	db := util.GetDatabase()
-	var providerConfig config.SearchProviderConfig
-	if err := dao.GetJsonValue(db, constant.KeySearchProviderConfig, &providerConfig); err != nil {
+
+	var cfg config.SearchProviderConfig
+	err := dao.GetJsonSetting(db, constant.KeySearchProviderConfig, &cfg)
+	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 
-	providerConfig.Mask()
-	c.JSON(http.StatusOK, providerConfig)
+	c.JSON(http.StatusOK, util.APIResponse[config.SearchProviderConfig]{Data: cfg})
 }
 
 func SaveSearchProviderConfig(c *gin.Context) {
-	var input config.SearchProviderConfig
-	if err := c.ShouldBindJSON(&input); err != nil {
+	var cfg config.SearchProviderConfig
+	if err := c.ShouldBindJSON(&cfg); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 
 	db := util.GetDatabase()
-	var currentConfig config.SearchProviderConfig
-	// Ignore error if not found, it will be empty
-	_ = dao.GetJsonValue(db, constant.KeySearchProviderConfig, &currentConfig)
 
-	currentConfig.Merge(input)
-
-	if err := dao.SetJsonValue(db, constant.KeySearchProviderConfig, currentConfig); err != nil {
+	if err := dao.SetJsonSetting(db, constant.KeySearchProviderConfig, cfg); err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 
-	// Mask before returning
-	currentConfig.Mask()
-	c.JSON(http.StatusOK, currentConfig)
+	c.JSON(http.StatusOK, util.APIResponse[any]{Msg: "success"})
 }

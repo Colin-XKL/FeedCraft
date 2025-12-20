@@ -5,12 +5,12 @@ import (
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/dao"
 	"FeedCraft/internal/util"
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
-
-	"github.com/go-resty/resty/v2"
 )
 
 type SearchFetcher struct {
@@ -18,21 +18,14 @@ type SearchFetcher struct {
 }
 
 func (f *SearchFetcher) BaseURL() string {
-	if f.Config == nil {
-		return "search://unknown"
-	}
 	return "search://" + f.Config.Query
 }
 
 func (f *SearchFetcher) Fetch(ctx context.Context) ([]byte, error) {
-	if f.Config == nil || f.Config.Query == "" {
-		return nil, fmt.Errorf("search fetcher is not configured with a query")
-	}
-
 	// 1. Get Provider Config
 	db := util.GetDatabase()
 	var providerConfig config.SearchProviderConfig
-	if err := dao.GetJsonValue(db, constant.KeySearchProviderConfig, &providerConfig); err != nil {
+	if err := dao.GetJsonSetting(db, constant.KeySearchProviderConfig, &providerConfig); err != nil {
 		return nil, fmt.Errorf("failed to load search provider config: %w", err)
 	}
 
@@ -41,39 +34,36 @@ func (f *SearchFetcher) Fetch(ctx context.Context) ([]byte, error) {
 	}
 
 	// 2. Prepare Request for LiteLLM Proxy (or similar)
-	client := resty.New()
-	client.SetTimeout(constant.GlobalHttpTimeout)
-
-	req := client.R().
-		SetContext(ctx).
-		SetHeader("Content-Type", "application/json").
-		SetBody(map[string]interface{}{
-			"query": f.Config.Query,
-		})
-
-	if providerConfig.APIKey != "" {
-		req.SetHeader("Authorization", "Bearer "+providerConfig.APIKey)
+	reqBody := map[string]interface{}{
+		"query": f.Config.Query,
 	}
 
-	resp, err := req.Post(providerConfig.APIUrl)
+	jsonBody, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request body: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", providerConfig.APIUrl, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	if providerConfig.APIKey != "" {
+		req.Header.Set("Authorization", "Bearer "+providerConfig.APIKey)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("search request failed: %w", err)
 	}
+	defer resp.Body.Close()
 
-	if resp.StatusCode() != http.StatusOK {
-		return nil, fmt.Errorf("search provider returned status %d: %s", resp.StatusCode(), resp.String())
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("search provider returned status %d: %s", resp.StatusCode, string(body))
 	}
 
-	body := resp.Body()
-	if len(body) == 0 {
-		return nil, fmt.Errorf("search provider returned empty body")
-	}
-
-	// Optionally validate valid JSON
-	var js json.RawMessage
-	if err := json.Unmarshal(body, &js); err != nil {
-		return nil, fmt.Errorf("search provider returned invalid JSON: %w", err)
-	}
-
-	return body, nil
+	return io.ReadAll(resp.Body)
 }
