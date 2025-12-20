@@ -76,11 +76,6 @@ tasks:
     generates:
       - ./{{.BINARY_NAME}}
 
-  build-local:
-    desc: "Build the application with version injection (local) - alias for backend-build"
-    cmds:
-      - task: backend-build
-
   # Frontend Build Commands
   frontend-build:
     desc: "Build only the frontend application"
@@ -207,11 +202,6 @@ tasks:
           echo "Backend will run on {{.LISTEN_ADDR | default ":8080"}}"
           go run ./cmd/main.go
 
-  dev-backend:
-    desc: "Run development mode - starts only the backend (alias for backward compatibility)"
-    cmds:
-      - task: backend-dev
-
   # Frontend Development Commands
   frontend-dev:
     desc: "Run development mode - starts only the frontend"
@@ -225,11 +215,6 @@ tasks:
             echo "Frontend directory not found. Please ensure web/admin directory exists."
             exit 1
           fi
-
-  dev-frontend:
-    desc: "Run development mode - starts only the frontend (alias for backward compatibility)"
-    cmds:
-      - task: frontend-dev
 
   # Combined Development Commands
   dev:
