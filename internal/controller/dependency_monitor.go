@@ -120,7 +120,7 @@ func checkBrowserless(env *viper.Viper, activeCheck bool) DependencyStatus {
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode >= 200 && resp.StatusCode < 500 {
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		return DependencyStatus{Name: "Browserless", Status: "Healthy", Details: details, Latency: time.Since(start).String()}
 	}
 	return DependencyStatus{Name: "Browserless", Status: "Unhealthy", Details: details, Error: resp.Status}
