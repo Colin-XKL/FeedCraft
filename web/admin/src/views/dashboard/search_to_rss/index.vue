@@ -320,8 +320,9 @@
       });
       Message.success(t('searchToRss.msg.saved'));
       router.push({ name: 'CustomRecipe' });
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      Message.error(t('searchToRss.msg.saveFailed', { msg: err.message || err }));
     } finally {
       saving.value = false;
     }

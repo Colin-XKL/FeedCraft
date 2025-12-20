@@ -35,4 +35,5 @@ export default {
   'searchToRss.default.description': '由 FeedCraft 生成的“{query}”搜索结果。',
   'searchToRss.placeholder.recipeId': '例如 search-ai-news',
   'searchToRss.placeholder.internalDesc': '关于此配方的备注。',
+  'searchToRss.msg.saveFailed': '保存配方失败: {msg}',
 };
