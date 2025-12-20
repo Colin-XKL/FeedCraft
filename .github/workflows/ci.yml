@@ -24,6 +24,25 @@ jobs:
           version: latest
         continue-on-error: true
 
+  frontend-i18n-check:
+    name: Frontend i18n Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+          run_install: false
+      - name: Install dependencies
+        working-directory: web/admin
+        run: pnpm install
+      - name: Run i18n lint
+        working-directory: web/admin
+        run: pnpm run lint:i18n
+
   build-and-test:
     name: Build and Test
     runs-on: ubuntu-latest
