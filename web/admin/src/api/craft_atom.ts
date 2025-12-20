@@ -17,14 +17,14 @@ const craftAtomApiBase = `${adminApiBase}/craft-atoms`;
 export function createCraftAtom(
   craftAtom: CraftAtom
 ): Promise<APIResponse<CraftAtom>> {
-  return axios.post<APIResponse<CraftAtom>>(craftAtomApiBase, craftAtom) as unknown as Promise<APIResponse<CraftAtom>>;
+  return axios.post<APIResponse<CraftAtom>>(craftAtomApiBase, craftAtom).then(res => res.data);
 }
 
 // Get a CraftAtom by name
 export function getCraftAtom(
   name: string
 ): Promise<APIResponse<CraftAtom>> {
-  return axios.get<APIResponse<CraftAtom>>(`${craftAtomApiBase}/${name}`) as unknown as Promise<APIResponse<CraftAtom>>;
+  return axios.get<APIResponse<CraftAtom>>(`${craftAtomApiBase}/${name}`).then(res => res.data);
 }
 
 // Update a CraftAtom
@@ -35,19 +35,19 @@ export function updateCraftAtom(
   return axios.put<APIResponse<CraftAtom>>(
     `${craftAtomApiBase}/${name}`,
     craftAtom
-  ) as unknown as Promise<APIResponse<CraftAtom>>;
+  ).then(res => res.data);
 }
 
 // Delete a CraftAtom
 export function deleteCraftAtom(
   name: string
 ): Promise<APIResponse<void>> {
-  return axios.delete<APIResponse<void>>(`${craftAtomApiBase}/${name}`) as unknown as Promise<APIResponse<void>>;
+  return axios.delete<APIResponse<void>>(`${craftAtomApiBase}/${name}`).then(res => res.data);
 }
 
 // List all CraftAtoms
 export function listCraftAtoms(): Promise<
   APIResponse<CraftAtom[]>
 > {
-  return axios.get<APIResponse<CraftAtom[]>>(craftAtomApiBase) as unknown as Promise<APIResponse<CraftAtom[]>>;
+  return axios.get<APIResponse<CraftAtom[]>>(craftAtomApiBase).then(res => res.data);
 }
