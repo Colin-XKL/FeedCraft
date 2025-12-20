@@ -36,12 +36,15 @@ func CheckConditionWithLLM(content string, conditionPrompt string) (bool, error)
 
 	logrus.Infof("LLM check result: [%s] for prompt prefix: [%.20s...]", result, conditionPrompt)
 
-	// 简单的处理: 只要包含 true 就算 true (不区分大小写)
-	// 或者严格匹配 "true"
-	// 原有 ignore-advertorial 逻辑是: strings.TrimSpace(result) == "true"
-
 	trimmedResult := strings.ToLower(strings.TrimSpace(result))
-	return trimmedResult == "true", nil
+	if trimmedResult == "true" {
+		return true, nil
+	}
+	if trimmedResult == "false" {
+		return false, nil
+	}
+
+	return false, fmt.Errorf("unexpected llm response: [%s]", result)
 }
 
 // CheckConditionWithGenericPrompt 使用通用模板构造 prompt 并调用 LLM
