@@ -439,3 +439,6 @@ hmr update /src/views/settings/search_provider/index.vue?vue&type=style&index=0&
 
   Plugin: vite-plugin-eslint
   File: /app/web/admin/src/views/dashboard/search_rss_generator/index.vue?vue&type=style&index=0&scoped=46a2d67f&lang.css
+6:29:08 AM [vite] hmr update /src/views/dashboard/search_rss_generator/index.vue
+hmr update /src/assets/style/tailwind.css
+hmr update /src/views/dashboard/search_rss_generator/index.vue?vue&type=style&index=0&scoped=46a2d67f&lang.css
