@@ -235,13 +235,13 @@ tasks:
       - cmd: |
           echo "Starting documentation site development mode..."
           echo "Documentation site will run on http://localhost:4321"
-          cd doc-site && npm run dev
+          cd doc-site && pnpm run dev
 
   docs-build:
     desc: "Build the documentation site"
     cmds:
       - cmd: |
           echo "Building documentation site..."
-          cd doc-site && npm install && npm run build
+          cd doc-site && pnpm install && pnpm run build
           echo "Documentation site build completed"
 
