@@ -1,17 +1,16 @@
 <template>
   <div class="container">
-    <a-card title="Search Provider Configuration">
+    <a-card :title="$t('settings.searchProvider.title')">
       <a-alert class="mb-4">
-        Configure the search provider used by the "Search to RSS" feature.
-        Currently supports LiteLLM-compatible search proxies.
+        {{ $t('settings.searchProvider.alert') }}
       </a-alert>
 
       <a-form :model="form" @submit="handleSave" layout="vertical">
         <a-form-item
-            label="Provider Implementation"
+            :label="$t('settings.searchProvider.provider')"
             field="provider"
             required
-            tooltip="The internal provider logic to use."
+            :tooltip="$t('settings.searchProvider.provider.tooltip')"
         >
            <a-select v-model="form.provider" placeholder="Select Provider">
              <a-option value="litellm">LiteLLM Proxy</a-option>
@@ -20,27 +19,27 @@
         </a-form-item>
 
         <a-form-item
-            label="API URL"
+            :label="$t('settings.searchProvider.apiUrl')"
             field="api_url"
             required
-            tooltip="The base URL of the search provider. For LiteLLM, it's typically 'http://litellm:4000'. For SearXNG, it's the instance URL (e.g. 'https://searx.be')."
+            :tooltip="$t('settings.searchProvider.apiUrl.tooltip')"
         >
-          <a-input v-model="form.api_url" placeholder="http://litellm-proxy:4000 or https://searx.be" />
+          <a-input v-model="form.api_url" :placeholder="$t('settings.searchProvider.apiUrl.placeholder')" />
         </a-form-item>
 
         <a-form-item
-            label="API Key"
+            :label="$t('settings.searchProvider.apiKey')"
             field="api_key"
-            tooltip="Optional API Key if the provider requires authentication. For SearXNG, this is added as a Bearer token in the Authorization header if configured."
+            :tooltip="$t('settings.searchProvider.apiKey.tooltip')"
         >
           <a-input-password v-model="form.api_key" placeholder="sk-..." />
         </a-form-item>
 
         <template v-if="form.provider === 'litellm'">
           <a-form-item
-              label="Tool Name"
+              :label="$t('settings.searchProvider.toolName')"
               field="search_tool_name"
-              tooltip="The specific tool name to invoke (e.g. 'google-search', 'brave-search', 'perplexity'). This is appended to the URL or passed in the request depending on the provider."
+              :tooltip="$t('settings.searchProvider.toolName.tooltip')"
           >
             <a-input v-model="form.search_tool_name" placeholder="google-search" />
           </a-form-item>
@@ -48,16 +47,16 @@
 
         <template v-if="form.provider === 'searxng'">
           <a-form-item
-              label="Enabled Engines"
+              :label="$t('settings.searchProvider.engines')"
               field="search_tool_name"
-              tooltip="Comma-separated list of engines to use (e.g. 'google', 'bing', 'wikipedia'). Leave empty to use all enabled engines."
+              :tooltip="$t('settings.searchProvider.engines.tooltip')"
           >
             <a-input v-model="form.search_tool_name" placeholder="google,bing" />
           </a-form-item>
         </template>
 
         <a-form-item>
-           <a-button type="primary" html-type="submit" :loading="saving">Save Configuration</a-button>
+           <a-button type="primary" html-type="submit" :loading="saving">{{ $t('settings.searchProvider.save') }}</a-button>
         </a-form-item>
       </a-form>
     </a-card>
@@ -67,7 +66,10 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
 import { Message } from '@arco-design/web-vue';
+import { useI18n } from 'vue-i18n';
 import axios from 'axios';
+
+const { t } = useI18n();
 
 const form = reactive({
   api_url: '',
@@ -89,13 +91,14 @@ const loadConfig = async () => {
         form.search_tool_name = data.search_tool_name || '';
     }
   } catch (err) {
-    // ignore
+    // eslint-disable-next-line no-console
+    console.error('Failed to load search provider config:', err);
   }
 };
 
 const handleSave = async () => {
   if (!form.api_url) {
-      Message.error('API URL is required');
+      Message.error(t('settings.searchProvider.validation.apiUrl'));
       return;
   }
   saving.value = true;
@@ -106,9 +109,9 @@ const handleSave = async () => {
         provider: form.provider,
         search_tool_name: form.search_tool_name
     });
-    Message.success('Configuration saved');
+    Message.success(t('settings.searchProvider.save.success'));
   } catch (err) {
-    Message.error('Failed to save configuration');
+    Message.error(t('settings.searchProvider.save.failed'));
   } finally {
     saving.value = false;
   }
