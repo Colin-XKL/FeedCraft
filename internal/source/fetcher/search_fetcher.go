@@ -4,14 +4,10 @@ import (
 	"FeedCraft/internal/config"
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/dao"
+	"FeedCraft/internal/source/fetcher/provider"
 	"FeedCraft/internal/util"
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
-	"strings"
 )
 
 type SearchFetcher struct {
@@ -30,50 +26,12 @@ func (f *SearchFetcher) Fetch(ctx context.Context) ([]byte, error) {
 		return nil, fmt.Errorf("failed to load search provider config: %w", err)
 	}
 
-	if providerConfig.APIUrl == "" {
-		return nil, fmt.Errorf("search provider API URL is not configured")
-	}
-
-	// 2. Construct URL
-	url := providerConfig.APIUrl
-	if providerConfig.SearchToolName != "" {
-		if !strings.HasSuffix(url, "/") {
-			url += "/"
-		}
-		url += providerConfig.SearchToolName
-	}
-
-	// 3. Prepare Request
-	reqBody := map[string]interface{}{
-		"query": f.Config.Query,
-	}
-
-	jsonBody, err := json.Marshal(reqBody)
+	// 2. Get Provider Instance
+	p, err := provider.Get(providerConfig.Provider, &providerConfig)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request body: %w", err)
+		return nil, err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonBody))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json")
-	if providerConfig.APIKey != "" {
-		req.Header.Set("Authorization", "Bearer "+providerConfig.APIKey)
-	}
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("search request failed: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("search provider returned status %d: %s", resp.StatusCode, string(body))
-	}
-
-	return io.ReadAll(resp.Body)
+	// 3. Delegate Fetch
+	return p.Fetch(ctx, f.Config.Query)
 }

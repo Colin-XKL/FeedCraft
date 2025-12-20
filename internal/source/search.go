@@ -5,6 +5,7 @@ import (
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/dao"
 	"FeedCraft/internal/source/fetcher"
+	"FeedCraft/internal/source/fetcher/provider"
 	"FeedCraft/internal/source/parser"
 	"FeedCraft/internal/util"
 	"fmt"
@@ -20,7 +21,6 @@ func searchSourceFactory(cfg *config.SourceConfig) (Source, error) {
 	}
 
 	// Load global provider config to decide default parser
-	// We might use providerConfig.Provider to switch mapping logic in future
 	db := util.GetDatabase()
 	var providerConfig config.SearchProviderConfig
 	_ = dao.GetJsonSetting(db, constant.KeySearchProviderConfig, &providerConfig)
@@ -30,14 +30,26 @@ func searchSourceFactory(cfg *config.SourceConfig) (Source, error) {
 	if cfg.JsonParser != nil {
 		p = &parser.JsonParser{Config: cfg.JsonParser}
 	} else {
-		// Default mapping for LiteLLM / generic search
-		defaultConfig := &config.JsonParserConfig{
-			ItemsIterator: "data",
-			Title:         "title",
-			Link:          "url",
-			Description:   "content",
+		// Get default parser config from provider
+		// Use the same provider factory logic as the fetcher to ensure consistency
+		prv, err := provider.Get(providerConfig.Provider, &providerConfig)
+		if err == nil {
+			defaultConfig := prv.GetDefaultParserConfig()
+			if defaultConfig != nil {
+				p = &parser.JsonParser{Config: defaultConfig}
+			}
 		}
-		p = &parser.JsonParser{Config: defaultConfig}
+
+		// Fallback if provider retrieval fails or returns nil (shouldn't happen with valid provider)
+		if p == nil {
+			defaultConfig := &config.JsonParserConfig{
+				ItemsIterator: "data",
+				Title:         "title",
+				Link:          "url",
+				Description:   "content",
+			}
+			p = &parser.JsonParser{Config: defaultConfig}
+		}
 	}
 
 	return &PipelineSource{
