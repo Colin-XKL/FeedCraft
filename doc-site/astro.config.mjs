@@ -19,8 +19,18 @@ export default defineConfig({
       },
       sidebar: [
         {
-          label: 'Documentation',
-          autogenerate: { directory: 'guides' },
+          label: 'Quick Start',
+          translations: {
+            'zh-CN': '快速开始',
+          },
+          autogenerate: { directory: 'guides/start' },
+        },
+        {
+          label: 'Advanced Customization',
+          translations: {
+            'zh-CN': '进阶自定义',
+          },
+          autogenerate: { directory: 'guides/advanced' },
         },
       ],
     }),
