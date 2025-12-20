@@ -11,10 +11,11 @@
             label="Provider Implementation"
             field="provider"
             required
-            tooltip="The internal provider logic to use. Currently only 'litellm' is supported."
+            tooltip="The internal provider logic to use."
         >
            <a-select v-model="form.provider" placeholder="Select Provider">
              <a-option value="litellm">LiteLLM Proxy</a-option>
+             <a-option value="searxng">SearXNG</a-option>
            </a-select>
         </a-form-item>
 
@@ -22,15 +23,15 @@
             label="API URL"
             field="api_url"
             required
-            tooltip="The base URL of the search provider (e.g. http://litellm-proxy:4000)."
+            tooltip="The base URL of the search provider. For LiteLLM, it's typically 'http://litellm:4000'. For SearXNG, it's the instance URL (e.g. 'https://searx.be')."
         >
-          <a-input v-model="form.api_url" placeholder="http://litellm-proxy:4000" />
+          <a-input v-model="form.api_url" placeholder="http://litellm-proxy:4000 or https://searx.be" />
         </a-form-item>
 
         <a-form-item
             label="API Key"
             field="api_key"
-            tooltip="Optional API Key if the provider requires authentication."
+            tooltip="Optional API Key if the provider requires authentication. For SearXNG, this is added as a Bearer token in the Authorization header if configured."
         >
           <a-input-password v-model="form.api_key" placeholder="sk-..." />
         </a-form-item>
@@ -38,7 +39,7 @@
         <a-form-item
             label="Tool Name"
             field="search_tool_name"
-            tooltip="The specific tool name to invoke (e.g. 'google-search', 'brave-search', 'perplexity'). This is appended to the URL or passed in the request depending on the provider."
+            tooltip="For LiteLLM: The specific tool name (e.g. 'google-search'). For SearXNG: The specific engines to use (e.g. 'google', 'bing'). Can be comma-separated."
         >
           <a-input v-model="form.search_tool_name" placeholder="google-search" />
         </a-form-item>
