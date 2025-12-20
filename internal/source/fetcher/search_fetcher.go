@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 )
 
 type SearchFetcher struct {
@@ -33,7 +34,16 @@ func (f *SearchFetcher) Fetch(ctx context.Context) ([]byte, error) {
 		return nil, fmt.Errorf("search provider API URL is not configured")
 	}
 
-	// 2. Prepare Request for LiteLLM Proxy (or similar)
+	// 2. Construct URL
+	url := providerConfig.APIUrl
+	if providerConfig.SearchToolName != "" {
+		if !strings.HasSuffix(url, "/") {
+			url += "/"
+		}
+		url += providerConfig.SearchToolName
+	}
+
+	// 3. Prepare Request
 	reqBody := map[string]interface{}{
 		"query": f.Config.Query,
 	}
@@ -43,7 +53,7 @@ func (f *SearchFetcher) Fetch(ctx context.Context) ([]byte, error) {
 		return nil, fmt.Errorf("failed to marshal request body: %w", err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "POST", providerConfig.APIUrl, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}

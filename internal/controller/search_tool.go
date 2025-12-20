@@ -2,20 +2,20 @@ package controller
 
 import (
 	"FeedCraft/internal/config"
-	"FeedCraft/internal/source/fetcher"
+	"FeedCraft/internal/constant"
+	"FeedCraft/internal/source"
 	"FeedCraft/internal/util"
-	"bytes"
-	"encoding/json"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mmcdole/gofeed"
 )
 
 type SearchFetchReq struct {
 	Query string `json:"query"`
 }
 
-func FetchSearch(c *gin.Context) {
+func PreviewSearchRSS(c *gin.Context) {
 	var req SearchFetchReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
@@ -27,34 +27,33 @@ func FetchSearch(c *gin.Context) {
 		return
 	}
 
-	// Create a temporary fetcher
-	f := &fetcher.SearchFetcher{
-		Config: &config.SearchFetcherConfig{
+	cfg := &config.SourceConfig{
+		Type: constant.SourceSearch,
+		SearchFetcher: &config.SearchFetcherConfig{
 			Query: req.Query,
 		},
 	}
 
-	// Fetch data
-	raw, err := f.Fetch(c.Request.Context())
+	factory, err := source.Get(constant.SourceSearch)
 	if err != nil {
-		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "Search failed: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{StatusCode: -1, Msg: "Factory not found: " + err.Error()})
 		return
 	}
 
-	// Format JSON for display
-	var prettyJSON bytes.Buffer
-	if json.Unmarshal(raw, &struct{}{}) == nil {
-		if err := json.Indent(&prettyJSON, raw, "", "  "); err == nil {
-			c.JSON(http.StatusOK, util.APIResponse[string]{
-				StatusCode: 0,
-				Data:       prettyJSON.String(),
-			})
-			return
-		}
+	src, err := factory(cfg)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{StatusCode: -1, Msg: "Failed to create source: " + err.Error()})
+		return
 	}
 
-	c.JSON(http.StatusOK, util.APIResponse[string]{
+	feed, err := src.Generate(c.Request.Context())
+	if err != nil {
+		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "Generation failed: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, util.APIResponse[[]*gofeed.Item]{
 		StatusCode: 0,
-		Data:       string(raw),
+		Data:       feed.Items,
 	})
 }

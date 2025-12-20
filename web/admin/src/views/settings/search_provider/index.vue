@@ -24,6 +24,12 @@
             <a-option value="other">Other (Generic)</a-option>
           </a-select>
         </a-form-item>
+        <a-form-item field="search_tool_name" label="Search Tool Name">
+          <a-input
+            v-model="form.search_tool_name"
+            placeholder="e.g. perplexity-search (Optional for LiteLLM)"
+          />
+        </a-form-item>
         <a-form-item>
           <a-button type="primary" html-type="submit" :loading="loading"
             >Save Configuration</a-button
@@ -47,6 +53,7 @@
     api_url: '',
     api_key: '',
     provider: 'litellm',
+    search_tool_name: '',
   });
   const loading = ref(false);
 
