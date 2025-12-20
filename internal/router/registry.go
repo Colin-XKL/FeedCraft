@@ -120,9 +120,6 @@ func RegisterRouters(router *gin.Engine) {
 		// Settings Routes
 		adminApi.GET("/settings/search-provider", controller.GetSearchProviderConfig)
 		adminApi.POST("/settings/search-provider", controller.SaveSearchProviderConfig)
-
-		adminApi.GET("/dependencies", controller.GetDependencyStatus)
-		adminApi.POST("/dependencies/check", controller.CheckDependencyStatus)
 	}
 
 }

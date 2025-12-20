@@ -32,7 +32,6 @@ export default {
   'menu.llmDebug': 'LLM 调试',
   'menu.adCheckDebug': '广告软文检测',
   'menu.llmApiDebug': 'LLM API 调试',
-  'menu.dependencyStatus': '依赖服务状态',
   // 其他
   'menu.changePassword': '修改密码',
 };

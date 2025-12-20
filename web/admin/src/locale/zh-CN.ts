@@ -14,8 +14,6 @@ import localeFeedViewer from './zh-CN/feedViewer';
 import localeLlmDebug from './zh-CN/llmDebug';
 import localeUrlGenerator from './zh-CN/urlGenerator';
 import localeHtmlToRss from './zh-CN/htmlToRss';
-import localeCurlToRss from './zh-CN/curlToRss';
-import localeSearchToRss from './zh-CN/searchToRss';
 
 export default {
   ...localeSettings,
@@ -31,7 +29,5 @@ export default {
   ...localeLlmDebug,
   ...localeUrlGenerator,
   ...localeHtmlToRss,
-  ...localeCurlToRss,
-  ...localeSearchToRss,
   ...localeWorkplace,
 };

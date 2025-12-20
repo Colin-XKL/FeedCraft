@@ -32,7 +32,6 @@ export default {
   'menu.llmDebug': 'LLM Debug',
   'menu.changePassword': 'Change Password',
   'menu.adCheckDebug': 'Ad/Advertorial Check',
-  'menu.dependencyStatus': 'Dependency Services',
   // other menu
   'menu.llmApiDebug': 'LLM API Debug',
 };
