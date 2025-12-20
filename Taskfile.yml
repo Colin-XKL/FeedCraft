@@ -228,3 +228,34 @@ tasks:
           (go run ./cmd/main.go) &
           (cd web/admin && pnpm dev) &
           wait
+# Documentation Site Commands
+  docs-dev:
+    desc: "Run documentation site in development mode"
+    cmds:
+      - cmd: |
+          echo "Starting documentation site development mode..."
+          echo "Documentation site will run on http://localhost:4321"
+          cd doc-site && pnpm run dev
+
+  docs-build:
+    desc: "Build the documentation site"
+    cmds:
+      - cmd: |
+          echo "Building documentation site..."
+          cd doc-site && pnpm install && pnpm run build
+          echo "Documentation site build completed"
+
+  lint:
+    desc: "Lint and format code (Go and Web)"
+    cmds:
+      - cmd: |
+          echo "Running Go linter..."
+          if command -v golangci-lint >/dev/null 2>&1; then
+            golangci-lint run
+          else
+            echo "golangci-lint not installed. Please install it to lint Go code."
+          fi
+      - cmd: |
+          echo "Running Prettier..."
+          npx prettier --write "**/*.{js,jsx,ts,tsx,vue,css,scss,html,json,md,mdx,yml,yaml}" --ignore-path .gitignore
+
