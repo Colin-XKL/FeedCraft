@@ -1,28 +1,28 @@
 <template>
   <div class="py-8 px-16">
     <x-header
-      title="Search to RSS"
-      description="Generate RSS feeds from search queries using AI providers."
+      :title="$t('searchToRss.title')"
+      :description="$t('searchToRss.description')"
     ></x-header>
 
     <div class="content-wrapper">
       <a-card class="wizard-card">
         <a-steps :current="currentStep" class="mb-8">
           <a-step
-            title="Search Query"
-            description="Enter your search terms"
+            :title="$t('searchToRss.step.query')"
+            :description="$t('searchToRss.step.query.desc')"
           />
           <a-step
-            title="Preview Results"
-            description="Verify search results"
+            :title="$t('searchToRss.step.preview')"
+            :description="$t('searchToRss.step.preview.desc')"
           />
           <a-step
-            title="Feed Metadata"
-            description="Configure feed details"
+            :title="$t('searchToRss.step.meta')"
+            :description="$t('searchToRss.step.meta.desc')"
           />
           <a-step
-            title="Save Recipe"
-            description="Save as custom recipe"
+            :title="$t('searchToRss.step.save')"
+            :description="$t('searchToRss.step.save.desc')"
           />
         </a-steps>
 
@@ -30,13 +30,13 @@
         <div v-show="currentStep === 1" class="step-content">
           <a-form :model="fetchReq" layout="vertical" class="max-w-xl mx-auto">
             <a-form-item
-              label="Search Query"
+              :label="$t('searchToRss.label.query')"
               required
-              help="Enter the keywords or question you want to track."
+              :help="$t('searchToRss.help.query')"
             >
               <a-input
                 v-model="fetchReq.query"
-                placeholder="e.g. 'latest AI news' or 'SpaceX launches'"
+                :placeholder="$t('searchToRss.placeholder.query')"
                 size="large"
                 allow-clear
                 @press-enter="handlePreview"
@@ -50,7 +50,7 @@
                 :disabled="!fetchReq.query"
                 @click="handlePreview"
               >
-                Preview Results <icon-arrow-right />
+                {{ $t('searchToRss.button.preview') }} <icon-arrow-right />
               </a-button>
             </div>
           </a-form>
@@ -60,7 +60,7 @@
         <div v-show="currentStep === 2" class="step-content flex flex-col">
           <div class="flex-1 overflow-y-auto mb-4">
             <a-alert type="success" class="mb-4">
-              Found {{ parsedItems.length }} items. Review them below before proceeding.
+              {{ $t('searchToRss.alert.found', { count: parsedItems.length }) }}
             </a-alert>
             <a-list :data="parsedItems" :bordered="false">
               <template #item="{ item }">
@@ -79,8 +79,8 @@
           </div>
 
           <div class="flex justify-between pt-4 border-t border-gray-100">
-            <a-button @click="prevStep">Back</a-button>
-            <a-button type="primary" @click="nextStep">Next Step</a-button>
+            <a-button @click="prevStep">{{ $t('searchToRss.button.back') }}</a-button>
+            <a-button type="primary" @click="nextStep">{{ $t('searchToRss.button.next') }}</a-button>
           </div>
         </div>
 
@@ -88,23 +88,23 @@
         <div v-show="currentStep === 3" class="step-content">
           <div class="max-w-2xl mx-auto">
              <a-alert class="mb-6">
-               Customize how this feed appears in your RSS reader.
+               {{ $t('searchToRss.alert.customize') }}
              </a-alert>
              <a-form :model="feedMeta" layout="vertical">
-              <a-form-item label="Feed Title" required>
+              <a-form-item :label="$t('searchToRss.label.feedTitle')" required>
                 <a-input v-model="feedMeta.title" />
               </a-form-item>
-              <a-form-item label="Feed Description">
+              <a-form-item :label="$t('searchToRss.label.feedDesc')">
                 <a-textarea v-model="feedMeta.description" :auto-size="{ minRows: 3, maxRows: 5 }" />
               </a-form-item>
-              <a-form-item label="Site Link">
+              <a-form-item :label="$t('searchToRss.label.siteLink')">
                 <a-input v-model="feedMeta.link" />
               </a-form-item>
              </a-form>
 
              <div class="flex justify-between mt-8">
-              <a-button @click="prevStep">Back</a-button>
-              <a-button type="primary" @click="nextStep">Next Step</a-button>
+              <a-button @click="prevStep">{{ $t('searchToRss.button.back') }}</a-button>
+              <a-button type="primary" @click="nextStep">{{ $t('searchToRss.button.next') }}</a-button>
             </div>
           </div>
         </div>
@@ -114,19 +114,19 @@
           <div class="max-w-xl mx-auto">
             <a-card title="Review & Save" class="border-blue-100">
               <a-descriptions :column="1" bordered>
-                <a-descriptions-item label="Query">{{ fetchReq.query }}</a-descriptions-item>
-                <a-descriptions-item label="Feed Title">{{ feedMeta.title }}</a-descriptions-item>
+                <a-descriptions-item :label="$t('searchToRss.label.query')">{{ fetchReq.query }}</a-descriptions-item>
+                <a-descriptions-item :label="$t('searchToRss.label.feedTitle')">{{ feedMeta.title }}</a-descriptions-item>
                 <a-descriptions-item label="Items Found">{{ parsedItems.length }}</a-descriptions-item>
               </a-descriptions>
 
               <a-divider />
 
               <a-form :model="recipeMeta" layout="vertical" class="mt-6">
-                <a-form-item label="Recipe ID" required help="Unique identifier for this recipe.">
+                <a-form-item :label="$t('searchToRss.label.recipeId')" required :help="$t('searchToRss.help.recipeId')">
                   <a-input v-model="recipeMeta.id" placeholder="e.g. search-ai-news" />
                 </a-form-item>
-                <a-form-item label="Internal Description">
-                  <a-textarea v-model="recipeMeta.description" placeholder="Notes for yourself about this recipe." />
+                <a-form-item :label="$t('searchToRss.label.internalDesc')">
+                  <a-textarea v-model="recipeMeta.description" :placeholder="$t('searchToRss.placeholder.internalDesc')" />
                 </a-form-item>
 
                 <div class="mt-8 text-center">
@@ -138,14 +138,14 @@
                     :loading="saving"
                     @click="handleSaveRecipe"
                   >
-                    <icon-save /> Confirm & Save
+                    <icon-save /> {{ $t('searchToRss.button.confirm') }}
                   </a-button>
                 </div>
               </a-form>
             </a-card>
 
             <div class="flex justify-start mt-8">
-              <a-button @click="prevStep">Back</a-button>
+              <a-button @click="prevStep">{{ $t('searchToRss.button.back') }}</a-button>
             </div>
           </div>
         </div>
@@ -160,11 +160,13 @@ import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { Message } from '@arco-design/web-vue';
 import { IconArrowRight, IconSave } from '@arco-design/web-vue/es/icon';
+import { useI18n } from 'vue-i18n';
 import XHeader from '@/components/header/x-header.vue';
 import { previewSearch, ParsedItem, SearchFetchReq } from '@/api/json_rss';
 import { createCustomRecipe } from '@/api/custom_recipe';
 
 const router = useRouter();
+const { t } = useI18n();
 
 // --- State ---
 const currentStep = ref(1);
@@ -203,7 +205,7 @@ const prevStep = () => {
 // Step 1 -> 2
 const handlePreview = async () => {
   if (!fetchReq.query) {
-    Message.warning('Query is required');
+    Message.warning(t('searchToRss.validation.query'));
     return;
   }
   fetching.value = true;
@@ -214,8 +216,8 @@ const handlePreview = async () => {
     parsedItems.value = res.data;
 
     if (parsedItems.value.length === 0) {
-        Message.info('No results found, please try a different query.');
-        return; // Stay on step 1 if no results? Or let them see empty list? Better to warn.
+        Message.info(t('searchToRss.message.noResults'));
+        return;
     }
 
     // Auto-populate Meta
@@ -235,7 +237,7 @@ const handlePreview = async () => {
 // Step 4: Save
 const handleSaveRecipe = async () => {
   if (!recipeMeta.id) {
-    Message.error('Recipe ID is required');
+    Message.error(t('searchToRss.validation.recipeId'));
     return;
   }
 
@@ -249,13 +251,6 @@ const handleSaveRecipe = async () => {
       query: fetchReq.query,
     },
     // We can embed feed_meta if the SourceSearch supports it or if we wrap it.
-    // Currently SourceSearch doesn't seem to have explicit FeedMeta config in Go struct
-    // (based on previous turns).
-    // However, the CustomRecipe logic might allow overriding feed meta in the Recipe wrapper?
-    // Let's assume for now we just save the search config.
-    // If the backend SourceSearch doesn't support custom title overrides,
-    // we might lose the title customization here unless we implemented it in backend.
-    // But let's send it anyway in case we add it or it exists.
     feed_meta: {
         title: feedMeta.title,
         description: feedMeta.description,
@@ -271,7 +266,7 @@ const handleSaveRecipe = async () => {
       source_type: 'search',
       source_config: JSON.stringify(sourceConfig),
     });
-    Message.success('Recipe saved successfully');
+    Message.success(t('searchToRss.message.success'));
     router.push({ name: 'CustomRecipe' });
   } catch (err) {
     console.error(err);
