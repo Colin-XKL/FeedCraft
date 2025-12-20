@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div  class="py-8 px-16">
     <a-card title="Search Provider Configuration">
       <a-alert class="mb-4">
         Configure the search provider used by the "Search to RSS" feature.
