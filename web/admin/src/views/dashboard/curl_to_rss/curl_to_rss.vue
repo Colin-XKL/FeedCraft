@@ -1,7 +1,7 @@
 <template>
   <div class="py-8 px-16">
     <x-header
-      :title="$t('menu.jsonRssGenerator')"
+      :title="$t('menu.curlToRss')"
       description="Generate RSS feeds from any JSON API by defining parsing rules."
     ></x-header>
 

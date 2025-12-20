@@ -59,7 +59,7 @@ func validateURL(rawUrl string) error {
 	return nil
 }
 
-func FetchURL(c *gin.Context) {
+func HtmlFetch(c *gin.Context) {
 	var req FetchReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
@@ -100,7 +100,7 @@ func FetchURL(c *gin.Context) {
 	})
 }
 
-func ParseRSS(c *gin.Context) {
+func HtmlParse(c *gin.Context) {
 	var req ParseReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})

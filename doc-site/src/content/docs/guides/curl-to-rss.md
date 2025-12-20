@@ -1,20 +1,20 @@
 ---
-title: JSON RSS Generator
+title: CURL to RSS
 description: Convert any JSON API response into an RSS feed using jq selectors.
 ---
 
-FeedCraft includes a **JSON RSS Generator** tool that allows you to fetch data from JSON APIs and transform it into an RSS feed using `jq` selectors.
+FeedCraft includes a **CURL to RSS** tool that allows you to fetch data from JSON APIs and transform it into an RSS feed using `jq` selectors.
 
 ## Overview
 
-The JSON RSS Generator helps you:
+The CURL to RSS tool helps you:
 1.  **Fetch** JSON data from an API endpoint (supporting custom headers and methods).
 2.  **Parse** the JSON structure using `jq` syntax to map fields to RSS items.
 3.  **Preview** the generated feed to verify your selectors.
 
 ## How to use
 
-Navigate to **Tools > JSON RSS Generator** in the admin dashboard.
+Navigate to **Tools > CURL to RSS** in the admin dashboard.
 
 ### Step 1: Request Configuration
 
@@ -49,7 +49,7 @@ Click **Preview RSS** to see how your selectors work. The parsed items will appe
 
 ## Saving Your Recipe
 
-Currently, the JSON RSS Generator is a tool for **finding and testing** the correct selectors.
+Currently, the CURL to RSS is a tool for **finding and testing** the correct selectors.
 
 To save your configuration as a permanent feed:
 

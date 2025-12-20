@@ -71,13 +71,13 @@ const DASHBOARD: AppRouteRecordRaw = {
       },
     },
     {
-      path: 'search_rss_generator',
-      name: 'SearchRssGenerator',
+      path: 'search-to-rss',
+      name: 'SearchToRss',
       component: () =>
-        import('@/views/dashboard/search_rss_generator/index.vue'),
+        import('@/views/dashboard/search_to_rss/index.vue'),
       meta: {
         requiresAuth: true,
-        locale: 'menu.searchRssGenerator',
+        locale: 'menu.searchToRss',
       },
     },
   ],

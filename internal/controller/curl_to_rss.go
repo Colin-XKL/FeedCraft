@@ -29,7 +29,7 @@ type JsonParseReq struct {
 	ContentSelector string `json:"content_selector"`
 }
 
-func ParseCurl(c *gin.Context) {
+func CurlParseCmd(c *gin.Context) {
 	type CurlReq struct {
 		CurlCommand string `json:"curl_command"`
 	}
@@ -92,7 +92,7 @@ func ParseCurl(c *gin.Context) {
 	})
 }
 
-func FetchJson(c *gin.Context) {
+func CurlFetch(c *gin.Context) {
 	var req JsonFetchReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
@@ -164,7 +164,7 @@ func FetchJson(c *gin.Context) {
 	})
 }
 
-func ParseJsonRSS(c *gin.Context) {
+func CurlParse(c *gin.Context) {
 	var req JsonParseReq
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})

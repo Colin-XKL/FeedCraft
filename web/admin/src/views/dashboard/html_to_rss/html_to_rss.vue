@@ -1,8 +1,8 @@
 <template>
   <div class="py-8 px-16">
     <x-header
-      :title="$t('rssGenerator.header.title')"
-      :description="$t('rssGenerator.header.description')"
+      title="HTML to RSS"
+      description="HTML to RSS"
     ></x-header>
 
     <div class="content-wrapper">
