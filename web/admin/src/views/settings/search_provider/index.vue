@@ -43,14 +43,29 @@
           />
         </a-form-item>
 
+        <!-- LiteLLM Specific -->
         <a-form-item
+          v-if="form.provider === 'litellm'"
           :label="$t('settings.searchProvider.toolName')"
-          field="search_tool_name"
+          field="litellm.search_tool_name"
           :tooltip="$t('settings.searchProvider.toolName.tooltip')"
         >
           <a-input
-            v-model="form.search_tool_name"
-            :placeholder="toolNamePlaceholder"
+            v-model="form.litellm.search_tool_name"
+            :placeholder="$t('settings.searchProvider.placeholder.toolName')"
+          />
+        </a-form-item>
+
+        <!-- SearXNG Specific -->
+        <a-form-item
+          v-if="form.provider === 'searxng'"
+          :label="$t('settings.searchProvider.engines')"
+          field="searxng.engines"
+          :tooltip="$t('settings.searchProvider.engines.tooltip')"
+        >
+          <a-input
+            v-model="form.searxng.engines"
+            :placeholder="$t('settings.searchProvider.placeholder.engines')"
           />
         </a-form-item>
 
@@ -76,7 +91,12 @@
     api_url: '',
     api_key: '',
     provider: 'litellm',
-    search_tool_name: '',
+    litellm: {
+      search_tool_name: '',
+    },
+    searxng: {
+      engines: '',
+    },
   });
 
   const apiUrlPlaceholder = computed(() => {
@@ -86,24 +106,22 @@
     return t('settings.searchProvider.placeholder.apiUrl');
   });
 
-  const toolNamePlaceholder = computed(() => {
-    if (form.provider === 'searxng') {
-      return 'google,bing'; // Example engines
-    }
-    return t('settings.searchProvider.placeholder.toolName');
-  });
-
   const saving = ref(false);
 
   const loadConfig = async () => {
     try {
       const res = await axios.get('/api/admin/settings/search-provider');
-      if (res.data) {
-        const data = res.data || {};
-        form.api_url = data.api_url || '';
-        form.api_key = data.api_key || '';
-        form.provider = data.provider || 'litellm';
-        form.search_tool_name = data.search_tool_name || '';
+      const data = res.data?.data || {};
+
+      form.api_url = data.api_url || '';
+      form.api_key = data.api_key || '';
+      form.provider = data.provider || 'litellm';
+
+      if (data.litellm) {
+        form.litellm.search_tool_name = data.litellm.search_tool_name || '';
+      }
+      if (data.searxng) {
+        form.searxng.engines = data.searxng.engines || '';
       }
     } catch (err) {
       // ignore
@@ -121,7 +139,8 @@
         api_url: form.api_url,
         api_key: form.api_key,
         provider: form.provider,
-        search_tool_name: form.search_tool_name,
+        litellm: form.litellm,
+        searxng: form.searxng,
       });
       Message.success(t('settings.searchProvider.msg.saved'));
     } catch (err) {
