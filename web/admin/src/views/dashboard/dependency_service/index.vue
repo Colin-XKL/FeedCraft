@@ -1,6 +1,5 @@
 <template>
-  <div class="container">
-    <Breadcrumb :items="['menu.tools', 'menu.dependencyStatus']" />
+  <div class="py-8 px-16">
     <a-card class="general-card" :title="$t('menu.dependencyStatus')">
       <template #extra>
         <a-button type="primary" :loading="loading" @click="handleCheck">
