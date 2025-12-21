@@ -69,7 +69,7 @@ const DASHBOARD: AppRouteRecordRaw = {
         requiresAuth: true,
         locale: 'menu.allCraftList',
       },
-    }
+    },
   ],
 };
 

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -16,10 +17,14 @@ func init() {
 
 type SearXNGProvider struct {
 	Config *config.SearchProviderConfig
+	Client *resty.Client
 }
 
 func NewSearXNGProvider(cfg *config.SearchProviderConfig) SearchProvider {
-	return &SearXNGProvider{Config: cfg}
+	return &SearXNGProvider{
+		Config: cfg,
+		Client: resty.New().SetTimeout(10 * time.Second),
+	}
 }
 
 func (p *SearXNGProvider) Fetch(ctx context.Context, query string) ([]byte, error) {
@@ -29,9 +34,7 @@ func (p *SearXNGProvider) Fetch(ctx context.Context, query string) ([]byte, erro
 
 	baseURL := p.Config.APIUrl
 	// Remove trailing slash if present
-	if strings.HasSuffix(baseURL, "/") {
-		baseURL = baseURL[:len(baseURL)-1]
-	}
+	baseURL = strings.TrimSuffix(baseURL, "/")
 
 	// Prepare URL parameters
 	params := url.Values{}
@@ -45,8 +48,12 @@ func (p *SearXNGProvider) Fetch(ctx context.Context, query string) ([]byte, erro
 
 	fullURL := fmt.Sprintf("%s/search?%s", baseURL, params.Encode())
 
-	client := resty.New()
-	req := client.R().SetContext(ctx)
+	// Lazy initialization for safety
+	if p.Client == nil {
+		p.Client = resty.New().SetTimeout(10 * time.Second)
+	}
+
+	req := p.Client.R().SetContext(ctx)
 
 	// Add Authorization header if API Key is present (useful for private instances with Basic/Bearer auth)
 	if p.Config.APIKey != "" {

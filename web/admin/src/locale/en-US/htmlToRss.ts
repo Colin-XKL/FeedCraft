@@ -18,7 +18,8 @@ export default {
   'htmlToRss.step2.pagePreview': 'Page Preview',
   'htmlToRss.step2.selectionModeOn': 'Selection Mode On',
   'htmlToRss.step2.enhanceMode': 'Enhanced Mode',
-  'htmlToRss.step2.enhanceMode.tooltip': 'If the preview looks different from what you see in your browser (e.g., missing content), it likely means the page uses JavaScript. Enable Enhance Mode to fix this.',
+  'htmlToRss.step2.enhanceMode.tooltip':
+    'If the preview looks different from what you see in your browser (e.g., missing content), it likely means the page uses JavaScript. Enable Enhance Mode to fix this.',
   'htmlToRss.step2.alert.l1':
     '1. Click "Pick" and select an element in the preview.',
   'htmlToRss.step2.alert.l2':
@@ -41,8 +42,7 @@ export default {
   'htmlToRss.step3.feedTitle': 'Feed Title',
   'htmlToRss.step3.feedTitle.placeholder': 'e.g. My Tech Blog RSS',
   'htmlToRss.step3.feedDesc': 'Feed Description',
-  'htmlToRss.step3.feedDesc.placeholder':
-    'A brief description of this feed...',
+  'htmlToRss.step3.feedDesc.placeholder': 'A brief description of this feed...',
   'htmlToRss.step3.siteLink': 'Site Link',
   'htmlToRss.step3.siteLink.placeholder': 'Original website URL',
   'htmlToRss.step3.authorName': 'Author Name',

@@ -241,7 +241,7 @@
   const localValue = ref<string[]>([]);
 
   const hasSelection = computed(
-    () => localValue.value && localValue.value.length > 0
+    () => localValue.value && localValue.value.length > 0,
   );
   const displaySingleValue = computed(() => {
     if (localValue.value.length > 0) return localValue.value[0];
@@ -276,7 +276,7 @@
         localValue.value = Array.isArray(val) ? [...val] : [];
       }
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   // Filtering
@@ -286,7 +286,7 @@
     return items.filter(
       (item) =>
         item.name.toLowerCase().includes(lower) ||
-        (item.description && item.description.toLowerCase().includes(lower))
+        (item.description && item.description.toLowerCase().includes(lower)),
     );
   };
 

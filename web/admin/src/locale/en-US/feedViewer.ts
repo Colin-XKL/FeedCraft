@@ -1,7 +1,8 @@
 export default {
   'feedViewer.description': 'Enter RSS link to preview',
   'feedViewer.inputLink': 'Input Link',
-  'feedViewer.inputTip': 'Enter the RSS feed address to preview. Supports RSS/ATOM',
+  'feedViewer.inputTip':
+    'Enter the RSS feed address to preview. Supports RSS/ATOM',
   'feedViewer.placeholder': 'Enter RSS feed address',
   'feedViewer.preview': 'Preview',
   'feedViewer.resultPreview': 'Result Preview',

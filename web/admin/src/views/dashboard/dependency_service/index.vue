@@ -17,13 +17,22 @@
             :description="item.error ? item.error : item.details"
           >
             <template #avatar>
-              <a-avatar v-if="item.status === 'Healthy'" :style="{ backgroundColor: '#0fbf60' }">
+              <a-avatar
+                v-if="item.status === 'Healthy'"
+                :style="{ backgroundColor: '#0fbf60' }"
+              >
                 <icon-check />
               </a-avatar>
-              <a-avatar v-else-if="item.status === 'Unhealthy'" :style="{ backgroundColor: '#f53f3f' }">
+              <a-avatar
+                v-else-if="item.status === 'Unhealthy'"
+                :style="{ backgroundColor: '#f53f3f' }"
+              >
                 <icon-close />
               </a-avatar>
-              <a-avatar v-else-if="item.status === 'Configured'" :style="{ backgroundColor: '#165dff' }">
+              <a-avatar
+                v-else-if="item.status === 'Configured'"
+                :style="{ backgroundColor: '#165dff' }"
+              >
                 <icon-settings />
               </a-avatar>
               <a-avatar v-else :style="{ backgroundColor: '#c9cdd4' }">
@@ -32,9 +41,15 @@
             </template>
           </a-list-item-meta>
           <template #actions>
-            <a-tag v-if="item.status === 'Healthy'" color="green">{{ item.status }}</a-tag>
-            <a-tag v-else-if="item.status === 'Unhealthy'" color="red">{{ item.status }}</a-tag>
-            <a-tag v-else-if="item.status === 'Configured'" color="blue">{{ item.status }}</a-tag>
+            <a-tag v-if="item.status === 'Healthy'" color="green">{{
+              item.status
+            }}</a-tag>
+            <a-tag v-else-if="item.status === 'Unhealthy'" color="red">{{
+              item.status
+            }}</a-tag>
+            <a-tag v-else-if="item.status === 'Configured'" color="blue">{{
+              item.status
+            }}</a-tag>
             <a-tag v-else color="gray">{{ item.status }}</a-tag>
             <span v-if="item.latency" class="latency">{{ item.latency }}</span>
           </template>
@@ -46,14 +61,18 @@
 
 <script lang="ts" setup>
   import { ref, onMounted } from 'vue';
-  import { fetchDependencyStatus, checkDependencyStatus, DependencyStatus } from '@/api/monitor';
+  import {
+    fetchDependencyStatus,
+    checkDependencyStatus,
+    DependencyStatus,
+  } from '@/api/monitor';
 
   const data = ref<DependencyStatus[]>([]);
   const loading = ref(false);
 
   const fetchConfig = async () => {
     try {
-      const { data: res } = await fetchDependencyStatus();
+      const res = await fetchDependencyStatus();
       if (res.data) {
         data.value = res.data;
       }
@@ -65,7 +84,7 @@
   const handleCheck = async () => {
     loading.value = true;
     try {
-      const { data: res } = await checkDependencyStatus();
+      const res = await checkDependencyStatus();
       if (res.data) {
         data.value = res.data;
       }

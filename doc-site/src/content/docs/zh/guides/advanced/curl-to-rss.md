@@ -8,6 +8,7 @@ FeedCraft 包含一个 **JSON RSS 生成器** 工具，允许你从 JSON API 获
 ## 概览
 
 JSON RSS 生成器可以帮助你：
+
 1.  **抓取 (Fetch)**：从 API 端点抓取 JSON 数据（支持自定义请求头和方法）。
 2.  **解析 (Parse)**：使用 `jq` 语法解析 JSON 结构，将字段映射到 RSS 条目。
 3.  **预览 (Preview)**：预览生成的订阅源以验证你的选择器。
@@ -20,11 +21,11 @@ JSON RSS 生成器可以帮助你：
 
 你需要定义如何获取 JSON 数据。
 
-*   **Import from Curl**：你可以粘贴 `curl` 命令来自动填充 URL、方法、请求头和请求体。这在你从浏览器开发者工具复制请求时非常有用。
-*   **Method**：选择 `GET` 或 `POST`。
-*   **URL**：API 端点 URL。
-*   **Headers**：添加任何必要的请求头（例如 `Authorization`, `Content-Type`）。
-*   **Request Body**：对于 POST 请求，提供 JSON 请求体。
+- **Import from Curl**：你可以粘贴 `curl` 命令来自动填充 URL、方法、请求头和请求体。这在你从浏览器开发者工具复制请求时非常有用。
+- **Method**：选择 `GET` 或 `POST`。
+- **URL**：API 端点 URL。
+- **Headers**：添加任何必要的请求头（例如 `Authorization`, `Content-Type`）。
+- **Request Body**：对于 POST 请求，提供 JSON 请求体。
 
 点击 **Fetch JSON** 来获取数据。
 
@@ -34,14 +35,14 @@ JSON RSS 生成器可以帮助你：
 
 该工具使用 **[jq](https://jqlang.github.io/jq/)** 语法来查询 JSON。
 
-*   **列表选择器 (List Selector)**：条目数组的路径。
-    *   例如：`.items[]` 或 `.data.posts[]`，如果根就是数组则为 `.`。
-*   **标题选择器 (Title Selector)**：条目标题的路径（相对于条目对象）。
-    *   例如：`.title` 或 `.attributes.name`。
-*   **链接选择器 (Link Selector)**：条目 URL 的路径。
-    *   例如：`.url` 或 `.permalink`。
-*   **日期选择器 (Date Selector)**：（可选）发布日期的路径。
-*   **内容选择器 (Content Selector)**：（可选）完整内容或摘要的路径。
+- **列表选择器 (List Selector)**：条目数组的路径。
+  - 例如：`.items[]` 或 `.data.posts[]`，如果根就是数组则为 `.`。
+- **标题选择器 (Title Selector)**：条目标题的路径（相对于条目对象）。
+  - 例如：`.title` 或 `.attributes.name`。
+- **链接选择器 (Link Selector)**：条目 URL 的路径。
+  - 例如：`.url` 或 `.permalink`。
+- **日期选择器 (Date Selector)**：（可选）发布日期的路径。
+- **内容选择器 (Content Selector)**：（可选）完整内容或摘要的路径。
 
 ### 第三步：预览 (Preview)
 

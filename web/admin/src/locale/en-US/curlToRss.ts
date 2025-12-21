@@ -1,6 +1,7 @@
 export default {
   'curlToRss.title': 'Curl to RSS',
-  'curlToRss.description': 'Generate RSS feeds from any JSON API by defining parsing rules.',
+  'curlToRss.description':
+    'Generate RSS feeds from any JSON API by defining parsing rules.',
   'curlToRss.step.requestConfig': 'Request Config',
   'curlToRss.step.requestConfig.desc': 'Configure JSON source',
   'curlToRss.step.parsingRules': 'Parsing Rules',
@@ -9,8 +10,10 @@ export default {
   'curlToRss.step.feedMetadata.desc': 'Set feed details',
   'curlToRss.step.saveRecipe': 'Save Recipe',
   'curlToRss.step.saveRecipe.desc': 'Save as Custom Recipe',
-  'curlToRss.step1.alert': 'Configure the HTTP request to fetch the JSON data. You can import from a cURL command.',
-  'curlToRss.step1.curlCommand': 'Curl Command (Optional - Paste here and click Import)',
+  'curlToRss.step1.alert':
+    'Configure the HTTP request to fetch the JSON data. You can import from a cURL command.',
+  'curlToRss.step1.curlCommand':
+    'Curl Command (Optional - Paste here and click Import)',
   'curlToRss.step1.import': 'Import',
   'curlToRss.step1.method': 'Method',
   'curlToRss.step1.url': 'URL',
@@ -19,9 +22,11 @@ export default {
   'curlToRss.step1.add': 'Add',
   'curlToRss.step1.fetchAndNext': 'Fetch & Next',
   'curlToRss.step2.responseJson': 'Response JSON',
-  'curlToRss.step2.alert': 'Define selectors to extract feed items. Use dot notation (e.g., <code>.data.items</code>).',
+  'curlToRss.step2.alert':
+    'Define selectors to extract feed items. Use dot notation (e.g., <code>.data.items</code>).',
   'curlToRss.step2.iteration': 'Iteration',
-  'curlToRss.step2.itemsIterator': 'Items Iterator (e.g. .data.items or .items[])',
+  'curlToRss.step2.itemsIterator':
+    'Items Iterator (e.g. .data.items or .items[])',
   'curlToRss.step2.itemFields': 'Item Fields (Relative to Iterator)',
   'curlToRss.step2.titleSelector': 'Title Selector',
   'curlToRss.step2.linkSelector': 'Link Selector',
@@ -30,7 +35,8 @@ export default {
   'curlToRss.step2.previewResults': 'Preview Results ({count})',
   'curlToRss.step2.runPreview': 'Run Preview',
   'curlToRss.step2.nextStep': 'Next Step',
-  'curlToRss.step3.alert': 'Successfully extracted {count} items! Now configure the feed metadata.',
+  'curlToRss.step3.alert':
+    'Successfully extracted {count} items! Now configure the feed metadata.',
   'curlToRss.step3.feedTitle': 'Feed Title',
   'curlToRss.step3.feedDescription': 'Feed Description',
   'curlToRss.step3.siteLink': 'Site Link',
@@ -41,7 +47,8 @@ export default {
   'curlToRss.step4.sourceUrl': 'Source URL',
   'curlToRss.step4.itemCount': 'Item Count',
   'curlToRss.step4.recipeId': 'Recipe ID (URL Path)',
-  'curlToRss.step4.recipeId.help': 'This will be the unique identifier in the URL.',
+  'curlToRss.step4.recipeId.help':
+    'This will be the unique identifier in the URL.',
   'curlToRss.step4.internalDescription': 'Internal Description',
   'curlToRss.step4.confirmAndSave': 'Confirm & Save Recipe',
   'curlToRss.common.back': 'Back',

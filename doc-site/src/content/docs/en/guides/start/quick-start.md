@@ -16,6 +16,7 @@ The URL format is:
 `https://feed-craft.colinx.one/craft/{craft_atom}?input_url={input_rss_url}`
 
 Where:
+
 - `{craft_atom}` is the name of the processing step you want to apply.
 - `{input_rss_url}` is the original URL of the RSS feed you want to process.
 

@@ -67,6 +67,5 @@ module.exports = {
     'import/no-extraneous-dependencies': 0,
     'vue/attributes-order': 'warn',
     'no-console': 'warn', // 或 'off' 用于开发
-
   },
 };
