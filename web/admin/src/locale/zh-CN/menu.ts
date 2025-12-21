@@ -35,4 +35,6 @@ export default {
   'menu.dependencyStatus': '依赖服务状态',
   // 其他
   'menu.changePassword': '修改密码',
+  'menu.settings': '设置',
+  'menu.settings.searchProvider': '搜索服务提供商',
 };

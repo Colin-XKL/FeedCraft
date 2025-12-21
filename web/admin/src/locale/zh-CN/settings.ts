@@ -38,9 +38,12 @@ export default {
   'settings.searchProvider.apiKey': 'API Key',
   'settings.searchProvider.apiKey.tooltip':
     '如果提供商需要身份验证，则为可选 API 密钥。',
-  'settings.searchProvider.toolName': '工具名称 / 引擎',
+  'settings.searchProvider.toolName': '工具名称',
   'settings.searchProvider.toolName.tooltip':
-    "对于 LiteLLM：具体工具名称 (如 'google-search')。对于 SearXNG：逗号分隔的引擎列表 (如 'google,bing')。留空使用默认值。",
+    "具体工具名称 (如 'google-search')。",
+  'settings.searchProvider.engines': '搜索引擎',
+  'settings.searchProvider.engines.tooltip':
+    "逗号分隔的引擎列表 (如 'google,bing')。留空使用默认值。",
   'settings.searchProvider.save': '保存配置',
   'settings.searchProvider.configure': '配置搜索提供商',
   'settings.searchProvider.msg.urlRequired': 'API URL 是必填项',
@@ -50,4 +53,5 @@ export default {
   'settings.searchProvider.placeholder.apiUrl': 'http://litellm-proxy:4000',
   'settings.searchProvider.placeholder.apiKey': 'sk-...',
   'settings.searchProvider.placeholder.toolName': 'google-search',
+  'settings.searchProvider.placeholder.engines': 'google,bing',
 };

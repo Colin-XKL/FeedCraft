@@ -16,6 +16,7 @@ import localeUrlGenerator from './en-US/urlGenerator';
 import localeHtmlToRss from './en-US/htmlToRss';
 import localeCurlToRss from './en-US/curlToRss';
 import localeSearchToRss from './en-US/searchToRss';
+import localeDependencyService from './en-US/dependencyService';
 
 export default {
   ...localeSettings,
@@ -33,5 +34,6 @@ export default {
   ...localeHtmlToRss,
   ...localeCurlToRss,
   ...localeSearchToRss,
+  ...localeDependencyService,
   ...localeWorkplace,
 };
