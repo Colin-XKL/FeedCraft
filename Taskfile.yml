@@ -257,4 +257,4 @@ tasks:
           fi
       - cmd: |
           echo "Running Prettier..."
-          npx --yes prettier --write "**/*.{js,jsx,ts,tsx,vue,css,scss,html,json,md,mdx,yml,yaml}" --ignore-path .gitignore
+          npx prettier --write "**/*.{js,jsx,ts,tsx,vue,css,scss,html,json,md,mdx,yml,yaml}"
