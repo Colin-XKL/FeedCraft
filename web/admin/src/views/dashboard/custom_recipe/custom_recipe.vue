@@ -66,14 +66,30 @@
       </template>
       <template #source_config="{ record }">
         <a-space>
-          <span style="max-width: 300px; display: inline-block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" :title="humanReadableConfig(record.source_config)">
+          <span
+            style="
+              max-width: 300px;
+              display: inline-block;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+            "
+            :title="humanReadableConfig(record.source_config)"
+          >
             {{ humanReadableConfig(record.source_config) }}
           </span>
-          <a-button type="text" size="mini" @click="viewConfig(record.source_config)">
-            <template #icon>
-              <icon-eye />
-            </template>
-          </a-button>
+          <a-tooltip :content="t('customRecipe.viewConfig')">
+            <a-button
+              type="text"
+              size="mini"
+              :aria-label="t('customRecipe.viewConfig')"
+              @click="viewConfig(record.source_config)"
+            >
+              <template #icon>
+                <icon-eye />
+              </template>
+            </a-button>
+          </a-tooltip>
         </a-space>
       </template>
       <template #actions="{ record }">
@@ -108,7 +124,9 @@
       :title="
         editing
           ? t('customRecipe.editModalTitle.edit')
-          : (quickCreate ? t('customRecipe.quickCreateRSS') : t('customRecipe.editModalTitle.create'))
+          : quickCreate
+          ? t('customRecipe.quickCreateRSS')
+          : t('customRecipe.editModalTitle.create')
       "
     >
       <a-form
@@ -132,25 +150,46 @@
 
         <!-- Quick Create Fields -->
         <template v-if="quickCreate">
-          <a-form-item :label="t('customRecipe.form.feedURL')" field="feed_url" :rules="[{required: true, message: t('customRecipe.form.rule.rssUrlRequired')}]">
-             <a-input v-model="rssUrl" :placeholder="t('customRecipe.form.placeholder.rssUrl')" />
+          <a-form-item
+            :label="t('customRecipe.form.feedURL')"
+            field="feed_url"
+            :rules="[
+              {
+                required: true,
+                message: t('customRecipe.form.rule.rssUrlRequired'),
+              },
+            ]"
+          >
+            <a-input
+              v-model="rssUrl"
+              :placeholder="t('customRecipe.form.placeholder.rssUrl')"
+            />
           </a-form-item>
         </template>
 
         <!-- Advanced Fields -->
         <template v-else>
-          <a-form-item :label="t('customRecipe.form.sourceType')" field="source_type">
+          <a-form-item
+            :label="t('customRecipe.form.sourceType')"
+            field="source_type"
+          >
             <a-select v-model="form.source_type">
               <a-option value="rss">RSS</a-option>
               <a-option value="html">HTML</a-option>
               <a-option value="json">JSON</a-option>
             </a-select>
           </a-form-item>
-          <a-form-item :label="t('customRecipe.form.sourceConfig')" field="source_config">
-            <a-textarea v-model="form.source_config" :auto-size="{minRows:3, maxRows:10}" :placeholder="t('customRecipe.form.placeholder.sourceConfig')" />
+          <a-form-item
+            :label="t('customRecipe.form.sourceConfig')"
+            field="source_config"
+          >
+            <a-textarea
+              v-model="form.source_config"
+              :auto-size="{ minRows: 3, maxRows: 10 }"
+              :placeholder="t('customRecipe.form.placeholder.sourceConfig')"
+            />
           </a-form-item>
         </template>
-
       </a-form>
       <template #footer>
         <a-button
@@ -169,8 +208,21 @@
     </a-modal>
 
     <!-- View Config Modal -->
-    <a-modal v-model:visible="showConfigModal" :title="t('customRecipe.viewConfigModalTitle')" :footer="false">
-      <pre style="background-color: #f5f5f5; padding: 10px; border-radius: 4px; overflow: auto; max-height: 400px;">{{ currentConfig }}</pre>
+    <a-modal
+      v-model:visible="showConfigModal"
+      :title="t('customRecipe.viewConfigModalTitle')"
+      :footer="false"
+    >
+      <pre
+        style="
+          background-color: #f5f5f5;
+          padding: 10px;
+          border-radius: 4px;
+          overflow: auto;
+          max-height: 400px;
+        "
+        >{{ currentConfig }}</pre
+      >
     </a-modal>
   </div>
 </template>
@@ -220,10 +272,10 @@
     { title: t('customRecipe.form.craft'), dataIndex: 'craft' },
     { title: t('customRecipe.status.active'), slotName: 'status' },
     { title: t('customRecipe.form.sourceType'), dataIndex: 'source_type' },
-    { 
-      title: t('customRecipe.form.sourceConfig'), 
+    {
+      title: t('customRecipe.form.sourceConfig'),
       dataIndex: 'source_config',
-      slotName: 'source_config'
+      slotName: 'source_config',
     },
     { title: t('customRecipe.edit'), slotName: 'actions' },
   ];
@@ -299,7 +351,7 @@
     editing.value = true;
     quickCreate.value = false; // Ensure we are not in quick create mode
     selectedRecipe.value = recipe;
-    
+
     // Pretty print JSON for editing
     let prettyConfig = recipe.source_config;
     try {
@@ -324,13 +376,13 @@
       // Construct JSON for Quick Create
       const config = {
         http_fetcher: {
-          url: rssUrl.value
-        }
+          url: rssUrl.value,
+        },
       };
       form.value.source_config = JSON.stringify(config);
       form.value.source_type = 'rss';
     } else {
-       // Validate JSON before saving in Advanced mode
+      // Validate JSON before saving in Advanced mode
       try {
         JSON.parse(form.value.source_config);
       } catch (e) {
@@ -352,7 +404,13 @@
       await listCustomRecipes();
     }
     showModal.value = false;
-    form.value = { id: '', description: '', craft: '', source_type: 'rss', source_config: '' };
+    form.value = {
+      id: '',
+      description: '',
+      craft: '',
+      source_type: 'rss',
+      source_config: '',
+    };
     editing.value = false;
     isUpdating.value = false;
     selectedRecipe.value = null;
