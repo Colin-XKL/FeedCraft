@@ -18,4 +18,7 @@ export default {
   'craftFlow.editor.empty': 'No craft atoms in this flow yet',
   'craftFlow.editor.addPlaceholder': 'Select a craft atom to add',
   'craftFlow.editor.add': 'Add Step',
+  'craftFlow.editor.moveUp': 'Move Up',
+  'craftFlow.editor.moveDown': 'Move Down',
+  'craftFlow.editor.remove': 'Remove',
 };

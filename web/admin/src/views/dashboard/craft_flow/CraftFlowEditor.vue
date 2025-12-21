@@ -23,30 +23,39 @@
         </div>
 
         <div class="flex items-center gap-2">
-          <a-button
-            size="small"
-            type="text"
-            :disabled="index === 0"
-            @click="moveUp(index)"
-          >
-            <template #icon><icon-arrow-up /></template>
-          </a-button>
-          <a-button
-            size="small"
-            type="text"
-            :disabled="index === modelValue.length - 1"
-            @click="moveDown(index)"
-          >
-            <template #icon><icon-arrow-down /></template>
-          </a-button>
-          <a-button
-            size="small"
-            type="text"
-            status="danger"
-            @click="removeCraft(index)"
-          >
-            <template #icon><icon-delete /></template>
-          </a-button>
+          <a-tooltip :content="t('craftFlow.editor.moveUp')">
+            <a-button
+              size="small"
+              type="text"
+              :aria-label="t('craftFlow.editor.moveUp')"
+              :disabled="index === 0"
+              @click="moveUp(index)"
+            >
+              <template #icon><icon-arrow-up /></template>
+            </a-button>
+          </a-tooltip>
+          <a-tooltip :content="t('craftFlow.editor.moveDown')">
+            <a-button
+              size="small"
+              type="text"
+              :aria-label="t('craftFlow.editor.moveDown')"
+              :disabled="index === modelValue.length - 1"
+              @click="moveDown(index)"
+            >
+              <template #icon><icon-arrow-down /></template>
+            </a-button>
+          </a-tooltip>
+          <a-tooltip :content="t('craftFlow.editor.remove')">
+            <a-button
+              size="small"
+              type="text"
+              status="danger"
+              :aria-label="t('craftFlow.editor.remove')"
+              @click="removeCraft(index)"
+            >
+              <template #icon><icon-delete /></template>
+            </a-button>
+          </a-tooltip>
         </div>
       </div>
     </div>

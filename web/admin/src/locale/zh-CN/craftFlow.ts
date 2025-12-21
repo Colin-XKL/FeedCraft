@@ -18,4 +18,7 @@ export default {
   'craftFlow.editor.empty': '暂无步骤',
   'craftFlow.editor.addPlaceholder': '选择一个步骤添加',
   'craftFlow.editor.add': '添加步骤',
+  'craftFlow.editor.moveUp': '上移',
+  'craftFlow.editor.moveDown': '下移',
+  'craftFlow.editor.remove': '移除',
 };
