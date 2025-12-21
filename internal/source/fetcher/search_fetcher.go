@@ -11,11 +11,12 @@ import (
 )
 
 type SearchFetcher struct {
-	Config *config.SearchFetcherConfig
+	Config   *config.SearchFetcherConfig
+	Provider string
 }
 
 func (f *SearchFetcher) BaseURL() string {
-	return "search://" + f.Config.Query
+	return "search://" + f.Provider + "/" + f.Config.Query
 }
 
 func (f *SearchFetcher) Fetch(ctx context.Context) ([]byte, error) {

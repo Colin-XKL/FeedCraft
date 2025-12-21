@@ -53,8 +53,14 @@ func searchSourceFactory(cfg *config.SourceConfig) (Source, error) {
 	}
 
 	return &PipelineSource{
-		Config:  cfg,
-		Fetcher: &fetcher.SearchFetcher{Config: cfg.SearchFetcher},
-		Parser:  p,
+		Config: cfg,
+		Fetcher: &fetcher.CachedFetcher{
+			Internal: &fetcher.SearchFetcher{
+				Config:   cfg.SearchFetcher,
+				Provider: providerConfig.Provider,
+			},
+			Expire: constant.SearchCacheExpire,
+		},
+		Parser: p,
 	}, nil
 }
