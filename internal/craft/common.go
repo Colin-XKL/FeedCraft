@@ -30,16 +30,14 @@ func getCraftCacheKey(namespace, id string) string {
 type ContentTransformFunc func(item *gofeed.Item) string
 
 func TransformFeed(parsedFeed *gofeed.Feed, feedUrl string, transFunc ContentTransformFunc) feeds.Feed {
-	updatedTimePointer := parsedFeed.UpdatedParsed
 	updatedTime := time.Now()
-	if updatedTimePointer != nil {
-		updatedTime = *updatedTimePointer
+	if parsedFeed.UpdatedParsed != nil && !parsedFeed.UpdatedParsed.IsZero() {
+		updatedTime = *parsedFeed.UpdatedParsed
 	}
 
-	publishedTimePointer := parsedFeed.PublishedParsed
 	publishedTime := time.Now()
-	if publishedTimePointer != nil {
-		publishedTime = *publishedTimePointer
+	if parsedFeed.PublishedParsed != nil && !parsedFeed.PublishedParsed.IsZero() {
+		publishedTime = *parsedFeed.PublishedParsed
 	}
 
 	extractIterator := func(item *gofeed.Item, index int) *feeds.Item {
@@ -164,16 +162,14 @@ func GetCommonCachedTransformer(cacheKeyGenerator ContentCacheKeyGenerator, rawT
 }
 
 func TransformArticleContent(item *gofeed.Item, transFunc func(item *gofeed.Item) string) *feeds.Item {
-	updatedTimePointer := item.UpdatedParsed
 	updatedTime := time.Now()
-	if updatedTimePointer != nil {
-		updatedTime = *updatedTimePointer
+	if item.UpdatedParsed != nil && !item.UpdatedParsed.IsZero() {
+		updatedTime = *item.UpdatedParsed
 	}
 
-	publishedTimePointer := item.PublishedParsed
 	publishedTime := time.Now()
-	if publishedTimePointer != nil {
-		publishedTime = *publishedTimePointer
+	if item.PublishedParsed != nil && !item.PublishedParsed.IsZero() {
+		publishedTime = *item.PublishedParsed
 	}
 
 	articleContent := transFunc(item)

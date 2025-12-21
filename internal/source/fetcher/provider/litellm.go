@@ -77,10 +77,10 @@ func (p *LiteLLMProvider) Fetch(ctx context.Context, query string) ([]byte, erro
 
 func (p *LiteLLMProvider) GetDefaultParserConfig() *config.JsonParserConfig {
 	return &config.JsonParserConfig{
-		ItemsIterator: "data",
+		ItemsIterator: "results",
 		Title:         "title",
 		Link:          "url",
-		Description:   "content",
+		Description:   "snippet",
 		// Date might vary, usually not standard in simple search results
 	}
 }

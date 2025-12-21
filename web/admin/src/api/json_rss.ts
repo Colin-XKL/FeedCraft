@@ -30,7 +30,7 @@ export interface SearchFetchReq {
 }
 
 export function parseCurl(
-  curlCommand: string,
+  curlCommand: string
 ): Promise<APIResponse<JsonFetchReq>> {
   return axios
     .post<APIResponse<JsonFetchReq>>('/api/admin/tools/json/parse_curl', {
@@ -46,12 +46,16 @@ export function fetchJson(req: JsonFetchReq): Promise<APIResponse<string>> {
 }
 
 export function parseJsonRss(
-  req: JsonParseReq,
+  req: JsonParseReq
 ): Promise<APIResponse<ParsedItem[]>> {
   return axios
     .post<APIResponse<ParsedItem[]>>('/api/admin/tools/json/parse', req)
     .then((res) => res.data);
 }
-export function previewSearch(req: SearchFetchReq) {
-  return axios.post<ParsedItem[]>('/api/admin/tools/search/preview', req);
+export function previewSearch(
+  req: SearchFetchReq
+): Promise<APIResponse<any[]>> {
+  return axios
+    .post<APIResponse<any[]>>('/api/admin/tools/search/preview', req)
+    .then((res) => res.data);
 }
