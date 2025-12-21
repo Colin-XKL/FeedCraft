@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/go-resty/resty/v2"
 )
@@ -22,7 +23,7 @@ type SearXNGProvider struct {
 func NewSearXNGProvider(cfg *config.SearchProviderConfig) SearchProvider {
 	return &SearXNGProvider{
 		Config: cfg,
-		Client: resty.New(),
+		Client: resty.New().SetTimeout(10 * time.Second),
 	}
 }
 
@@ -46,6 +47,11 @@ func (p *SearXNGProvider) Fetch(ctx context.Context, query string) ([]byte, erro
 	}
 
 	fullURL := fmt.Sprintf("%s/search?%s", baseURL, params.Encode())
+
+	// Lazy initialization for safety
+	if p.Client == nil {
+		p.Client = resty.New().SetTimeout(10 * time.Second)
+	}
 
 	req := p.Client.R().SetContext(ctx)
 
