@@ -38,9 +38,9 @@ func (p *SearXNGProvider) Fetch(ctx context.Context, query string) ([]byte, erro
 	params.Add("q", query)
 	params.Add("format", "json")
 
-	// If tool name is provided, treat it as 'engines' (e.g. 'google', 'bing')
-	if p.Config.SearchToolName != "" {
-		params.Add("engines", p.Config.SearchToolName)
+	// If engines is provided, treat it as 'engines' (e.g. 'google', 'bing')
+	if p.Config.SearXNG.Engines != "" {
+		params.Add("engines", p.Config.SearXNG.Engines)
 	}
 
 	fullURL := fmt.Sprintf("%s/search?%s", baseURL, params.Encode())

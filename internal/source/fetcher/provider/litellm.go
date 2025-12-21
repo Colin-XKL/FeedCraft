@@ -33,11 +33,11 @@ func (p *LiteLLMProvider) Fetch(ctx context.Context, query string) ([]byte, erro
 	// LiteLLM Search usually maps to a specific model/tool name if using OpenAI format,
 	// but strictly speaking, the "Search" endpoint might be different.
 	// Based on previous code: if SearchToolName is present, append it.
-	if p.Config.SearchToolName != "" {
+	if p.Config.LiteLLM.SearchToolName != "" {
 		if !strings.HasSuffix(url, "/") {
 			url += "/"
 		}
-		url += p.Config.SearchToolName
+		url += p.Config.LiteLLM.SearchToolName
 	}
 
 	// Prepare Request Body
