@@ -74,11 +74,11 @@ func timeLimitCraftLoadParams(m map[string]string) []CraftOption {
 		days = 7
 	}
 	if days < 0 {
-		days = 0
+		days = 7
 	}
 	return GetTimeLimitCraftOption(days)
 }
 
 var timeLimitCraftParamTmpl = []ParamTemplate{
-	{Key: "days", Description: "Limit articles to the last $days days"},
+	{Key: "days", Description: "Limit articles to the last N days", Default: "7"},
 }
