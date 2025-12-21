@@ -33,9 +33,7 @@ func (p *SearXNGProvider) Fetch(ctx context.Context, query string) ([]byte, erro
 
 	baseURL := p.Config.APIUrl
 	// Remove trailing slash if present
-	if strings.HasSuffix(baseURL, "/") {
-		baseURL = baseURL[:len(baseURL)-1]
-	}
+	baseURL = strings.TrimSuffix(baseURL, "/")
 
 	// Prepare URL parameters
 	params := url.Values{}

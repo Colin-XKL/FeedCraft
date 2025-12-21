@@ -65,7 +65,7 @@ func checkSQLite(env *viper.Viper, activeCheck bool) DependencyStatus {
 	if err != nil {
 		return DependencyStatus{Name: "SQLite", Status: "Unhealthy", Details: details, Error: err.Error()}
 	}
-	defer sqlDB.Close()
+	defer func() { _ = sqlDB.Close() }()
 
 	if err := sqlDB.Ping(); err != nil {
 		return DependencyStatus{Name: "SQLite", Status: "Unhealthy", Details: details, Error: err.Error()}
@@ -90,7 +90,7 @@ func checkRedis(env *viper.Viper, activeCheck bool) DependencyStatus {
 		return DependencyStatus{Name: "Redis", Status: "Unhealthy", Details: details, Error: "Invalid URI: " + err.Error()}
 	}
 	rdb := redis.NewClient(opts)
-	defer rdb.Close()
+	defer func() { _ = rdb.Close() }()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
@@ -118,7 +118,7 @@ func checkBrowserless(env *viper.Viper, activeCheck bool) DependencyStatus {
 	if err != nil {
 		return DependencyStatus{Name: "Browserless", Status: "Unhealthy", Details: details, Error: err.Error()}
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
 		return DependencyStatus{Name: "Browserless", Status: "Healthy", Details: details, Latency: time.Since(start).String()}
