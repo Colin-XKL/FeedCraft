@@ -17,6 +17,7 @@ export default {
   'navbar.docs': 'Docs Center',
   'navbar.action.locale': 'Switch to English',
   // workplace menus
+  'menu.dashboard.workplace': 'Workplace',
   'menu.craftAtom': 'Craft Atom',
   'menu.craftFlow': 'Craft Flow',
   'menu.customRecipe': 'Custom Recipe',
