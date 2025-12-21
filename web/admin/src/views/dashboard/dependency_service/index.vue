@@ -72,7 +72,7 @@
 
   const fetchConfig = async () => {
     try {
-      const { data: res } = await fetchDependencyStatus();
+      const res = await fetchDependencyStatus();
       if (res.data) {
         data.value = res.data;
       }
@@ -84,7 +84,7 @@
   const handleCheck = async () => {
     loading.value = true;
     try {
-      const { data: res } = await checkDependencyStatus();
+      const res = await checkDependencyStatus();
       if (res.data) {
         data.value = res.data;
       }

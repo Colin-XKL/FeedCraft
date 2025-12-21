@@ -9,12 +9,14 @@ export interface DependencyStatus {
   latency?: string;
 }
 
-export function fetchDependencyStatus() {
-  return axios.get<APIResponse<DependencyStatus[]>>('/api/admin/dependencies');
+export function fetchDependencyStatus(): Promise<APIResponse<DependencyStatus[]>> {
+  return axios
+    .get<APIResponse<DependencyStatus[]>>('/api/admin/dependencies')
+    .then((res) => res.data);
 }
 
-export function checkDependencyStatus() {
-  return axios.post<APIResponse<DependencyStatus[]>>(
-    '/api/admin/dependencies/check',
-  );
+export function checkDependencyStatus(): Promise<APIResponse<DependencyStatus[]>> {
+  return axios
+    .post<APIResponse<DependencyStatus[]>>('/api/admin/dependencies/check')
+    .then((res) => res.data);
 }
