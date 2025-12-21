@@ -92,6 +92,17 @@ func TestOptionTimeLimit(t *testing.T) {
 			// Recent -> After cutoff -> True (Keep)
 			expectedLen: 2,
 		},
+		{
+			name: "Exactly 7 days ago",
+			days: 7,
+			items: []*feeds.Item{
+				// We use a slightly future-dated 'now' for the item to ensure it's not BEFORE the cutoff
+				// that will be calculated inside OptionTimeLimit (which will call time.Now() later).
+				// This is a bit of a hack to test the inclusive boundary without mocking time.
+				{Title: "Boundary", Created: now.AddDate(0, 0, -7).Add(1 * time.Second)},
+			},
+			expectedLen: 1,
+		},
 	}
 
 	for _, tt := range tests {

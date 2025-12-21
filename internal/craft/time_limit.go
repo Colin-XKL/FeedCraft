@@ -49,7 +49,7 @@ func OptionTimeLimit(days int) CraftOption {
 				return false // Drop 1970s if we have normal dates
 			}
 
-			return t.After(cutoff)
+			return !t.Before(cutoff)
 		})
 
 		feed.Items = filtered
