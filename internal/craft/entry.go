@@ -140,7 +140,7 @@ func GetCraftAtomDict() map[string]dao.CraftAtom {
 	for name, craftTemplate := range tmplDict {
 		item := dao.CraftAtom{
 			Name:         craftTemplate.Name, // 默认会有个跟template 同名的craft atom
-			Description:  fmt.Sprintf("%s", craftTemplate.Description),
+			Description:  craftTemplate.Description,
 			TemplateName: craftTemplate.Name,
 			Params:       map[string]string{},
 		}

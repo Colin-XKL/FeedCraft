@@ -19,7 +19,6 @@ type PreheatingContext struct {
 	lastRequestTime  time.Time
 	preheatingCount  int
 	timer            *time.Timer
-	mutex            sync.Mutex
 }
 
 // PreheatingScheduler 预热调度器

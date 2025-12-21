@@ -153,8 +153,8 @@ services:
 ### 环境设置
 
 1. 确保已安装以下依赖：
-   - Go 1.19+
-   - Node.js (推荐 18+)
+   - Go 1.23+
+   - Node.js (推荐 22+)
    - pnpm (安装方式: `npm install -g pnpm`)
    - Task (安装方式: [https://taskfile.dev/installation/](https://taskfile.dev/installation/))
 
@@ -170,14 +170,11 @@ services:
 使用 Task 运行开发模式：
 
 ```bash
-# 运行完整的开发环境（前端+后端）
-task dev
+# 运行后端
+task backend-dev
 
-# 只运行后端
-task dev-backend
-
-# 只运行前端
-task dev-frontend
+# 运行前端
+task frontend-dev
 ```
 
 ### 前端开发
@@ -186,7 +183,7 @@ task dev-frontend
 
 ### 后端开发
 
-后端使用 Go 和 Gin 框架，API 文档可以通过启动服务后访问 `/docs` 查看。
+后端使用 Go 和 Gin 框架
 
 ## 关于 FeedCraft
 

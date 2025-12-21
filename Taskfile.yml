@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 vars:
   PROJECT_NAME: FeedCraft
@@ -228,7 +228,7 @@ tasks:
           (go run ./cmd/main.go) &
           (cd web/admin && pnpm dev) &
           wait
-# Documentation Site Commands
+  # Documentation Site Commands
   docs-dev:
     desc: "Run documentation site in development mode"
     cmds:
@@ -245,3 +245,16 @@ tasks:
           cd doc-site && pnpm install && pnpm run build
           echo "Documentation site build completed"
 
+  lint:
+    desc: "Lint and format code (Go and Web)"
+    cmds:
+      - cmd: |
+          echo "Running Go linter..."
+          if command -v golangci-lint >/dev/null 2>&1; then
+            golangci-lint run ./...
+          else
+            echo "golangci-lint not installed. Please install it to lint Go code."
+          fi
+      - cmd: |
+          echo "Running Prettier..."
+          npx --yes prettier --write .
