@@ -14,5 +14,7 @@ export function fetchDependencyStatus() {
 }
 
 export function checkDependencyStatus() {
-  return axios.post<APIResponse<DependencyStatus[]>>('/api/admin/dependencies/check');
+  return axios.post<APIResponse<DependencyStatus[]>>(
+    '/api/admin/dependencies/check',
+  );
 }

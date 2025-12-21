@@ -158,7 +158,7 @@
     const craftFlowCopy = { ...craftFlow } as any;
     if (!craftFlowCopy.craftList && craftFlowCopy.craft_flow_config) {
       craftFlowCopy.craftList = craftFlowCopy.craft_flow_config.map(
-        (c: any) => c.craft_name
+        (c: any) => c.craft_name,
       );
     } else if (!craftFlowCopy.craftList) {
       craftFlowCopy.craftList = [];
@@ -196,7 +196,7 @@
         const craftFlowConfigList = item.craft_flow_config ?? [];
         ret.craftList =
           craftFlowConfigList.map(
-            (craftConfigItem) => craftConfigItem.craft_name
+            (craftConfigItem) => craftConfigItem.craft_name,
           ) ?? [];
         return ret;
       });
@@ -214,7 +214,7 @@
       if (isUpdating.value) {
         await updateCraftFlow(
           editedCraftFlow.value.name,
-          transformCraftForOption(editedCraftFlow.value)
+          transformCraftForOption(editedCraftFlow.value),
         );
       } else {
         await createCraftFlow(transformCraftForOption(editedCraftFlow.value));

@@ -292,9 +292,7 @@
         <div v-show="currentStep === 3" class="step-content">
           <div class="max-w-2xl mx-auto">
             <a-alert type="success" class="mb-6">
-              {{
-                $t('curlToRss.step3.alert', { count: parsedItems.length })
-              }}
+              {{ $t('curlToRss.step3.alert', { count: parsedItems.length }) }}
             </a-alert>
 
             <a-form :model="feedMeta" layout="vertical">
@@ -567,7 +565,7 @@
         Message.warning(t('curlToRss.msg.noItems'));
       } else {
         Message.success(
-          t('curlToRss.msg.parsedItems', { count: parsedItems.value.length })
+          t('curlToRss.msg.parsedItems', { count: parsedItems.value.length }),
         );
       }
     } catch (err) {
@@ -630,9 +628,7 @@
       Message.success(t('curlToRss.msg.saved'));
       router.push({ name: 'CustomRecipe' });
     } catch (err: any) {
-      Message.error(
-        t('curlToRss.msg.saveFailed', { msg: err.message || err })
-      );
+      Message.error(t('curlToRss.msg.saveFailed', { msg: err.message || err }));
     } finally {
       saving.value = false;
     }

@@ -1,6 +1,7 @@
 export default {
   'curlToRss.title': 'Curl 转 RSS',
-  'curlToRss.description': '通过定义解析规则，从任何 JSON API 生成 RSS 订阅源。',
+  'curlToRss.description':
+    '通过定义解析规则，从任何 JSON API 生成 RSS 订阅源。',
   'curlToRss.step.requestConfig': '请求配置',
   'curlToRss.step.requestConfig.desc': '配置 JSON 源',
   'curlToRss.step.parsingRules': '解析规则',
@@ -9,7 +10,8 @@ export default {
   'curlToRss.step.feedMetadata.desc': '设置订阅详情',
   'curlToRss.step.saveRecipe': '保存配方',
   'curlToRss.step.saveRecipe.desc': '保存为自定义配方',
-  'curlToRss.step1.alert': '配置用于获取 JSON 数据的 HTTP 请求。您可以从 cURL 命令导入。',
+  'curlToRss.step1.alert':
+    '配置用于获取 JSON 数据的 HTTP 请求。您可以从 cURL 命令导入。',
   'curlToRss.step1.curlCommand': 'Curl 命令 (可选 - 粘贴到此处并点击导入)',
   'curlToRss.step1.import': '导入',
   'curlToRss.step1.method': '方法',
@@ -19,7 +21,8 @@ export default {
   'curlToRss.step1.add': '添加',
   'curlToRss.step1.fetchAndNext': '获取并下一步',
   'curlToRss.step2.responseJson': '响应 JSON',
-  'curlToRss.step2.alert': '定义选择器以提取 Feed 条目。使用点号表示法 (例如 <code>.data.items</code>)。',
+  'curlToRss.step2.alert':
+    '定义选择器以提取 Feed 条目。使用点号表示法 (例如 <code>.data.items</code>)。',
   'curlToRss.step2.iteration': '迭代',
   'curlToRss.step2.itemsIterator': '条目迭代器 (例如 .data.items 或 .items[])',
   'curlToRss.step2.itemFields': '条目字段 (相对于迭代器)',

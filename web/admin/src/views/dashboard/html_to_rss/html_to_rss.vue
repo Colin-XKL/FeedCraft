@@ -1,9 +1,6 @@
 <template>
   <div class="py-8 px-16">
-    <x-header
-      title="HTML to RSS"
-      description="HTML to RSS"
-    ></x-header>
+    <x-header title="HTML to RSS" description="HTML to RSS"></x-header>
 
     <div class="content-wrapper">
       <a-card class="wizard-card">
@@ -332,22 +329,17 @@
                 :title="$t('htmlToRss.step4.summary')"
                 bordered
               >
-                <a-descriptions-item
-                  :label="$t('htmlToRss.step4.sourceUrl')"
-                  >{{ url }}</a-descriptions-item
-                >
-                <a-descriptions-item
-                  :label="$t('htmlToRss.step4.feedTitle')"
-                  >{{ feedMeta.title }}</a-descriptions-item
-                >
-                <a-descriptions-item
-                  :label="$t('htmlToRss.step4.itemCount')"
-                  >{{
-                    $t('htmlToRss.step4.itemCount.value', {
-                      count: parsedItems.length,
-                    })
-                  }}</a-descriptions-item
-                >
+                <a-descriptions-item :label="$t('htmlToRss.step4.sourceUrl')">{{
+                  url
+                }}</a-descriptions-item>
+                <a-descriptions-item :label="$t('htmlToRss.step4.feedTitle')">{{
+                  feedMeta.title
+                }}</a-descriptions-item>
+                <a-descriptions-item :label="$t('htmlToRss.step4.itemCount')">{{
+                  $t('htmlToRss.step4.itemCount.value', {
+                    count: parsedItems.length,
+                  })
+                }}</a-descriptions-item>
               </a-descriptions>
 
               <a-divider />
@@ -558,7 +550,7 @@
           return;
         }
         Message.success(
-          t('htmlToRss.msg.extracted', { count: parsedItems.value.length })
+          t('htmlToRss.msg.extracted', { count: parsedItems.value.length }),
         );
         // Do not auto-advance. Let user check preview first.
         nextTick(() => {
@@ -620,9 +612,7 @@
       Message.success(t('htmlToRss.msg.saveSuccess'));
       router.push({ name: 'CustomRecipe' }); // Navigate to custom recipe page
     } catch (err: any) {
-      Message.error(
-        t('htmlToRss.msg.saveFailed', { msg: err.message || err })
-      );
+      Message.error(t('htmlToRss.msg.saveFailed', { msg: err.message || err }));
     } finally {
       saving.value = false;
     }
@@ -645,7 +635,7 @@
     const fullSelector = getCssSelector(
       target,
       doc || undefined,
-      isItemSelector
+      isItemSelector,
     );
 
     if (!doc) return;
@@ -657,11 +647,11 @@
         Message.success(
           t('htmlToRss.msg.matchedItems', {
             count: matches.length,
-          })
+          }),
         );
       } catch {
         Message.success(
-          t('htmlToRss.msg.setItemSelector', { selector: fullSelector })
+          t('htmlToRss.msg.setItemSelector', { selector: fullSelector }),
         );
       }
       currentTargetField.value = 'title_selector';
@@ -697,7 +687,7 @@
             let selector = curr.tagName.toLowerCase();
             if (curr.classList.length > 0) {
               const validClasses = Array.from(curr.classList).filter(
-                (c) => !IGNORED_CLASSES.includes(c)
+                (c) => !IGNORED_CLASSES.includes(c),
               );
               if (validClasses.length > 0)
                 selector += `.${CSS.escape(validClasses[0])}`;
@@ -708,7 +698,7 @@
 
           config[currentTargetField.value] = relPath.join(' ');
           Message.success(
-            t('htmlToRss.msg.setRelativePath', { path: relPath.join(' ') })
+            t('htmlToRss.msg.setRelativePath', { path: relPath.join(' ') }),
           );
         }
       } else {

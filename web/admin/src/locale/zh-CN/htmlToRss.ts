@@ -17,7 +17,8 @@ export default {
   'htmlToRss.step2.pagePreview': '页面预览',
   'htmlToRss.step2.selectionModeOn': '选择模式开启',
   'htmlToRss.step2.enhanceMode': '增强模式',
-  'htmlToRss.step2.enhanceMode.tooltip': '如果在没有开启enhance mode 的情况下, 预览页面显示不正常, 和自己在浏览器单独窗口里面看到的页面不一致, 说明页面的主要内容是js渲染的, 需要启用enhance mode 才能正常使用feedcraft 的html to rss 功能生成rss',
+  'htmlToRss.step2.enhanceMode.tooltip':
+    '如果在没有开启enhance mode 的情况下, 预览页面显示不正常, 和自己在浏览器单独窗口里面看到的页面不一致, 说明页面的主要内容是js渲染的, 需要启用enhance mode 才能正常使用feedcraft 的html to rss 功能生成rss',
   'htmlToRss.step2.alert.l1': '1. 点击 "拾取" 并在预览中选择一个元素。',
   'htmlToRss.step2.alert.l2': '2. 点击 "运行预览" 以验证提取的数据。',
   'htmlToRss.step2.card1.title': '1. 列表项 (必填)',
@@ -68,8 +69,7 @@ export default {
   'htmlToRss.msg.saveFailed': '保存配方失败：{msg}',
   'htmlToRss.msg.pickInfo': '在预览中点击元素以拾取选择器：{field}',
   'htmlToRss.msg.clickPickFirst': '请先点击右侧的 "拾取" 按钮。',
-  'htmlToRss.msg.matchedItems':
-    '匹配到 {count} 个项目',
+  'htmlToRss.msg.matchedItems': '匹配到 {count} 个项目',
   'htmlToRss.msg.setItemSelector': '设置项目选择器：{selector}',
   'htmlToRss.msg.setListItemFirst': '请先设置列表项选择器！',
   'htmlToRss.msg.selectedContainer': '选择了项目容器本身。',

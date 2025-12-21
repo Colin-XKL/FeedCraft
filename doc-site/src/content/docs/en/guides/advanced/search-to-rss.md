@@ -21,15 +21,17 @@ FeedCraft includes a **Search to RSS** tool that allows you to turn search queri
 ### Step 2: Preview Results
 
 The system will fetch results using the configured search provider.
--   Review the list of found items (Title, Date, Link, Description).
--   If the results look correct, click **Next Step**.
+
+- Review the list of found items (Title, Date, Link, Description).
+- If the results look correct, click **Next Step**.
 
 ### Step 3: Feed Metadata
 
 Customize how this feed appears in your RSS reader:
--   **Feed Title**: Defaults to "Search: [Query]".
--   **Feed Description**: A brief description.
--   **Site Link**: Link to the search results page (e.g. Google Search URL).
+
+- **Feed Title**: Defaults to "Search: [Query]".
+- **Feed Description**: A brief description.
+- **Site Link**: Link to the search results page (e.g. Google Search URL).
 
 ### Step 4: Save Recipe
 

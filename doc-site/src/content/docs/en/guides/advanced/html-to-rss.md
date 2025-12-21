@@ -10,6 +10,7 @@ FeedCraft includes a visual **HTML to RSS Wizard** that allows you to create RSS
 ## Overview
 
 The HTML to RSS tool allows you to:
+
 1.  **Fetch** a webpage's content.
 2.  **Select** elements visually to define what constitutes a feed item (title, link, date, content).
 3.  **Preview** the generated feed items immediately.
@@ -29,28 +30,29 @@ The HTML to RSS tool allows you to:
 This step allows you to map HTML elements to RSS feed fields.
 
 1.  **Page Preview**: The left pane shows the rendered webpage.
-    *   **Enhanced Mode**: If the preview looks different from what you see in your browser (e.g., missing content), it likely means the page uses JavaScript. Toggle "Enhanced Mode" to use a headless browser to fetch and render the page.
-    *   **Selection Mode**: When active (indicated by a blue tag), clicking elements in the preview will generate selectors.
-    *   **Keyboard Shortcuts**: Use `Arrow Up` to select the parent element and `Arrow Down` to select the first child element. This is useful for fine-tuning your selection. You can also view these shortcuts by hovering over the help icon in the preview pane.
+    - **Enhanced Mode**: If the preview looks different from what you see in your browser (e.g., missing content), it likely means the page uses JavaScript. Toggle "Enhanced Mode" to use a headless browser to fetch and render the page.
+    - **Selection Mode**: When active (indicated by a blue tag), clicking elements in the preview will generate selectors.
+    - **Keyboard Shortcuts**: Use `Arrow Up` to select the parent element and `Arrow Down` to select the first child element. This is useful for fine-tuning your selection. You can also view these shortcuts by hovering over the help icon in the preview pane.
 2.  **List Item Selector (Required)**:
-    -   Click the **Pick** button next to "CSS Selector".
-    -   In the preview pane, click on a container element that represents a *single article* or item in the list.
-    -   The system will attempt to auto-calculate a CSS selector.
+    - Click the **Pick** button next to "CSS Selector".
+    - In the preview pane, click on a container element that represents a _single article_ or item in the list.
+    - The system will attempt to auto-calculate a CSS selector.
 3.  **Field Selectors**:
-    -   Once the Item Selector is set, you can map the relative fields.
-    -   **Title**: Click Pick and select the element containing the title text.
-    -   **Link**: Click Pick and select the element containing the article URL (usually an `<a>` tag).
-    -   **Date**: (Optional) Pick the date element.
-    -   **Description**: (Optional) Pick the element containing the summary or full content.
+    - Once the Item Selector is set, you can map the relative fields.
+    - **Title**: Click Pick and select the element containing the title text.
+    - **Link**: Click Pick and select the element containing the article URL (usually an `<a>` tag).
+    - **Date**: (Optional) Pick the date element.
+    - **Description**: (Optional) Pick the element containing the summary or full content.
 4.  **Run Preview**: Click this button to test your selectors. The parsed items will appear in the right-hand panel.
 
 ### Step 3: Feed Metadata
 
 Provide the metadata for your new RSS feed:
--   **Feed Title**: The name of the feed.
--   **Feed Description**: A short description.
--   **Site Link**: The URL of the original website.
--   **Author Info**: (Optional) Author name and email.
+
+- **Feed Title**: The name of the feed.
+- **Feed Description**: A short description.
+- **Site Link**: The URL of the original website.
+- **Author Info**: (Optional) Author name and email.
 
 ### Step 4: Save Recipe
 

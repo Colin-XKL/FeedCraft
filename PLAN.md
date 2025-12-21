@@ -5,6 +5,7 @@
 **现状**：FeedCraft 目前作为一个“加工中间件”，强依赖于现有的 RSS URL 输入。
 **痛点**：用户无法直接将 HTML 网页、JSON API 或搜索结果转换为 RSS，限制了使用场景。
 **目标**：将核心架构升级为 **通用生成器 (Universal Generator)**。
+
 - **输入层**：支持任意来源（RSS, HTML, JSON, Search Query）。
 - **处理层**：保留并复用现有的 CraftAtom 强大加工能力。
 - **设计原则**：保持架构的简洁性，通过组合模式实现高扩展性。
@@ -17,8 +18,8 @@
 **Registry Factory + Compositional Pipeline**。
 
 1.  **正交解耦 (Orthogonality)**：将“获取数据 (Fetch)”与“解析数据 (Parse)”分离。
-    - *Fetcher* 负责网络 IO，屏蔽 HTTP/cURL/API 差异。
-    - *Parser* 负责数据清洗，屏蔽 HTML/JSON/Text 差异。
+    - _Fetcher_ 负责网络 IO，屏蔽 HTTP/cURL/API 差异。
+    - _Parser_ 负责数据清洗，屏蔽 HTML/JSON/Text 差异。
 2.  **流水线模式 (Pipeline)**：一个标准的源生成过程 = `Fetcher` + `Parser`。
 3.  **配置驱动 (Configuration Driven)**：所有源的行为完全由 JSON 配置定义，便于存储和前端生成。
 
@@ -32,13 +33,13 @@
 graph LR
     Config[Source Config] --> Factory[Source Factory]
     Factory -->|Build| Source[Source Instance]
-  
+
     subgraph "Source Execution (Pipeline)"
         Source --> Fetcher
         Fetcher -->|[]byte| Parser
         Parser -->|Standard Feed| Output
     end
-  
+
     Output --> CraftFlow[CraftFlow (Middleware)]
     CraftFlow --> FinalRSS
 ```
@@ -103,7 +104,7 @@ func (p *PipelineSource) Generate(ctx context.Context) (*gofeed.Feed, error) {
     }
     // 3. 应用元数据覆盖 (可选)
     p.applyFeedMetaOverrides(feed)
-    
+
     return feed, nil
 }
 ```
@@ -148,6 +149,7 @@ type HtmlParserConfig struct {
 ## 5. 开发阶段规划 (Phased Roadmap)
 
 ### Phase 1: 基础设施重构 (Foundation) [已完成]
+
 **状态**：核心迁移已完成，数据库已升级，API 已重构。
 
 1.  **数据库迁移（蓝绿部署策略）**：
@@ -164,6 +166,7 @@ type HtmlParserConfig struct {
     - 核心处理逻辑 `ProcessRecipeByID` 已更新为通过 Factory 创建 Source 并生成 Feed。
 
 ### Phase 2: 通用能力构建 (Generic Capabilities) [进行中]
+
 **目标**：实现 `PipelineSource` 模式，并落地 HTML 和 JSON 场景。
 
 1.  **实现通用 Fetcher**：
@@ -177,6 +180,7 @@ type HtmlParserConfig struct {
     - `json` 类型：待实现。
 
 ### Phase 3: 高级场景与 AI (Advanced & AI) [规划中]
+
 **目标**：落地 Search/LLM 场景，利用 AI 能力生成 Feed。
 
 1.  **Search Fetcher**：
@@ -185,6 +189,7 @@ type HtmlParserConfig struct {
     - 实现 `SearchResultParser`。
 
 ### Phase 4: 前端适配 (Frontend Adaptation) [规划中]
+
 **目标**：让用户能方便地配置这些复杂的参数。
 
 1.  **动态表单**：

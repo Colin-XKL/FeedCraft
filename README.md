@@ -68,7 +68,7 @@ https://feed-craft.colinx.one
 例如, 现在你想要阅读这个RSS源 `https://feeds.feedburner.com/visualcapitalist`, 但是由于是全英文的不方便快速略读,
 使用FeedCraft对标题进行翻译,
 那么只需要将订阅地址改成
-`https://feed-craft.colinx.one/craft/translate-title?input_url=https://feeds.feedburner.com/visualcapitalist`  即可.
+`https://feed-craft.colinx.one/craft/translate-title?input_url=https://feeds.feedburner.com/visualcapitalist` 即可.
 
 (部分RSS订阅软件不会自动进行字符转义, 你可能需要把 input_url 后面的内容进行手动转义,
 结果为
@@ -81,7 +81,7 @@ https://feed-craft.colinx.one
 - 全英文，无全文
   https://ourworldindata.org/atom.xml
 
-*注意: Demo站点仅供体验使用
+\*注意: Demo站点仅供体验使用
 
 ## 部署
 
@@ -100,7 +100,7 @@ services:
     container_name: feed-craft
     restart: always
     ports:
-      - "10088:80"  # 10088可替换为任何你想使用的端口
+      - "10088:80" # 10088可替换为任何你想使用的端口
     volumes:
       - ./feed-craft-db:/usr/local/feed-craft/db # db file
     environment:
@@ -123,7 +123,7 @@ services:
     container_name: feed-craft
     restart: always
     ports:
-      - "10088:80"  # 10088可替换为任何你想使用的端口
+      - "10088:80" # 10088可替换为任何你想使用的端口
     volumes:
       - ./feed-craft-db:/usr/local/feed-craft/db # db file
     environment:
@@ -159,6 +159,7 @@ services:
    - Task (安装方式: [https://taskfile.dev/installation/](https://taskfile.dev/installation/))
 
 2. 复制环境变量文件：
+
    ```bash
    cp .env.example .env
    ```
@@ -210,5 +211,3 @@ GPLv3
 
 **自定义recipe, 指定使用哪个craft atom 处理哪个RSS源**
 <img width="1900" alt="Xnip2024-08-08_00-48-34" src="https://github.com/user-attachments/assets/5794de1d-28b6-45ff-8737-16f8adc6ed8a">
-
-

@@ -79,16 +79,16 @@
     isLoading.value = true;
     try {
       originalFeedContent.value = await fetchFeed(
-        `${baseUrl}/craft/proxy?input_url=${encodeURIComponent(feedUrl.value)}`
+        `${baseUrl}/craft/proxy?input_url=${encodeURIComponent(feedUrl.value)}`,
       );
       craftAppliedFeedContent.value = await fetchFeed(
         `${baseUrl}/craft/${selectedCraft.value}?input_url=${encodeURIComponent(
-          feedUrl.value
-        )}`
+          feedUrl.value,
+        )}`,
       );
     } catch (error) {
       Message.warning(
-        error?.toString() ?? t('feedCompare.message.unknownError')
+        error?.toString() ?? t('feedCompare.message.unknownError'),
       );
       console.error(error);
     } finally {

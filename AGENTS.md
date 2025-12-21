@@ -78,6 +78,7 @@ pnpm run lint-staged
 ## Database Schema
 
 The application uses SQLite with the following main entities:
+
 - `users`: User management
 - `craft_atoms`: Custom craft atom definitions
 - `craft_flows`: Craft flow configurations
@@ -88,6 +89,7 @@ Database migrations are handled automatically in `dao.MigrateDatabases()`.
 ## Built-in Craft Templates
 
 The system includes numerous built-in craft templates in `internal/craft/entry.go`:
+
 - `proxy`: Simple RSS proxy
 - `limit`: Limit number of items
 - `fulltext`: Extract full article content

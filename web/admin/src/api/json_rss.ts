@@ -29,26 +29,29 @@ export interface SearchFetchReq {
   query: string;
 }
 
-export function parseCurl(curlCommand: string): Promise<APIResponse<JsonFetchReq>> {
-  return axios.post<APIResponse<JsonFetchReq>>(
-    '/api/admin/tools/json/parse_curl',
-    {
+export function parseCurl(
+  curlCommand: string,
+): Promise<APIResponse<JsonFetchReq>> {
+  return axios
+    .post<APIResponse<JsonFetchReq>>('/api/admin/tools/json/parse_curl', {
       curl_command: curlCommand,
-    }
-  ).then(res => res.data);
+    })
+    .then((res) => res.data);
 }
 
 export function fetchJson(req: JsonFetchReq): Promise<APIResponse<string>> {
-  return axios.post<APIResponse<string>>('/api/admin/tools/json/fetch', req).then(res => res.data);
+  return axios
+    .post<APIResponse<string>>('/api/admin/tools/json/fetch', req)
+    .then((res) => res.data);
 }
 
-export function parseJsonRss(req: JsonParseReq): Promise<APIResponse<ParsedItem[]>> {
-  return axios.post<APIResponse<ParsedItem[]>>(
-    '/api/admin/tools/json/parse',
-    req
-  ).then(res => res.data);
+export function parseJsonRss(
+  req: JsonParseReq,
+): Promise<APIResponse<ParsedItem[]>> {
+  return axios
+    .post<APIResponse<ParsedItem[]>>('/api/admin/tools/json/parse', req)
+    .then((res) => res.data);
 }
 export function previewSearch(req: SearchFetchReq) {
   return axios.post<ParsedItem[]>('/api/admin/tools/search/preview', req);
 }
-
