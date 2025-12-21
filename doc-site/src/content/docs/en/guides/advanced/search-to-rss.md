@@ -3,6 +3,10 @@ title: Search to RSS
 description: Generate RSS feeds from search queries using AI providers.
 ---
 
+## Prerequisites
+
+Before using the Search to RSS feature, you need to configure a search provider in the admin settings. See the [Search Provider Configuration Guide](/docs/guides/advanced/customization) for setup instructions.
+
 FeedCraft includes a **Search to RSS** tool that allows you to turn search queries into RSS feeds. This is useful for tracking news, topics, or brand mentions using configured search providers (e.g., SearXNG, Bing, Google).
 
 ## How to use
@@ -38,4 +42,4 @@ Customize how this feed appears in your RSS reader:
 Once saved, the recipe is stored as a **Custom Recipe**. You can manage it in the **Custom Recipes** dashboard.
 
 Your new feed will be available at:
-`http://your-feedcraft-instance/rss/custom/{recipe-unique-id}`
+\`http://your-feedcraft-instance/rss/custom/{recipe-unique-id}\`

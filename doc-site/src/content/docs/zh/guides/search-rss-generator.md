@@ -3,6 +3,10 @@ title: 搜索转 RSS
 description: 使用 AI 提供商通过搜索查询生成 RSS 订阅源。
 ---
 
+## 前提条件
+
+在使用搜索转 RSS 功能之前，您需要在管理员设置中配置搜索提供商。请参阅 [搜索提供商配置指南](/docs/zh/guides/advanced/customization) 获取设置说明。
+
 FeedCraft 包含一个 **搜索转 RSS (Search to RSS)** 工具，允许你将搜索查询转换为 RSS 订阅源。这对于使用配置的搜索提供商（例如 SearXNG, Bing, Google）追踪新闻、话题或品牌提及非常有用。
 
 ## 如何使用
@@ -38,4 +42,4 @@ FeedCraft 包含一个 **搜索转 RSS (Search to RSS)** 工具，允许你将�
 保存后，该配方将作为 **自定义配方 (Custom Recipe)** 存储。你可以在 **Custom Recipes** 仪表板中管理它。
 
 你的新订阅源将通过以下地址访问：
-`http://your-feedcraft-instance/rss/custom/{recipe-unique-id}`
+\`http://your-feedcraft-instance/rss/custom/{recipe-unique-id}\`
