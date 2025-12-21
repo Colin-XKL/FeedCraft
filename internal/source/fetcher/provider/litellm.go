@@ -2,13 +2,12 @@ package provider
 
 import (
 	"FeedCraft/internal/config"
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"strings"
+	"time"
+
+	"github.com/go-resty/resty/v2"
 )
 
 func init() {
@@ -17,10 +16,14 @@ func init() {
 
 type LiteLLMProvider struct {
 	Config *config.SearchProviderConfig
+	Client *resty.Client
 }
 
 func NewLiteLLMProvider(cfg *config.SearchProviderConfig) SearchProvider {
-	return &LiteLLMProvider{Config: cfg}
+	return &LiteLLMProvider{
+		Config: cfg,
+		Client: resty.New().SetTimeout(10 * time.Second),
+	}
 }
 
 func (p *LiteLLMProvider) Fetch(ctx context.Context, query string) ([]byte, error) {
@@ -40,39 +43,36 @@ func (p *LiteLLMProvider) Fetch(ctx context.Context, query string) ([]byte, erro
 		url += p.Config.LiteLLM.SearchToolName
 	}
 
+	// Lazy initialization for safety
+	if p.Client == nil {
+		p.Client = resty.New().SetTimeout(10 * time.Second)
+	}
+
 	// Prepare Request Body
 	reqBody := map[string]interface{}{
 		"query": query,
 	}
 
-	jsonBody, err := json.Marshal(reqBody)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request body: %w", err)
-	}
+	req := p.Client.R().
+		SetContext(ctx).
+		SetBody(reqBody)
 
-	req, err := http.NewRequestWithContext(ctx, "POST", url, bytes.NewBuffer(jsonBody))
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	req.Header.Set("Content-Type", "application/json")
 	if p.Config.APIKey != "" {
-		req.Header.Set("Authorization", "Bearer "+p.Config.APIKey)
+		req.SetHeader("Authorization", "Bearer "+p.Config.APIKey)
 	}
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	// Resty automatically sets Content-Type to application/json when SetBody is used with a map/struct
+
+	resp, err := req.Post(url)
 	if err != nil {
 		return nil, fmt.Errorf("search request failed: %w", err)
 	}
-	defer func() { _ = resp.Body.Close() }()
 
-	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("search provider returned status %d: %s", resp.StatusCode, string(body))
+	if resp.IsError() {
+		return nil, fmt.Errorf("search provider returned status %d: %s", resp.StatusCode(), resp.String())
 	}
 
-	return io.ReadAll(resp.Body)
+	return resp.Body(), nil
 }
 
 func (p *LiteLLMProvider) GetDefaultParserConfig() *config.JsonParserConfig {
