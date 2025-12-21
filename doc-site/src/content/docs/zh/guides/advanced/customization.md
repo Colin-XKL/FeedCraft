@@ -1,5 +1,7 @@
 ---
 title: 高级定制
+sidebar:
+  order: 1
 ---
 
 对于高级用户，FeedCraft 提供了一个管理后台来定制 RSS 的处理流程。
