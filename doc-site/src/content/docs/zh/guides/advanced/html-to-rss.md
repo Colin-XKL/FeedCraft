@@ -1,11 +1,11 @@
 ---
-title: RSS 生成器
+title: 从HTML网页生成RSS
 description: 使用可视化选择器将任意网页转换为 RSS 订阅源。
 ---
 
 FeedCraft 内置了可视化的 **RSS 生成向导 (RSS Generator Wizard)**，允许你为那些没有提供 RSS 的网站创建订阅源。
 
-> **注意：** 此工具专为 HTML 页面设计。如果你需要处理 JSON API，请使用 [JSON RSS 生成器](/zh/guides/json-rss-generator/)。
+> **注意：** 此工具专为 HTML 页面设计。如果你需要处理 JSON API，请使用 [从CURL语句生成RSS](/zh/guides/advanced/curl-to-rss/)。
 
 ## 概览
 
@@ -31,7 +31,7 @@ RSS 生成器允许你：
 1.  **页面预览 (Page Preview)**：左侧窗格显示渲染后的网页。
     *   **增强模式 (Enhanced Mode)**：如果预览内容与你在浏览器中看到的不同（例如内容缺失），这通常意味着页面使用 JavaScript 渲染。切换“增强模式”以使用无头浏览器来获取和渲染页面。
     *   **选择模式 (Selection Mode)**：当处于激活状态时（由蓝色标签指示），点击预览中的元素将生成选择器。
-    *   **键盘快捷键 (Keyboard Shortcuts)**：使用 `Arrow Up` (上箭头) 选择父元素，使用 `Arrow Down` (下箭头) 选择第一个子元素。这对于微调选择非常有用。
+    *   **键盘快捷键 (Keyboard Shortcuts)**：使用 `Arrow Up` (上箭头) 选择父元素，使用 `Arrow Down` (下箭头) 选择第一个子元素。这对于微调选择非常有用。你也可以通过悬停在预览窗格中的帮助图标上来查看这些快捷键。
 2.  **列表项选择器 (List Item Selector) - 必填**：
     -   点击 "CSS Selector" 旁边的 **Pick** 按钮。
     -   在预览窗格中，点击代表列表中*单个文章*或条目的容器元素。

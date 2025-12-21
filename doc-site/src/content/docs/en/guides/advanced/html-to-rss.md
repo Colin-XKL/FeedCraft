@@ -5,7 +5,7 @@ description: Turn any webpage into an RSS feed using the visual selector.
 
 FeedCraft includes a visual **HTML to RSS Wizard** that allows you to create RSS feeds from websites that don't provide them natively.
 
-> **Note:** This tool is designed for HTML pages. If you need to process a JSON API, use the [CURL to RSS](/guides/curl-to-rss/) instead.
+> **Note:** This tool is designed for HTML pages. If you need to process a JSON API, use the [CURL to RSS](/en/guides/advanced/curl-to-rss/) instead.
 
 ## Overview
 
@@ -31,7 +31,7 @@ This step allows you to map HTML elements to RSS feed fields.
 1.  **Page Preview**: The left pane shows the rendered webpage.
     *   **Enhanced Mode**: If the preview looks different from what you see in your browser (e.g., missing content), it likely means the page uses JavaScript. Toggle "Enhanced Mode" to use a headless browser to fetch and render the page.
     *   **Selection Mode**: When active (indicated by a blue tag), clicking elements in the preview will generate selectors.
-    *   **Keyboard Shortcuts**: Use `Arrow Up` to select the parent element and `Arrow Down` to select the first child element. This is useful for fine-tuning your selection.
+    *   **Keyboard Shortcuts**: Use `Arrow Up` to select the parent element and `Arrow Down` to select the first child element. This is useful for fine-tuning your selection. You can also view these shortcuts by hovering over the help icon in the preview pane.
 2.  **List Item Selector (Required)**:
     -   Click the **Pick** button next to "CSS Selector".
     -   In the preview pane, click on a container element that represents a *single article* or item in the list.

@@ -2,6 +2,7 @@ export default {
   'menu.customRecipe': 'Custom Recipe',
   'customRecipe.description':
     'Manage custom recipes to generate RSS feeds from various sources.',
+  'customRecipe.viewConfig': 'View Configuration',
   'customRecipe.query': 'Query',
   'customRecipe.create': 'Create',
   'customRecipe.quickCreate': 'Quick Create',

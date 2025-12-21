@@ -1,5 +1,7 @@
 ---
 title: High Level Customization
+sidebar:
+  order: 1
 ---
 
 For power users, FeedCraft offers a dashboard to customize how feeds are processed.

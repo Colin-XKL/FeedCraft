@@ -31,6 +31,12 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		ParamTemplateDefine: limitCraftParamTmpl,
 		OptionFunc:          limitCraftLoadParams,
 	}
+	sysCraftTempList["time-limit"] = CraftTemplate{
+		Name:                "time-limit",
+		Description:         "根据时间限制文章保留天数",
+		ParamTemplateDefine: timeLimitCraftParamTmpl,
+		OptionFunc:          timeLimitCraftLoadParams,
+	}
 	sysCraftTempList["keyword"] = CraftTemplate{
 		Name:                "keyword",
 		Description:         "关键词过滤",
