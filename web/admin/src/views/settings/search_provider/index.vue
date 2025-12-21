@@ -1,5 +1,5 @@
 <template>
-  <div  class="py-8 px-16">
+  <div class="py-8 px-16">
     <a-card :title="$t('settings.searchProvider.title')">
       <a-alert class="mb-4">
         {{ $t('settings.searchProvider.alert') }}
@@ -14,9 +14,12 @@
         >
           <a-select
             v-model="form.provider"
-            :placeholder="$t('settings.searchProvider.placeholder.selectProvider')"
+            :placeholder="
+              $t('settings.searchProvider.placeholder.selectProvider')
+            "
           >
             <a-option value="litellm">LiteLLM Proxy</a-option>
+            <a-option value="searxng">SearXNG</a-option>
           </a-select>
         </a-form-item>
 
@@ -26,10 +29,7 @@
           required
           :tooltip="$t('settings.searchProvider.apiUrl.tooltip')"
         >
-          <a-input
-            v-model="form.api_url"
-            :placeholder="$t('settings.searchProvider.placeholder.apiUrl')"
-          />
+          <a-input v-model="form.api_url" :placeholder="apiUrlPlaceholder" />
         </a-form-item>
 
         <a-form-item
@@ -50,7 +50,7 @@
         >
           <a-input
             v-model="form.search_tool_name"
-            :placeholder="$t('settings.searchProvider.placeholder.toolName')"
+            :placeholder="toolNamePlaceholder"
           />
         </a-form-item>
 
@@ -65,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, reactive, onMounted } from 'vue';
+  import { ref, reactive, onMounted, computed } from 'vue';
   import { Message } from '@arco-design/web-vue';
   import axios from 'axios';
   import { useI18n } from 'vue-i18n';
@@ -77,6 +77,20 @@
     api_key: '',
     provider: 'litellm',
     search_tool_name: '',
+  });
+
+  const apiUrlPlaceholder = computed(() => {
+    if (form.provider === 'searxng') {
+      return 'http://localhost:8080';
+    }
+    return t('settings.searchProvider.placeholder.apiUrl');
+  });
+
+  const toolNamePlaceholder = computed(() => {
+    if (form.provider === 'searxng') {
+      return 'google,bing'; // Example engines
+    }
+    return t('settings.searchProvider.placeholder.toolName');
   });
 
   const saving = ref(false);

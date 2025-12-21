@@ -27,16 +27,22 @@ export default {
     '10 gradient colors generated according to the theme color',
   'settings.menuFromServer': 'Menu From Server',
   'settings.searchProvider.title': 'Search Provider Configuration',
-  'settings.searchProvider.alert': 'Configure the search provider used by the "Search to RSS" feature. Currently supports LiteLLM-compatible search proxies.',
+  'settings.searchProvider.alert':
+    'Configure the search provider used by the "Search to RSS" feature. Supports LiteLLM (Proxy) and SearXNG.',
   'settings.searchProvider.provider': 'Provider Implementation',
-  'settings.searchProvider.provider.tooltip': "The internal provider logic to use. Currently only 'litellm' is supported.",
+  'settings.searchProvider.provider.tooltip':
+    "The internal provider logic to use. Supports 'litellm' and 'searxng'.",
   'settings.searchProvider.apiUrl': 'API URL',
-  'settings.searchProvider.apiUrl.tooltip': 'The base URL of the search provider (e.g. http://litellm-proxy:4000).',
+  'settings.searchProvider.apiUrl.tooltip':
+    'The base URL of the search provider (e.g. http://litellm-proxy:4000 or http://searxng.local).',
   'settings.searchProvider.apiKey': 'API Key',
-  'settings.searchProvider.apiKey.tooltip': 'Optional API Key if the provider requires authentication.',
-  'settings.searchProvider.toolName': 'Tool Name',
-  'settings.searchProvider.toolName.tooltip': "The specific tool name to invoke (e.g. 'google-search', 'brave-search', 'perplexity'). This is appended to the URL or passed in the request depending on the provider.",
+  'settings.searchProvider.apiKey.tooltip':
+    'Optional API Key if the provider requires authentication.',
+  'settings.searchProvider.toolName': 'Tool Name / Engines',
+  'settings.searchProvider.toolName.tooltip':
+    "For LiteLLM: The specific tool name (e.g. 'google-search'). For SearXNG: Comma-separated engines (e.g. 'google,bing'). Leave empty for default.",
   'settings.searchProvider.save': 'Save Configuration',
+  'settings.searchProvider.configure': 'Configure Search Provider',
   'settings.searchProvider.msg.urlRequired': 'API URL is required',
   'settings.searchProvider.msg.saved': 'Configuration saved',
   'settings.searchProvider.msg.failed': 'Failed to save configuration',
