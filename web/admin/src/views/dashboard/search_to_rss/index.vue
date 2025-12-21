@@ -52,6 +52,14 @@
               >
                 {{ $t('searchToRss.step1.button') }} <icon-arrow-right />
               </a-button>
+              <div class="mt-4 text-gray-500 text-sm">
+                <router-link
+                  :to="{ name: 'SearchProvider' }"
+                  class="text-blue-500 hover:underline"
+                >
+                  {{ $t('settings.searchProvider.configure') }}
+                </router-link>
+              </div>
             </div>
           </a-form>
         </div>
@@ -60,9 +68,7 @@
         <div v-show="currentStep === 2" class="step-content flex flex-col">
           <div class="flex-1 overflow-y-auto mb-4">
             <a-alert type="success" class="mb-4">
-              {{
-                $t('searchToRss.step2.alert', { count: parsedItems.length })
-              }}
+              {{ $t('searchToRss.step2.alert', { count: parsedItems.length }) }}
             </a-alert>
             <a-list :data="parsedItems" :bordered="false">
               <template #item="{ item }">
@@ -322,7 +328,9 @@
       router.push({ name: 'CustomRecipe' });
     } catch (err: any) {
       console.error(err);
-      Message.error(t('searchToRss.msg.saveFailed', { msg: err.message || err }));
+      Message.error(
+        t('searchToRss.msg.saveFailed', { msg: err.message || err })
+      );
     } finally {
       saving.value = false;
     }

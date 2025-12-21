@@ -1,5 +1,5 @@
 <template>
-  <div class="container">
+  <div class="py-8 px-16">
     <a-card :title="$t('settings.searchProvider.title')">
       <a-alert class="mb-4">
         {{ $t('settings.searchProvider.alert') }}
@@ -14,9 +14,12 @@
         >
           <a-select
             v-model="form.provider"
-            :placeholder="$t('settings.searchProvider.placeholder.selectProvider')"
+            :placeholder="
+              $t('settings.searchProvider.placeholder.selectProvider')
+            "
           >
             <a-option value="litellm">LiteLLM Proxy</a-option>
+            <a-option value="searxng">SearXNG</a-option>
           </a-select>
         </a-form-item>
 
@@ -26,10 +29,7 @@
           required
           :tooltip="$t('settings.searchProvider.apiUrl.tooltip')"
         >
-          <a-input
-            v-model="form.api_url"
-            :placeholder="$t('settings.searchProvider.placeholder.apiUrl')"
-          />
+          <a-input v-model="form.api_url" :placeholder="apiUrlPlaceholder" />
         </a-form-item>
 
         <a-form-item
@@ -43,14 +43,29 @@
           />
         </a-form-item>
 
+        <!-- LiteLLM Specific -->
         <a-form-item
+          v-if="form.provider === 'litellm'"
           :label="$t('settings.searchProvider.toolName')"
-          field="search_tool_name"
+          field="litellm.search_tool_name"
           :tooltip="$t('settings.searchProvider.toolName.tooltip')"
         >
           <a-input
-            v-model="form.search_tool_name"
+            v-model="form.litellm.search_tool_name"
             :placeholder="$t('settings.searchProvider.placeholder.toolName')"
+          />
+        </a-form-item>
+
+        <!-- SearXNG Specific -->
+        <a-form-item
+          v-if="form.provider === 'searxng'"
+          :label="$t('settings.searchProvider.engines')"
+          field="searxng.engines"
+          :tooltip="$t('settings.searchProvider.engines.tooltip')"
+        >
+          <a-input
+            v-model="form.searxng.engines"
+            :placeholder="$t('settings.searchProvider.placeholder.engines')"
           />
         </a-form-item>
 
@@ -65,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, reactive, onMounted } from 'vue';
+  import { ref, reactive, onMounted, computed } from 'vue';
   import { Message } from '@arco-design/web-vue';
   import axios from 'axios';
   import { useI18n } from 'vue-i18n';
@@ -76,7 +91,19 @@
     api_url: '',
     api_key: '',
     provider: 'litellm',
-    search_tool_name: '',
+    litellm: {
+      search_tool_name: '',
+    },
+    searxng: {
+      engines: '',
+    },
+  });
+
+  const apiUrlPlaceholder = computed(() => {
+    if (form.provider === 'searxng') {
+      return 'http://localhost:8080';
+    }
+    return t('settings.searchProvider.placeholder.apiUrl');
   });
 
   const saving = ref(false);
@@ -84,12 +111,17 @@
   const loadConfig = async () => {
     try {
       const res = await axios.get('/api/admin/settings/search-provider');
-      if (res.data) {
-        const data = res.data || {};
-        form.api_url = data.api_url || '';
-        form.api_key = data.api_key || '';
-        form.provider = data.provider || 'litellm';
-        form.search_tool_name = data.search_tool_name || '';
+      const data = res.data?.data || {};
+
+      form.api_url = data.api_url || '';
+      form.api_key = data.api_key || '';
+      form.provider = data.provider || 'litellm';
+
+      if (data.litellm) {
+        form.litellm.search_tool_name = data.litellm.search_tool_name || '';
+      }
+      if (data.searxng) {
+        form.searxng.engines = data.searxng.engines || '';
       }
     } catch (err) {
       // ignore
@@ -107,7 +139,8 @@
         api_url: form.api_url,
         api_key: form.api_key,
         provider: form.provider,
-        search_tool_name: form.search_tool_name,
+        litellm: form.litellm,
+        searxng: form.searxng,
       });
       Message.success(t('settings.searchProvider.msg.saved'));
     } catch (err) {
