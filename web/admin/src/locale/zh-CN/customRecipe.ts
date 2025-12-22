@@ -35,4 +35,5 @@ export default {
   'customRecipe.form.error.invalidJson': 'JSON 格式无效',
   'customRecipe.form.placeholder.rssUrl': 'https://example.com/rss.xml',
   'customRecipe.form.placeholder.sourceConfig': '在此输入 JSON 配置',
+  'customRecipe.form.placeholder.craft': '选择工艺',
 };

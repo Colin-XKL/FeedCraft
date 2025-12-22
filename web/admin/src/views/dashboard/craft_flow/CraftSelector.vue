@@ -15,7 +15,7 @@
         }}</span>
         <template v-else>
           <!-- Multiple mode: tags -->
-          <template v-if="mode === 'multiple' && Array.isArray(localValue)">
+          <template v-if="mode === 'multiple'">
             <a-tag
               v-for="val in localValue"
               :key="val"
@@ -65,15 +65,12 @@
       </div>
 
       <a-tabs default-active-key="sys">
-        <a-tab-pane
-          key="sys"
-          :title="t('feedCompare.selectCraftFlow.tabs.system')"
-        >
+        <a-tab-pane v-for="tab in tabs" :key="tab.key" :title="tab.title">
           <div
             class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto p-1"
           >
             <div
-              v-for="item in filteredSysAtoms"
+              v-for="item in tab.items"
               :key="item.name"
               class="group border border-[var(--color-neutral-3)] rounded p-3 cursor-pointer hover:shadow-md transition-all relative flex flex-col bg-[var(--color-bg-2)]"
               :class="{
@@ -92,102 +89,26 @@
               >
                 {{ item.description || 'No description' }}
               </div>
+
+              <!-- Selection Number for Multiple Mode -->
               <div
-                v-if="isSelected(item.name)"
+                v-if="isSelected(item.name) && mode === 'multiple'"
+                class="absolute top-2 right-2 w-6 h-6 rounded-full bg-[rgb(var(--primary-6))] text-white flex items-center justify-center text-xs font-bold"
+              >
+                {{ getSelectionIndex(item.name) }}
+              </div>
+              <div
+                v-else-if="isSelected(item.name)"
                 class="absolute top-2 right-2 text-[rgb(var(--primary-6))]"
               >
                 <icon-check-circle-fill size="20" />
               </div>
             </div>
             <div
-              v-if="filteredSysAtoms.length === 0"
+              v-if="tab.items.length === 0"
               class="col-span-full text-center text-gray-400 py-8"
             >
-              No results found
-            </div>
-          </div>
-        </a-tab-pane>
-        <a-tab-pane
-          key="user"
-          :title="t('feedCompare.selectCraftFlow.tabs.user')"
-        >
-          <div
-            class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto p-1"
-          >
-            <div
-              v-for="item in filteredUserAtoms"
-              :key="item.name"
-              class="group border border-[var(--color-neutral-3)] rounded p-3 cursor-pointer hover:shadow-md transition-all relative flex flex-col bg-[var(--color-bg-2)]"
-              :class="{
-                '!border-[rgb(var(--primary-6))] !bg-[var(--color-primary-light-1)]':
-                  isSelected(item.name),
-              }"
-              @click="handleSelect(item.name)"
-            >
-              <div
-                class="font-bold text-base mb-1 break-all text-[var(--color-text-1)]"
-                >{{ item.name }}</div
-              >
-              <div
-                class="text-[var(--color-text-3)] text-xs line-clamp-3"
-                :title="item.description"
-              >
-                {{ item.description || 'No description' }}
-              </div>
-              <div
-                v-if="isSelected(item.name)"
-                class="absolute top-2 right-2 text-[rgb(var(--primary-6))]"
-              >
-                <icon-check-circle-fill size="20" />
-              </div>
-            </div>
-            <div
-              v-if="filteredUserAtoms.length === 0"
-              class="col-span-full text-center text-gray-400 py-8"
-            >
-              No results found
-            </div>
-          </div>
-        </a-tab-pane>
-        <a-tab-pane
-          key="flow"
-          :title="t('feedCompare.selectCraftFlow.tabs.flow')"
-        >
-          <div
-            class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[500px] overflow-y-auto p-1"
-          >
-            <div
-              v-for="item in filteredFlows"
-              :key="item.name"
-              class="group border border-[var(--color-neutral-3)] rounded p-3 cursor-pointer hover:shadow-md transition-all relative flex flex-col bg-[var(--color-bg-2)]"
-              :class="{
-                '!border-[rgb(var(--primary-6))] !bg-[var(--color-primary-light-1)]':
-                  isSelected(item.name),
-              }"
-              @click="handleSelect(item.name)"
-            >
-              <div
-                class="font-bold text-base mb-1 break-all text-[var(--color-text-1)]"
-                >{{ item.name }}</div
-              >
-              <div
-                class="text-[var(--color-text-3)] text-xs line-clamp-3"
-                :title="item.description"
-              >
-                {{ item.description || 'No description' }}
-              </div>
-              <div
-                v-if="isSelected(item.name)"
-                class="absolute top-2 right-2 text-[rgb(var(--primary-6))]"
-              >
-                <icon-check-circle-fill size="20" />
-              </div>
-            </div>
-            <div
-              v-if="filteredFlows.length === 0"
-              class="col-span-full text-center text-gray-400 py-8"
-            >
-              No results found
+              {{ t('common.noData') || 'No results found' }}
             </div>
           </div>
         </a-tab-pane>
@@ -205,6 +126,11 @@
   } from '@/api/craft_flow';
   import { listCraftAtoms } from '@/api/craft_atom';
   import { useI18n } from 'vue-i18n';
+  import {
+    IconCloseCircle,
+    IconDown,
+    IconCheckCircleFill,
+  } from '@arco-design/web-vue/es/icon';
 
   const { t } = useI18n();
 
@@ -237,12 +163,12 @@
   const craftAtomList = ref<{ name: string; description?: string }[]>([]);
 
   // Internal value to track selection
-  // Always store as array internally for easier handling, convert on emit if single
   const localValue = ref<string[]>([]);
 
   const hasSelection = computed(
     () => localValue.value && localValue.value.length > 0,
   );
+
   const displaySingleValue = computed(() => {
     if (localValue.value.length > 0) return localValue.value[0];
     return '';
@@ -279,23 +205,43 @@
     { immediate: true },
   );
 
-  // Filtering
-  const filterItems = (items: { name: string; description?: string }[]) => {
-    if (!searchText.value) return items;
-    const lower = searchText.value.toLowerCase();
-    return items.filter(
-      (item) =>
-        item.name.toLowerCase().includes(lower) ||
-        (item.description && item.description.toLowerCase().includes(lower)),
-    );
+  const filterAndSort = (items: { name: string; description?: string }[]) => {
+    let result = items;
+    if (searchText.value) {
+      const lower = searchText.value.toLowerCase();
+      result = items.filter(
+        (item) =>
+          item.name.toLowerCase().includes(lower) ||
+          (item.description && item.description.toLowerCase().includes(lower)),
+      );
+    }
+    return [...result].sort((a, b) => a.name.localeCompare(b.name));
   };
 
-  const filteredSysAtoms = computed(() => filterItems(sysCraftAtomList.value));
-  const filteredUserAtoms = computed(() => filterItems(craftAtomList.value));
-  const filteredFlows = computed(() => filterItems(craftFlows.value));
+  const tabs = computed(() => [
+    {
+      key: 'sys',
+      title: t('feedCompare.selectCraftFlow.tabs.system'),
+      items: filterAndSort(sysCraftAtomList.value),
+    },
+    {
+      key: 'user',
+      title: t('feedCompare.selectCraftFlow.tabs.user'),
+      items: filterAndSort(craftAtomList.value),
+    },
+    {
+      key: 'flow',
+      title: t('feedCompare.selectCraftFlow.tabs.flow'),
+      items: filterAndSort(craftFlows.value),
+    },
+  ]);
 
   const isSelected = (name: string) => {
     return localValue.value.includes(name);
+  };
+
+  const getSelectionIndex = (name: string) => {
+    return localValue.value.indexOf(name) + 1;
   };
 
   const emitUpdate = (val: string[]) => {
@@ -332,6 +278,7 @@
     if (idx > -1) {
       const newValue = [...localValue.value];
       newValue.splice(idx, 1);
+      localValue.value = newValue;
       emitUpdate(newValue);
     }
   };
