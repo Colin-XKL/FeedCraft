@@ -1,13 +1,12 @@
 <template>
-  <div class="container">
-    <Breadcrumb :items="['menu.tools', 'menu.dependencyStatus']" />
+  <div class="py-8 px-16">
     <a-card class="general-card" :title="$t('menu.dependencyStatus')">
       <template #extra>
         <a-button type="primary" :loading="loading" @click="handleCheck">
           <template #icon>
             <icon-refresh />
           </template>
-          Check Health
+          {{ $t('dependencyService.checkHealth') }}
         </a-button>
       </template>
       <a-list>
@@ -42,15 +41,17 @@
           </a-list-item-meta>
           <template #actions>
             <a-tag v-if="item.status === 'Healthy'" color="green">{{
-              item.status
+              $t('dependencyService.status.healthy')
             }}</a-tag>
             <a-tag v-else-if="item.status === 'Unhealthy'" color="red">{{
-              item.status
+              $t('dependencyService.status.unhealthy')
             }}</a-tag>
             <a-tag v-else-if="item.status === 'Configured'" color="blue">{{
-              item.status
+              $t('dependencyService.status.configured')
             }}</a-tag>
-            <a-tag v-else color="gray">{{ item.status }}</a-tag>
+            <a-tag v-else color="gray">{{
+              $t('dependencyService.status.notConfigured')
+            }}</a-tag>
             <span v-if="item.latency" class="latency">{{ item.latency }}</span>
           </template>
         </a-list-item>

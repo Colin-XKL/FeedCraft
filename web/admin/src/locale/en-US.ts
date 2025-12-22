@@ -1,8 +1,6 @@
 import localeMessageBox from '@/components/message-box/locale/en-US';
 import localeLogin from '@/views/login/locale/en-US';
 
-import localeWorkplace from '@/views/dashboard/workplace/locale/en-US';
-
 import localeSettings from './en-US/settings';
 import localeMenu from './en-US/menu';
 import localeCraftAtom from './en-US/craftAtom';
@@ -16,6 +14,7 @@ import localeUrlGenerator from './en-US/urlGenerator';
 import localeHtmlToRss from './en-US/htmlToRss';
 import localeCurlToRss from './en-US/curlToRss';
 import localeSearchToRss from './en-US/searchToRss';
+import localeDependencyService from './en-US/dependencyService';
 
 export default {
   ...localeSettings,
@@ -33,5 +32,5 @@ export default {
   ...localeHtmlToRss,
   ...localeCurlToRss,
   ...localeSearchToRss,
-  ...localeWorkplace,
+  ...localeDependencyService,
 };

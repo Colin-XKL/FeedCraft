@@ -4,8 +4,10 @@ import (
 	"FeedCraft/internal/config"
 	"encoding/json"
 	"fmt"
-	"github.com/mmcdole/gofeed"
 	"strings"
+	"time"
+
+	"github.com/mmcdole/gofeed"
 )
 
 type JsonParser struct {
@@ -35,7 +37,14 @@ func (p *JsonParser) Parse(data []byte) (*gofeed.Feed, error) {
 
 	itemsArray, ok := itemsNode.([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("items_iterator '%s' did not resolve to an array", p.Config.ItemsIterator)
+		// Try to provide hint about available keys
+		var keys []string
+		if m, ok := rawData.(map[string]interface{}); ok {
+			for k := range m {
+				keys = append(keys, k)
+			}
+		}
+		return nil, fmt.Errorf("items_iterator '%s' did not resolve to an array. Available keys in root: %v", p.Config.ItemsIterator, keys)
 	}
 
 	for _, itemNode := range itemsArray {
@@ -55,7 +64,14 @@ func (p *JsonParser) Parse(data []byte) (*gofeed.Feed, error) {
 
 		if p.Config.Date != "" {
 			if val := traverse(itemNode, p.Config.Date); val != nil {
-				item.Published = fmt.Sprintf("%v", val)
+				dateStr := fmt.Sprintf("%v", val)
+				item.Published = dateStr
+				// Attempt to parse into PublishedParsed
+				if t, err := time.Parse(time.RFC3339, dateStr); err == nil {
+					item.PublishedParsed = &t
+				} else if t, err := time.Parse("2006-01-02", dateStr); err == nil {
+					item.PublishedParsed = &t
+				}
 			}
 		}
 

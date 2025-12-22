@@ -38,9 +38,12 @@ export default {
   'settings.searchProvider.apiKey': 'API Key',
   'settings.searchProvider.apiKey.tooltip':
     'Optional API Key if the provider requires authentication.',
-  'settings.searchProvider.toolName': 'Tool Name / Engines',
+  'settings.searchProvider.toolName': 'Tool Name',
   'settings.searchProvider.toolName.tooltip':
-    "For LiteLLM: The specific tool name (e.g. 'google-search'). For SearXNG: Comma-separated engines (e.g. 'google,bing'). Leave empty for default.",
+    "The specific tool name (e.g. 'google-search').",
+  'settings.searchProvider.engines': 'Engines',
+  'settings.searchProvider.engines.tooltip':
+    "Comma-separated list of engines (e.g. 'google,bing'). Leave empty for default.",
   'settings.searchProvider.save': 'Save Configuration',
   'settings.searchProvider.configure': 'Configure Search Provider',
   'settings.searchProvider.msg.urlRequired': 'API URL is required',
@@ -50,4 +53,5 @@ export default {
   'settings.searchProvider.placeholder.apiUrl': 'http://litellm-proxy:4000',
   'settings.searchProvider.placeholder.apiKey': 'sk-...',
   'settings.searchProvider.placeholder.toolName': 'google-search',
+  'settings.searchProvider.placeholder.engines': 'google,bing',
 };

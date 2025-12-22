@@ -52,6 +52,10 @@ export function parseJsonRss(
     .post<APIResponse<ParsedItem[]>>('/api/admin/tools/json/parse', req)
     .then((res) => res.data);
 }
-export function previewSearch(req: SearchFetchReq) {
-  return axios.post<ParsedItem[]>('/api/admin/tools/search/preview', req);
+export function previewSearch(
+  req: SearchFetchReq,
+): Promise<APIResponse<any[]>> {
+  return axios
+    .post<APIResponse<any[]>>('/api/admin/tools/search/preview', req)
+    .then((res) => res.data);
 }

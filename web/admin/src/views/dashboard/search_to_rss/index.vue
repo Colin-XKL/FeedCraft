@@ -266,8 +266,15 @@
     parsedItems.value = [];
     try {
       const res = await previewSearch(fetchReq);
-      // @ts-ignore
-      parsedItems.value = res.data;
+      if (res.data) {
+        parsedItems.value = res.data.map((item: any) => ({
+          title: item.title || item.Title,
+          link: item.link || item.Link,
+          date: item.published || item.Published || item.date || item.Date,
+          description: item.description || item.Description,
+          content: item.content || item.Content,
+        }));
+      }
 
       if (parsedItems.value.length === 0) {
         Message.info(t('searchToRss.msg.noResults'));

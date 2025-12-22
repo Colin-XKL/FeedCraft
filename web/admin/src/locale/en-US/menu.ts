@@ -17,6 +17,7 @@ export default {
   'navbar.docs': 'Docs Center',
   'navbar.action.locale': 'Switch to English',
   // workplace menus
+  'menu.dashboard.workplace': 'Workplace',
   'menu.craftAtom': 'Craft Atom',
   'menu.craftFlow': 'Craft Flow',
   'menu.customRecipe': 'Custom Recipe',
@@ -31,8 +32,10 @@ export default {
   'menu.searchToRss': 'Search to RSS',
   'menu.llmDebug': 'LLM Debug',
   'menu.changePassword': 'Change Password',
-  'menu.adCheckDebug': 'Ad/Advertorial Check',
+  'menu.adCheckDebug': 'Ad Check',
   'menu.dependencyStatus': 'Dependency Services',
-  // other menu
   'menu.llmApiDebug': 'LLM API Debug',
+  // other menu
+  'menu.settings': 'Settings',
+  'menu.settings.searchProvider': 'Search Provider',
 };
