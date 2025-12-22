@@ -35,6 +35,11 @@ You can define a flow named `digest-and-translate` that consists of:
 2.  `summary` (Generate summary)
 3.  `translate-content` (Translate the result)
 
+#### Managing Craft Flows
+
+You can create and manage Craft Flows in the **Craft Flow** section of the dashboard.
+The editor allows you to add atoms and arrange their execution order. Use the arrow buttons (⬆️/⬇️) to reorder atoms, or the trash icon to remove them from the flow. (See [2b2439b](https://github.com/Colin-XKL/FeedCraft/commit/2b2439b6a6eb5319c04b2c408635847971d42af2))
+
 ### Recipe
 
 A **Recipe** binds a specific RSS feed URL to a Craft or Craft Flow. This allows you to create a persistent, customized feed URL.
