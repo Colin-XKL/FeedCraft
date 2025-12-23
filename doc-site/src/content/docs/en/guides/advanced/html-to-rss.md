@@ -31,7 +31,7 @@ This step allows you to map HTML elements to RSS feed fields.
 
 1.  **Page Preview**: The left pane shows the rendered webpage.
     - **Selection Mode**: When active (indicated by button text), clicking elements in the preview will generate selectors.
-    - **Keyboard Shortcuts**: Use `Arrow Up` to select the parent element and `Arrow Down` to select the first child element. This is useful for fine-tuning your selection. You can also view these shortcuts by hovering over the help icon in the preview pane.
+    - **Keyboard Shortcuts**: Use `Arrow Up` to select the parent element and `Arrow Down` to select the first child element. This is useful for fine-tuning your selection.
 2.  **List Item Selector (Required)**:
     - Click the **Pick** button next to "List Item Selector".
     - In the preview pane, click on a container element that represents a _single article_ or item in the list.
