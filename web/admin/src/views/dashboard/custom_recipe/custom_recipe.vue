@@ -145,7 +145,11 @@
           <a-input v-model="form.description" />
         </a-form-item>
         <a-form-item :label="t('customRecipe.form.craft')" field="craft">
-          <a-input v-model="form.craft" />
+          <CraftSelector
+            v-model="craftList"
+            mode="multiple"
+            :placeholder="t('customRecipe.form.placeholder.craft')"
+          />
         </a-form-item>
 
         <!-- Quick Create Fields -->
@@ -228,7 +232,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted } from 'vue';
+  import { ref, onMounted, computed } from 'vue';
   import {
     createCustomRecipe,
     CustomRecipe,
@@ -242,6 +246,7 @@
   import { Message } from '@arco-design/web-vue';
   import dayjs from 'dayjs';
   import { useI18n } from 'vue-i18n';
+  import CraftSelector from '../craft_flow/CraftSelector.vue';
 
   const { t } = useI18n();
 
@@ -261,6 +266,19 @@
     source_type: 'rss',
     source_config: '',
   });
+
+  const craftList = computed({
+    get: () =>
+      form.value.craft ? form.value.craft.split(',').filter(Boolean) : [],
+    set: (val: string[] | string) => {
+      if (Array.isArray(val)) {
+        form.value.craft = val.join(',');
+      } else if (typeof val === 'string') {
+        form.value.craft = val;
+      }
+    },
+  });
+
   const editing = ref(false);
   const selectedRecipe = ref<CustomRecipe | null>(null);
   const isLoading = ref(false);

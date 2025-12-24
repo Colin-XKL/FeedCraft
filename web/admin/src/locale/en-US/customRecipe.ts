@@ -36,4 +36,5 @@ export default {
   'customRecipe.form.error.invalidJson': 'Invalid JSON format',
   'customRecipe.form.placeholder.rssUrl': 'https://example.com/rss.xml',
   'customRecipe.form.placeholder.sourceConfig': 'Enter JSON config here',
+  'customRecipe.form.placeholder.craft': 'Select craft(s)',
 };

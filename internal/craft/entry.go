@@ -5,6 +5,7 @@ import (
 	"FeedCraft/internal/util"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/feeds"
@@ -190,6 +191,24 @@ func ProcessFeed(feed *gofeed.Feed, feedURL string, craftName string) (*feeds.Fe
 func getCraftOptions(db *gorm.DB, craftName string) ([]CraftOption, error) {
 	craftAtomDict := GetCraftAtomDict()
 	craftTmplDict := GetSysCraftTemplateDict()
+
+	if strings.Contains(craftName, ",") {
+		var allOptions []CraftOption
+		parts := strings.Split(craftName, ",")
+		for _, part := range parts {
+			part = strings.TrimSpace(part)
+			if part == "" {
+				continue
+			}
+			options, err := inner(db, &craftAtomDict, &craftTmplDict, part, 0)
+			if err != nil {
+				return nil, err
+			}
+			allOptions = append(allOptions, options...)
+		}
+		return allOptions, nil
+	}
+
 	return inner(db, &craftAtomDict, &craftTmplDict, craftName, 0)
 }
 
