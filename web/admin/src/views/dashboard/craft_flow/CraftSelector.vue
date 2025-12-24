@@ -35,11 +35,18 @@
 
       <div class="flex items-center">
         <!-- Clear Icon (only single mode, has selection, and allowClear is true) -->
-        <icon-close-circle
+        <span
           v-if="allowClear && mode === 'single' && hasSelection"
-          class="text-[var(--color-text-3)] hover:text-[var(--color-text-2)] mr-2 z-10"
+          role="button"
+          tabindex="0"
+          :aria-label="t('common.clear') || 'Clear'"
+          class="text-[var(--color-text-3)] hover:text-[var(--color-text-2)] mr-2 z-10 outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-light-4)] rounded-full"
           @click.stop="handleClear"
-        />
+          @keydown.enter.prevent.stop="handleClear"
+          @keydown.space.prevent.stop="handleClear"
+        >
+          <icon-close-circle />
+        </span>
         <icon-down class="text-[var(--color-text-3)]" />
       </div>
     </div>
@@ -72,12 +79,17 @@
             <div
               v-for="item in tab.items"
               :key="item.name"
-              class="group border border-[var(--color-neutral-3)] rounded p-3 cursor-pointer hover:shadow-md transition-all relative flex flex-col bg-[var(--color-bg-2)]"
+              role="button"
+              tabindex="0"
+              :aria-pressed="isSelected(item.name)"
+              class="group border border-[var(--color-neutral-3)] rounded p-3 cursor-pointer hover:shadow-md transition-all relative flex flex-col bg-[var(--color-bg-2)] outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-light-4)]"
               :class="{
                 '!border-[rgb(var(--primary-6))] !bg-[var(--color-primary-light-1)]':
                   isSelected(item.name),
               }"
               @click="handleSelect(item.name)"
+              @keydown.enter.prevent="handleSelect(item.name)"
+              @keydown.space.prevent="handleSelect(item.name)"
             >
               <div
                 class="font-bold text-base mb-1 break-all text-[var(--color-text-1)]"
