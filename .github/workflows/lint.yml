@@ -42,6 +42,9 @@ jobs:
           if [ -n "$(git status --porcelain)" ]; then
             git config --global user.name "github-actions[bot]"
             git config --global user.email "github-actions[bot]@users.noreply.github.com"
+            git fetch origin
+            git checkout -B "$HEAD_REF" "origin/$HEAD_REF"
+
             git add .
             git commit -m "style: auto-format code"
             if [[ ! "$HEAD_REF" =~ ^[a-zA-Z0-9/_-]+$ ]]; then
