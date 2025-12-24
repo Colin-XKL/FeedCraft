@@ -33,6 +33,7 @@ export default {
   'customRecipe.form.rule.sourceTypeRequired': '源类型必填',
   'customRecipe.form.rule.sourceConfigRequired': '源配置必填',
   'customRecipe.form.error.invalidJson': 'JSON 格式无效',
+  'customRecipe.form.error.saveFailed': '保存失败',
   'customRecipe.form.placeholder.rssUrl': 'https://example.com/rss.xml',
   'customRecipe.form.placeholder.sourceConfig': '在此输入 JSON 配置',
   'customRecipe.form.placeholder.craft': '选择工艺',

@@ -49,7 +49,7 @@
           :content="
             t('customRecipe.status.activeTooltip', {
               time: dayjs(record.last_accessed_at).format(
-                'YYYY-MM-DD HH:mm:ss',
+                'YYYY-MM-DD HH:mm:ss'
               ),
             })
           "
@@ -125,8 +125,8 @@
         editing
           ? t('customRecipe.editModalTitle.edit')
           : quickCreate
-            ? t('customRecipe.quickCreateRSS')
-            : t('customRecipe.editModalTitle.create')
+          ? t('customRecipe.quickCreateRSS')
+          : t('customRecipe.editModalTitle.create')
       "
     >
       <a-form
@@ -205,7 +205,7 @@
           "
           >{{ t('customRecipe.form.cancel') }}
         </a-button>
-        <a-button type="primary" @click="saveRecipe">{{
+        <a-button type="primary" :loading="saving" @click="saveRecipe">{{
           t('customRecipe.form.save')
         }}</a-button>
       </template>
@@ -283,6 +283,7 @@
   const selectedRecipe = ref<CustomRecipe | null>(null);
   const isLoading = ref(false);
   const isUpdating = ref(false);
+  const saving = ref(false);
 
   const columns = [
     { title: t('customRecipe.form.name'), dataIndex: 'id' },
@@ -409,31 +410,38 @@
       }
     }
 
-    if (editing.value) {
-      if (selectedRecipe.value) {
-        await updateCustomRecipe(form.value);
-        selectedRecipe.value.description = form.value.description;
-        selectedRecipe.value.craft = form.value.craft;
-        selectedRecipe.value.source_type = form.value.source_type;
-        selectedRecipe.value.source_config = form.value.source_config;
+    saving.value = true;
+    try {
+      if (editing.value) {
+        if (selectedRecipe.value) {
+          await updateCustomRecipe(form.value);
+          selectedRecipe.value.description = form.value.description;
+          selectedRecipe.value.craft = form.value.craft;
+          selectedRecipe.value.source_type = form.value.source_type;
+          selectedRecipe.value.source_config = form.value.source_config;
+        }
+      } else {
+        await createCustomRecipe(form.value as CustomRecipe);
+        await listCustomRecipes();
       }
-    } else {
-      await createCustomRecipe(form.value as CustomRecipe);
-      await listCustomRecipes();
+      showModal.value = false;
+      form.value = {
+        id: '',
+        description: '',
+        craft: '',
+        source_type: 'rss',
+        source_config: '',
+      };
+      editing.value = false;
+      isUpdating.value = false;
+      selectedRecipe.value = null;
+      quickCreate.value = false;
+      rssUrl.value = '';
+    } catch (e) {
+      Message.error(t('customRecipe.form.error.saveFailed'));
+    } finally {
+      saving.value = false;
     }
-    showModal.value = false;
-    form.value = {
-      id: '',
-      description: '',
-      craft: '',
-      source_type: 'rss',
-      source_config: '',
-    };
-    editing.value = false;
-    isUpdating.value = false;
-    selectedRecipe.value = null;
-    quickCreate.value = false;
-    rssUrl.value = '';
   };
 
   const deleteRecipe = async (id: string) => {
