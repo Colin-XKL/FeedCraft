@@ -419,6 +419,8 @@
       selectedRecipe.value = null;
       quickCreate.value = false;
       rssUrl.value = '';
+    } catch (e) {
+      Message.error(t('customRecipe.form.error.saveFailed'));
     } finally {
       saving.value = false;
     }

@@ -34,6 +34,7 @@ export default {
   'customRecipe.form.rule.sourceTypeRequired': 'Source type is required',
   'customRecipe.form.rule.sourceConfigRequired': 'Source config is required',
   'customRecipe.form.error.invalidJson': 'Invalid JSON format',
+  'customRecipe.form.error.saveFailed': 'Save failed',
   'customRecipe.form.placeholder.rssUrl': 'https://example.com/rss.xml',
   'customRecipe.form.placeholder.sourceConfig': 'Enter JSON config here',
 };
