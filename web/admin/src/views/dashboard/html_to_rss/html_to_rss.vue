@@ -472,7 +472,7 @@
     if (!url.value) return;
     fetching.value = true;
     try {
-      const res = (await axios.post('/api/admin/tools/fetch', {
+      const { data: res } = (await axios.post('/api/admin/tools/fetch', {
         url: url.value,
         use_browserless: enhancedMode.value,
       })) as any;
@@ -533,7 +533,7 @@
     if (!config.item_selector) return;
     parsing.value = true;
     try {
-      const res = (await axios.post('/api/admin/tools/parse', {
+      const { data: res } = (await axios.post('/api/admin/tools/parse', {
         html: htmlContent.value,
         url: url.value,
         item_selector: config.item_selector,
