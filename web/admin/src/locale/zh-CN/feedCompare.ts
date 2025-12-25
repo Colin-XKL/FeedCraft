@@ -10,6 +10,7 @@ export default {
   'feedCompare.selectCraftFlow.tabs.system': '系统 Craft Templates',
   'feedCompare.selectCraftFlow.tabs.user': '用户 Craft Atoms',
   'feedCompare.selectCraftFlow.tabs.flow': 'Craft Flows',
+  'feedCompare.selectCraftFlow.clear': '清除选择',
   'feedCompare.message.inputRequired': '请输入 feed URL 并选择一个 craft',
   'feedCompare.message.unknownError': '未知错误',
 };
