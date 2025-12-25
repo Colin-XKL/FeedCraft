@@ -679,26 +679,17 @@
           config[currentTargetField.value] = '.'; // "this" - explicit dot for backend
           Message.info(t('htmlToRss.msg.selectedContainer'));
         } else {
-          // Calculate relative path
-          const relPath: string[] = [];
-          let curr: HTMLElement = target;
+          // Calculate relative path using getCssSelector with stopAtElement
+          const relativeSelector = getCssSelector(
+            target,
+            doc,
+            false,
+            foundItem,
+          );
 
-          while (curr && curr !== foundItem) {
-            let selector = curr.tagName.toLowerCase();
-            if (curr.classList.length > 0) {
-              const validClasses = Array.from(curr.classList).filter(
-                (c) => !IGNORED_CLASSES.includes(c),
-              );
-              if (validClasses.length > 0)
-                selector += `.${CSS.escape(validClasses[0])}`;
-            }
-            relPath.unshift(selector);
-            curr = curr.parentNode as HTMLElement;
-          }
-
-          config[currentTargetField.value] = relPath.join(' ');
+          config[currentTargetField.value] = relativeSelector;
           Message.success(
-            t('htmlToRss.msg.setRelativePath', { path: relPath.join(' ') }),
+            t('htmlToRss.msg.setRelativePath', { path: relativeSelector }),
           );
         }
       } else {
