@@ -10,6 +10,7 @@ export default {
   'feedCompare.selectCraftFlow.tabs.system': 'System Craft Templates',
   'feedCompare.selectCraftFlow.tabs.user': 'User Craft Atoms',
   'feedCompare.selectCraftFlow.tabs.flow': 'Craft Flows',
+  'feedCompare.selectCraftFlow.clear': 'Clear Selection',
   'feedCompare.message.inputRequired':
     'Please enter a feed URL and select a craft',
   'feedCompare.message.unknownError': 'Unknown Error',
