@@ -38,4 +38,7 @@ export default {
   'customRecipe.form.placeholder.rssUrl': 'https://example.com/rss.xml',
   'customRecipe.form.placeholder.sourceConfig': 'Enter JSON config here',
   'customRecipe.form.placeholder.craft': 'Select craft(s)',
+  'customRecipe.copy': 'Copy Config',
+  'customRecipe.copySuccess': 'Copied to clipboard',
+  'customRecipe.copyFailed': 'Copy failed',
 };

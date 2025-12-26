@@ -49,7 +49,7 @@
           :content="
             t('customRecipe.status.activeTooltip', {
               time: dayjs(record.last_accessed_at).format(
-                'YYYY-MM-DD HH:mm:ss',
+                'YYYY-MM-DD HH:mm:ss'
               ),
             })
           "
@@ -125,11 +125,12 @@
         editing
           ? t('customRecipe.editModalTitle.edit')
           : quickCreate
-            ? t('customRecipe.quickCreateRSS')
-            : t('customRecipe.editModalTitle.create')
+          ? t('customRecipe.quickCreateRSS')
+          : t('customRecipe.editModalTitle.create')
       "
     >
       <a-form
+        ref="formRef"
         :model="form"
         :label-col="{ span: 6 }"
         :rules="rules"
@@ -191,6 +192,7 @@
               v-model="form.source_config"
               :auto-size="{ minRows: 3, maxRows: 10 }"
               :placeholder="t('customRecipe.form.placeholder.sourceConfig')"
+              @blur="handleSourceConfigBlur"
             />
           </a-form-item>
         </template>
@@ -217,16 +219,30 @@
       :title="t('customRecipe.viewConfigModalTitle')"
       :footer="false"
     >
-      <pre
-        style="
-          background-color: #f5f5f5;
-          padding: 10px;
-          border-radius: 4px;
-          overflow: auto;
-          max-height: 400px;
-        "
-        >{{ currentConfig }}</pre
-      >
+      <div class="relative">
+        <a-tooltip :content="copyButtonText">
+          <a-button
+            size="mini"
+            class="absolute top-2 right-2"
+            @click="copyConfig"
+            @mouseleave="resetCopyText"
+          >
+            <template #icon>
+              <icon-copy />
+            </template>
+          </a-button>
+        </a-tooltip>
+        <pre
+          style="
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow: auto;
+            max-height: 400px;
+          "
+          >{{ currentConfig }}</pre
+        >
+      </div>
     </a-modal>
   </div>
 </template>
@@ -242,13 +258,15 @@
   } from '@/api/custom_recipe';
   import XHeader from '@/components/header/x-header.vue';
   import { namingValidator } from '@/utils/validator';
-  import { IconEye, IconPlus } from '@arco-design/web-vue/es/icon';
+  import { IconEye, IconPlus, IconCopy } from '@arco-design/web-vue/es/icon';
   import { Message } from '@arco-design/web-vue';
+  import { useClipboard } from '@vueuse/core';
   import dayjs from 'dayjs';
   import { useI18n } from 'vue-i18n';
   import CraftSelector from '../craft_flow/CraftSelector.vue';
 
   const { t } = useI18n();
+  const { copy } = useClipboard();
 
   const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
@@ -258,6 +276,8 @@
   const currentConfig = ref('');
   const quickCreate = ref(false);
   const rssUrl = ref('');
+  const copyButtonText = ref(t('customRecipe.copy'));
+  const formRef = ref();
 
   const form = ref<CustomRecipe>({
     id: '',
@@ -337,6 +357,21 @@
         message: t('customRecipe.form.rule.sourceConfigRequired'),
         trigger: 'blur',
       },
+      {
+        validator: (value: string, cb: (err?: string) => void) => {
+          if (!value) {
+            cb();
+            return;
+          }
+          try {
+            JSON.parse(value);
+            cb();
+          } catch (e) {
+            cb(t('customRecipe.form.error.invalidJson'));
+          }
+        },
+        trigger: 'blur',
+      },
     ],
   };
 
@@ -366,6 +401,24 @@
     showConfigModal.value = true;
   };
 
+  const copyConfig = async () => {
+    try {
+      await copy(currentConfig.value);
+      copyButtonText.value = t('customRecipe.copySuccess');
+      Message.success(t('customRecipe.copySuccess'));
+    } catch (e) {
+      copyButtonText.value = t('customRecipe.copyFailed');
+      Message.error(t('customRecipe.copyFailed'));
+    }
+  };
+
+  const resetCopyText = () => {
+    // Small delay to let user see feedback
+    setTimeout(() => {
+      copyButtonText.value = t('customRecipe.copy');
+    }, 500);
+  };
+
   const showEditModal = (recipe: CustomRecipe) => {
     editing.value = true;
     quickCreate.value = false; // Ensure we are not in quick create mode
@@ -390,6 +443,17 @@
     showModal.value = true;
   };
 
+  const handleSourceConfigBlur = () => {
+    try {
+      if (form.value.source_config) {
+        const obj = JSON.parse(form.value.source_config);
+        form.value.source_config = JSON.stringify(obj, null, 2);
+      }
+    } catch (e) {
+      // ignore error
+    }
+  };
+
   const saveRecipe = async () => {
     if (quickCreate.value) {
       // Construct JSON for Quick Create
@@ -401,11 +465,9 @@
       form.value.source_config = JSON.stringify(config);
       form.value.source_type = 'rss';
     } else {
-      // Validate JSON before saving in Advanced mode
-      try {
-        JSON.parse(form.value.source_config);
-      } catch (e) {
-        Message.error(t('customRecipe.form.error.invalidJson'));
+      // Validate with formRef
+      const errors = await formRef.value?.validate();
+      if (errors) {
         return;
       }
     }
