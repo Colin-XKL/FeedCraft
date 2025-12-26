@@ -37,4 +37,7 @@ export default {
   'customRecipe.form.placeholder.rssUrl': 'https://example.com/rss.xml',
   'customRecipe.form.placeholder.sourceConfig': '在此输入 JSON 配置',
   'customRecipe.form.placeholder.craft': '选择工艺',
+  'customRecipe.copy': '复制配置',
+  'customRecipe.copySuccess': '已复制到剪贴板',
+  'customRecipe.copyFailed': '复制失败',
 };
