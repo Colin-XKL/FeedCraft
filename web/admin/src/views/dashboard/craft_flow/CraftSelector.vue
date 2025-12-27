@@ -175,7 +175,7 @@
   const localValue = ref<string[]>([]);
 
   const hasSelection = computed(
-    () => localValue.value && localValue.value.length > 0,
+    () => localValue.value && localValue.value.length > 0
   );
 
   const displaySingleValue = computed(() => {
@@ -211,7 +211,7 @@
         localValue.value = Array.isArray(val) ? [...val] : [];
       }
     },
-    { immediate: true },
+    { immediate: true }
   );
 
   const filterAndSort = (items: { name: string; description?: string }[]) => {
@@ -221,7 +221,7 @@
       result = items.filter(
         (item) =>
           item.name.toLowerCase().includes(lower) ||
-          (item.description && item.description.toLowerCase().includes(lower)),
+          (item.description && item.description.toLowerCase().includes(lower))
       );
     }
     return [...result].sort((a, b) => a.name.localeCompare(b.name));

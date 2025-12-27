@@ -71,7 +71,7 @@
       : selectedCraft.value;
     const baseUrl = import.meta.env.VITE_API_BASE_URL ?? window.location.origin;
     resultUrl.value = `${baseUrl}/craft/${currentSelectedCraft}?input_url=${encodeURIComponent(
-      inputUrl.value,
+      inputUrl.value
     )}`;
     copyButtonText.value = t('urlGenerator.copyUrl');
   };

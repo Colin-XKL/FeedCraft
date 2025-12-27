@@ -28,6 +28,7 @@ export default {
   'htmlToRss.step2.card2.title': '2. Fields (Relative)',
   'htmlToRss.step2.cssSelector': 'CSS Selector',
   'htmlToRss.step2.pick': 'Pick',
+  'htmlToRss.step2.picking': 'Picking...',
   'htmlToRss.step2.title': 'Title',
   'htmlToRss.step2.link': 'Link',
   'htmlToRss.step2.date': 'Date (Optional)',

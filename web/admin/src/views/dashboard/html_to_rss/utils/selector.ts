@@ -19,7 +19,7 @@ export const IGNORED_CLASSES = [
 export const getCssSelector = (
   el: HTMLElement,
   rootDocument?: Document, // Optional parameter moved before default parameter
-  isItemSelector = false, // Default parameter
+  isItemSelector = false // Default parameter
 ): string => {
   if (!el || el.nodeType !== Node.ELEMENT_NODE) return '';
 
@@ -40,7 +40,7 @@ export const getCssSelector = (
     // Try to use class if available and meaningful
     if (currentEl.classList.length > 0) {
       const classes = Array.from(currentEl.classList).filter(
-        (c) => !IGNORED_CLASSES.includes(c),
+        (c) => !IGNORED_CLASSES.includes(c)
       );
       if (classes.length > 0) {
         selector += `.${classes.map((c) => CSS.escape(c)).join('.')}`;
