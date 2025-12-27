@@ -25,6 +25,7 @@ export default {
   'htmlToRss.step2.card2.title': '2. 字段 (相对路径)',
   'htmlToRss.step2.cssSelector': 'CSS 选择器',
   'htmlToRss.step2.pick': '拾取',
+  'htmlToRss.step2.picking': '拾取中...',
   'htmlToRss.step2.title': '标题',
   'htmlToRss.step2.link': '链接',
   'htmlToRss.step2.date': '日期 (可选)',

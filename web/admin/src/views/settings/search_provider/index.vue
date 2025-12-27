@@ -5,7 +5,7 @@
         {{ $t('settings.searchProvider.alert') }}
       </a-alert>
 
-      <a-form :model="form" @submit="handleSave" layout="vertical">
+      <a-form :model="form" layout="vertical" @submit="handleSave">
         <a-form-item
           :label="$t('settings.searchProvider.provider')"
           field="provider"
