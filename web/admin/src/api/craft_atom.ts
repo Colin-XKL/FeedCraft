@@ -15,7 +15,7 @@ const craftAtomApiBase = `${adminApiBase}/craft-atoms`;
 
 // Create a CraftAtom
 export function createCraftAtom(
-  craftAtom: CraftAtom
+  craftAtom: CraftAtom,
 ): Promise<APIResponse<CraftAtom>> {
   return axios
     .post<APIResponse<CraftAtom>>(craftAtomApiBase, craftAtom)
@@ -32,7 +32,7 @@ export function getCraftAtom(name: string): Promise<APIResponse<CraftAtom>> {
 // Update a CraftAtom
 export function updateCraftAtom(
   name: string,
-  craftAtom: CraftAtom
+  craftAtom: CraftAtom,
 ): Promise<APIResponse<CraftAtom>> {
   return axios
     .put<APIResponse<CraftAtom>>(`${craftAtomApiBase}/${name}`, craftAtom)

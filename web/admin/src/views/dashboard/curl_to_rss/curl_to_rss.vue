@@ -565,7 +565,7 @@
         Message.warning(t('curlToRss.msg.noItems'));
       } else {
         Message.success(
-          t('curlToRss.msg.parsedItems', { count: parsedItems.value.length })
+          t('curlToRss.msg.parsedItems', { count: parsedItems.value.length }),
         );
       }
     } catch (err) {

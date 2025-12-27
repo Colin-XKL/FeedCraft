@@ -48,7 +48,7 @@ export interface ChangePasswordData {
 }
 
 export function changePassword(
-  data: ChangePasswordData
+  data: ChangePasswordData,
 ): Promise<APIResponse<any>> {
   const currentPasswordMd5 = md5(data.currentPassword).toString();
   const newPasswordMd5 = md5(data.newPassword).toString();
