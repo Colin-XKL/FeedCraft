@@ -290,7 +290,7 @@
         query: fetchReq.query,
       });
       feedMeta.link = `https://google.com/search?q=${encodeURIComponent(
-        fetchReq.query
+        fetchReq.query,
       )}`; // Fallback link
 
       nextStep();
@@ -337,7 +337,7 @@
     } catch (err: any) {
       console.error(err);
       Message.error(
-        t('searchToRss.msg.saveFailed', { msg: err.message || err })
+        t('searchToRss.msg.saveFailed', { msg: err.message || err }),
       );
     } finally {
       saving.value = false;
