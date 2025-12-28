@@ -114,6 +114,7 @@
                       <a-input
                         v-model="config.item_selector"
                         placeholder=".article-card"
+                        allow-clear
                       >
                         <template #suffix>
                           <a-button
@@ -139,6 +140,7 @@
                       <a-input
                         v-model="config.title_selector"
                         :disabled="!config.item_selector"
+                        allow-clear
                       >
                         <template #suffix>
                           <a-button
@@ -154,6 +156,7 @@
                       <a-input
                         v-model="config.link_selector"
                         :disabled="!config.item_selector"
+                        allow-clear
                       >
                         <template #suffix>
                           <a-button
@@ -169,6 +172,7 @@
                       <a-input
                         v-model="config.date_selector"
                         :disabled="!config.item_selector"
+                        allow-clear
                       >
                         <template #suffix>
                           <a-button
@@ -184,6 +188,7 @@
                       <a-input
                         v-model="config.description_selector"
                         :disabled="!config.item_selector"
+                        allow-clear
                       >
                         <template #suffix>
                           <a-button
@@ -278,29 +283,32 @@
                 <a-input
                   v-model="feedMeta.title"
                   :placeholder="$t('htmlToRss.step3.feedTitle.placeholder')"
+                  allow-clear
                 />
               </a-form-item>
               <a-form-item :label="$t('htmlToRss.step3.feedDesc')">
                 <a-textarea
                   v-model="feedMeta.description"
                   :placeholder="$t('htmlToRss.step3.feedDesc.placeholder')"
+                  allow-clear
                 />
               </a-form-item>
               <a-form-item :label="$t('htmlToRss.step3.siteLink')">
                 <a-input
                   v-model="feedMeta.link"
                   :placeholder="$t('htmlToRss.step3.siteLink.placeholder')"
+                  allow-clear
                 />
               </a-form-item>
               <a-row :gutter="16">
                 <a-col :span="12">
                   <a-form-item :label="$t('htmlToRss.step3.authorName')">
-                    <a-input v-model="feedMeta.author_name" />
+                    <a-input v-model="feedMeta.author_name" allow-clear />
                   </a-form-item>
                 </a-col>
                 <a-col :span="12">
                   <a-form-item :label="$t('htmlToRss.step3.authorEmail')">
-                    <a-input v-model="feedMeta.author_email" />
+                    <a-input v-model="feedMeta.author_email" allow-clear />
                   </a-form-item>
                 </a-col>
               </a-row>
@@ -550,7 +558,7 @@
           return;
         }
         Message.success(
-          t('htmlToRss.msg.extracted', { count: parsedItems.value.length }),
+          t('htmlToRss.msg.extracted', { count: parsedItems.value.length })
         );
         // Do not auto-advance. Let user check preview first.
         nextTick(() => {
@@ -635,7 +643,7 @@
     const fullSelector = getCssSelector(
       target,
       doc || undefined,
-      isItemSelector,
+      isItemSelector
     );
 
     if (!doc) return;
@@ -647,11 +655,11 @@
         Message.success(
           t('htmlToRss.msg.matchedItems', {
             count: matches.length,
-          }),
+          })
         );
       } catch {
         Message.success(
-          t('htmlToRss.msg.setItemSelector', { selector: fullSelector }),
+          t('htmlToRss.msg.setItemSelector', { selector: fullSelector })
         );
       }
       currentTargetField.value = 'title_selector';
@@ -687,7 +695,7 @@
             let selector = curr.tagName.toLowerCase();
             if (curr.classList.length > 0) {
               const validClasses = Array.from(curr.classList).filter(
-                (c) => !IGNORED_CLASSES.includes(c),
+                (c) => !IGNORED_CLASSES.includes(c)
               );
               if (validClasses.length > 0)
                 selector += `.${CSS.escape(validClasses[0])}`;
@@ -698,7 +706,7 @@
 
           config[currentTargetField.value] = relPath.join(' ');
           Message.success(
-            t('htmlToRss.msg.setRelativePath', { path: relPath.join(' ') }),
+            t('htmlToRss.msg.setRelativePath', { path: relPath.join(' ') })
           );
         }
       } else {

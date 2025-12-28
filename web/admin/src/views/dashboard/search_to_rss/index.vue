@@ -115,16 +115,17 @@
             </a-alert>
             <a-form :model="feedMeta" layout="vertical">
               <a-form-item :label="$t('searchToRss.step3.feedTitle')" required>
-                <a-input v-model="feedMeta.title" />
+                <a-input v-model="feedMeta.title" allow-clear />
               </a-form-item>
               <a-form-item :label="$t('searchToRss.step3.feedDescription')">
                 <a-textarea
                   v-model="feedMeta.description"
                   :auto-size="{ minRows: 3, maxRows: 5 }"
+                  allow-clear
                 />
               </a-form-item>
               <a-form-item :label="$t('searchToRss.step3.siteLink')">
-                <a-input v-model="feedMeta.link" />
+                <a-input v-model="feedMeta.link" allow-clear />
               </a-form-item>
             </a-form>
 
@@ -289,7 +290,7 @@
         query: fetchReq.query,
       });
       feedMeta.link = `https://google.com/search?q=${encodeURIComponent(
-        fetchReq.query,
+        fetchReq.query
       )}`; // Fallback link
 
       nextStep();
@@ -336,7 +337,7 @@
     } catch (err: any) {
       console.error(err);
       Message.error(
-        t('searchToRss.msg.saveFailed', { msg: err.message || err }),
+        t('searchToRss.msg.saveFailed', { msg: err.message || err })
       );
     } finally {
       saving.value = false;
