@@ -40,6 +40,8 @@ sidebar:
 你可以在后台的 **Craft Flow** 页面创建和管理工艺流。
 编辑器允许你添加工艺并安排它们的执行顺序。使用箭头按钮 (⬆️/⬇️) 调整顺序，或使用垃圾桶图标将其从流程中移除。(See [2b2439b](https://github.com/Colin-XKL/FeedCraft/commit/2b2439b6a6eb5319c04b2c408635847971d42af2))
 
+添加新步骤时，**Craft Selector** 允许你轻松浏览和搜索可用的工艺。它提供了选项卡来按 **System Craft Atoms**（系统原子）、**User Craft Atoms**（用户原子）和 **Craft Flows**（工艺流）进行过滤，使构建复杂工作流变得简单。(See [17b64f7](https://github.com/Colin-XKL/FeedCraft/commit/17b64f7))
+
 ### 食谱 (Recipe)
 
 **Recipe** 将特定的 RSS 源 URL 与某个 Craft 或 Craft Flow 绑定。这允许你创建一个持久化的、经过定制的订阅源 URL。
