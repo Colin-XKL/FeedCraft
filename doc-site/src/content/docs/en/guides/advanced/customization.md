@@ -42,6 +42,7 @@ The editor allows you to add atoms and arrange their execution order. Use the ar
 
 **Selecting Crafts**
 When adding atoms to a flow or creating a recipe, the Craft Selector helps you find and organize components:
+
 - **Search & Sort:** Easily find atoms by name with the search bar; items are automatically sorted alphabetically.
 - **Categorized Tabs:** Switch between **System Atoms**, **User Atoms**, and existing **Flows**.
 - **Visual Selection:** In multiple-selection mode, numbered badges indicate the execution order (1, 2, 3...).
