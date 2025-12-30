@@ -40,6 +40,13 @@ sidebar:
 你可以在后台的 **Craft Flow** 页面创建和管理工艺流。
 编辑器允许你添加工艺并安排它们的执行顺序。使用箭头按钮 (⬆️/⬇️) 调整顺序，或使用垃圾桶图标将其从流程中移除。(See [2b2439b](https://github.com/Colin-XKL/FeedCraft/commit/2b2439b6a6eb5319c04b2c408635847971d42af2))
 
+**选择工艺**
+在添加工艺到流程或创建食谱时，新的工艺选择器（Craft Selector）可以帮助你更好地查找和组织组件：
+- **搜索与排序**：通过搜索栏快速查找工艺，列表会自动按字母顺序排序。
+- **分类标签**：在 **系统工艺 (System)**、**用户工艺 (User)** 和 **现有流程 (Flow)** 之间切换。
+- **可视化选择**：在多选模式下，数字角标会清晰显示执行顺序（1, 2, 3...）。
+- **无障碍支持**：完全支持键盘操作（Enter/Space 选择，Tab 导航）。(See [17b64f7](https://github.com/Colin-XKL/FeedCraft/commit/17b64f79612306fbd8a032d880470530733568c0))
+
 ### 食谱 (Recipe)
 
 **Recipe** 将特定的 RSS 源 URL 与某个 Craft 或 Craft Flow 绑定。这允许你创建一个持久化的、经过定制的订阅源 URL。

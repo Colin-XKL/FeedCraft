@@ -40,6 +40,13 @@ You can define a flow named `digest-and-translate` that consists of:
 You can create and manage Craft Flows in the **Craft Flow** section of the dashboard.
 The editor allows you to add atoms and arrange their execution order. Use the arrow buttons (⬆️/⬇️) to reorder atoms, or the trash icon to remove them from the flow. (See [2b2439b](https://github.com/Colin-XKL/FeedCraft/commit/2b2439b6a6eb5319c04b2c408635847971d42af2))
 
+**Selecting Crafts**
+When adding atoms to a flow or creating a recipe, the Craft Selector helps you find and organize components:
+- **Search & Sort:** Easily find atoms by name with the search bar; items are automatically sorted alphabetically.
+- **Categorized Tabs:** Switch between **System Atoms**, **User Atoms**, and existing **Flows**.
+- **Visual Selection:** In multiple-selection mode, numbered badges indicate the execution order (1, 2, 3...).
+- **Accessibility:** Fully keyboard accessible (Enter/Space to select, Tab to navigate). (See [17b64f7](https://github.com/Colin-XKL/FeedCraft/commit/17b64f79612306fbd8a032d880470530733568c0))
+
 ### Recipe
 
 A **Recipe** binds a specific RSS feed URL to a Craft or Craft Flow. This allows you to create a persistent, customized feed URL.
