@@ -279,7 +279,9 @@
                           >
                             <template
                               #icon
-                              v-if="currentTargetField === 'description_selector'"
+                              v-if="
+                                currentTargetField === 'description_selector'
+                              "
                             >
                               <icon-loading />
                             </template>
