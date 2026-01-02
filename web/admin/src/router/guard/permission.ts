@@ -33,7 +33,7 @@ export default function setupPermissionGuard(router: Router) {
 
         if (element?.children) {
           serverMenuConfig.push(
-            ...(element.children as unknown as RouteRecordNormalized[]),
+            ...(element.children as unknown as RouteRecordNormalized[])
           );
         }
       }

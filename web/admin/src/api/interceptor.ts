@@ -28,7 +28,7 @@ axios.interceptors.request.use(
   (error) => {
     // do something
     return Promise.reject(error);
-  },
+  }
 );
 // add response interceptors
 axios.interceptors.response.use(
@@ -73,5 +73,5 @@ axios.interceptors.response.use(
       duration: 5 * 1000,
     });
     return Promise.reject(error);
-  },
+  }
 );

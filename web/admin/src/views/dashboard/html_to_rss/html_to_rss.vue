@@ -119,11 +119,24 @@
                           <a-button
                             size="mini"
                             type="primary"
-                            status="success"
+                            :status="
+                              currentTargetField === 'item_selector'
+                                ? 'warning'
+                                : 'success'
+                            "
                             @click="setTargetField('item_selector')"
                           >
-                            <icon-select-all />
-                            {{ $t('htmlToRss.step2.pick') }}
+                            <template #icon>
+                              <icon-loading
+                                v-if="currentTargetField === 'item_selector'"
+                              />
+                              <icon-select-all v-else />
+                            </template>
+                            {{
+                              currentTargetField === 'item_selector'
+                                ? $t('htmlToRss.step2.picking')
+                                : $t('htmlToRss.step2.pick')
+                            }}
                           </a-button>
                         </template>
                       </a-input>
@@ -144,9 +157,30 @@
                           <a-button
                             size="mini"
                             :disabled="!config.item_selector"
+                            :type="
+                              currentTargetField === 'title_selector'
+                                ? 'primary'
+                                : 'secondary'
+                            "
+                            :status="
+                              currentTargetField === 'title_selector'
+                                ? 'warning'
+                                : 'normal'
+                            "
                             @click="setTargetField('title_selector')"
-                            >{{ $t('htmlToRss.step2.pick') }}</a-button
                           >
+                            <template
+                              #icon
+                              v-if="currentTargetField === 'title_selector'"
+                            >
+                              <icon-loading />
+                            </template>
+                            {{
+                              currentTargetField === 'title_selector'
+                                ? $t('htmlToRss.step2.picking')
+                                : $t('htmlToRss.step2.pick')
+                            }}
+                          </a-button>
                         </template>
                       </a-input>
                     </a-form-item>
@@ -159,9 +193,30 @@
                           <a-button
                             size="mini"
                             :disabled="!config.item_selector"
+                            :type="
+                              currentTargetField === 'link_selector'
+                                ? 'primary'
+                                : 'secondary'
+                            "
+                            :status="
+                              currentTargetField === 'link_selector'
+                                ? 'warning'
+                                : 'normal'
+                            "
                             @click="setTargetField('link_selector')"
-                            >{{ $t('htmlToRss.step2.pick') }}</a-button
                           >
+                            <template
+                              #icon
+                              v-if="currentTargetField === 'link_selector'"
+                            >
+                              <icon-loading />
+                            </template>
+                            {{
+                              currentTargetField === 'link_selector'
+                                ? $t('htmlToRss.step2.picking')
+                                : $t('htmlToRss.step2.pick')
+                            }}
+                          </a-button>
                         </template>
                       </a-input>
                     </a-form-item>
@@ -174,9 +229,30 @@
                           <a-button
                             size="mini"
                             :disabled="!config.item_selector"
+                            :type="
+                              currentTargetField === 'date_selector'
+                                ? 'primary'
+                                : 'secondary'
+                            "
+                            :status="
+                              currentTargetField === 'date_selector'
+                                ? 'warning'
+                                : 'normal'
+                            "
                             @click="setTargetField('date_selector')"
-                            >{{ $t('htmlToRss.step2.pick') }}</a-button
                           >
+                            <template
+                              #icon
+                              v-if="currentTargetField === 'date_selector'"
+                            >
+                              <icon-loading />
+                            </template>
+                            {{
+                              currentTargetField === 'date_selector'
+                                ? $t('htmlToRss.step2.picking')
+                                : $t('htmlToRss.step2.pick')
+                            }}
+                          </a-button>
                         </template>
                       </a-input>
                     </a-form-item>
@@ -189,9 +265,30 @@
                           <a-button
                             size="mini"
                             :disabled="!config.item_selector"
+                            :type="
+                              currentTargetField === 'description_selector'
+                                ? 'primary'
+                                : 'secondary'
+                            "
+                            :status="
+                              currentTargetField === 'description_selector'
+                                ? 'warning'
+                                : 'normal'
+                            "
                             @click="setTargetField('description_selector')"
-                            >{{ $t('htmlToRss.step2.pick') }}</a-button
                           >
+                            <template
+                              #icon
+                              v-if="currentTargetField === 'description_selector'"
+                            >
+                              <icon-loading />
+                            </template>
+                            {{
+                              currentTargetField === 'description_selector'
+                                ? $t('htmlToRss.step2.picking')
+                                : $t('htmlToRss.step2.pick')
+                            }}
+                          </a-button>
                         </template>
                       </a-input>
                     </a-form-item>
@@ -400,6 +497,7 @@
     IconSelectAll,
     IconArrowRight,
     IconSave,
+    IconLoading,
   } from '@arco-design/web-vue/es/icon';
   import XHeader from '@/components/header/x-header.vue';
   import { createCustomRecipe } from '@/api/custom_recipe';
