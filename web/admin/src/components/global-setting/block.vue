@@ -14,7 +14,6 @@
 </template>
 
 <script lang="ts" setup>
-  import { PropType } from 'vue';
   import { useAppStore } from '@/store';
   import FormWrapper from './form-wrapper.vue';
 
@@ -24,18 +23,17 @@
     type?: string;
     defaultVal?: boolean | string | number;
   }
-  defineProps({
-    title: {
-      type: String,
-      default: '',
-    },
-    options: {
-      type: Array as PropType<OptionsProps[]>,
-      default() {
-        return [];
-      },
-    },
+
+  interface Props {
+    title?: string;
+    options?: OptionsProps[];
+  }
+
+  withDefaults(defineProps<Props>(), {
+    title: '',
+    options: () => [],
   });
+
   const appStore = useAppStore();
   const handleChange = async ({
     key,

@@ -71,19 +71,17 @@
 </template>
 
 <script lang="ts" setup>
-  import { PropType } from 'vue';
   import { MessageRecord, MessageListType } from '@/api/message';
 
-  const props = defineProps({
-    renderList: {
-      type: Array as PropType<MessageListType>,
-      required: true,
-    },
-    unreadCount: {
-      type: Number,
-      default: 0,
-    },
+  interface Props {
+    renderList: MessageListType;
+    unreadCount?: number;
+  }
+
+  const props = withDefaults(defineProps<Props>(), {
+    unreadCount: 0,
   });
+
   const emit = defineEmits(['itemClick']);
   const allRead = () => {
     emit('itemClick', [...props.renderList]);

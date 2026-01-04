@@ -57,7 +57,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { PropType, computed } from 'vue';
+  import { computed } from 'vue';
   import { useRouter, useRoute } from 'vue-router';
   import { useTabBarStore } from '@/store';
   import type { TagProps } from '@/store/modules/tab-bar/types';
@@ -73,17 +73,14 @@
     all = 'all',
   }
 
-  const props = defineProps({
-    itemData: {
-      type: Object as PropType<TagProps>,
-      default() {
-        return {};
-      },
-    },
-    index: {
-      type: Number,
-      default: 0,
-    },
+  interface Props {
+    itemData?: TagProps;
+    index?: number;
+  }
+
+  const props = withDefaults(defineProps<Props>(), {
+    itemData: () => ({} as TagProps),
+    index: 0,
   });
 
   const router = useRouter();

@@ -10,15 +10,12 @@
 </template>
 
 <script lang="ts" setup>
-  import { PropType } from 'vue';
+  interface Props {
+    items?: string[];
+  }
 
-  defineProps({
-    items: {
-      type: Array as PropType<string[]>,
-      default() {
-        return [];
-      },
-    },
+  withDefaults(defineProps<Props>(), {
+    items: () => [],
   });
 </script>
 

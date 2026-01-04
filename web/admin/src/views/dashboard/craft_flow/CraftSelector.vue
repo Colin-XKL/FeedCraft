@@ -127,7 +127,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted, computed, watch, PropType } from 'vue';
+  import { ref, onMounted, computed, watch } from 'vue';
   import {
     CraftFlow,
     listCraftFlows,
@@ -143,23 +143,18 @@
 
   const { t } = useI18n();
 
-  const props = defineProps({
-    modelValue: {
-      type: [String, Array] as PropType<string | string[]>,
-      default: () => [],
-    },
-    mode: {
-      type: String as PropType<'single' | 'multiple'>,
-      default: 'single',
-    },
-    placeholder: {
-      type: String,
-      default: '',
-    },
-    allowClear: {
-      type: Boolean,
-      default: false,
-    },
+  interface Props {
+    modelValue?: string | string[];
+    mode?: 'single' | 'multiple';
+    placeholder?: string;
+    allowClear?: boolean;
+  }
+
+  const props = withDefaults(defineProps<Props>(), {
+    modelValue: () => [],
+    mode: 'single',
+    placeholder: '',
+    allowClear: false,
   });
 
   const emit = defineEmits(['update:modelValue', 'change']);
