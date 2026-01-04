@@ -79,7 +79,7 @@
   }
 
   const props = withDefaults(defineProps<Props>(), {
-    itemData: () => ({} as TagProps),
+    itemData: () => ({}) as TagProps,
     index: 0,
   });
 
