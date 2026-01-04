@@ -32,8 +32,8 @@
   const iframeDoc = ref<Document | null>(null);
   const injectedStyle = ref<HTMLStyleElement | null>(null);
 
-  const updateHighlight = (target: HTMLElement) => {
-    const doc = iframeRef.value?.contentDocument;
+  const updateHighlight = (target: any) => {
+    const doc = iframeRef.value?.contentDocument as Document | null;
     if (doc) {
       const old = doc.querySelector('.fc-highlight');
       if (old) old.classList.remove('fc-highlight');
@@ -89,7 +89,7 @@
     if (!target || target.nodeType !== Node.ELEMENT_NODE) return;
 
     // Emit the raw DOM element to the parent
-    emit('select', target);
+    emit('select', target as any);
   };
 
   const onIframeLoad = () => {
