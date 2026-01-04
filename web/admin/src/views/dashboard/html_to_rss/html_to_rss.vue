@@ -119,12 +119,24 @@
                         <template #suffix>
                           <a-button
                             size="mini"
-                            type="primary"
-                            status="success"
+                            :type="
+                              currentTargetField === 'item_selector'
+                                ? 'primary'
+                                : 'primary'
+                            "
+                            :status="
+                              currentTargetField === 'item_selector'
+                                ? 'warning'
+                                : 'success'
+                            "
                             @click="setTargetField('item_selector')"
                           >
                             <icon-select-all />
-                            {{ $t('htmlToRss.step2.pick') }}
+                            {{
+                              currentTargetField === 'item_selector'
+                                ? $t('htmlToRss.step2.picking')
+                                : $t('htmlToRss.step2.pick')
+                            }}
                           </a-button>
                         </template>
                       </a-input>
@@ -146,9 +158,24 @@
                           <a-button
                             size="mini"
                             :disabled="!config.item_selector"
+                            :type="
+                              currentTargetField === 'title_selector'
+                                ? 'primary'
+                                : 'secondary'
+                            "
+                            :status="
+                              currentTargetField === 'title_selector'
+                                ? 'warning'
+                                : 'normal'
+                            "
                             @click="setTargetField('title_selector')"
-                            >{{ $t('htmlToRss.step2.pick') }}</a-button
                           >
+                            {{
+                              currentTargetField === 'title_selector'
+                                ? $t('htmlToRss.step2.picking')
+                                : $t('htmlToRss.step2.pick')
+                            }}
+                          </a-button>
                         </template>
                       </a-input>
                     </a-form-item>
@@ -162,9 +189,24 @@
                           <a-button
                             size="mini"
                             :disabled="!config.item_selector"
+                            :type="
+                              currentTargetField === 'link_selector'
+                                ? 'primary'
+                                : 'secondary'
+                            "
+                            :status="
+                              currentTargetField === 'link_selector'
+                                ? 'warning'
+                                : 'normal'
+                            "
                             @click="setTargetField('link_selector')"
-                            >{{ $t('htmlToRss.step2.pick') }}</a-button
                           >
+                            {{
+                              currentTargetField === 'link_selector'
+                                ? $t('htmlToRss.step2.picking')
+                                : $t('htmlToRss.step2.pick')
+                            }}
+                          </a-button>
                         </template>
                       </a-input>
                     </a-form-item>
@@ -178,9 +220,24 @@
                           <a-button
                             size="mini"
                             :disabled="!config.item_selector"
+                            :type="
+                              currentTargetField === 'date_selector'
+                                ? 'primary'
+                                : 'secondary'
+                            "
+                            :status="
+                              currentTargetField === 'date_selector'
+                                ? 'warning'
+                                : 'normal'
+                            "
                             @click="setTargetField('date_selector')"
-                            >{{ $t('htmlToRss.step2.pick') }}</a-button
                           >
+                            {{
+                              currentTargetField === 'date_selector'
+                                ? $t('htmlToRss.step2.picking')
+                                : $t('htmlToRss.step2.pick')
+                            }}
+                          </a-button>
                         </template>
                       </a-input>
                     </a-form-item>
@@ -194,9 +251,24 @@
                           <a-button
                             size="mini"
                             :disabled="!config.item_selector"
+                            :type="
+                              currentTargetField === 'description_selector'
+                                ? 'primary'
+                                : 'secondary'
+                            "
+                            :status="
+                              currentTargetField === 'description_selector'
+                                ? 'warning'
+                                : 'normal'
+                            "
                             @click="setTargetField('description_selector')"
-                            >{{ $t('htmlToRss.step2.pick') }}</a-button
                           >
+                            {{
+                              currentTargetField === 'description_selector'
+                                ? $t('htmlToRss.step2.picking')
+                                : $t('htmlToRss.step2.pick')
+                            }}
+                          </a-button>
                         </template>
                       </a-input>
                     </a-form-item>
