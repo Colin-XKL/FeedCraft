@@ -127,7 +127,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted, computed, watch } from 'vue';
+  import { ref, onMounted, computed, watch, PropType } from 'vue';
   import {
     CraftFlow,
     listCraftFlows,
@@ -145,11 +145,11 @@
 
   const props = defineProps({
     modelValue: {
-      type: [String, Array],
+      type: [String, Array] as PropType<string | string[]>,
       default: () => [],
     },
     mode: {
-      type: String as () => 'single' | 'multiple',
+      type: String as PropType<'single' | 'multiple'>,
       default: 'single',
     },
     placeholder: {
