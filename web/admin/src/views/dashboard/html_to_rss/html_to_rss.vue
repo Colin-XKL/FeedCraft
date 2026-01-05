@@ -435,7 +435,9 @@
                     :placeholder="$t('htmlToRss.step4.recipeId.placeholder')"
                   >
                     <template #suffix>
-                      <a-tooltip :content="$t('htmlToRss.step4.generateId.tooltip')">
+                      <a-tooltip
+                        :content="$t('htmlToRss.step4.generateId.tooltip')"
+                      >
                         <a-button size="mini" @click="generateIdFromTitle">
                           <icon-thunderbolt />
                         </a-button>
