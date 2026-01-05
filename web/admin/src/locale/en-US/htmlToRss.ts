@@ -57,6 +57,8 @@ export default {
   'htmlToRss.step4.recipeId': 'Recipe Unique ID',
   'htmlToRss.step4.recipeId.help': "e.g., 'tech-news-daily'",
   'htmlToRss.step4.recipeId.placeholder': 'my-recipe-id',
+  'htmlToRss.step4.generateId': 'Generate ID',
+  'htmlToRss.step4.generateId.tooltip': 'Generate ID from Feed Title',
   'htmlToRss.step4.internalDesc': 'Internal Description',
   'htmlToRss.step4.internalDesc.placeholder': 'Notes for yourself...',
   'htmlToRss.step4.confirmSave': 'Confirm & Save',

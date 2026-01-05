@@ -54,6 +54,8 @@ export default {
   'htmlToRss.step4.recipeId': '配方唯一 ID',
   'htmlToRss.step4.recipeId.help': "例如：'tech-news-daily'",
   'htmlToRss.step4.recipeId.placeholder': 'my-recipe-id',
+  'htmlToRss.step4.generateId': '生成 ID',
+  'htmlToRss.step4.generateId.tooltip': '根据 Feed 标题生成 ID',
   'htmlToRss.step4.internalDesc': '内部描述',
   'htmlToRss.step4.internalDesc.placeholder': '给自己看的备注...',
   'htmlToRss.step4.confirmSave': '确认并保存',

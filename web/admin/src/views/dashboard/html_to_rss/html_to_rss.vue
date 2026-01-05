@@ -433,7 +433,15 @@
                   <a-input
                     v-model="recipeMeta.id"
                     :placeholder="$t('htmlToRss.step4.recipeId.placeholder')"
-                  />
+                  >
+                    <template #suffix>
+                      <a-tooltip :content="$t('htmlToRss.step4.generateId.tooltip')">
+                        <a-button size="mini" @click="generateIdFromTitle">
+                          <icon-thunderbolt />
+                        </a-button>
+                      </a-tooltip>
+                    </template>
+                  </a-input>
                 </a-form-item>
                 <a-form-item :label="$t('htmlToRss.step4.internalDesc')">
                   <a-textarea
@@ -475,11 +483,13 @@
   import { ref, reactive, nextTick } from 'vue';
   import axios from 'axios';
   import DOMPurify from 'dompurify';
+  import { kebabCase } from 'lodash';
   import { Message } from '@arco-design/web-vue';
   import {
     IconSelectAll,
     IconArrowRight,
     IconSave,
+    IconThunderbolt,
   } from '@arco-design/web-vue/es/icon';
   import XHeader from '@/components/header/x-header.vue';
   import { createCustomRecipe } from '@/api/custom_recipe';
@@ -535,8 +545,19 @@
 
   // --- Actions ---
 
+  const generateIdFromTitle = () => {
+    if (feedMeta.title) {
+      recipeMeta.id = kebabCase(feedMeta.title);
+      Message.success(t('htmlToRss.step4.generateId'));
+    }
+  };
+
   const nextStep = () => {
     currentStep.value += 1;
+    // Auto-generate ID when entering Step 4 if empty
+    if (currentStep.value === 4 && !recipeMeta.id && feedMeta.title) {
+      recipeMeta.id = kebabCase(feedMeta.title);
+    }
   };
 
   const prevStep = () => {
