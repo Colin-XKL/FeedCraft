@@ -3,7 +3,7 @@ import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { Message, Modal } from '@arco-design/web-vue';
 import { useUserStore } from '@/store';
 import { getToken } from '@/utils/auth';
-import { useRouter } from 'vue-router';
+import router from '@/router';
 import { APIResponse } from './types';
 
 if (import.meta.env.VITE_API_BASE_URL) {
@@ -36,7 +36,6 @@ axios.interceptors.response.use(
     const res = response.data;
     if (res.status && res.status >= 400 && res.status <= 500) {
       Message.error('login required');
-      const router = useRouter();
       router.push({ name: 'login' });
     }
     if (res.code !== 0) {
@@ -66,7 +65,18 @@ axios.interceptors.response.use(
     }
     return response;
   },
-  (error) => {
+  async (error) => {
+    const status = error?.response?.status;
+
+    // Handle 401 Unauthorized explicitly
+    if (status === 401) {
+      const userStore = useUserStore();
+      await userStore.logout();
+      Message.error('Login expired or unauthorized. Redirecting to login...');
+      router.push({ name: 'login' });
+      return Promise.reject(error);
+    }
+
     const respMsg = error?.response?.data?.msg;
     Message.error({
       content: respMsg || error.message || 'Request Error',

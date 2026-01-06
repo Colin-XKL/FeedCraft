@@ -27,7 +27,8 @@ export default function setupUserLoginInfoGuard(router: Router) {
         }
       }
     } else {
-      if (to.name === 'login') {
+      // Allow access to login and home (landing page)
+      if (to.name === 'login' || to.name === 'home') {
         next();
         return;
       }
