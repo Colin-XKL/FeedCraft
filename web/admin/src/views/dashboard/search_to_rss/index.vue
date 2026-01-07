@@ -217,7 +217,7 @@
   import { IconArrowRight, IconSave } from '@arco-design/web-vue/es/icon';
   import XHeader from '@/components/header/x-header.vue';
   import { previewSearch, ParsedItem, SearchFetchReq } from '@/api/json_rss';
-  import { createCustomRecipe } from '@/api/custom_recipe';
+  import { createChannel } from '@/api/channel';
   import { useI18n } from 'vue-i18n';
 
   const router = useRouter();
@@ -324,7 +324,7 @@
     };
 
     try {
-      await createCustomRecipe({
+      await createChannel({
         id: recipeMeta.id,
         description:
           recipeMeta.description || `Search feed for: ${fetchReq.query}`,
@@ -333,7 +333,7 @@
         source_config: JSON.stringify(sourceConfig),
       });
       Message.success(t('searchToRss.msg.saved'));
-      router.push({ name: 'CustomRecipe' });
+      router.push({ name: 'Channel' });
     } catch (err: any) {
       console.error(err);
       Message.error(

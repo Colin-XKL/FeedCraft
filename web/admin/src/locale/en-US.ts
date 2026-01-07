@@ -3,10 +3,10 @@ import localeLogin from '@/views/login/locale/en-US';
 
 import localeSettings from './en-US/settings';
 import localeMenu from './en-US/menu';
-import localeCraftAtom from './en-US/craftAtom';
-import localeCraftFlow from './en-US/craftFlow';
-import localeCustomRecipe from './en-US/customRecipe';
-import localeAllCraftList from './en-US/allCraftList';
+import localeTool from './en-US/tool';
+import localeBlueprint from './en-US/blueprint';
+import localeChannel from './en-US/channel';
+import localeAllProcessorList from './en-US/allProcessorList';
 import localeFeedCompare from './en-US/feedCompare';
 import localeFeedViewer from './en-US/feedViewer';
 import localeLlmDebug from './en-US/llmDebug';
@@ -21,10 +21,10 @@ export default {
   ...localeMessageBox,
   ...localeLogin,
   ...localeMenu,
-  ...localeCraftAtom,
-  ...localeCraftFlow,
-  ...localeCustomRecipe,
-  ...localeAllCraftList,
+  ...localeTool,
+  ...localeBlueprint,
+  ...localeChannel,
+  ...localeAllProcessorList,
   ...localeFeedCompare,
   ...localeFeedViewer,
   ...localeLlmDebug,

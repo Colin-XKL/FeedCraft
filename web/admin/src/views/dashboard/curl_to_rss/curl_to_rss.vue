@@ -427,7 +427,7 @@
     JsonFetchReq,
     ParsedItem,
   } from '@/api/json_rss';
-  import { createCustomRecipe } from '@/api/custom_recipe';
+  import { createChannel } from '@/api/channel';
   import { useI18n } from 'vue-i18n';
 
   const router = useRouter();
@@ -617,7 +617,7 @@
     };
 
     try {
-      await createCustomRecipe({
+      await createChannel({
         id: recipeMeta.id,
         description: recipeMeta.description,
         craft: 'proxy',
@@ -626,7 +626,7 @@
       });
 
       Message.success(t('curlToRss.msg.saved'));
-      router.push({ name: 'CustomRecipe' });
+      router.push({ name: 'Channel' });
     } catch (err: any) {
       Message.error(t('curlToRss.msg.saveFailed', { msg: err.message || err }));
     } finally {

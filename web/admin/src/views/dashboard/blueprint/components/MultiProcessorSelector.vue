@@ -5,14 +5,14 @@
       tabindex="0"
       role="button"
       aria-haspopup="dialog"
-      :aria-label="placeholder || t('feedCompare.selectCraftFlow.placeholder')"
+      :aria-label="placeholder || t('feedCompare.selectBlueprint.placeholder')"
       @click="openModal"
       @keydown.enter.prevent="openModal"
       @keydown.space.prevent="openModal"
     >
       <div class="flex flex-wrap gap-1 flex-1 overflow-hidden">
         <span v-if="!hasSelection" class="text-[var(--color-text-3)]">{{
-          placeholder || t('feedCompare.selectCraftFlow.placeholder')
+          placeholder || t('feedCompare.selectBlueprint.placeholder')
         }}</span>
         <template v-else>
           <a-tag
@@ -32,7 +32,7 @@
       </div>
     </div>
 
-    <CraftPickerModal
+    <ProcessorPickerModal
       v-model:visible="visible"
       :model-value="modelValue"
       mode="multiple"
@@ -46,7 +46,7 @@
   import { ref, computed } from 'vue';
   import { useI18n } from 'vue-i18n';
   import { IconDown } from '@arco-design/web-vue/es/icon';
-  import CraftPickerModal from './CraftPickerModal.vue';
+  import ProcessorPickerModal from './ProcessorPickerModal.vue';
 
   const { t } = useI18n();
 

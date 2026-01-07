@@ -1,8 +1,8 @@
 <template>
-  <CraftSelector
+  <ProcessorSelector
     :model-value="modelValue"
     :mode="mode"
-    :placeholder="t('feedCompare.selectCraftFlow.placeholder')"
+    :placeholder="t('feedCompare.selectBlueprint.placeholder')"
     allow-clear
     @update:model-value="onUpdate"
   />
@@ -10,7 +10,7 @@
 
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n';
-  import CraftSelector from './CraftSelector.vue';
+  import ProcessorSelector from './ProcessorSelector.vue';
 
   const { t } = useI18n();
   const props = defineProps<{

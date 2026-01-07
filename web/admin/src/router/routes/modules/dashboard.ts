@@ -33,41 +33,41 @@ const DASHBOARD: AppRouteRecordRaw = {
       },
     },
     {
-      path: 'custom_recipe',
-      name: 'CustomRecipe',
+      path: 'channel',
+      name: 'Channel',
       component: () =>
-        import('@/views/dashboard/custom_recipe/custom_recipe.vue'),
+        import('@/views/dashboard/channel/channel.vue'),
       meta: {
         requiresAuth: true,
-        locale: 'menu.customRecipe',
+        locale: 'menu.channel',
       },
     },
     {
-      path: 'craft_flow',
-      name: 'CraftFlow',
-      component: () => import('@/views/dashboard/craft_flow/craft_flow.vue'),
+      path: 'blueprint',
+      name: 'Blueprint',
+      component: () => import('@/views/dashboard/blueprint/blueprint.vue'),
       meta: {
         requiresAuth: true,
-        locale: 'menu.craftFlow',
+        locale: 'menu.blueprint',
       },
     },
     {
-      path: 'craft_atom',
-      name: 'CraftAtom',
-      component: () => import('@/views/dashboard/craft_atom/craft_atom.vue'),
+      path: 'tool',
+      name: 'Tool',
+      component: () => import('@/views/dashboard/tool/tool.vue'),
       meta: {
         requiresAuth: true,
-        locale: 'menu.craftAtom',
+        locale: 'menu.tool',
       },
     },
     {
       path: 'all_craft_list',
-      name: 'AllCraftList',
+      name: 'AllProcessorList',
       component: () =>
         import('@/views/dashboard/all_craft_list/all_craft_list.vue'),
       meta: {
         requiresAuth: true,
-        locale: 'menu.allCraftList',
+        locale: 'menu.allProcessorList',
       },
     },
   ],

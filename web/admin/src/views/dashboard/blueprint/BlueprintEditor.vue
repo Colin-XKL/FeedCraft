@@ -4,12 +4,12 @@
       v-if="modelValue.length === 0"
       class="text-center text-gray-400 py-4 border border-dashed border-gray-300 rounded mb-4"
     >
-      {{ t('craftFlow.editor.empty') }}
+      {{ t('blueprint.editor.empty') }}
     </div>
 
     <div v-else class="space-y-3 mb-4">
       <div
-        v-for="(craft, index) in modelValue"
+        v-for="(processor, index) in modelValue"
         :key="index"
         class="flex items-center justify-between p-3 border border-gray-200 rounded bg-white shadow-sm hover:shadow-md transition-shadow"
       >
@@ -19,39 +19,39 @@
           >
             {{ index + 1 }}
           </div>
-          <span class="font-medium text-gray-800">{{ craft }}</span>
+          <span class="font-medium text-gray-800">{{ processor }}</span>
         </div>
 
         <div class="flex items-center gap-2">
-          <a-tooltip :content="t('craftFlow.editor.moveUp')">
+          <a-tooltip :content="t('blueprint.editor.moveUp')">
             <a-button
               size="small"
               type="text"
-              :aria-label="t('craftFlow.editor.moveUp')"
+              :aria-label="t('blueprint.editor.moveUp')"
               :disabled="index === 0"
               @click="moveUp(index)"
             >
               <template #icon><icon-arrow-up /></template>
             </a-button>
           </a-tooltip>
-          <a-tooltip :content="t('craftFlow.editor.moveDown')">
+          <a-tooltip :content="t('blueprint.editor.moveDown')">
             <a-button
               size="small"
               type="text"
-              :aria-label="t('craftFlow.editor.moveDown')"
+              :aria-label="t('blueprint.editor.moveDown')"
               :disabled="index === modelValue.length - 1"
               @click="moveDown(index)"
             >
               <template #icon><icon-arrow-down /></template>
             </a-button>
           </a-tooltip>
-          <a-tooltip :content="t('craftFlow.editor.remove')">
+          <a-tooltip :content="t('blueprint.editor.remove')">
             <a-button
               size="small"
               type="text"
               status="danger"
-              :aria-label="t('craftFlow.editor.remove')"
-              @click="removeCraft(index)"
+              :aria-label="t('blueprint.editor.remove')"
+              @click="removeProcessor(index)"
             >
               <template #icon><icon-delete /></template>
             </a-button>
@@ -60,23 +60,23 @@
       </div>
     </div>
 
-    <CraftSelector
+    <ProcessorSelector
       mode="single"
       :model-value="''"
-      :placeholder="t('craftFlow.editor.addPlaceholder')"
-      @update:model-value="addCraft"
+      :placeholder="t('blueprint.editor.addPlaceholder')"
+      @update:model-value="addProcessor"
     >
       <a-button type="dashed" long class="flex items-center justify-center">
         <template #icon><icon-plus /></template>
-        {{ t('craftFlow.editor.add') }}
+        {{ t('blueprint.editor.add') }}
       </a-button>
-    </CraftSelector>
+    </ProcessorSelector>
   </div>
 </template>
 
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n';
-  import CraftSelector from './CraftSelector.vue';
+  import ProcessorSelector from './ProcessorSelector.vue';
 
   const { t } = useI18n();
 
@@ -88,14 +88,14 @@
     (e: 'update:modelValue', value: string[]): void;
   }>();
 
-  const addCraft = (craft: string | string[]) => {
+  const addProcessor = (craft: string | string[]) => {
     if (!craft || (Array.isArray(craft) && craft.length === 0)) return;
-    const craftName = Array.isArray(craft) ? craft[0] : craft;
-    const newList = [...props.modelValue, craftName];
+    const processorName = Array.isArray(craft) ? craft[0] : craft;
+    const newList = [...props.modelValue, processorName];
     emit('update:modelValue', newList);
   };
 
-  const removeCraft = (index: number) => {
+  const removeProcessor = (index: number) => {
     const newList = [...props.modelValue];
     newList.splice(index, 1);
     emit('update:modelValue', newList);

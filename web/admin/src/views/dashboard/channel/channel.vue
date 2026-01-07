@@ -1,14 +1,14 @@
 <template>
   <div class="py-8 px-16">
     <x-header
-      :title="t('menu.customRecipe')"
-      :description="t('customRecipe.description')"
+      :title="t('menu.channel')"
+      :description="t('channel.description')"
     >
     </x-header>
 
     <a-space direction="horizontal" class="mb-4">
-      <a-button type="primary" :loading="isLoading" @click="listCustomRecipes">
-        {{ t('customRecipe.query') }}
+      <a-button type="primary" :loading="isLoading" @click="listChannels">
+        {{ t('channel.query') }}
       </a-button>
       <a-button
         type="outline"
@@ -22,7 +22,7 @@
         "
       >
         <template #icon><icon-plus /></template>
-        {{ t('customRecipe.quickCreateRSS') }}
+        {{ t('channel.quickCreateRSS') }}
       </a-button>
       <a-button
         type="outline"
@@ -33,12 +33,12 @@
           }
         "
       >
-        {{ t('customRecipe.create') }}
+        {{ t('channel.create') }}
       </a-button>
     </a-space>
 
     <a-table
-      :data="recipes"
+      :data="channels"
       :columns="columns"
       :bordered="true"
       :loading="isLoading"
@@ -47,7 +47,7 @@
         <a-tooltip
           v-if="record.is_active"
           :content="
-            t('customRecipe.status.activeTooltip', {
+            t('channel.status.activeTooltip', {
               time: dayjs(record.last_accessed_at).format(
                 'YYYY-MM-DD HH:mm:ss',
               ),
@@ -55,12 +55,12 @@
           "
         >
           <a-tag color="green" :default-checked="true">{{
-            t('customRecipe.status.active')
+            t('channel.status.active')
           }}</a-tag>
         </a-tooltip>
-        <a-tooltip v-else :content="t('customRecipe.status.inactiveTooltip')">
+        <a-tooltip v-else :content="t('channel.status.inactiveTooltip')">
           <a-tag color="gray" :default-checked="true">{{
-            t('customRecipe.status.inactive')
+            t('channel.status.inactive')
           }}</a-tag>
         </a-tooltip>
       </template>
@@ -78,11 +78,11 @@
           >
             {{ humanReadableConfig(record.source_config) }}
           </span>
-          <a-tooltip :content="t('customRecipe.viewConfig')">
+          <a-tooltip :content="t('channel.viewConfig')">
             <a-button
               type="text"
               size="mini"
-              :aria-label="t('customRecipe.viewConfig')"
+              :aria-label="t('channel.viewConfig')"
               @click="viewConfig(record.source_config)"
             >
               <template #icon>
@@ -103,16 +103,16 @@
               }
             "
           >
-            {{ t('customRecipe.edit') }}
+            {{ t('channel.edit') }}
           </a-button>
           <a-popconfirm
-            :content="t('customRecipe.deleteConfirm')"
-            @ok="deleteRecipe(record.id)"
+            :content="t('channel.deleteConfirm')"
+            @ok="deleteChannel(record.id)"
           >
-            <a-button status="danger">{{ t('customRecipe.delete') }}</a-button>
+            <a-button status="danger">{{ t('channel.delete') }}</a-button>
           </a-popconfirm>
-          <a-link :href="`${baseUrl}/recipe/${record?.id}`">{{
-            t('customRecipe.link')
+          <a-link :href="`${baseUrl}/channel/${record?.id}`">{{
+            t('channel.link')
           }}</a-link>
         </a-space>
       </template>
@@ -123,10 +123,10 @@
       v-model:visible="showModal"
       :title="
         editing
-          ? t('customRecipe.editModalTitle.edit')
+          ? t('channel.editModalTitle.edit')
           : quickCreate
-            ? t('customRecipe.quickCreateRSS')
-            : t('customRecipe.editModalTitle.create')
+            ? t('channel.quickCreateRSS')
+            : t('channel.editModalTitle.create')
       "
     >
       <a-form
@@ -135,38 +135,38 @@
         :rules="rules"
         :wrapper-col="{ span: 18 }"
       >
-        <a-form-item :label="t('customRecipe.form.name')" field="id">
+        <a-form-item :label="t('channel.form.name')" field="id">
           <a-input v-model="form.id" :disabled="isUpdating" />
         </a-form-item>
         <a-form-item
-          :label="t('customRecipe.form.description')"
+          :label="t('channel.form.description')"
           field="description"
         >
           <a-input v-model="form.description" />
         </a-form-item>
-        <a-form-item :label="t('customRecipe.form.craft')" field="craft">
-          <CraftSelector
-            v-model="craftList"
+        <a-form-item :label="t('channel.form.processor')" field="processor_name">
+          <ProcessorSelector
+            v-model="processorList"
             mode="multiple"
-            :placeholder="t('customRecipe.form.placeholder.craft')"
+            :placeholder="t('channel.form.placeholder.processor')"
           />
         </a-form-item>
 
         <!-- Quick Create Fields -->
         <template v-if="quickCreate">
           <a-form-item
-            :label="t('customRecipe.form.feedURL')"
+            :label="t('channel.form.feedURL')"
             field="feed_url"
             :rules="[
               {
                 required: true,
-                message: t('customRecipe.form.rule.rssUrlRequired'),
+                message: t('channel.form.rule.rssUrlRequired'),
               },
             ]"
           >
             <a-input
               v-model="rssUrl"
-              :placeholder="t('customRecipe.form.placeholder.rssUrl')"
+              :placeholder="t('channel.form.placeholder.rssUrl')"
             />
           </a-form-item>
         </template>
@@ -174,7 +174,7 @@
         <!-- Advanced Fields -->
         <template v-else>
           <a-form-item
-            :label="t('customRecipe.form.sourceType')"
+            :label="t('channel.form.sourceType')"
             field="source_type"
           >
             <a-select v-model="form.source_type">
@@ -184,13 +184,13 @@
             </a-select>
           </a-form-item>
           <a-form-item
-            :label="t('customRecipe.form.sourceConfig')"
+            :label="t('channel.form.sourceConfig')"
             field="source_config"
           >
             <a-textarea
               v-model="form.source_config"
               :auto-size="{ minRows: 3, maxRows: 10 }"
-              :placeholder="t('customRecipe.form.placeholder.sourceConfig')"
+              :placeholder="t('channel.form.placeholder.sourceConfig')"
             />
           </a-form-item>
         </template>
@@ -203,10 +203,10 @@
               isUpdating = false;
             }
           "
-          >{{ t('customRecipe.form.cancel') }}
+          >{{ t('channel.form.cancel') }}
         </a-button>
-        <a-button type="primary" :loading="saving" @click="saveRecipe">{{
-          t('customRecipe.form.save')
+        <a-button type="primary" :loading="saving" @click="saveChannel">{{
+          t('channel.form.save')
         }}</a-button>
       </template>
     </a-modal>
@@ -214,7 +214,7 @@
     <!-- View Config Modal -->
     <a-modal
       v-model:visible="showConfigModal"
-      :title="t('customRecipe.viewConfigModalTitle')"
+      :title="t('channel.viewConfigModalTitle')"
       :footer="false"
     >
       <pre
@@ -234,32 +234,32 @@
 <script setup lang="ts">
   import { ref, onMounted, computed } from 'vue';
   import {
-    createCustomRecipe,
-    CustomRecipe,
-    deleteCustomRecipe,
-    getCustomRecipes,
-    updateCustomRecipe,
-  } from '@/api/custom_recipe';
+    createChannel,
+    Channel,
+    deleteChannel,
+    getChannels,
+    updateChannel,
+  } from '@/api/channel';
   import XHeader from '@/components/header/x-header.vue';
   import { namingValidator } from '@/utils/validator';
   import { IconEye, IconPlus } from '@arco-design/web-vue/es/icon';
   import { Message } from '@arco-design/web-vue';
   import dayjs from 'dayjs';
   import { useI18n } from 'vue-i18n';
-  import CraftSelector from '../craft_flow/CraftSelector.vue';
+  import ProcessorSelector from '../blueprint/ProcessorSelector.vue';
 
   const { t } = useI18n();
 
   const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
-  const recipes = ref<CustomRecipe[]>([]);
+  const channels = ref<Channel[]>([]);
   const showModal = ref(false);
   const showConfigModal = ref(false);
   const currentConfig = ref('');
   const quickCreate = ref(false);
   const rssUrl = ref('');
 
-  const form = ref<CustomRecipe>({
+  const form = ref<Channel>({
     id: '',
     description: '',
     craft: '',
@@ -267,52 +267,52 @@
     source_config: '',
   });
 
-  const craftList = computed({
+  const processorList = computed({
     get: () =>
-      form.value.craft ? form.value.craft.split(',').filter(Boolean) : [],
+      form.value.processor_name ? form.value.processor_name.split(',').filter(Boolean) : [],
     set: (val: string[] | string) => {
       if (Array.isArray(val)) {
-        form.value.craft = val.join(',');
+        form.value.processor_name = val.join(',');
       } else if (typeof val === 'string') {
-        form.value.craft = val;
+        form.value.processor_name = val;
       }
     },
   });
 
   const editing = ref(false);
-  const selectedRecipe = ref<CustomRecipe | null>(null);
+  const selectedChannel = ref<Channel | null>(null);
   const isLoading = ref(false);
   const isUpdating = ref(false);
   const saving = ref(false);
 
   const columns = [
-    { title: t('customRecipe.form.name'), dataIndex: 'id' },
-    { title: t('customRecipe.form.description'), dataIndex: 'description' },
-    { title: t('customRecipe.form.craft'), dataIndex: 'craft' },
-    { title: t('customRecipe.status.active'), slotName: 'status' },
-    { title: t('customRecipe.form.sourceType'), dataIndex: 'source_type' },
+    { title: t('channel.form.name'), dataIndex: 'id' },
+    { title: t('channel.form.description'), dataIndex: 'description' },
+    { title: t('channel.form.processor'), dataIndex: 'processor_name' },
+    { title: t('channel.status.active'), slotName: 'status' },
+    { title: t('channel.form.sourceType'), dataIndex: 'source_type' },
     {
-      title: t('customRecipe.form.sourceConfig'),
+      title: t('channel.form.sourceConfig'),
       dataIndex: 'source_config',
       slotName: 'source_config',
     },
-    { title: t('customRecipe.edit'), slotName: 'actions' },
+    { title: t('channel.edit'), slotName: 'actions' },
   ];
 
-  async function listCustomRecipes() {
+  async function listChannels() {
     isLoading.value = true;
-    recipes.value = (await getCustomRecipes()).data;
+    channels.value = (await getChannels()).data;
     isLoading.value = false;
   }
 
   onMounted(() => {
-    listCustomRecipes();
+    listChannels();
   });
   const rules = {
     id: [
       {
         required: true,
-        message: t('customRecipe.form.rule.nameRequired'),
+        message: t('channel.form.rule.nameRequired'),
         trigger: 'blur',
       },
       namingValidator,
@@ -320,21 +320,21 @@
     craft: [
       {
         required: true,
-        message: t('customRecipe.form.rule.craftRequired'),
+        message: t('channel.form.rule.craftRequired'),
         trigger: 'blur',
       },
     ],
     source_type: [
       {
         required: true,
-        message: t('customRecipe.form.rule.sourceTypeRequired'),
+        message: t('channel.form.rule.sourceTypeRequired'),
         trigger: 'change',
       },
     ],
     source_config: [
       {
         required: true,
-        message: t('customRecipe.form.rule.sourceConfigRequired'),
+        message: t('channel.form.rule.sourceConfigRequired'),
         trigger: 'blur',
       },
     ],
@@ -350,7 +350,7 @@
       if (config.url) {
         return config.url;
       }
-      return t('customRecipe.jsonConfigFallback');
+      return t('channel.jsonConfigFallback');
     } catch (e) {
       return configStr;
     }
@@ -366,31 +366,31 @@
     showConfigModal.value = true;
   };
 
-  const showEditModal = (recipe: CustomRecipe) => {
+  const showEditModal = (recipe: Channel) => {
     editing.value = true;
     quickCreate.value = false; // Ensure we are not in quick create mode
-    selectedRecipe.value = recipe;
+    selectedChannel.value = recipe;
 
     // Pretty print JSON for editing
-    let prettyConfig = recipe.source_config;
+    let prettyConfig = channel.source_config;
     try {
-      const obj = JSON.parse(recipe.source_config);
+      const obj = JSON.parse(channel.source_config);
       prettyConfig = JSON.stringify(obj, null, 2);
     } catch (e) {
       // ignore error, keep original string
     }
 
     form.value = {
-      id: recipe.id,
-      description: recipe.description,
-      craft: recipe.craft,
-      source_type: recipe.source_type,
+      id: channel.id,
+      description: channel.description,
+      craft: recipe.processor_name,
+      source_type: channel.source_type,
       source_config: prettyConfig,
     };
     showModal.value = true;
   };
 
-  const saveRecipe = async () => {
+  const saveChannel = async () => {
     if (quickCreate.value) {
       // Construct JSON for Quick Create
       const config = {
@@ -405,7 +405,7 @@
       try {
         JSON.parse(form.value.source_config);
       } catch (e) {
-        Message.error(t('customRecipe.form.error.invalidJson'));
+        Message.error(t('channel.form.error.invalidJson'));
         return;
       }
     }
@@ -413,16 +413,16 @@
     saving.value = true;
     try {
       if (editing.value) {
-        if (selectedRecipe.value) {
-          await updateCustomRecipe(form.value);
-          selectedRecipe.value.description = form.value.description;
-          selectedRecipe.value.craft = form.value.craft;
-          selectedRecipe.value.source_type = form.value.source_type;
-          selectedRecipe.value.source_config = form.value.source_config;
+        if (selectedChannel.value) {
+          await updateChannel(form.value);
+          selectedChannel.value.description = form.value.description;
+          selectedChannel.value.craft = form.value.processor_name;
+          selectedChannel.value.source_type = form.value.source_type;
+          selectedChannel.value.source_config = form.value.source_config;
         }
       } else {
-        await createCustomRecipe(form.value as CustomRecipe);
-        await listCustomRecipes();
+        await createChannel(form.value as Channel);
+        await listChannels();
       }
       showModal.value = false;
       form.value = {
@@ -434,19 +434,19 @@
       };
       editing.value = false;
       isUpdating.value = false;
-      selectedRecipe.value = null;
+      selectedChannel.value = null;
       quickCreate.value = false;
       rssUrl.value = '';
     } catch (e) {
-      Message.error(t('customRecipe.form.error.saveFailed'));
+      Message.error(t('channel.form.error.saveFailed'));
     } finally {
       saving.value = false;
     }
   };
 
-  const deleteRecipe = async (id: string) => {
-    await deleteCustomRecipe(id);
-    await listCustomRecipes();
+  const deleteChannel = async (id: string) => {
+    await deleteChannel(id);
+    await listChannels();
   };
 
   function resetForm() {

@@ -5,14 +5,14 @@
       tabindex="0"
       role="button"
       aria-haspopup="dialog"
-      :aria-label="placeholder || t('feedCompare.selectCraftFlow.placeholder')"
+      :aria-label="placeholder || t('feedCompare.selectBlueprint.placeholder')"
       @click="openModal"
       @keydown.enter.prevent="openModal"
       @keydown.space.prevent="openModal"
     >
       <div class="flex flex-wrap gap-1 flex-1 overflow-hidden">
         <span v-if="!modelValue" class="text-[var(--color-text-3)]">{{
-          placeholder || t('feedCompare.selectCraftFlow.placeholder')
+          placeholder || t('feedCompare.selectBlueprint.placeholder')
         }}</span>
         <span v-else class="text-[var(--color-text-1)] py-0.5 pl-1">{{
           modelValue
@@ -22,12 +22,12 @@
       <div class="flex items-center">
         <a-tooltip
           v-if="allowClear && modelValue"
-          :content="t('feedCompare.selectCraftFlow.clear')"
+          :content="t('feedCompare.selectBlueprint.clear')"
         >
           <icon-close-circle
             class="text-[var(--color-text-3)] hover:text-[var(--color-text-2)] mr-2 z-10"
             role="button"
-            :aria-label="t('feedCompare.selectCraftFlow.clear')"
+            :aria-label="t('feedCompare.selectBlueprint.clear')"
             @click.stop="handleClear"
           />
         </a-tooltip>
@@ -35,7 +35,7 @@
       </div>
     </div>
 
-    <CraftPickerModal
+    <ProcessorPickerModal
       v-model:visible="visible"
       :model-value="modelValue"
       mode="single"
@@ -49,7 +49,7 @@
   import { ref } from 'vue';
   import { useI18n } from 'vue-i18n';
   import { IconCloseCircle, IconDown } from '@arco-design/web-vue/es/icon';
-  import CraftPickerModal from './CraftPickerModal.vue';
+  import ProcessorPickerModal from './ProcessorPickerModal.vue';
 
   const { t } = useI18n();
 

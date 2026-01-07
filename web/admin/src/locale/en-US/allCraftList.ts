@@ -1,9 +1,9 @@
 export default {
-  'allCraftList.description':
-    'Displays all system-built Craft Atoms, user-defined Craft Atoms, and user-defined Craft Flows.',
-  'allCraftList.query': 'Query',
-  'allCraftList.table.name': 'Name',
-  'allCraftList.table.type': 'Type',
-  'allCraftList.table.description': 'Description',
-  'allCraftList.message.fetchFailed': 'Failed to fetch all Crafts',
+  'allProcessorList.description':
+    'Displays all system tools, user-defined tools, and user-defined blueprints.',
+  'allProcessorList.query': 'Query',
+  'allProcessorList.table.name': 'Name',
+  'allProcessorList.table.type': 'Type',
+  'allProcessorList.table.description': 'Description',
+  'allProcessorList.message.fetchFailed': 'Failed to fetch all components',
 };

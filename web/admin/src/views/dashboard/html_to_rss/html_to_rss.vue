@@ -482,7 +482,7 @@
     IconSave,
   } from '@arco-design/web-vue/es/icon';
   import XHeader from '@/components/header/x-header.vue';
-  import { createCustomRecipe } from '@/api/custom_recipe';
+  import { createChannel } from '@/api/channel';
   import { useRouter } from 'vue-router';
   import { useI18n } from 'vue-i18n';
 
@@ -697,7 +697,7 @@
     };
 
     try {
-      await createCustomRecipe({
+      await createChannel({
         id: recipeMeta.id,
         description: recipeMeta.description,
         craft: 'proxy', // Default craft flow
@@ -706,7 +706,7 @@
       });
 
       Message.success(t('htmlToRss.msg.saveSuccess'));
-      router.push({ name: 'CustomRecipe' }); // Navigate to custom recipe page
+      router.push({ name: 'Channel' }); // Navigate to custom recipe page
     } catch (err: any) {
       Message.error(t('htmlToRss.msg.saveFailed', { msg: err.message || err }));
     } finally {

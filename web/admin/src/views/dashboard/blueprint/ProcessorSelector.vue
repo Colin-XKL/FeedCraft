@@ -1,7 +1,7 @@
 <template>
-  <div class="craft-selector-wrapper">
+  <div class="processor-selector-wrapper">
     <!-- Single Mode -->
-    <SingleCraftSelector
+    <SingleProcessorSelector
       v-if="mode === 'single' && !$slots.default"
       :model-value="modelValue as string"
       :placeholder="placeholder"
@@ -10,7 +10,7 @@
     />
 
     <!-- Multiple Mode -->
-    <MultiCraftSelector
+    <MultiProcessorSelector
       v-else-if="mode === 'multiple' && !$slots.default"
       :model-value="modelValue as string[]"
       :placeholder="placeholder"
@@ -20,7 +20,7 @@
     <!-- Custom Slot Trigger -->
     <div v-else class="custom-trigger" @click="openModal">
       <slot></slot>
-      <CraftPickerModal
+      <ProcessorPickerModal
         v-model:visible="visible"
         :model-value="modelValue"
         :mode="mode"
@@ -33,9 +33,9 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import SingleCraftSelector from './components/SingleCraftSelector.vue';
-  import MultiCraftSelector from './components/MultiCraftSelector.vue';
-  import CraftPickerModal from './components/CraftPickerModal.vue';
+  import SingleProcessorSelector from './components/SingleProcessorSelector.vue';
+  import MultiProcessorSelector from './components/MultiProcessorSelector.vue';
+  import ProcessorPickerModal from './components/ProcessorPickerModal.vue';
 
   const props = defineProps({
     modelValue: {
@@ -71,7 +71,7 @@
 </script>
 
 <style scoped>
-  .craft-selector-wrapper {
+  .processor-selector-wrapper {
     width: 100%;
   }
   .custom-trigger {

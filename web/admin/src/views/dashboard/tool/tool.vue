@@ -1,13 +1,13 @@
 <template>
   <div class="py-8 px-16">
     <x-header
-      :title="t('menu.craftAtom')"
-      :description="t('craftAtom.description')"
+      :title="t('menu.tool')"
+      :description="t('tool.description')"
     ></x-header>
 
     <a-space direction="horizontal" class="mb-6">
-      <a-button type="primary" :loading="isLoading" @click="listAllCraftAtoms">
-        {{ t('craftAtom.query') }}
+      <a-button type="primary" :loading="isLoading" @click="listAllTools">
+        {{ t('tool.query') }}
       </a-button>
       <a-button
         type="outline"
@@ -17,21 +17,21 @@
             isUpdating = false;
           }
         "
-        >{{ t('craftAtom.create') }}
+        >{{ t('tool.create') }}
       </a-button>
     </a-space>
 
-    <a-table :data="craftAtoms" :columns="columns" :loading="isLoading">
+    <a-table :data="tools" :columns="columns" :loading="isLoading">
       <template #actions="{ record }">
         <a-space>
           <a-button type="outline" @click="editBtnHandler(record)"
-            >{{ t('craftAtom.edit') }}
+            >{{ t('tool.edit') }}
           </a-button>
           <a-popconfirm
-            :content="t('craftAtom.deleteConfirm')"
-            @ok="deleteCraftAtomHandler(record.name)"
+            :content="t('tool.deleteConfirm')"
+            @ok="deleteToolHandler(record.name)"
           >
-            <a-button status="danger">{{ t('craftAtom.delete') }}</a-button>
+            <a-button status="danger">{{ t('tool.delete') }}</a-button>
           </a-popconfirm>
         </a-space>
       </template>
@@ -41,50 +41,50 @@
       v-model:visible="showEditModal"
       :title="
         isUpdating
-          ? t('craftAtom.editModalTitle.edit')
-          : t('craftAtom.editModalTitle.create')
+          ? t('tool.editModalTitle.edit')
+          : t('tool.editModalTitle.create')
       "
     >
       <a-form
-        :model="editedCraftAtom"
+        :model="editedTool"
         :rules="rules"
         :label-col="{ span: 6 }"
         :wrapper-col="{ span: 18 }"
         layout="vertical"
       >
-        <a-form-item :label="t('craftAtom.form.name')" field="name">
-          <a-input v-model="editedCraftAtom.name" />
+        <a-form-item :label="t('tool.form.name')" field="name">
+          <a-input v-model="editedTool.name" />
         </a-form-item>
         <a-form-item
-          :label="t('craftAtom.form.description')"
+          :label="t('tool.form.description')"
           field="description"
         >
-          <a-textarea v-model="editedCraftAtom.description" />
+          <a-textarea v-model="editedTool.description" />
         </a-form-item>
         <a-form-item
-          :label="t('craftAtom.form.template')"
+          :label="t('tool.form.template')"
           field="template_name"
         >
           <a-select
-            v-model="editedCraftAtom.template_name"
+            v-model="editedTool.template_name"
             :options="templateOptions"
-            :placeholder="t('craftAtom.form.selectTemplate')"
+            :placeholder="t('tool.form.selectTemplate')"
             @change="handleTemplateChange"
           />
         </a-form-item>
-        <a-form-item :label="t('craftAtom.form.params')" field="params">
+        <a-form-item :label="t('tool.form.params')" field="params">
           <a-space direction="vertical" style="width: 100%">
             <a-list :split="false" size="small" :bordered="false">
               <div class="mb-2 text-gray-400">
-                <div class="">{{ t('craftAtom.form.requiredParams') }}</div>
+                <div class="">{{ t('tool.form.requiredParams') }}</div>
                 <template
                   v-if="
-                    paramTemplates[editedCraftAtom.template_name]?.length > 0
+                    paramTemplates[editedTool.template_name]?.length > 0
                   "
                 >
                   <div
                     v-for="item in paramTemplates[
-                      editedCraftAtom.template_name
+                      editedTool.template_name
                     ]"
                     :key="item.key"
                   >
@@ -97,7 +97,7 @@
                   </div>
                 </template>
                 <template v-else>
-                  <div>{{ t('craftAtom.form.noParams') }}</div>
+                  <div>{{ t('tool.form.noParams') }}</div>
                 </template>
                 <hr class="my-1" />
               </div>
@@ -106,13 +106,13 @@
                   <a-col :span="8">
                     <a-input
                       v-model="param.key"
-                      :placeholder="t('craftAtom.form.key')"
+                      :placeholder="t('tool.form.key')"
                     />
                   </a-col>
                   <a-col :span="14">
                     <a-textarea
                       v-model="param.value"
-                      :placeholder="t('craftAtom.form.value')"
+                      :placeholder="t('tool.form.value')"
                     />
                   </a-col>
                   <a-col :span="2">
@@ -127,7 +127,7 @@
             </a-list>
 
             <a-button type="dashed" @click="addParam">{{
-              t('craftAtom.form.addParam')
+              t('tool.form.addParam')
             }}</a-button>
           </a-space>
         </a-form-item>
@@ -140,10 +140,10 @@
               isUpdating = false;
             }
           "
-          >{{ t('craftAtom.form.cancel') }}
+          >{{ t('tool.form.cancel') }}
         </a-button>
-        <a-button type="primary" @click="saveCraftAtom">{{
-          t('craftAtom.form.save')
+        <a-button type="primary" @click="saveTool">{{
+          t('tool.form.save')
         }}</a-button>
       </template>
     </a-modal>
@@ -154,21 +154,21 @@
   import XHeader from '@/components/header/x-header.vue';
   import { onBeforeMount, ref } from 'vue';
   import {
-    CraftAtom,
-    createCraftAtom,
-    deleteCraftAtom,
-    listCraftAtoms,
-    updateCraftAtom,
-  } from '@/api/craft_atom';
-  import { listCraftTemplates } from '@/api/craft_flow';
+    Tool,
+    createTool,
+    deleteTool,
+    listTools,
+    updateTool,
+  } from '@/api/tool';
+  import { listToolTemplates } from '@/api/blueprint';
   import { namingValidator } from '@/utils/validator';
   import { useI18n } from 'vue-i18n';
 
   const { t } = useI18n();
 
   const isLoading = ref(false);
-  const craftAtoms = ref<CraftAtom[]>([]);
-  const editedCraftAtom = ref<CraftAtom>({
+  const tools = ref<Tool[]>([]);
+  const editedTool = ref<Tool>({
     name: '',
     description: '',
     template_name: '',
@@ -179,24 +179,24 @@
   const isUpdating = ref(false);
 
   const columns = [
-    { title: t('craftAtom.form.name'), dataIndex: 'name' },
-    { title: t('craftAtom.form.description'), dataIndex: 'description' },
-    { title: t('craftAtom.form.template'), dataIndex: 'template_name' },
-    { title: t('craftAtom.form.params'), dataIndex: 'params' },
-    { title: t('craftAtom.edit'), slotName: 'actions' },
+    { title: t('tool.form.name'), dataIndex: 'name' },
+    { title: t('tool.form.description'), dataIndex: 'description' },
+    { title: t('tool.form.template'), dataIndex: 'template_name' },
+    { title: t('tool.form.params'), dataIndex: 'params' },
+    { title: t('tool.edit'), slotName: 'actions' },
   ];
   const rules = {
     template_name: [
       {
         required: true,
-        message: t('craftAtom.form.rule.templateRequired'),
+        message: t('tool.form.rule.templateRequired'),
         trigger: 'blur',
       },
     ],
     name: [
       {
         required: true,
-        message: t('craftAtom.form.rule.nameRequired'),
+        message: t('tool.form.rule.nameRequired'),
         trigger: 'blur',
       },
       namingValidator,
@@ -208,7 +208,7 @@
   }>({});
 
   const fetchTemplates = async () => {
-    const response = await listCraftTemplates();
+    const response = await listToolTemplates();
     templateOptions.value = response.data.map((template) => ({
       label: template.name,
       value: template.name,
@@ -222,32 +222,32 @@
     const params = paramTemplates.value[templateName as string] || [];
     formParams.value = params.map((param) => ({
       key: param.key,
-      value: editedCraftAtom.value.params[param.key] || param.default,
+      value: editedTool.value.params[param.key] || param.default,
     }));
   };
 
   onBeforeMount(() => {
-    listAllCraftAtoms();
+    listAllTools();
     fetchTemplates();
   });
 
-  const editBtnHandler = (craftAtom: CraftAtom) => {
-    editedCraftAtom.value = { ...craftAtom };
-    formParams.value = Object.entries(editedCraftAtom.value.params).map(
+  const editBtnHandler = (tool: Tool) => {
+    editedTool.value = { ...tool };
+    formParams.value = Object.entries(editedTool.value.params).map(
       ([key, value]) => ({ key, value }),
     );
     showEditModal.value = true;
     isUpdating.value = true;
   };
 
-  const deleteCraftAtomHandler = async (name: string) => {
-    await deleteCraftAtom(name);
-    await listAllCraftAtoms();
+  const deleteToolHandler = async (name: string) => {
+    await deleteTool(name);
+    await listAllTools();
   };
 
-  async function listAllCraftAtoms() {
+  async function listAllTools() {
     isLoading.value = true;
-    craftAtoms.value = (await listCraftAtoms()).data;
+    tools.value = (await listTools()).data;
     isLoading.value = false;
   }
 
@@ -259,7 +259,7 @@
     formParams.value.splice(index, 1);
   };
 
-  const saveCraftAtom = async () => {
+  const saveTool = async () => {
     // Convert formParams to map
     const paramsMap: Record<string, string> = {};
     formParams.value.forEach((param) => {
@@ -267,17 +267,17 @@
         paramsMap[param.key] = param.value;
       }
     });
-    editedCraftAtom.value.params = paramsMap;
+    editedTool.value.params = paramsMap;
 
     if (isUpdating.value) {
-      await updateCraftAtom(editedCraftAtom.value.name, editedCraftAtom.value);
+      await updateTool(editedTool.value.name, editedTool.value);
     } else {
-      await createCraftAtom(editedCraftAtom.value);
+      await createTool(editedTool.value);
     }
     showEditModal.value = false;
-    await listAllCraftAtoms();
+    await listAllTools();
     isUpdating.value = false;
-    editedCraftAtom.value = {
+    editedTool.value = {
       name: '',
       description: '',
       template_name: '',
@@ -289,6 +289,6 @@
 
 <script lang="ts">
   export default {
-    name: 'CraftAtomManage',
+    name: 'ToolManage',
   };
 </script>

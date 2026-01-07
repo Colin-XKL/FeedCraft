@@ -64,11 +64,11 @@
 <script setup lang="ts">
   import { ref, onMounted, computed } from 'vue';
   import {
-    CraftFlow,
-    listCraftFlows,
+    Blueprint,
+    listBlueprints,
     listCraftTemplates,
-  } from '@/api/craft_flow';
-  import { listCraftAtoms } from '@/api/craft_atom';
+  } from '@/api/blueprint';
+  import { listTools } from '@/api/tool';
   import { useI18n } from 'vue-i18n';
   import { IconCheckCircleFill } from '@arco-design/web-vue/es/icon';
 
@@ -88,22 +88,22 @@
   const emit = defineEmits(['update:modelValue', 'change']);
 
   const searchText = ref('');
-  const craftFlows = ref<CraftFlow[]>([]);
-  const sysCraftAtomList = ref<{ name: string; description?: string }[]>([]);
-  const craftAtomList = ref<{ name: string; description?: string }[]>([]);
+  const blueprints = ref<Blueprint[]>([]);
+  const sysToolList = ref<{ name: string; description?: string }[]>([]);
+  const toolList = ref<{ name: string; description?: string }[]>([]);
 
   // Fetch data
   onMounted(async () => {
     try {
-      const [craftFlowsResponse, sysCraftAtomsResponse, craftAtomsResponse] =
+      const [blueprintsResponse, sysToolsResponse, toolsResponse] =
         await Promise.all([
-          listCraftFlows(),
+          listBlueprints(),
           listCraftTemplates(),
-          listCraftAtoms(),
+          listTools(),
         ]);
-      craftFlows.value = craftFlowsResponse.data || [];
-      sysCraftAtomList.value = sysCraftAtomsResponse.data || [];
-      craftAtomList.value = craftAtomsResponse.data || [];
+      blueprints.value = blueprintsResponse.data || [];
+      sysToolList.value = sysToolsResponse.data || [];
+      toolList.value = toolsResponse.data || [];
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to fetch craft options', error);
@@ -126,18 +126,18 @@
   const tabs = computed(() => [
     {
       key: 'sys',
-      title: t('feedCompare.selectCraftFlow.tabs.system'),
-      items: filterAndSort(sysCraftAtomList.value),
+      title: t('feedCompare.selectBlueprint.tabs.system'),
+      items: filterAndSort(sysToolList.value),
     },
     {
       key: 'user',
-      title: t('feedCompare.selectCraftFlow.tabs.user'),
-      items: filterAndSort(craftAtomList.value),
+      title: t('feedCompare.selectBlueprint.tabs.user'),
+      items: filterAndSort(toolList.value),
     },
     {
       key: 'flow',
-      title: t('feedCompare.selectCraftFlow.tabs.flow'),
-      items: filterAndSort(craftFlows.value),
+      title: t('feedCompare.selectBlueprint.tabs.flow'),
+      items: filterAndSort(blueprints.value),
     },
   ]);
 

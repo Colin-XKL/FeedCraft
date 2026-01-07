@@ -1,13 +1,13 @@
 <template>
   <a-modal
     v-model:visible="internalVisible"
-    :title="title || t('feedCompare.selectCraftFlow.placeholder')"
+    :title="title || t('feedCompare.selectBlueprint.placeholder')"
     width="800px"
     :footer="mode === 'multiple'"
     @ok="confirmSelection"
     @cancel="cancelSelection"
   >
-    <CraftList
+    <ProcessorList
       v-model="localValue"
       :multiple="mode === 'multiple'"
       @change="handleListChange"
@@ -18,7 +18,7 @@
 <script setup lang="ts">
   import { ref, watch, computed } from 'vue';
   import { useI18n } from 'vue-i18n';
-  import CraftList from './CraftList.vue';
+  import ProcessorList from './ProcessorList.vue';
 
   const { t } = useI18n();
 

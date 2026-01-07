@@ -13,8 +13,8 @@
           class="min-w-48"
           :placeholder="t('feedCompare.placeholder')"
         />
-        <CraftFlowSelect
-          v-model="selectedCraft"
+        <BlueprintSelect
+          v-model="selectedProcessor"
           mode="single"
           class="min-w-48"
         />
@@ -51,13 +51,13 @@
   import { Message } from '@arco-design/web-vue';
   import FeedViewContainer from '@/views/dashboard/feed_viewer/feed_view_container.vue';
   import XHeader from '@/components/header/x-header.vue';
-  import CraftFlowSelect from '@/views/dashboard/craft_flow/CraftFlowSelect.vue';
+  import BlueprintSelect from '@/views/dashboard/blueprint/BlueprintSelect.vue';
   import { useI18n } from 'vue-i18n';
 
   const { t } = useI18n();
 
   const feedUrl = ref('');
-  const selectedCraft = ref<string[]>([]);
+  const selectedProcessor = ref<string[]>([]);
   // const crafts = ref(['craft1', 'craft2', 'craft3']); // 这里需要从后端获取craft列表
   const originalFeedContent = ref<any>(null);
   const craftAppliedFeedContent = ref<any>(null);
@@ -71,7 +71,7 @@
   }
 
   async function compareFeeds() {
-    if (!feedUrl.value || !selectedCraft.value) {
+    if (!feedUrl.value || !selectedProcessor.value) {
       Message.warning(t('feedCompare.message.inputRequired'));
       return;
     }
@@ -82,7 +82,7 @@
         `${baseUrl}/craft/proxy?input_url=${encodeURIComponent(feedUrl.value)}`,
       );
       craftAppliedFeedContent.value = await fetchFeed(
-        `${baseUrl}/craft/${selectedCraft.value}?input_url=${encodeURIComponent(
+        `${baseUrl}/craft/${selectedProcessor.value}?input_url=${encodeURIComponent(
           feedUrl.value,
         )}`,
       );
