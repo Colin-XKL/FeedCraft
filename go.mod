@@ -20,7 +20,6 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/feeds v1.2.0
 	github.com/itchyny/gojq v0.12.18
-	github.com/mattn/go-shellwords v1.0.12
 	github.com/mmcdole/gofeed v1.3.0
 	github.com/redis/go-redis/v9 v9.7.3
 	github.com/samber/lo v1.47.0
