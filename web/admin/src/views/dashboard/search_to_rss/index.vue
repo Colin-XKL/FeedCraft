@@ -328,7 +328,7 @@
         id: recipeMeta.id,
         description:
           recipeMeta.description || `Search feed for: ${fetchReq.query}`,
-        craft: 'proxy', // Default craft
+        processor_name: 'proxy', // Default craft
         source_type: 'search',
         source_config: JSON.stringify(sourceConfig),
       });

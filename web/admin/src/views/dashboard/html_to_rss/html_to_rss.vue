@@ -700,7 +700,7 @@
       await createChannel({
         id: recipeMeta.id,
         description: recipeMeta.description,
-        craft: 'proxy', // Default craft flow
+        processor_name: 'proxy', // Default craft flow
         source_type: 'html',
         source_config: JSON.stringify(sourceConfig),
       });

@@ -66,7 +66,7 @@
   import {
     Blueprint,
     listBlueprints,
-    listCraftTemplates,
+    listToolTemplates,
   } from '@/api/blueprint';
   import { listTools } from '@/api/tool';
   import { useI18n } from 'vue-i18n';
@@ -98,7 +98,7 @@
       const [blueprintsResponse, sysToolsResponse, toolsResponse] =
         await Promise.all([
           listBlueprints(),
-          listCraftTemplates(),
+          listToolTemplates(),
           listTools(),
         ]);
       blueprints.value = blueprintsResponse.data || [];

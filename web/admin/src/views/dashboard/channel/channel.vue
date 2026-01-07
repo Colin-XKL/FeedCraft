@@ -236,7 +236,7 @@
   import {
     createChannel,
     Channel,
-    deleteChannel,
+    deleteChannel as deleteChannelApi,
     getChannels,
     updateChannel,
   } from '@/api/channel';
@@ -262,7 +262,7 @@
   const form = ref<Channel>({
     id: '',
     description: '',
-    craft: '',
+    processor_name: '',
     source_type: 'rss',
     source_config: '',
   });
@@ -317,7 +317,7 @@
       },
       namingValidator,
     ],
-    craft: [
+    processor_name: [
       {
         required: true,
         message: t('channel.form.rule.craftRequired'),
@@ -366,10 +366,10 @@
     showConfigModal.value = true;
   };
 
-  const showEditModal = (recipe: Channel) => {
+  const showEditModal = (channel: Channel) => {
     editing.value = true;
     quickCreate.value = false; // Ensure we are not in quick create mode
-    selectedChannel.value = recipe;
+    selectedChannel.value = channel;
 
     // Pretty print JSON for editing
     let prettyConfig = channel.source_config;
@@ -383,7 +383,7 @@
     form.value = {
       id: channel.id,
       description: channel.description,
-      craft: recipe.processor_name,
+      processor_name: channel.processor_name,
       source_type: channel.source_type,
       source_config: prettyConfig,
     };
@@ -416,7 +416,7 @@
         if (selectedChannel.value) {
           await updateChannel(form.value);
           selectedChannel.value.description = form.value.description;
-          selectedChannel.value.craft = form.value.processor_name;
+          selectedChannel.value.processor_name = form.value.processor_name;
           selectedChannel.value.source_type = form.value.source_type;
           selectedChannel.value.source_config = form.value.source_config;
         }
@@ -428,7 +428,7 @@
       form.value = {
         id: '',
         description: '',
-        craft: '',
+        processor_name: '',
         source_type: 'rss',
         source_config: '',
       };
@@ -445,7 +445,7 @@
   };
 
   const deleteChannel = async (id: string) => {
-    await deleteChannel(id);
+    await deleteChannelApi(id);
     await listChannels();
   };
 
@@ -453,7 +453,7 @@
     form.value = {
       id: '',
       description: '',
-      craft: '',
+      processor_name: '',
       source_type: 'rss',
       source_config: '',
     };
