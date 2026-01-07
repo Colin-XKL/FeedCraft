@@ -18,7 +18,7 @@ import (
 // @Success 201 {object} dao.Tool
 // @Failure 400 {object} gin.H
 // @Router /api/admin/tools [post]
-func CreateCraftAtom(c *gin.Context) {
+func CreateTool(c *gin.Context) {
 	var tool dao.Tool
 	if err := c.ShouldBindJSON(&tool); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
@@ -43,7 +43,7 @@ func CreateCraftAtom(c *gin.Context) {
 // @Success 200 {object} dao.Tool
 // @Failure 404 {object} gin.H
 // @Router /api/admin/tools/{name} [get]
-func GetCraftAtom(c *gin.Context) {
+func GetTool(c *gin.Context) {
 	name := c.Param("name")
 	db := util.GetDatabase()
 
@@ -66,7 +66,7 @@ func GetCraftAtom(c *gin.Context) {
 // @Success 200 {object} dao.Tool
 // @Failure 400 {object} gin.H
 // @Router /api/admin/tools/{name} [put]
-func UpdateCraftAtom(c *gin.Context) {
+func UpdateTool(c *gin.Context) {
 	name := c.Param("name")
 	var tool dao.Tool
 	if err := c.ShouldBindJSON(&tool); err != nil {
@@ -101,7 +101,7 @@ func UpdateCraftAtom(c *gin.Context) {
 // @Success 204 {object} gin.H
 // @Failure 404 {object} gin.H
 // @Router /api/admin/tools/{name} [delete]
-func DeleteCraftAtom(c *gin.Context) {
+func DeleteTool(c *gin.Context) {
 	name := c.Param("name")
 	db := util.GetDatabase()
 
@@ -120,7 +120,7 @@ func DeleteCraftAtom(c *gin.Context) {
 // @Produce json
 // @Success 200 {array} dao.Tool
 // @Router /api/admin/tools [get]
-func ListCraftAtoms(c *gin.Context) {
+func ListTools(c *gin.Context) {
 	db := util.GetDatabase()
 
 	tools, err := dao.GetAllTools(db)

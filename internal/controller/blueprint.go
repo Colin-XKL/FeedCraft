@@ -19,7 +19,7 @@ import (
 // @Success 201 {object} dao.Blueprint
 // @Failure 400 {object} gin.H
 // @Router /api/admin/blueprints [post]
-func CreateCraftFlow(c *gin.Context) {
+func CreateBlueprint(c *gin.Context) {
 	var blueprint dao.Blueprint
 	if err := c.ShouldBindJSON(&blueprint); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
@@ -35,7 +35,7 @@ func CreateCraftFlow(c *gin.Context) {
 	c.JSON(http.StatusCreated, util.APIResponse[dao.Blueprint]{Data: blueprint})
 }
 
-// GetCraftFlow godoc
+// GetBlueprint godoc
 // @Summary Get a Blueprint by name
 // @Description Get a Blueprint by name
 // @Tags Blueprint
@@ -44,7 +44,7 @@ func CreateCraftFlow(c *gin.Context) {
 // @Success 200 {object} dao.Blueprint
 // @Failure 404 {object} gin.H
 // @Router /api/admin/blueprints/{name} [get]
-func GetCraftFlow(c *gin.Context) {
+func GetBlueprint(c *gin.Context) {
 	name := c.Param("name")
 	db := util.GetDatabase()
 
@@ -56,7 +56,7 @@ func GetCraftFlow(c *gin.Context) {
 	c.JSON(http.StatusOK, util.APIResponse[dao.Blueprint]{Data: *blueprint})
 }
 
-// UpdateCraftFlow godoc
+// UpdateBlueprint godoc
 // @Summary Update a Blueprint
 // @Description Update a Blueprint
 // @Tags Blueprint
@@ -67,7 +67,7 @@ func GetCraftFlow(c *gin.Context) {
 // @Success 200 {object} dao.Blueprint
 // @Failure 400 {object} gin.H
 // @Router /api/admin/blueprints/{name} [put]
-func UpdateCraftFlow(c *gin.Context) {
+func UpdateBlueprint(c *gin.Context) {
 	name := c.Param("name")
 	var blueprint dao.Blueprint
 	if err := c.ShouldBindJSON(&blueprint); err != nil {
@@ -93,7 +93,7 @@ func UpdateCraftFlow(c *gin.Context) {
 
 }
 
-// DeleteCraftFlow godoc
+// DeleteBlueprint godoc
 // @Summary Delete a Blueprint
 // @Description Delete a Blueprint
 // @Tags Blueprint
@@ -102,7 +102,7 @@ func UpdateCraftFlow(c *gin.Context) {
 // @Success 204 {object} gin.H
 // @Failure 404 {object} gin.H
 // @Router /api/admin/blueprints/{name} [delete]
-func DeleteCraftFlow(c *gin.Context) {
+func DeleteBlueprint(c *gin.Context) {
 	name := c.Param("name")
 	db := util.GetDatabase()
 
@@ -120,14 +120,14 @@ func DeleteCraftFlow(c *gin.Context) {
 	c.JSON(http.StatusOK, util.APIResponse[any]{Data: nil})
 }
 
-// ListCraftFlows godoc
+// ListBlueprints godoc
 // @Summary List all Blueprints
 // @Description List all Blueprints
 // @Tags Blueprint
 // @Produce json
 // @Success 200 {array} dao.Blueprint
 // @Router /api/admin/blueprints [get]
-func ListCraftFlows(c *gin.Context) {
+func ListBlueprints(c *gin.Context) {
 	var blueprints []dao.Blueprint
 
 	db := util.GetDatabase()
@@ -139,10 +139,10 @@ func ListCraftFlows(c *gin.Context) {
 	c.JSON(http.StatusOK, util.APIResponse[any]{Data: blueprints})
 }
 
-func ListSysCraftAtoms(c *gin.Context) {
-	craftAtoms := craft.GetToolDict()
+func ListSysTools(c *gin.Context) {
+	tools := craft.GetToolDict()
 	var ret []map[string]string
-	for _, meta := range craftAtoms {
+	for _, meta := range tools {
 		ret = append(ret, map[string]string{
 			"name":        meta.Name,
 			"description": meta.Description,
@@ -151,11 +151,11 @@ func ListSysCraftAtoms(c *gin.Context) {
 	c.JSON(http.StatusOK, util.APIResponse[any]{Data: ret})
 }
 
-func ListCraftTemplates(c *gin.Context) {
-	craftTemplates := craft.GetSysCraftTemplateDict()
-	ret := make([]craft.CraftTemplate, len(craftTemplates))
+func ListToolTemplates(c *gin.Context) {
+	toolTemplates := craft.GetSysCraftTemplateDict()
+	ret := make([]craft.CraftTemplate, len(toolTemplates))
 	i := 0
-	for _, template := range craftTemplates {
+	for _, template := range toolTemplates {
 		ret[i] = template
 		i++
 	}

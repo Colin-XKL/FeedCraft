@@ -17,6 +17,9 @@ func MigrateDatabases() {
 	// 1. Rename tables if they exist with old names
 	renameTables(db)
 
+	// 1.1 Rename columns if necessary
+	renameColumns(db)
+
 	// 2. AutoMigrate with new structs
 	err := db.AutoMigrate(
 		&CustomRecipe{}, // Keep for legacy data migration source
@@ -62,6 +65,24 @@ func renameTables(db *gorm.DB) {
 		logrus.Info("Renaming table 'custom_recipes_v2' to 'channels'")
 		if err := db.Migrator().RenameTable("custom_recipes_v2", "channels"); err != nil {
 			logrus.Errorf("Failed to rename table 'custom_recipes_v2': %v", err)
+		}
+	}
+}
+
+func renameColumns(db *gorm.DB) {
+	// Rename channels.craft -> channels.processor_name
+	if db.Migrator().HasTable("channels") && db.Migrator().HasColumn("channels", "craft") {
+		logrus.Info("Renaming column 'channels.craft' to 'processor_name'")
+		if err := db.Migrator().RenameColumn("channels", "craft", "processor_name"); err != nil {
+			logrus.Errorf("Failed to rename column 'channels.craft': %v", err)
+		}
+	}
+
+	// Rename blueprints.flow_config -> blueprints.blueprint_config
+	if db.Migrator().HasTable("blueprints") && db.Migrator().HasColumn("blueprints", "flow_config") {
+		logrus.Info("Renaming column 'blueprints.flow_config' to 'blueprint_config'")
+		if err := db.Migrator().RenameColumn("blueprints", "flow_config", "blueprint_config"); err != nil {
+			logrus.Errorf("Failed to rename column 'blueprints.flow_config': %v", err)
 		}
 	}
 }

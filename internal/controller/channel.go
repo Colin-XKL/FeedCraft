@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func CreateCustomRecipe(c *gin.Context) {
+func CreateChannel(c *gin.Context) {
 	var channel dao.Channel
 	if err := c.ShouldBindJSON(&channel); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
@@ -28,7 +28,7 @@ func CreateCustomRecipe(c *gin.Context) {
 	c.JSON(http.StatusCreated, util.APIResponse[any]{Data: channel})
 }
 
-func GetCustomRecipe(c *gin.Context) {
+func GetChannel(c *gin.Context) {
 	id := c.Param("id")
 	db := util.GetDatabase()
 
@@ -45,8 +45,8 @@ func GetCustomRecipe(c *gin.Context) {
 	c.JSON(http.StatusOK, util.APIResponse[any]{Data: channel})
 }
 
-// RecipeInfo (ChannelInfo) detail info including dao.Channel basic info and preheat stats
-type RecipeInfo struct {
+// ChannelInfo detail info including dao.Channel basic info and preheat stats
+type ChannelInfo struct {
 	ID             string    `json:"id,omitempty" binding:"required"`
 	Description    string    `json:"description,omitempty"`
 	ProcessorName  string    `json:"processor_name" binding:"required"` // Formerly Craft
@@ -56,7 +56,7 @@ type RecipeInfo struct {
 	LastAccessedAt time.Time `json:"last_accessed_at"`
 }
 
-func ListCustomRecipe(c *gin.Context) {
+func ListChannels(c *gin.Context) {
 	db := util.GetDatabase()
 	channels, err := dao.ListChannels(db)
 	if err != nil {
@@ -64,9 +64,9 @@ func ListCustomRecipe(c *gin.Context) {
 		return
 	}
 
-	recipeInfoList := lo.Map(channels, func(item *dao.Channel, index int) RecipeInfo {
+	channelInfoList := lo.Map(channels, func(item *dao.Channel, index int) ChannelInfo {
 		recipeStatus := recipe.Scheduler.GetContextInfo(item.ID)
-		return RecipeInfo{
+		return ChannelInfo{
 			ID:             item.ID,
 			Description:    item.Description,
 			ProcessorName:  item.ProcessorName,
@@ -76,10 +76,10 @@ func ListCustomRecipe(c *gin.Context) {
 			LastAccessedAt: recipeStatus.LastRequestTime,
 		}
 	})
-	c.JSON(http.StatusOK, util.APIResponse[any]{Data: recipeInfoList})
+	c.JSON(http.StatusOK, util.APIResponse[any]{Data: channelInfoList})
 }
 
-func UpdateCustomRecipe(c *gin.Context) {
+func UpdateChannel(c *gin.Context) {
 	id := c.Param("id")
 	var channel dao.Channel
 	if err := c.ShouldBindJSON(&channel); err != nil {
@@ -106,7 +106,7 @@ func UpdateCustomRecipe(c *gin.Context) {
 	c.JSON(http.StatusOK, util.APIResponse[any]{Data: channel})
 }
 
-func DeleteCustomRecipe(c *gin.Context) {
+func DeleteChannel(c *gin.Context) {
 	id := c.Param("id")
 	db := util.GetDatabase()
 
