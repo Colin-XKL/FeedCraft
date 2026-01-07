@@ -13,43 +13,43 @@ import (
 )
 
 func CreateCustomRecipe(c *gin.Context) {
-	var recipeData dao.CustomRecipeV2
-	if err := c.ShouldBindJSON(&recipeData); err != nil {
+	var channel dao.Channel
+	if err := c.ShouldBindJSON(&channel); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 	db := util.GetDatabase()
 
-	if err := dao.CreateCustomRecipeV2(db, &recipeData); err != nil {
+	if err := dao.CreateChannel(db, &channel); err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, util.APIResponse[any]{Data: recipeData})
+	c.JSON(http.StatusCreated, util.APIResponse[any]{Data: channel})
 }
 
 func GetCustomRecipe(c *gin.Context) {
 	id := c.Param("id")
 	db := util.GetDatabase()
 
-	recipeData, err := dao.GetCustomRecipeByIDV2(db, id)
+	channel, err := dao.GetChannelByID(db, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "Recipe not found"})
+			c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "Channel not found"})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, util.APIResponse[any]{Data: recipeData})
+	c.JSON(http.StatusOK, util.APIResponse[any]{Data: channel})
 }
 
-// RecipeInfo recipe 的详细信息,包括dao.CustomRecipe的基本信息, 以及一些预热相关的统计信息
+// RecipeInfo (ChannelInfo) detail info including dao.Channel basic info and preheat stats
 type RecipeInfo struct {
 	ID             string    `json:"id,omitempty" binding:"required"`
 	Description    string    `json:"description,omitempty"`
-	Craft          string    `json:"craft" binding:"required"`
+	ProcessorName  string    `json:"processor_name" binding:"required"` // Formerly Craft
 	SourceType     string    `json:"source_type"`
 	SourceConfig   string    `json:"source_config"`
 	IsActive       bool      `json:"is_active" `
@@ -58,18 +58,18 @@ type RecipeInfo struct {
 
 func ListCustomRecipe(c *gin.Context) {
 	db := util.GetDatabase()
-	recipeList, err := dao.ListCustomRecipeV2(db)
+	channels, err := dao.ListChannels(db)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 
-	recipeInfoList := lo.Map(recipeList, func(item *dao.CustomRecipeV2, index int) RecipeInfo {
+	recipeInfoList := lo.Map(channels, func(item *dao.Channel, index int) RecipeInfo {
 		recipeStatus := recipe.Scheduler.GetContextInfo(item.ID)
 		return RecipeInfo{
 			ID:             item.ID,
 			Description:    item.Description,
-			Craft:          item.Craft,
+			ProcessorName:  item.ProcessorName,
 			SourceType:     item.SourceType,
 			SourceConfig:   item.SourceConfig,
 			IsActive:       recipeStatus.IsActive,
@@ -81,36 +81,36 @@ func ListCustomRecipe(c *gin.Context) {
 
 func UpdateCustomRecipe(c *gin.Context) {
 	id := c.Param("id")
-	var recipeData dao.CustomRecipeV2
-	if err := c.ShouldBindJSON(&recipeData); err != nil {
+	var channel dao.Channel
+	if err := c.ShouldBindJSON(&channel); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 	db := util.GetDatabase()
 
-	_, err := dao.GetCustomRecipeByIDV2(db, id)
+	_, err := dao.GetChannelByID(db, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "Recipe not found"})
+			c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "Channel not found"})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 
-	if err := dao.UpdateCustomRecipeV2(db, &recipeData); err != nil {
+	if err := dao.UpdateChannel(db, &channel); err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, util.APIResponse[any]{Data: recipeData})
+	c.JSON(http.StatusOK, util.APIResponse[any]{Data: channel})
 }
 
 func DeleteCustomRecipe(c *gin.Context) {
 	id := c.Param("id")
 	db := util.GetDatabase()
 
-	if err := dao.DeleteCustomRecipeV2(db, id); err != nil {
+	if err := dao.DeleteChannel(db, id); err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}

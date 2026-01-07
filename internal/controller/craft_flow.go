@@ -9,110 +9,110 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// CreateCraftFlow godoc
-// @Summary Create a new CraftFlow
-// @Description Create a new CraftFlow
-// @Tags CraftFlow
+// CreateBlueprint godoc
+// @Summary Create a new Blueprint
+// @Description Create a new Blueprint
+// @Tags Blueprint
 // @Accept json
 // @Produce json
-// @Param craftFlow body CraftFlow true "CraftFlow data"
-// @Success 201 {object} CraftFlow
+// @Param blueprint body dao.Blueprint true "Blueprint data"
+// @Success 201 {object} dao.Blueprint
 // @Failure 400 {object} gin.H
-// @Router /craft-flows [post]
+// @Router /api/admin/blueprints [post]
 func CreateCraftFlow(c *gin.Context) {
-	var craftFlow dao.CraftFlow
-	if err := c.ShouldBindJSON(&craftFlow); err != nil {
+	var blueprint dao.Blueprint
+	if err := c.ShouldBindJSON(&blueprint); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 	db := util.GetDatabase()
 
-	if err := db.Create(&craftFlow).Error; err != nil {
+	if err := db.Create(&blueprint).Error; err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusCreated, util.APIResponse[dao.CraftFlow]{Data: craftFlow})
+	c.JSON(http.StatusCreated, util.APIResponse[dao.Blueprint]{Data: blueprint})
 }
 
 // GetCraftFlow godoc
-// @Summary Get a CraftFlow by name
-// @Description Get a CraftFlow by name
-// @Tags CraftFlow
+// @Summary Get a Blueprint by name
+// @Description Get a Blueprint by name
+// @Tags Blueprint
 // @Produce json
-// @Param name path string true "CraftFlow Name"
-// @Success 200 {object} CraftFlow
+// @Param name path string true "Blueprint Name"
+// @Success 200 {object} dao.Blueprint
 // @Failure 404 {object} gin.H
-// @Router /craft-flows/{name} [get]
+// @Router /api/admin/blueprints/{name} [get]
 func GetCraftFlow(c *gin.Context) {
 	name := c.Param("name")
 	db := util.GetDatabase()
 
-	craftFlow, err := dao.GetCraftFlowByName(db, name)
+	blueprint, err := dao.GetBlueprintByName(db, name)
 	if err != nil {
-		c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "CraftFlow not found"})
+		c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "Blueprint not found"})
 		return
 	}
-	c.JSON(http.StatusOK, util.APIResponse[dao.CraftFlow]{Data: *craftFlow})
+	c.JSON(http.StatusOK, util.APIResponse[dao.Blueprint]{Data: *blueprint})
 }
 
 // UpdateCraftFlow godoc
-// @Summary Update a CraftFlow
-// @Description Update a CraftFlow
-// @Tags CraftFlow
+// @Summary Update a Blueprint
+// @Description Update a Blueprint
+// @Tags Blueprint
 // @Accept json
 // @Produce json
-// @Param name path string true "CraftFlow Name"
-// @Param craftFlow body CraftFlow true "CraftFlow data"
-// @Success 200 {object} CraftFlow
+// @Param name path string true "Blueprint Name"
+// @Param blueprint body dao.Blueprint true "Blueprint data"
+// @Success 200 {object} dao.Blueprint
 // @Failure 400 {object} gin.H
-// @Router /craft-flows/{name} [put]
+// @Router /api/admin/blueprints/{name} [put]
 func UpdateCraftFlow(c *gin.Context) {
 	name := c.Param("name")
-	var craftFlow dao.CraftFlow
-	if err := c.ShouldBindJSON(&craftFlow); err != nil {
+	var blueprint dao.Blueprint
+	if err := c.ShouldBindJSON(&blueprint); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 	db := util.GetDatabase()
 
-	existingCraftFlow, err := dao.GetCraftFlowByName(db, name)
+	existingBlueprint, err := dao.GetBlueprintByName(db, name)
 	if err != nil {
-		c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "CraftFlow not found"})
+		c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "Blueprint not found"})
 		return
 	}
 
-	existingCraftFlow.Description = craftFlow.Description
-	existingCraftFlow.CraftFlowConfig = craftFlow.CraftFlowConfig
+	existingBlueprint.Description = blueprint.Description
+	existingBlueprint.BlueprintConfig = blueprint.BlueprintConfig
 
-	if err := db.Save(existingCraftFlow).Error; err != nil {
+	if err := db.Save(existingBlueprint).Error; err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, util.APIResponse[dao.CraftFlow]{Data: *existingCraftFlow})
+	c.JSON(http.StatusOK, util.APIResponse[dao.Blueprint]{Data: *existingBlueprint})
 
 }
 
 // DeleteCraftFlow godoc
-// @Summary Delete a CraftFlow
-// @Description Delete a CraftFlow
-// @Tags CraftFlow
+// @Summary Delete a Blueprint
+// @Description Delete a Blueprint
+// @Tags Blueprint
 // @Produce json
-// @Param name path string true "CraftFlow Name"
+// @Param name path string true "Blueprint Name"
 // @Success 204 {object} gin.H
 // @Failure 404 {object} gin.H
-// @Router /craft-flows/{name} [delete]
+// @Router /api/admin/blueprints/{name} [delete]
 func DeleteCraftFlow(c *gin.Context) {
 	name := c.Param("name")
 	db := util.GetDatabase()
 
-	craftFlow, err := dao.GetCraftFlowByName(db, name)
+	blueprint, err := dao.GetBlueprintByName(db, name)
 	if err != nil {
-		c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "CraftFlow not found"})
+		c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "Blueprint not found"})
 		return
 	}
 
-	if err := db.Delete(craftFlow).Error; err != nil {
+	if err := db.Delete(blueprint).Error; err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
@@ -121,26 +121,26 @@ func DeleteCraftFlow(c *gin.Context) {
 }
 
 // ListCraftFlows godoc
-// @Summary List all CraftFlows
-// @Description List all CraftFlows
-// @Tags CraftFlow
+// @Summary List all Blueprints
+// @Description List all Blueprints
+// @Tags Blueprint
 // @Produce json
-// @Success 200 {array} CraftFlow
-// @Router /craft-flows [get]
+// @Success 200 {array} dao.Blueprint
+// @Router /api/admin/blueprints [get]
 func ListCraftFlows(c *gin.Context) {
-	var craftFlows []dao.CraftFlow
+	var blueprints []dao.Blueprint
 
 	db := util.GetDatabase()
-	if err := db.Find(&craftFlows).Error; err != nil {
+	if err := db.Find(&blueprints).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, util.APIResponse[any]{Data: craftFlows})
+	c.JSON(http.StatusOK, util.APIResponse[any]{Data: blueprints})
 }
 
 func ListSysCraftAtoms(c *gin.Context) {
-	craftAtoms := craft.GetCraftAtomDict()
+	craftAtoms := craft.GetToolDict()
 	var ret []map[string]string
 	for _, meta := range craftAtoms {
 		ret = append(ret, map[string]string{

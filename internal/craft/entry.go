@@ -135,37 +135,37 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 	return sysCraftTempList
 }
 
-func GetCraftAtomDict() map[string]dao.CraftAtom {
+func GetToolDict() map[string]dao.Tool {
 	tmplDict := GetSysCraftTemplateDict()
-	craftAtomDict := make(map[string]dao.CraftAtom)
+	toolDict := make(map[string]dao.Tool)
 	for name, craftTemplate := range tmplDict {
-		item := dao.CraftAtom{
-			Name:         craftTemplate.Name, // 默认会有个跟template 同名的craft atom
+		item := dao.Tool{
+			Name:         craftTemplate.Name, // 默认会有个跟template 同名的 tool
 			Description:  craftTemplate.Description,
 			TemplateName: craftTemplate.Name,
 			Params:       map[string]string{},
 		}
-		craftAtomDict[name] = item
+		toolDict[name] = item
 	}
 
 	db := util.GetDatabase()
-	craftAtomList, err := dao.GetAllCraftAtoms(db)
+	toolList, err := dao.GetAllTools(db)
 	if err != nil {
-		logrus.Errorf("read craft atom list from db error. only built-in atom will work now. err: %s", err)
+		logrus.Errorf("read tool list from db error. only built-in tool will work now. err: %s", err)
 	} else {
-		for _, atom := range craftAtomList {
-			craftAtomDict[atom.Name] = atom
+		for _, tool := range toolList {
+			toolDict[tool.Name] = tool
 		}
 	}
 
-	return craftAtomDict
+	return toolDict
 }
 
 func Entry(c *gin.Context) {
-	craftName := c.Param("craft-name")
+	processorName := c.Param("craft-name") // Keep param name for now (Phase 2)
 	db := util.GetDatabase()
 
-	craftOptionList, err := getCraftOptions(db, craftName)
+	craftOptionList, err := getCraftOptions(db, processorName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
@@ -173,9 +173,9 @@ func Entry(c *gin.Context) {
 	CommonCraftHandlerUsingCraftOptionList(c, craftOptionList)
 }
 
-func ProcessFeed(feed *gofeed.Feed, feedURL string, craftName string) (*feeds.Feed, error) {
+func ProcessFeed(feed *gofeed.Feed, feedURL string, processorName string) (*feeds.Feed, error) {
 	db := util.GetDatabase()
-	craftOptionList, err := getCraftOptions(db, craftName)
+	craftOptionList, err := getCraftOptions(db, processorName)
 	if err != nil {
 		return nil, err
 	}
@@ -188,19 +188,19 @@ func ProcessFeed(feed *gofeed.Feed, feedURL string, craftName string) (*feeds.Fe
 	return craftedFeed.OutputFeed, nil
 }
 
-func getCraftOptions(db *gorm.DB, craftName string) ([]CraftOption, error) {
-	craftAtomDict := GetCraftAtomDict()
+func getCraftOptions(db *gorm.DB, processorName string) ([]CraftOption, error) {
+	toolDict := GetToolDict()
 	craftTmplDict := GetSysCraftTemplateDict()
 
-	if strings.Contains(craftName, ",") {
+	if strings.Contains(processorName, ",") {
 		var allOptions []CraftOption
-		parts := strings.Split(craftName, ",")
+		parts := strings.Split(processorName, ",")
 		for _, part := range parts {
 			part = strings.TrimSpace(part)
 			if part == "" {
 				continue
 			}
-			options, err := inner(db, &craftAtomDict, &craftTmplDict, part, 0)
+			options, err := inner(db, &toolDict, &craftTmplDict, part, 0)
 			if err != nil {
 				return nil, err
 			}
@@ -209,42 +209,42 @@ func getCraftOptions(db *gorm.DB, craftName string) ([]CraftOption, error) {
 		return allOptions, nil
 	}
 
-	return inner(db, &craftAtomDict, &craftTmplDict, craftName, 0)
+	return inner(db, &toolDict, &craftTmplDict, processorName, 0)
 }
 
 const MaxCallDepth = 5
 
 // 递归地解出 craft option list
-func inner(db *gorm.DB, craftAtomDict *map[string]dao.CraftAtom, craftTmplDict *map[string]CraftTemplate, craftName string, depthId int) ([]CraftOption, error) {
+func inner(db *gorm.DB, toolDict *map[string]dao.Tool, craftTmplDict *map[string]CraftTemplate, processorName string, depthId int) ([]CraftOption, error) {
 	if depthId+1 > MaxCallDepth {
 		return []CraftOption{}, fmt.Errorf("max call depth hit")
 	}
-	logrus.Infof("checking %s", craftName)
+	logrus.Infof("checking %s", processorName)
 
-	// 对于每一个 craft name in flow
-	// 1. 判断是否为 built-in craft atom
+	// 对于每一个 processor name in flow
+	// 1. 判断是否为 built-in tool (formerly craft atom)
 	// 1.1 如果是, 直接返回对应的 craft option
-	// 2. 如果不是, 判断是否为flow
-	// 2.1 如果是flow, 调用 entry check
-	// 如果不是, 说明craft name 无效, 返回error
+	// 2. 如果不是, 判断是否为 blueprint (formerly flow)
+	// 2.1 如果是 blueprint, 调用 entry check
+	// 如果不是, 说明 processor name 无效, 返回error
 
-	craftAtom, isKnownCraftAtom := (*craftAtomDict)[craftName]
-	if isKnownCraftAtom {
-		logrus.Infof("[%s] is known craft atom", craftName)
-		tmplContent, tmplValid := (*craftTmplDict)[craftAtom.TemplateName]
+	tool, isKnownTool := (*toolDict)[processorName]
+	if isKnownTool {
+		logrus.Infof("[%s] is known tool", processorName)
+		tmplContent, tmplValid := (*craftTmplDict)[tool.TemplateName]
 		if !tmplValid {
-			return []CraftOption{}, fmt.Errorf("invalid tmpl name [%s] for craft atom [%s]", craftAtom.TemplateName, craftAtom.Name)
+			return []CraftOption{}, fmt.Errorf("invalid tmpl name [%s] for tool [%s]", tool.TemplateName, tool.Name)
 		}
-		return tmplContent.GetOptions(craftAtom.Params), nil
+		return tmplContent.GetOptions(tool.Params), nil
 	} else {
-		craftArr, checkErr := extractCraftArrFromFlow(db, craftName)
+		processorArr, checkErr := extractProcessorArrFromBlueprint(db, processorName)
 		if checkErr != nil {
-			// then not a valid  craft name
-			return []CraftOption{}, fmt.Errorf("not a valid craft name")
+			// then not a valid processor name
+			return []CraftOption{}, fmt.Errorf("not a valid processor name")
 		}
 		var retArr []CraftOption
-		for _, extractedSubCraftName := range craftArr {
-			sub, recurErr := inner(db, craftAtomDict, craftTmplDict, extractedSubCraftName, depthId+1)
+		for _, extractedSubProcessorName := range processorArr {
+			sub, recurErr := inner(db, toolDict, craftTmplDict, extractedSubProcessorName, depthId+1)
 			if recurErr != nil {
 				return []CraftOption{}, recurErr
 			}
@@ -254,15 +254,15 @@ func inner(db *gorm.DB, craftAtomDict *map[string]dao.CraftAtom, craftTmplDict *
 	}
 }
 
-// 给定flowName,查询其详情, 获取 craft array
-// 只输出craft name 的array, 不做任何检查和转换
-func extractCraftArrFromFlow(db *gorm.DB, flowName string) ([]string, error) {
-	flowContent, err := dao.GetCraftFlowByName(db, flowName)
+// 给定 blueprintName, 查询其详情, 获取 processor array
+// 只输出 processor name 的 array, 不做任何检查和转换
+func extractProcessorArrFromBlueprint(db *gorm.DB, blueprintName string) ([]string, error) {
+	blueprint, err := dao.GetBlueprintByName(db, blueprintName)
 	if err != nil {
-		return []string{}, fmt.Errorf("craft flow name [%s] not found", flowName)
+		return []string{}, fmt.Errorf("blueprint name [%s] not found", blueprintName)
 	}
-	craftNameList := lo.Map(flowContent.CraftFlowConfig, func(item dao.CraftFlowItem, index int) string {
-		return item.CraftName
+	processorNameList := lo.Map(blueprint.BlueprintConfig, func(item dao.BlueprintItem, index int) string {
+		return item.ProcessorName
 	})
-	return craftNameList, nil
+	return processorNameList, nil
 }
