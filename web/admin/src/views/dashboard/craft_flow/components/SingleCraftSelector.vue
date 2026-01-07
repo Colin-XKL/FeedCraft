@@ -46,44 +46,44 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue';
-  import { useI18n } from 'vue-i18n';
-  import { IconCloseCircle, IconDown } from '@arco-design/web-vue/es/icon';
-  import CraftPickerModal from './CraftPickerModal.vue';
+import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
+import { IconCloseCircle, IconDown } from '@arco-design/web-vue/es/icon';
+import CraftPickerModal from './CraftPickerModal.vue';
 
-  const { t } = useI18n();
+const { t } = useI18n();
 
-  const props = defineProps({
-    modelValue: {
-      type: String,
-      default: '',
-    },
-    placeholder: {
-      type: String,
-      default: '',
-    },
-    allowClear: {
-      type: Boolean,
-      default: false,
-    },
-  });
+const props = defineProps({
+  modelValue: {
+    type: String,
+    default: '',
+  },
+  placeholder: {
+    type: String,
+    default: '',
+  },
+  allowClear: {
+    type: Boolean,
+    default: false,
+  },
+});
 
-  const emit = defineEmits(['update:modelValue', 'change']);
+const emit = defineEmits(['update:modelValue', 'change']);
 
-  const visible = ref(false);
+const visible = ref(false);
 
-  const openModal = () => {
-    visible.value = true;
-  };
+const openModal = () => {
+  visible.value = true;
+};
 
-  const handleUpdate = (val: string | string[]) => {
-    const newVal = val as string;
-    emit('update:modelValue', newVal);
-    emit('change', newVal);
-  };
+const handleUpdate = (val: string | string[]) => {
+  const newVal = val as string;
+  emit('update:modelValue', newVal);
+  emit('change', newVal);
+};
 
-  const handleClear = () => {
-    emit('update:modelValue', '');
-    emit('change', '');
-  };
+const handleClear = () => {
+  emit('update:modelValue', '');
+  emit('change', '');
+};
 </script>

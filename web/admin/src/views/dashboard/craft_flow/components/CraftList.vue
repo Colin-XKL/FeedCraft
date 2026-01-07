@@ -62,115 +62,115 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted, computed } from 'vue';
-  import {
-    CraftFlow,
-    listCraftFlows,
-    listCraftTemplates,
-  } from '@/api/craft_flow';
-  import { listCraftAtoms } from '@/api/craft_atom';
-  import { useI18n } from 'vue-i18n';
-  import { IconCheckCircleFill } from '@arco-design/web-vue/es/icon';
+import { ref, onMounted, computed } from 'vue';
+import {
+  CraftFlow,
+  listCraftFlows,
+  listCraftTemplates,
+} from '@/api/craft_flow';
+import { listCraftAtoms } from '@/api/craft_atom';
+import { useI18n } from 'vue-i18n';
+import { IconCheckCircleFill } from '@arco-design/web-vue/es/icon';
 
-  const { t } = useI18n();
+const { t } = useI18n();
 
-  const props = defineProps({
-    modelValue: {
-      type: Array as () => string[],
-      default: () => [],
-    },
-    multiple: {
-      type: Boolean,
-      default: false,
-    },
-  });
+const props = defineProps({
+  modelValue: {
+    type: Array as () => string[],
+    default: () => [],
+  },
+  multiple: {
+    type: Boolean,
+    default: false,
+  },
+});
 
-  const emit = defineEmits(['update:modelValue', 'change']);
+const emit = defineEmits(['update:modelValue', 'change']);
 
-  const searchText = ref('');
-  const craftFlows = ref<CraftFlow[]>([]);
-  const sysCraftAtomList = ref<{ name: string; description?: string }[]>([]);
-  const craftAtomList = ref<{ name: string; description?: string }[]>([]);
+const searchText = ref('');
+const craftFlows = ref<CraftFlow[]>([]);
+const sysCraftAtomList = ref<{ name: string; description?: string }[]>([]);
+const craftAtomList = ref<{ name: string; description?: string }[]>([]);
 
-  // Fetch data
-  onMounted(async () => {
-    try {
-      const [craftFlowsResponse, sysCraftAtomsResponse, craftAtomsResponse] =
-        await Promise.all([
-          listCraftFlows(),
-          listCraftTemplates(),
-          listCraftAtoms(),
-        ]);
-      craftFlows.value = craftFlowsResponse.data || [];
-      sysCraftAtomList.value = sysCraftAtomsResponse.data || [];
-      craftAtomList.value = craftAtomsResponse.data || [];
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Failed to fetch craft options', error);
-    }
-  });
+// Fetch data
+onMounted(async () => {
+  try {
+    const [craftFlowsResponse, sysCraftAtomsResponse, craftAtomsResponse] =
+      await Promise.all([
+        listCraftFlows(),
+        listCraftTemplates(),
+        listCraftAtoms(),
+      ]);
+    craftFlows.value = craftFlowsResponse.data || [];
+    sysCraftAtomList.value = sysCraftAtomsResponse.data || [];
+    craftAtomList.value = craftAtomsResponse.data || [];
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to fetch craft options', error);
+  }
+});
 
-  const filterAndSort = (items: { name: string; description?: string }[]) => {
-    let result = items;
-    if (searchText.value) {
-      const lower = searchText.value.toLowerCase();
-      result = items.filter(
-        (item) =>
-          item.name.toLowerCase().includes(lower) ||
-          (item.description && item.description.toLowerCase().includes(lower)),
-      );
-    }
-    return [...result].sort((a, b) => a.name.localeCompare(b.name));
-  };
+const filterAndSort = (items: { name: string; description?: string }[]) => {
+  let result = items;
+  if (searchText.value) {
+    const lower = searchText.value.toLowerCase();
+    result = items.filter(
+      (item) =>
+        item.name.toLowerCase().includes(lower) ||
+        (item.description && item.description.toLowerCase().includes(lower)),
+    );
+  }
+  return [...result].sort((a, b) => a.name.localeCompare(b.name));
+};
 
-  const tabs = computed(() => [
-    {
-      key: 'sys',
-      title: t('feedCompare.selectCraftFlow.tabs.system'),
-      items: filterAndSort(sysCraftAtomList.value),
-    },
-    {
-      key: 'user',
-      title: t('feedCompare.selectCraftFlow.tabs.user'),
-      items: filterAndSort(craftAtomList.value),
-    },
-    {
-      key: 'flow',
-      title: t('feedCompare.selectCraftFlow.tabs.flow'),
-      items: filterAndSort(craftFlows.value),
-    },
-  ]);
+const tabs = computed(() => [
+  {
+    key: 'sys',
+    title: t('feedCompare.selectCraftFlow.tabs.system'),
+    items: filterAndSort(sysCraftAtomList.value),
+  },
+  {
+    key: 'user',
+    title: t('feedCompare.selectCraftFlow.tabs.user'),
+    items: filterAndSort(craftAtomList.value),
+  },
+  {
+    key: 'flow',
+    title: t('feedCompare.selectCraftFlow.tabs.flow'),
+    items: filterAndSort(craftFlows.value),
+  },
+]);
 
-  const isSelected = (name: string) => {
-    return props.modelValue.includes(name);
-  };
+const isSelected = (name: string) => {
+  return props.modelValue.includes(name);
+};
 
-  const getSelectionIndex = (name: string) => {
-    return props.modelValue.indexOf(name) + 1;
-  };
+const getSelectionIndex = (name: string) => {
+  return props.modelValue.indexOf(name) + 1;
+};
 
-  const handleSelect = (name: string) => {
-    const newValue = [...props.modelValue];
+const handleSelect = (name: string) => {
+  const newValue = [...props.modelValue];
 
-    if (props.multiple) {
-      const idx = newValue.indexOf(name);
-      if (idx > -1) {
-        newValue.splice(idx, 1);
-      } else {
-        newValue.push(name);
-      }
+  if (props.multiple) {
+    const idx = newValue.indexOf(name);
+    if (idx > -1) {
+      newValue.splice(idx, 1);
     } else {
-      // For single selection, we replace the entire array with the new value
-      // The parent/modal handles whether this causes an immediate close
-      newValue.length = 0;
       newValue.push(name);
     }
+  } else {
+    // For single selection, we replace the entire array with the new value
+    // The parent/modal handles whether this causes an immediate close
+    newValue.length = 0;
+    newValue.push(name);
+  }
 
-    emit('update:modelValue', newValue);
-    emit('change', newValue);
-  };
+  emit('update:modelValue', newValue);
+  emit('change', newValue);
+};
 </script>
 
 <style scoped>
-  /* Scoped styles */
+/* Scoped styles */
 </style>

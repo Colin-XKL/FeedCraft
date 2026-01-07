@@ -708,10 +708,7 @@
     }
 
     // Use the extracted utility, passing the iframe document for context checks
-    const doc = previewRef.value?.contentDocument as
-      | Document
-      | null
-      | undefined;
+    const doc = previewRef.value?.contentDocument;
     const isItemSelector = currentTargetField.value === 'item_selector';
 
     // Calculate full absolute selector first
