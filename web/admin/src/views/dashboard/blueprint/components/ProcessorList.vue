@@ -96,11 +96,7 @@
   onMounted(async () => {
     try {
       const [blueprintsResponse, sysToolsResponse, toolsResponse] =
-        await Promise.all([
-          listBlueprints(),
-          listToolTemplates(),
-          listTools(),
-        ]);
+        await Promise.all([listBlueprints(), listToolTemplates(), listTools()]);
       blueprints.value = blueprintsResponse.data || [];
       sysToolList.value = sysToolsResponse.data || [];
       toolList.value = toolsResponse.data || [];

@@ -138,13 +138,13 @@
         <a-form-item :label="t('channel.form.name')" field="id">
           <a-input v-model="form.id" :disabled="isUpdating" />
         </a-form-item>
-        <a-form-item
-          :label="t('channel.form.description')"
-          field="description"
-        >
+        <a-form-item :label="t('channel.form.description')" field="description">
           <a-input v-model="form.description" />
         </a-form-item>
-        <a-form-item :label="t('channel.form.processor')" field="processor_name">
+        <a-form-item
+          :label="t('channel.form.processor')"
+          field="processor_name"
+        >
           <ProcessorSelector
             v-model="processorList"
             mode="multiple"
@@ -269,7 +269,9 @@
 
   const processorList = computed({
     get: () =>
-      form.value.processor_name ? form.value.processor_name.split(',').filter(Boolean) : [],
+      form.value.processor_name
+        ? form.value.processor_name.split(',').filter(Boolean)
+        : [],
     set: (val: string[] | string) => {
       if (Array.isArray(val)) {
         form.value.processor_name = val.join(',');

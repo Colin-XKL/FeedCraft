@@ -76,6 +76,7 @@ pnpm run lint-staged
 ```
 
 ### Hooks when you finish a task
+
 When you finish a task, run these commands to check the code do not break a build.
 
 ```bash

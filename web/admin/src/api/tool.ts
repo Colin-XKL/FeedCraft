@@ -14,9 +14,7 @@ const adminApiBase = '/api/admin';
 const toolApiBase = `${adminApiBase}/tools`;
 
 // Create a Tool
-export function createTool(
-  tool: Tool,
-): Promise<APIResponse<Tool>> {
+export function createTool(tool: Tool): Promise<APIResponse<Tool>> {
   return axios
     .post<APIResponse<Tool>>(toolApiBase, tool)
     .then((res) => res.data);
@@ -48,7 +46,5 @@ export function deleteTool(name: string): Promise<APIResponse<void>> {
 
 // List all Tools
 export function listTools(): Promise<APIResponse<Tool[]>> {
-  return axios
-    .get<APIResponse<Tool[]>>(toolApiBase)
-    .then((res) => res.data);
+  return axios.get<APIResponse<Tool[]>>(toolApiBase).then((res) => res.data);
 }

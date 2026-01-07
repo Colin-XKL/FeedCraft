@@ -30,10 +30,7 @@
       <template #craft-flow-item-list="{ record }">
         <a-tag>开始</a-tag>
         >
-        <template
-          v-for="(item, index) in record.blueprint_config"
-          :key="index"
-        >
+        <template v-for="(item, index) in record.blueprint_config" :key="index">
           <a-tooltip :content="getCraftDescription(item.processor_name)">
             <a-tag color="arcoblue">{{ item.processor_name }}</a-tag>
           </a-tooltip>

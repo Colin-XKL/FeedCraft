@@ -35,8 +35,7 @@ const DASHBOARD: AppRouteRecordRaw = {
     {
       path: 'channel',
       name: 'Channel',
-      component: () =>
-        import('@/views/dashboard/channel/channel.vue'),
+      component: () => import('@/views/dashboard/channel/channel.vue'),
       meta: {
         requiresAuth: true,
         locale: 'menu.channel',

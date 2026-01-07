@@ -41,7 +41,10 @@
   const columns = [
     { title: t('allProcessorList.table.name'), dataIndex: 'name' },
     { title: t('allProcessorList.table.type'), dataIndex: 'type' },
-    { title: t('allProcessorList.table.description'), dataIndex: 'description' },
+    {
+      title: t('allProcessorList.table.description'),
+      dataIndex: 'description',
+    },
   ];
 
   const listAllProcessors = async () => {

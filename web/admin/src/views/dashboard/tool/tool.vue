@@ -55,16 +55,10 @@
         <a-form-item :label="t('tool.form.name')" field="name">
           <a-input v-model="editedTool.name" />
         </a-form-item>
-        <a-form-item
-          :label="t('tool.form.description')"
-          field="description"
-        >
+        <a-form-item :label="t('tool.form.description')" field="description">
           <a-textarea v-model="editedTool.description" />
         </a-form-item>
-        <a-form-item
-          :label="t('tool.form.template')"
-          field="template_name"
-        >
+        <a-form-item :label="t('tool.form.template')" field="template_name">
           <a-select
             v-model="editedTool.template_name"
             :options="templateOptions"
@@ -78,14 +72,10 @@
               <div class="mb-2 text-gray-400">
                 <div class="">{{ t('tool.form.requiredParams') }}</div>
                 <template
-                  v-if="
-                    paramTemplates[editedTool.template_name]?.length > 0
-                  "
+                  v-if="paramTemplates[editedTool.template_name]?.length > 0"
                 >
                   <div
-                    v-for="item in paramTemplates[
-                      editedTool.template_name
-                    ]"
+                    v-for="item in paramTemplates[editedTool.template_name]"
                     :key="item.key"
                   >
                     <p class="text-sm"
