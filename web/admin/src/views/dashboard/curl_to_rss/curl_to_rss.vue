@@ -164,13 +164,20 @@
               <div class="font-bold mb-2">
                 {{ $t('curlToRss.step2.responseJson') }}
               </div>
-              <a-textarea
-                v-model="jsonContent"
-                class="flex-1 font-mono text-xs"
-                :auto-size="false"
-                style="height: 100%; font-family: monospace"
-                readonly
-              />
+              <div
+                class="flex-1 overflow-auto border border-gray-200 rounded p-2 bg-gray-50"
+              >
+                <a-tree
+                  v-if="treeData.length"
+                  :data="treeData"
+                  :show-line="true"
+                  block-node
+                  @select="handleNodeSelect"
+                />
+                <div v-else class="text-gray-400 text-center mt-4">
+                  {{ jsonContent ? 'Invalid JSON' : 'No Data' }}
+                </div>
+              </div>
             </a-col>
 
             <!-- Right: Rules & Preview -->
@@ -190,9 +197,20 @@
                       :label="$t('curlToRss.step2.itemsIterator')"
                       required
                     >
+                      <template #label>
+                        {{ $t('curlToRss.step2.itemsIterator') }}
+                        <icon-edit
+                          v-if="activeField === 'list_selector'"
+                          class="ml-2 text-primary"
+                        />
+                      </template>
                       <a-input
                         v-model="parseReq.list_selector"
                         :placeholder="$t('curlToRss.placeholder.items')"
+                        :class="{
+                          'border-primary': activeField === 'list_selector',
+                        }"
+                        @focus="activeField = 'list_selector'"
                       />
                     </a-form-item>
                   </a-card>
@@ -205,27 +223,71 @@
                       :label="$t('curlToRss.step2.titleSelector')"
                       required
                     >
+                      <template #label>
+                        {{ $t('curlToRss.step2.titleSelector') }}
+                        <icon-edit
+                          v-if="activeField === 'title_selector'"
+                          class="ml-2 text-primary"
+                        />
+                      </template>
                       <a-input
                         v-model="parseReq.title_selector"
                         :placeholder="$t('curlToRss.placeholder.title')"
+                        :class="{
+                          'border-primary': activeField === 'title_selector',
+                        }"
+                        @focus="activeField = 'title_selector'"
                       />
                     </a-form-item>
                     <a-form-item :label="$t('curlToRss.step2.linkSelector')">
+                      <template #label>
+                        {{ $t('curlToRss.step2.linkSelector') }}
+                        <icon-edit
+                          v-if="activeField === 'link_selector'"
+                          class="ml-2 text-primary"
+                        />
+                      </template>
                       <a-input
                         v-model="parseReq.link_selector"
                         :placeholder="$t('curlToRss.placeholder.link')"
+                        :class="{
+                          'border-primary': activeField === 'link_selector',
+                        }"
+                        @focus="activeField = 'link_selector'"
                       />
                     </a-form-item>
                     <a-form-item :label="$t('curlToRss.step2.dateSelector')">
+                      <template #label>
+                        {{ $t('curlToRss.step2.dateSelector') }}
+                        <icon-edit
+                          v-if="activeField === 'date_selector'"
+                          class="ml-2 text-primary"
+                        />
+                      </template>
                       <a-input
                         v-model="parseReq.date_selector"
                         :placeholder="$t('curlToRss.placeholder.date')"
+                        :class="{
+                          'border-primary': activeField === 'date_selector',
+                        }"
+                        @focus="activeField = 'date_selector'"
                       />
                     </a-form-item>
                     <a-form-item :label="$t('curlToRss.step2.contentSelector')">
+                      <template #label>
+                        {{ $t('curlToRss.step2.contentSelector') }}
+                        <icon-edit
+                          v-if="activeField === 'content_selector'"
+                          class="ml-2 text-primary"
+                        />
+                      </template>
                       <a-input
                         v-model="parseReq.content_selector"
                         :placeholder="$t('curlToRss.placeholder.content')"
+                        :class="{
+                          'border-primary': activeField === 'content_selector',
+                        }"
+                        @focus="activeField = 'content_selector'"
                       />
                     </a-form-item>
                   </a-card>
@@ -410,14 +472,15 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, reactive } from 'vue';
+  import { ref, reactive, watch } from 'vue';
   import { useRouter } from 'vue-router';
-  import { Message } from '@arco-design/web-vue';
+  import { Message, Tree, TreeNodeData } from '@arco-design/web-vue';
   import {
     IconImport,
     IconDelete,
     IconArrowRight,
     IconSave,
+    IconEdit,
   } from '@arco-design/web-vue/es/icon';
   import XHeader from '@/components/header/x-header.vue';
   import {
@@ -429,6 +492,7 @@
   } from '@/api/json_rss';
   import { createCustomRecipe } from '@/api/custom_recipe';
   import { useI18n } from 'vue-i18n';
+  import _ from 'lodash';
 
   const router = useRouter();
   const { t } = useI18n();
@@ -452,6 +516,8 @@
 
   // Step 2 State
   const jsonContent = ref('');
+  const treeData = ref<TreeNodeData[]>([]);
+  const activeField = ref<string>(''); // Currently focused input
   const parseReq = reactive({
     list_selector: '',
     title_selector: '',
@@ -475,6 +541,112 @@
     id: '',
     description: '',
   });
+
+  // --- Watchers & Helpers ---
+
+  const jsonToTree = (data: any, rootPath = ''): TreeNodeData[] => {
+    const nodes: TreeNodeData[] = [];
+    if (_.isPlainObject(data)) {
+      Object.entries(data).forEach(([key, value]) => {
+        const currentPath = rootPath ? `${rootPath}.${key}` : `.${key}`;
+        const isObj = _.isPlainObject(value);
+        const isArr = _.isArray(value);
+        const isPrimitive = !isObj && !isArr;
+
+        const node: TreeNodeData = {
+          key: currentPath,
+          title: isPrimitive ? `${key}: ${value}` : key,
+          isLeaf: isPrimitive,
+          // store meta data if needed, e.g. type
+          data: { type: isArr ? 'array' : isObj ? 'object' : 'primitive' },
+        };
+
+        if (!isPrimitive) {
+          node.children = jsonToTree(value, currentPath);
+        }
+
+        nodes.push(node);
+      });
+    } else if (_.isArray(data)) {
+      data.forEach((item: any, index: number) => {
+        const currentPath = `${rootPath}[${index}]`;
+        const isObj = _.isPlainObject(item);
+        const isArr = _.isArray(item);
+        const isPrimitive = !isObj && !isArr;
+
+        const node: TreeNodeData = {
+          key: currentPath,
+          title: `[${index}]`,
+          isLeaf: isPrimitive,
+          data: { type: isArr ? 'array' : isObj ? 'object' : 'primitive' },
+        };
+
+        if (!isPrimitive) {
+          node.children = jsonToTree(item, currentPath);
+        } else {
+          node.title = `[${index}]: ${item}`;
+        }
+
+        nodes.push(node);
+      });
+    }
+    return nodes;
+  };
+
+  watch(
+    () => jsonContent.value,
+    (val) => {
+      if (!val) {
+        treeData.value = [];
+        return;
+      }
+      try {
+        const data = JSON.parse(val);
+        treeData.value = jsonToTree(data);
+      } catch (e) {
+        console.error('Invalid JSON content:', e);
+        treeData.value = [];
+      }
+    },
+  );
+
+  const getRelativePath = (fullPath: string, listSel: string) => {
+    if (!listSel) return fullPath;
+    // Remove trailing [] from list selector to get base path
+    const base = listSel.replace(/\[\]$/, '');
+    if (fullPath.startsWith(base)) {
+      let suffix = fullPath.slice(base.length);
+      // Suffix should start with array index, e.g. [0].title or [0]
+      // Remove the leading [digits]
+      suffix = suffix.replace(/^\[\d+\]/, '');
+      if (!suffix) return '.'; // It was the item itself
+      return suffix;
+    }
+    return fullPath;
+  };
+
+  const handleNodeSelect = (
+    selectedKeys: (string | number)[],
+    { node }: { node: TreeNodeData },
+  ) => {
+    if (!activeField.value || !node.key) return;
+
+    const path = node.key as string;
+
+    if (activeField.value === 'list_selector') {
+      // Suggest iterator
+      if (node.data && node.data.type === 'array') {
+        parseReq.list_selector = `${path}[]`;
+      } else {
+        parseReq.list_selector = path;
+      }
+    } else {
+      // Relative path calculation
+      const rel = getRelativePath(path, parseReq.list_selector);
+      // @ts-ignore
+      parseReq[activeField.value] = rel;
+    }
+  };
 
   // --- Actions ---
 

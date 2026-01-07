@@ -17,11 +17,7 @@ export default mergeConfig(
     build: {
       rollupOptions: {
         output: {
-          manualChunks: {
-            arco: ['@arco-design/web-vue'],
-            chart: ['echarts', 'vue-echarts'],
-            vue: ['vue', 'vue-router', 'pinia', '@vueuse/core', 'vue-i18n'],
-          },
+          manualChunks: undefined,
         },
       },
       chunkSizeWarningLimit: 2000,
