@@ -4,8 +4,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"strings"
-
-	"github.com/mattn/go-shellwords"
 )
 
 type CurlParseResult struct {
@@ -18,7 +16,7 @@ type CurlParseResult struct {
 // ParseCurlCommand parses a curl command string into a structured request object.
 // It supports common curl flags like -X, -H, -d, --data-raw, etc.
 func ParseCurlCommand(cmd string) (*CurlParseResult, error) {
-	args, err := shellwords.Parse(cmd)
+	args, err := ParseShellWords(cmd)
 	if err != nil {
 		return nil, fmt.Errorf("parse curl command failed: %w", err)
 	}
