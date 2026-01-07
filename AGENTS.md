@@ -75,6 +75,18 @@ pnpm run type:check
 pnpm run lint-staged
 ```
 
+### Hooks when you finish a task
+When you finish a task, run these commands to check the code do not break a build.
+
+```bash
+# run lint
+task lint
+# backend build test
+task backend-build
+# frontend build test
+task frontend-build
+```
+
 ## Database Schema
 
 The application uses SQLite with the following main entities:
