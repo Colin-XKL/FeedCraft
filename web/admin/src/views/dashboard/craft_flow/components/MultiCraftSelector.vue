@@ -43,49 +43,49 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useI18n } from 'vue-i18n';
-import { IconDown } from '@arco-design/web-vue/es/icon';
-import CraftPickerModal from './CraftPickerModal.vue';
+  import { ref, computed } from 'vue';
+  import { useI18n } from 'vue-i18n';
+  import { IconDown } from '@arco-design/web-vue/es/icon';
+  import CraftPickerModal from './CraftPickerModal.vue';
 
-const { t } = useI18n();
+  const { t } = useI18n();
 
-const props = defineProps({
-  modelValue: {
-    type: Array as () => string[],
-    default: () => [],
-  },
-  placeholder: {
-    type: String,
-    default: '',
-  },
-});
+  const props = defineProps({
+    modelValue: {
+      type: Array as () => string[],
+      default: () => [],
+    },
+    placeholder: {
+      type: String,
+      default: '',
+    },
+  });
 
-const emit = defineEmits(['update:modelValue', 'change']);
+  const emit = defineEmits(['update:modelValue', 'change']);
 
-const visible = ref(false);
+  const visible = ref(false);
 
-const hasSelection = computed(
-  () => props.modelValue && props.modelValue.length > 0,
-);
+  const hasSelection = computed(
+    () => props.modelValue && props.modelValue.length > 0,
+  );
 
-const openModal = () => {
-  visible.value = true;
-};
+  const openModal = () => {
+    visible.value = true;
+  };
 
-const handleUpdate = (val: string | string[]) => {
-  const newVal = val as string[];
-  emit('update:modelValue', newVal);
-  emit('change', newVal);
-};
-
-const removeItem = (val: string) => {
-  const newVal = [...props.modelValue];
-  const idx = newVal.indexOf(val);
-  if (idx > -1) {
-    newVal.splice(idx, 1);
+  const handleUpdate = (val: string | string[]) => {
+    const newVal = val as string[];
     emit('update:modelValue', newVal);
     emit('change', newVal);
-  }
-};
+  };
+
+  const removeItem = (val: string) => {
+    const newVal = [...props.modelValue];
+    const idx = newVal.indexOf(val);
+    if (idx > -1) {
+      newVal.splice(idx, 1);
+      emit('update:modelValue', newVal);
+      emit('change', newVal);
+    }
+  };
 </script>
