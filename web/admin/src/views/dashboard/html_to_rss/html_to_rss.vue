@@ -564,6 +564,22 @@
         } else {
           raw = `${baseTag}${raw}`;
         }
+
+        // Auto-extract metadata for Step 3
+        try {
+          const doc = new DOMParser().parseFromString(raw, 'text/html');
+          const title = doc.querySelector('title')?.innerText || '';
+          const descMeta =
+            doc.querySelector('meta[name="description"]') ||
+            doc.querySelector('meta[property="og:description"]');
+          const description = descMeta ? descMeta.getAttribute('content') : '';
+
+          if (title) feedMeta.title = title.trim();
+          if (description) feedMeta.description = description.trim();
+        } catch (e) {
+          // Ignore extraction errors
+        }
+
         htmlContent.value = DOMPurify.sanitize(raw, {
           WHOLE_DOCUMENT: true,
           ADD_TAGS: ['link', 'style', 'head', 'meta', 'body', 'html', 'base'],
