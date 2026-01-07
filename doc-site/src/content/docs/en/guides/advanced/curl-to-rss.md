@@ -55,7 +55,7 @@ Currently, the CURL to RSS is a tool for **finding and testing** the correct sel
 To save your configuration as a permanent feed:
 
 1.  Copy your **URL** and **Selector** values.
-2.  Go to **Custom Recipes** > **Create**.
+2.  Go to **Channels** > **Create**.
 3.  Select **Source Type**: `JSON`.
 4.  Paste your configuration into the **Source Config** JSON format:
 

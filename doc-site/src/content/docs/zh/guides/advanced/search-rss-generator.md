@@ -33,15 +33,15 @@ FeedCraft 包含一个 **搜索转 RSS (Search to RSS)** 工具，允许你将�
 - **Feed 描述**：简短描述。
 - **站点链接**：搜索结果页面的链接。
 
-### 第四步：保存配方 (Save Recipe)
+### 第四步：保存配方 (Save Channel)
 
-1.  **配方 ID (Recipe ID)**：为此配方选择一个唯一的标识符（例如 `search-ai-news`）。这将成为你订阅源 URL 的一部分。
+1.  **频道 ID (Channel ID)**：为此配方选择一个唯一的标识符（例如 `search-ai-news`）。这将成为你订阅源 URL 的一部分。
 2.  **内部描述 (Internal Description)**：关于此配方的备注。
 3.  点击 **确认并保存 (Confirm & Save)**。
 
 ## 访问你的订阅源
 
-保存后，该配方将作为 **自定义配方 (Custom Recipe)** 存储。你可以在 **Custom Recipes** 仪表板中管理它。
+保存后，该配方将作为 **频道 (Channel)** 存储。你可以在 **Channels** 仪表板中管理它。
 
 你的新订阅源将通过以下地址访问：
-\`http://your-feedcraft-instance/rss/custom/{recipe-unique-id}\`
+\`http://your-feedcraft-instance/rss/custom/{channel-id}\`

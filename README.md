@@ -32,23 +32,23 @@ Gemini来生成文章摘要、通过自然语言筛选文章等
 - AI Power, 可以接入所有Open AI接口兼容的LLM对RSS进行处理, 可自定义prompt
 - **HTML to RSS**: 内置可视化 HTML to RSS 生成器，可以将任意网页（如博客列表）转换为 RSS 订阅源
 - 支持保存规则批量应用到不同的RSS源
-- 支持**便携模式**(portable mode, 即用即走, 只需要在原RSS地址前面加个前缀即可), 和**高级模式**(dock mode,
-  在后台页面自定义RSS地址和各类深度加工参数)
+- 支持**便携模式**(portable mode, 即用即走, 只需要在原RSS地址前面加个前缀即可), 和**订阅模式**(Channel mode,
+  在后台页面管理订阅地址和各类深度加工参数)
 
 ## 快速开始
 
 访问以下URL格式即可快速调用FeedCraft对输入的RSS源进行指定的处理
-`https://feed-craft.colinx.one/craft/{craft_atom}?input_url={input_rss_url}`
+`https://feed-craft.colinx.one/craft/{tool_name}?input_url={input_rss_url}`
 
 FeedCraft中的几个核心概念:
 
-- CraftAtom(工艺), 指要如何处理一个rss源, 比如是要进行翻译,还是提取正文,还是AI生成摘要等
-- CraftFlow(工艺组合), 多个craft atom组成的序列, 比如你可以定义一个新的名叫 clean-article 的 craft flow,
-  将提取全文、AI筛选文章、AI摘要组合到一起,
-- Recipe(食谱), 记录了以什么样的craft 或 craft flow对某个指定的rss源进行处理, 比如你可以指定一个名叫my-zhihu-daliy的recipe,
-  对知乎日报的rss自动进行AI生成摘要的操作, 这个recipe对应一个新的rss地址, 你可以直接订阅这个地址得到带摘要版本的知乎日报
+- **Tool** (工具, 原 CraftAtom), 指要如何处理一个rss源, 比如是要进行翻译,还是提取正文,还是AI生成摘要等
+- **Blueprint** (蓝图, 原 CraftFlow), 多个工具组成的序列, 比如你可以定义一个新的名叫 clean-article 的蓝图,
+  将提取全文、AI筛选文章、AI摘要组合到一起
+- **Channel** (频道, 原 Recipe), 记录了以什么样的工具或蓝图对某个指定的rss源进行处理, 比如你可以指定一个名叫my-zhihu-daliy的频道,
+  对知乎日报的rss自动进行AI生成摘要的操作, 这个频道对应一个新的rss地址, 你可以直接订阅这个地址得到带摘要版本的知乎日报
 
-你可以先开始尝试下面的几个工艺(craft atom):
+你可以先开始尝试下面的几个工具(Tool):
 
 - **proxy**: 简易RSS代理, 不作任何处理
 - **limit**: 限制文章个数, 默认最新10个
@@ -113,39 +113,6 @@ services:
       FC_DEFAULT_TARGET_LANG: zh-CN # (Optional) LLM 处理任务的默认目标语言，如 zh-CN, en-US
 ```
 
-你也可以直接在一个compose文件中把redis等附加组件也一起部署好:
-
-```yaml
-version: "3"
-services:
-  app.feed-craft:
-    image: ghcr.io/colin-xkl/feed-craft
-    container_name: feed-craft
-    restart: always
-    ports:
-      - "10088:80" # 10088可替换为任何你想使用的端口
-    volumes:
-      - ./feed-craft-db:/usr/local/feed-craft/db # db file
-    environment:
-      FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000 # 替换为你自己的 browserless 或其他浏览器实例地址
-      FC_REDIS_URI: redis://service.redis:6379/ # 替换为你自己的redis 实例地址
-      FC_LLM_API_BASE: https://xxxxxx # LLM API 接口路径，需要以 “/v1” 结尾
-      FC_LLM_API_KEY: skxxxxxx # 鉴权的key
-      FC_LLM_API_MODEL: gemini-pro/chatgpt-3.5/... # 默认使用的模型
-      FC_LLM_API_TYPE: openai # openai 或 ollama
-      FC_DEFAULT_TARGET_LANG: zh-CN # (Optional) LLM 处理任务的默认目标语言
-  service.redis:
-    image: redis:6-alpine
-    container_name: feedcraft_redis
-    restart: always
-  service.browserless:
-    image: browserless/chrome
-    container_name: feedcraft_browserless
-    environment:
-      USE_CHROME_STABLE: true
-    restart: unless-stopped
-```
-
 ## 开发
 
 如果你想要在本地开发FeedCraft，可以按照以下步骤进行：
@@ -201,13 +168,12 @@ GPLv3
 <img width="1900" alt="Xnip2024-08-08_00-48-49" src="https://github.com/user-attachments/assets/d3541f4e-9ab4-4948-9fc7-5b815db225ce">
 
 **RSS源比较工具**
-你可以输入一个RSS 源的地址, 然后选择要使用的craft atom, 就可以看到前后的对比.
-如下图我应用的craft是自定义的, 只显示文章标题带有`RSS`的文章, 可以看到筛选后的结果少了很多
+你可以输入一个RSS 源的地址, 然后选择要使用的工具或蓝图, 就可以看到前后的对比.
 
 <img width="1907" alt="Xnip2024-08-08_01-05-09" src="https://github.com/user-attachments/assets/7abd764a-8b19-4a72-8c94-e3ea442ff385">
 
-**创建Craft Atom 自定义Prompt**
+**创建 Tool 自定义Prompt**
 <img width="1918" alt="Xnip2024-08-08_00-46-13" src="https://github.com/user-attachments/assets/ff15fe79-3792-4a96-b991-f121d2a8973e">
 
-**自定义recipe, 指定使用哪个craft atom 处理哪个RSS源**
+**管理频道 (Channel), 指定使用哪个处理器处理哪个RSS源**
 <img width="1900" alt="Xnip2024-08-08_00-48-34" src="https://github.com/user-attachments/assets/5794de1d-28b6-45ff-8737-16f8adc6ed8a">

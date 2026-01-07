@@ -14,7 +14,7 @@ The HTML to RSS tool allows you to:
 1.  **Fetch** a webpage's content.
 2.  **Select** elements visually to define what constitutes a feed item (title, link, date, content).
 3.  **Preview** the generated feed items immediately.
-4.  **Use** the generated selectors in a Custom Recipe.
+4.  **Use** the generated selectors in a Channel.
 
 ## How to use
 
@@ -44,10 +44,10 @@ This step allows you to map HTML elements to RSS feed fields.
     - **Content Selector**: (Optional) Pick the element containing the summary or full content.
 4.  **Preview RSS Items**: Click this button to test your selectors. The parsed items will appear in the right-hand panel.
 
-### Step 3: Use in Custom Recipe
+### Step 3: Use in Channel
 
 Once you have verified the selectors in the preview:
 
 1.  Note down the generated selectors (Item, Title, Link, Date, Content).
-2.  Navigate to **Custom Recipes** > **Create**.
+2.  Navigate to **Channels** > **Create**.
 3.  Configure your recipe using these selectors to parse the target website.

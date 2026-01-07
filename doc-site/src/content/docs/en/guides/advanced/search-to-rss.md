@@ -33,15 +33,15 @@ Customize how this feed appears in your RSS reader:
 - **Feed Description**: A brief description.
 - **Site Link**: Link to the search results page (e.g. Google Search URL).
 
-### Step 4: Save Recipe
+### Step 4: Save Channel
 
-1.  **Recipe ID**: Choose a unique identifier for this recipe (e.g., `search-ai-news`). This will be part of your feed URL.
+1.  **Channel ID**: Choose a unique identifier for this recipe (e.g., `search-ai-news`). This will be part of your feed URL.
 2.  **Internal Description**: Notes for yourself about this recipe.
 3.  Click **Confirm & Save**.
 
 ## Accessing Your Feed
 
-Once saved, the recipe is stored as a **Custom Recipe**. You can manage it in the **Custom Recipes** dashboard.
+Once saved, the recipe is stored as a **Channel**. You can manage it in the **Channels** dashboard.
 
 Your new feed will be available at:
-\`http://your-feedcraft-instance/rss/custom/{recipe-unique-id}\`
+\`http://your-feedcraft-instance/rss/custom/{channel-id}\`

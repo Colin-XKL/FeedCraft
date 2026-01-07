@@ -13,11 +13,11 @@ FeedCraft is a powerful tool to process your RSS feeds as a middleware. You can 
 You can quickly start using FeedCraft by modifying the URL of your RSS feed. This is called "Portable Mode".
 
 The URL format is:
-`https://feed-craft.colinx.one/craft/{craft_atom}?input_url={input_rss_url}`
+`https://feed-craft.colinx.one/craft/{processor_name}?input_url={input_rss_url}`
 
 Where:
 
-- `{craft_atom}` is the name of the processing step you want to apply.
+- `{processor_name}` is the name of the processing step you want to apply.
 - `{input_rss_url}` is the original URL of the RSS feed you want to process.
 
 **Note:** You may need to URL-encode the `{input_rss_url}` if your RSS reader does not handle it automatically.
