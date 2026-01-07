@@ -154,7 +154,7 @@ services:
 
 1. 确保已安装以下依赖：
    - Go 1.23+
-   - Node.js (推荐 22+, 最低 18.0.0)
+   - Node.js (推荐 22+)
    - pnpm (安装方式: `npm install -g pnpm`)
    - Task (安装方式: [https://taskfile.dev/installation/](https://taskfile.dev/installation/))
 
