@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
 	"github.com/itchyny/gojq"
-	"github.com/mattn/go-shellwords"
 )
 
 type JsonFetchReq struct {
@@ -39,51 +38,17 @@ func CurlParseCmd(c *gin.Context) {
 		return
 	}
 
-	args, err := shellwords.Parse(req.CurlCommand)
+	parsed, err := util.ParseCurlCommand(req.CurlCommand)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "Parse curl command failed: " + err.Error()})
-		return
-	}
-
-	if len(args) == 0 || args[0] != "curl" {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "Invalid curl command"})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
 		return
 	}
 
 	result := JsonFetchReq{
-		Headers: make(map[string]string),
-		Method:  "GET", // Default
-	}
-
-	for i := 1; i < len(args); i++ {
-		arg := args[i]
-		switch arg {
-		case "-X", "--request":
-			if i+1 < len(args) {
-				result.Method = args[i+1]
-				i++
-			}
-		case "-H", "--header":
-			if i+1 < len(args) {
-				parts := strings.SplitN(args[i+1], ":", 2)
-				if len(parts) == 2 {
-					result.Headers[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
-				}
-				i++
-			}
-		case "-d", "--data", "--data-raw", "--data-binary":
-			if i+1 < len(args) {
-				result.Body = args[i+1]
-				if result.Method == "GET" {
-					result.Method = "POST"
-				}
-				i++
-			}
-		default:
-			if !strings.HasPrefix(arg, "-") {
-				result.URL = arg
-			}
-		}
+		Method:  parsed.Method,
+		URL:     parsed.URL,
+		Headers: parsed.Headers,
+		Body:    parsed.Body,
 	}
 
 	c.JSON(http.StatusOK, util.APIResponse[JsonFetchReq]{
