@@ -3,10 +3,10 @@ import localeLogin from '@/views/login/locale/zh-CN';
 
 import localeSettings from './zh-CN/settings';
 import localeMenu from './zh-CN/menu';
-import localeCraftAtom from './zh-CN/craftAtom';
-import localeCraftFlow from './zh-CN/craftFlow';
-import localeCustomRecipe from './zh-CN/customRecipe';
-import localeAllCraftList from './zh-CN/allCraftList';
+import localeTool from './zh-CN/tool';
+import localeBlueprint from './zh-CN/blueprint';
+import localeChannel from './zh-CN/channel';
+import localeAllProcessorList from './zh-CN/allProcessorList';
 import localeFeedCompare from './zh-CN/feedCompare';
 import localeFeedViewer from './zh-CN/feedViewer';
 import localeLlmDebug from './zh-CN/llmDebug';
@@ -21,10 +21,10 @@ export default {
   ...localeMessageBox,
   ...localeLogin,
   ...localeMenu,
-  ...localeCraftAtom,
-  ...localeCraftFlow,
-  ...localeCustomRecipe,
-  ...localeAllCraftList,
+  ...localeTool,
+  ...localeBlueprint,
+  ...localeChannel,
+  ...localeAllProcessorList,
   ...localeFeedCompare,
   ...localeFeedViewer,
   ...localeLlmDebug,

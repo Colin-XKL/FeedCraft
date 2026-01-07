@@ -18,10 +18,10 @@ export default {
   'navbar.action.locale': 'Switch to English',
   // workplace menus
   'menu.dashboard.workplace': 'Workplace',
-  'menu.craftAtom': 'Craft Atom',
-  'menu.craftFlow': 'Craft Flow',
-  'menu.customRecipe': 'Custom Recipe',
-  'menu.allCraftList': 'All Craft List',
+  'menu.tool': 'Tool',
+  'menu.blueprint': 'Blueprint',
+  'menu.channel': 'Channel',
+  'menu.allProcessorList': 'All Components',
   'menu.quickStart': 'Quick Start',
   'menu.dashboard.welcome': 'Welcome',
   // tools menus

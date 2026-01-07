@@ -17,9 +17,9 @@
         </p>
         <div class="mb-4">
           <label for="siteSelector" class="mr-2">{{
-            t('urlGenerator.selectCraft')
+            t('urlGenerator.selectProcessor')
           }}</label>
-          <CraftFlowSelect v-model="selectedCraft" mode="single" />
+          <BlueprintSelect v-model="selectedProcessor" mode="single" />
         </div>
         <div class="mb-4">
           <label for="inputUrl" class="mr-2">{{
@@ -33,7 +33,7 @@
           />
         </div>
         <a-button type="primary" @click="generateUrl"
-          >{{ t('urlGenerator.showCraftedUrl') }}
+          >{{ t('urlGenerator.showProcessedUrl') }}
         </a-button>
         <div class="mt-8">
           <label for="resultUrl" class="mr-2">{{
@@ -54,21 +54,21 @@
 
 <script setup lang="ts">
   import { Ref, ref } from 'vue';
-  import CraftFlowSelect from '@/views/dashboard/craft_flow/CraftFlowSelect.vue';
+  import BlueprintSelect from '@/views/dashboard/blueprint/BlueprintSelect.vue';
   import { useI18n } from 'vue-i18n';
 
   const { t } = useI18n();
 
-  const selectedCraft = ref<string[]>([]);
-  const customCraft = ref('');
+  const selectedProcessor = ref<string[]>([]);
+  const customProcessor = ref('');
   const inputUrl = ref('');
   const resultUrl = ref('');
   const copyButtonText = ref(t('urlGenerator.copyUrl'));
 
   const generateUrl = () => {
-    const currentSelectedCraft = customCraft.value
-      ? customCraft.value
-      : selectedCraft.value;
+    const currentSelectedCraft = customProcessor.value
+      ? customProcessor.value
+      : selectedProcessor.value;
     const baseUrl = import.meta.env.VITE_API_BASE_URL ?? window.location.origin;
     resultUrl.value = `${baseUrl}/craft/${currentSelectedCraft}?input_url=${encodeURIComponent(
       inputUrl.value,

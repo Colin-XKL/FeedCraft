@@ -1,17 +1,11 @@
 export default {
-  'feedCompare.description':
-    'Specify the feed source URL and the craft (craft flow or atom) to be applied, and compare the results before and after processing.',
-  'feedCompare.inputLink': 'Input Link',
-  'feedCompare.placeholder': 'Enter RSS feed URL',
+  'feedCompare.title': 'Feed Comparison',
+  'feedCompare.description': 'Compare different processing effects of feeds',
+  'feedCompare.inputPlaceholder': 'Enter Feed URL',
   'feedCompare.compare': 'Compare',
-  'feedCompare.originalFeed': 'Original Feed',
-  'feedCompare.craftAppliedFeed': 'Craft Applied Feed',
-  'feedCompare.selectCraftFlow.placeholder': 'Select CraftFlow',
-  'feedCompare.selectCraftFlow.tabs.system': 'System Craft Templates',
-  'feedCompare.selectCraftFlow.tabs.user': 'User Craft Atoms',
-  'feedCompare.selectCraftFlow.tabs.flow': 'Craft Flows',
-  'feedCompare.selectCraftFlow.clear': 'Clear Selection',
-  'feedCompare.message.inputRequired':
-    'Please enter a feed URL and select a craft',
-  'feedCompare.message.unknownError': 'Unknown Error',
+  'feedCompare.selectBlueprint.placeholder': 'Select Blueprint/Tool',
+  'feedCompare.selectBlueprint.tabs.system': 'System Templates',
+  'feedCompare.selectBlueprint.tabs.user': 'Tools',
+  'feedCompare.selectBlueprint.tabs.flow': 'Blueprints',
+  'feedCompare.selectBlueprint.clear': 'Clear Selection',
 };

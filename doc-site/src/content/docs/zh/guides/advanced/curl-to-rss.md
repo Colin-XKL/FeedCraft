@@ -48,14 +48,14 @@ JSON RSS 生成器可以帮助你：
 
 点击 **Preview RSS** 查看你的选择器效果。解析出的条目将显示在下方的列表中。
 
-## 保存你的食谱
+## 保存你的频道
 
 目前，JSON RSS 生成器是一个用于 **查找和测试** 正确选择器的工具。
 
 要将你的配置保存为永久订阅源：
 
 1.  复制你的 **URL** 和 **Selector** 值。
-2.  前往 **Custom Recipes** > **Create**。
+2.  前往 **Channels** > **Create**。
 3.  选择 **Source Type**：`JSON`。
 4.  将你的配置粘贴到 **Source Config** JSON 格式中：
 

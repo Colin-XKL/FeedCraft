@@ -1,6 +1,6 @@
 ## Project Overview
 
-FeedCraft is a Go-based RSS feed processing middleware that allows users to transform RSS feeds using various processing "crafts". The application supports AI-powered feed manipulation, including translation, fulltext extraction, summarization, and content filtering.
+FeedCraft is a Go-based RSS feed processing middleware that allows users to transform RSS feeds using various processing "processors". The application supports AI-powered feed manipulation, including translation, fulltext extraction, summarization, and content filtering.
 
 ## Architecture
 
@@ -15,22 +15,22 @@ FeedCraft is a Go-based RSS feed processing middleware that allows users to tran
 ### Key Directories
 
 - `cmd/`: Application entry point
-- `internal/craft/`: Core feed processing logic and craft templates
+- `internal/craft/`: Core feed processing logic and tool templates
 - `internal/controller/`: HTTP API handlers
 - `internal/dao/`: Database access objects
 - `internal/adapter/`: External service adapters (LLM, etc.)
 - `internal/util/`: Utility functions and helpers
 - `internal/router/`: Route definitions and middleware
-- `internal/recipe/`: Recipe management for feed processing configurations
+- `internal/recipe/`: Legacy package name for channel management
 - `web/admin/`: Vue.js frontend application
 - `build/`: Docker build configuration
 
 ### Core Concepts
 
-- **CraftAtom**: Individual processing units (e.g., translate, summarize, extract fulltext)
-- **CraftFlow**: Sequential combinations of multiple CraftAtoms
-- **Recipe**: Configuration that applies specific crafts/flows to RSS feed URLs
-- **Portable Mode**: Direct URL-based processing: `/craft/{craft-name}?input_url={rss-url}`
+- **Tool** (formerly CraftAtom): Individual processing units (e.g., translate, summarize, extract fulltext)
+- **Blueprint** (formerly CraftFlow): Sequential combinations of multiple Tools
+- **Channel** (formerly Recipe): Configuration that applies specific tools/blueprints to RSS feed URLs
+- **Portable Mode**: Direct URL-based processing: `/craft/{processor-name}?input_url={rss-url}`
 - **Dock Mode**: Advanced configuration through admin panel
 
 ## Development Commands
@@ -75,20 +75,33 @@ pnpm run type:check
 pnpm run lint-staged
 ```
 
+### Hooks when you finish a task
+
+When you finish a task, run these commands to check the code do not break a build.
+
+```bash
+# run lint
+task lint
+# backend build test
+task backend-build
+# frontend build test
+task frontend-build
+```
+
 ## Database Schema
 
 The application uses SQLite with the following main entities:
 
 - `users`: User management
-- `craft_atoms`: Custom craft atom definitions
-- `craft_flows`: Craft flow configurations
-- `recipes`: Feed processing recipes
+- `tools`: Custom tool definitions (formerly craft_atoms)
+- `blueprints`: Blueprint configurations (formerly craft_flows)
+- `channels`: Feed processing channels (formerly recipes)
 
 Database migrations are handled automatically in `dao.MigrateDatabases()`.
 
-## Built-in Craft Templates
+## Built-in Tool Templates
 
-The system includes numerous built-in craft templates in `internal/craft/entry.go`:
+The system includes numerous built-in tool templates in `internal/craft/entry.go`:
 
 - `proxy`: Simple RSS proxy
 - `limit`: Limit number of items
@@ -108,9 +121,9 @@ The system includes numerous built-in craft templates in `internal/craft/entry.g
 
 ## Common Development Tasks
 
-### Adding New Craft Template
+### Adding New Tool Template
 
-1. Define craft logic in `internal/craft/`
+1. Define tool logic in `internal/craft/`
 2. Add parameters template in `internal/craft/entry.go`
 3. Implement option function
 4. Add to `GetSysCraftTemplateDict()`

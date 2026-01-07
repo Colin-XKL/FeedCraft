@@ -1,13 +1,9 @@
 export default {
-  'urlGenerator.welcome': '欢迎使用',
-  'urlGenerator.title': '快速生成 FeedCraft URL',
-  'urlGenerator.description':
-    '输入原 RSS URL，选择需要的 craft，即可生成最终URL。',
-  'urlGenerator.selectCraft': '选择一个 craft:',
-  'urlGenerator.inputOriginalUrl': '输入原 RSS URL:',
-  'urlGenerator.inputUrlPlaceholder': '输入 URL',
-  'urlGenerator.showCraftedUrl': '显示 Crafted Feed URL',
-  'urlGenerator.resultUrl': '结果 URL:',
-  'urlGenerator.copyUrl': '复制 URL',
-  'urlGenerator.copied': '已复制!',
+  'urlGenerator.title': '快速开始: Feed URL 生成器',
+  'urlGenerator.description': '为已有的 RSS 源生成处理后的 URL',
+  'urlGenerator.inputRssUrl': '输入原始 RSS URL',
+  'urlGenerator.selectProcessor': '选择一个处理器 (工具/蓝图)',
+  'urlGenerator.showProcessedUrl': '显示处理后的 Feed URL',
+  'urlGenerator.resultUrl': '处理后的 Feed URL',
+  'urlGenerator.copy': '复制',
 };

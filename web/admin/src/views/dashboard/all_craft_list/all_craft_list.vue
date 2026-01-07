@@ -1,19 +1,19 @@
 <template>
   <div class="py-8 px-16">
     <x-header
-      :title="t('menu.allCraftList')"
-      :description="t('allCraftList.description')"
+      :title="t('menu.allProcessorList')"
+      :description="t('allProcessorList.description')"
     ></x-header>
 
     <a-space direction="horizontal" class="mb-6">
-      <a-button type="primary" :loading="isLoading" @click="listAllCrafts">
-        {{ t('allCraftList.query') }}
+      <a-button type="primary" :loading="isLoading" @click="listAllProcessors">
+        {{ t('allProcessorList.query') }}
       </a-button>
     </a-space>
 
     <a-table
       :pagination="true"
-      :data="allCrafts"
+      :data="allProcessors"
       :columns="columns"
       :loading="isLoading"
     ></a-table>
@@ -29,35 +29,38 @@
 
   const { t } = useI18n();
 
-  interface CraftItem {
+  interface ProcessorItem {
     name: string;
     description: string;
     type: string;
   }
 
   const isLoading = ref(false);
-  const allCrafts = ref<CraftItem[]>([]);
+  const allProcessors = ref<ProcessorItem[]>([]);
 
   const columns = [
-    { title: t('allCraftList.table.name'), dataIndex: 'name' },
-    { title: t('allCraftList.table.type'), dataIndex: 'type' },
-    { title: t('allCraftList.table.description'), dataIndex: 'description' },
+    { title: t('allProcessorList.table.name'), dataIndex: 'name' },
+    { title: t('allProcessorList.table.type'), dataIndex: 'type' },
+    {
+      title: t('allProcessorList.table.description'),
+      dataIndex: 'description',
+    },
   ];
 
-  const listAllCrafts = async () => {
+  const listAllProcessors = async () => {
     isLoading.value = true;
     try {
       const response = await axios.get('/api/list-all-craft');
-      allCrafts.value = response.data.data;
+      allProcessors.value = response.data.data;
     } catch (error) {
-      Message.error(t('allCraftList.message.fetchFailed'));
+      Message.error(t('allProcessorList.message.fetchFailed'));
     } finally {
       isLoading.value = false;
     }
   };
 
   onBeforeMount(() => {
-    listAllCrafts();
+    listAllProcessors();
   });
 </script>
 

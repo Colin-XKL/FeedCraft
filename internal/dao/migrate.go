@@ -13,11 +13,20 @@ import (
 func MigrateDatabases() {
 	logrus.Info("migrating databases...")
 	db := util.GetDatabase()
+
+	// 1. Rename tables if they exist with old names
+	renameTables(db)
+
+	// 1.1 Rename columns if necessary
+	renameColumns(db)
+
+	// 2. AutoMigrate with new structs
 	err := db.AutoMigrate(
-		&CustomRecipe{},
-		&CustomRecipeV2{}, // Create the new V2 table
-		&CraftFlow{}, &CraftAtom{},
-		&User{}, // 确保 User 表被初始化
+		&CustomRecipe{}, // Keep for legacy data migration source
+		&Channel{},      // New Channel table
+		&Blueprint{},    // New Blueprint table
+		&Tool{},         // New Tool table
+		&User{},
 		&SystemSetting{},
 	)
 	if err != nil {
@@ -25,22 +34,66 @@ func MigrateDatabases() {
 		return
 	}
 
-	// Perform data migration from custom_recipes to custom_recipes_v2
-	migrateRecipesToV2(db)
+	// 3. Perform data migration from legacy custom_recipes to channels
+	migrateRecipesToChannels(db)
 
 	logrus.Info("migrate database done.")
 
-	// 创建 admin 账户
+	// Create admin account
 	createAdminUser(db)
 }
 
-func migrateRecipesToV2(db *gorm.DB) {
+func renameTables(db *gorm.DB) {
+	// Rename craft_atoms -> tools
+	if db.Migrator().HasTable("craft_atoms") && !db.Migrator().HasTable("tools") {
+		logrus.Info("Renaming table 'craft_atoms' to 'tools'")
+		if err := db.Migrator().RenameTable("craft_atoms", "tools"); err != nil {
+			logrus.Errorf("Failed to rename table 'craft_atoms': %v", err)
+		}
+	}
+
+	// Rename craft_flows -> blueprints
+	if db.Migrator().HasTable("craft_flows") && !db.Migrator().HasTable("blueprints") {
+		logrus.Info("Renaming table 'craft_flows' to 'blueprints'")
+		if err := db.Migrator().RenameTable("craft_flows", "blueprints"); err != nil {
+			logrus.Errorf("Failed to rename table 'craft_flows': %v", err)
+		}
+	}
+
+	// Rename custom_recipes_v2 -> channels
+	if db.Migrator().HasTable("custom_recipes_v2") && !db.Migrator().HasTable("channels") {
+		logrus.Info("Renaming table 'custom_recipes_v2' to 'channels'")
+		if err := db.Migrator().RenameTable("custom_recipes_v2", "channels"); err != nil {
+			logrus.Errorf("Failed to rename table 'custom_recipes_v2': %v", err)
+		}
+	}
+}
+
+func renameColumns(db *gorm.DB) {
+	// Rename channels.craft -> channels.processor_name
+	if db.Migrator().HasTable("channels") && db.Migrator().HasColumn("channels", "craft") {
+		logrus.Info("Renaming column 'channels.craft' to 'processor_name'")
+		if err := db.Migrator().RenameColumn("channels", "craft", "processor_name"); err != nil {
+			logrus.Errorf("Failed to rename column 'channels.craft': %v", err)
+		}
+	}
+
+	// Rename blueprints.flow_config -> blueprints.blueprint_config
+	if db.Migrator().HasTable("blueprints") && db.Migrator().HasColumn("blueprints", "flow_config") {
+		logrus.Info("Renaming column 'blueprints.flow_config' to 'blueprint_config'")
+		if err := db.Migrator().RenameColumn("blueprints", "flow_config", "blueprint_config"); err != nil {
+			logrus.Errorf("Failed to rename column 'blueprints.flow_config': %v", err)
+		}
+	}
+}
+
+func migrateRecipesToChannels(db *gorm.DB) {
 	if !db.Migrator().HasTable(&CustomRecipe{}) {
 		logrus.Info("original recipe table does not exist, skipping migration.")
 		return
 	}
 
-	logrus.Info("starting migration from 'custom_recipes' to 'custom_recipes_v2'...")
+	logrus.Info("starting migration from 'custom_recipes' to 'channels'...")
 
 	var oldRecipes []*CustomRecipe
 	if err := db.Find(&oldRecipes).Error; err != nil {
@@ -49,9 +102,9 @@ func migrateRecipesToV2(db *gorm.DB) {
 	}
 
 	for _, oldR := range oldRecipes {
-		// Check if a recipe with the same ID already exists in the V2 table.
-		var existingV2 CustomRecipeV2
-		if err := db.First(&existingV2, "id = ?", oldR.ID).Error; err == nil {
+		// Check if a channel with the same ID already exists.
+		var existingChannel Channel
+		if err := db.First(&existingChannel, "id = ?", oldR.ID).Error; err == nil {
 			// Record already exists, skip.
 			continue
 		}
@@ -74,20 +127,20 @@ func migrateRecipesToV2(db *gorm.DB) {
 			continue
 		}
 
-		newRecipeV2 := CustomRecipeV2{
-			ID:           oldR.ID,
-			Description:  oldR.Description,
-			Craft:        oldR.Craft,
-			SourceType:   string(constant.SourceRSS), // Store as string in DB
-			SourceConfig: string(configJSON),
+		newChannel := Channel{
+			ID:            oldR.ID,
+			Description:   oldR.Description,
+			ProcessorName: oldR.Craft,                  // Map Craft -> ProcessorName
+			SourceType:    string(constant.SourceRSS), // Store as string in DB
+			SourceConfig:  string(configJSON),
 		}
 
-		if err := db.Create(&newRecipeV2).Error; err != nil {
-			logrus.Errorf("failed to insert V2 recipe for id %s: %v", oldR.ID, err)
+		if err := db.Create(&newChannel).Error; err != nil {
+			logrus.Errorf("failed to insert Channel for id %s: %v", oldR.ID, err)
 		}
 	}
 
-	logrus.Info("recipe migration to v2 completed.")
+	logrus.Info("recipe migration to channels completed.")
 }
 
 var defaultAdminUsername = "admin"

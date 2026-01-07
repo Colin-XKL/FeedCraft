@@ -24,14 +24,14 @@ var Scheduler *util.PreheatingScheduler
 // It is designed to be reusable by both API handlers and background tasks like preheating.
 func ProcessRecipeByID(ctx context.Context, recipeId string) (*feeds.Feed, error) {
 	db := util.GetDatabase()
-	recipe, err := dao.GetCustomRecipeByIDV2(db, recipeId)
+	channel, err := dao.GetChannelByID(db, recipeId)
 	if err != nil {
 		return nil, err
 	}
 
 	// 1. Parse SourceConfig to get the source of the feed
 	var sourceConfig config.SourceConfig
-	if err := json.Unmarshal([]byte(recipe.SourceConfig), &sourceConfig); err != nil {
+	if err := json.Unmarshal([]byte(channel.SourceConfig), &sourceConfig); err != nil {
 		return nil, fmt.Errorf("invalid source config: %w", err)
 	}
 
@@ -59,7 +59,7 @@ func ProcessRecipeByID(ctx context.Context, recipeId string) (*feeds.Feed, error
 	feedURL := sourceInstance.BaseURL()
 
 	// 6. Process the feed through the craft flow
-	processedFeed, err := craft.ProcessFeed(baseFeed, feedURL, recipe.Craft)
+	processedFeed, err := craft.ProcessFeed(baseFeed, feedURL, channel.ProcessorName)
 	if err != nil {
 		return nil, errors.New("failed to process feed: " + err.Error())
 	}
@@ -75,7 +75,7 @@ func CustomRecipe(c *gin.Context) {
 	processedFeed, err := ProcessRecipeByID(c.Request.Context(), recipeId)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "Recipe not found"})
+			c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "Channel not found"})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
