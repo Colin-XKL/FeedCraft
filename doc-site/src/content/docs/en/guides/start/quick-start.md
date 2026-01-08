@@ -22,9 +22,9 @@ Where:
 
 **Note:** You may need to URL-encode the `{input_rss_url}` if your RSS reader does not handle it automatically.
 
-### Common Craft Atoms
+### Common AtomCrafts
 
-Here are some basic Craft Atoms you can use immediately:
+Here are some basic AtomCrafts you can use immediately:
 
 - **proxy**: Simple RSS proxy, no processing.
 - **limit**: Limits the number of articles (default latest 10).

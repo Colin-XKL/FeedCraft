@@ -1,9 +1,9 @@
 ---
-title: 系统内置 Atom
-description: FeedCraft 系统内置处理原子 (Craft Atoms) 的详细参考指南。
+title: 系统内置 AtomCraft
+description: FeedCraft 系统内置处理原子工艺 (AtomCrafts) 的详细参考指南。
 ---
 
-FeedCraft 内置了一系列“处理原子 (Craft Atoms)”，用于对订阅源进行特定的处理。你可以将这些原子组合成“处理流 (Craft Flow)”来构建强大的数据管道。
+FeedCraft 内置了一系列“原子工艺 (AtomCrafts)”，用于对订阅源进行特定的处理。你可以将这些原子工艺组合成“组合工艺 (FlowCraft)”来构建强大的数据管道。
 
 ## 内容获取与修复
 
