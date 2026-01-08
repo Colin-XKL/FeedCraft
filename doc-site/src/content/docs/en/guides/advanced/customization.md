@@ -50,6 +50,10 @@ A **Recipe** binds a specific RSS feed URL to a Craft or Craft Flow. This allows
 - **Processor:** `digest-and-translate` (The flow created above)
 - **Result:** You get a new FeedCraft URL that serves Hacker News with full text, summaries, and translation.
 
+#### Managing Recipes
+
+You can create new recipes in the **Custom Recipe** section. The "Craft" field features a visual selector that allows you to search and pick from available System Atoms, User Atoms, or Flows. (See [fa22533](https://github.com/Colin-XKL/FeedCraft/commit/fa22533))
+
 ## Advanced Configuration
 
 ### Docker Environment Variables

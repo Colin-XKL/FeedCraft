@@ -50,6 +50,10 @@ sidebar:
 - **处理器：** `digest-and-translate` (上面创建的工作流)
 - **结果：** 你会得到一个新的 FeedCraft URL，订阅它即可获得带全文、摘要和翻译的 Hacker News。
 
+#### 管理食谱 (Recipes)
+
+你可以在 **Custom Recipe** 页面创建新食谱。"Craft" 字段提供了一个可视化选择器，允许你搜索并从可用的系统工艺、用户工艺或流程中进行选择。(See [fa22533](https://github.com/Colin-XKL/FeedCraft/commit/fa22533))
+
 ## 高级配置
 
 ### Docker 环境变量
