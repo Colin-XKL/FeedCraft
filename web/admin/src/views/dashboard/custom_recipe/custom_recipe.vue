@@ -215,7 +215,6 @@
     <a-modal
       v-model:visible="showConfigModal"
       :title="t('customRecipe.viewConfigModalTitle')"
-      :footer="false"
     >
       <pre
         style="
@@ -227,6 +226,15 @@
         "
         >{{ currentConfig }}</pre
       >
+      <template #footer>
+        <a-button @click="showConfigModal = false">{{
+          t('customRecipe.close')
+        }}</a-button>
+        <a-button type="primary" @click="copy(currentConfig)">
+          <template #icon><icon-copy /></template>
+          {{ copied ? t('customRecipe.copied') : t('customRecipe.copy') }}
+        </a-button>
+      </template>
     </a-modal>
   </div>
 </template>
@@ -242,13 +250,15 @@
   } from '@/api/custom_recipe';
   import XHeader from '@/components/header/x-header.vue';
   import { namingValidator } from '@/utils/validator';
-  import { IconEye, IconPlus } from '@arco-design/web-vue/es/icon';
+  import { IconEye, IconPlus, IconCopy } from '@arco-design/web-vue/es/icon';
   import { Message } from '@arco-design/web-vue';
+  import { useClipboard } from '@vueuse/core';
   import dayjs from 'dayjs';
   import { useI18n } from 'vue-i18n';
   import CraftSelector from '../craft_flow/CraftSelector.vue';
 
   const { t } = useI18n();
+  const { copy, copied } = useClipboard({ legacy: true });
 
   const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
