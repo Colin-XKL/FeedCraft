@@ -22,7 +22,7 @@ func MigrateDatabases() {
 		&SystemSetting{},
 	)
 	if err != nil {
-		logrus.Fatalf("migrate database error.", err)
+		logrus.Fatalf("migrate database error: %v", err)
 		return
 	}
 
