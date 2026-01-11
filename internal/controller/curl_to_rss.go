@@ -85,6 +85,26 @@ func CurlFetch(c *gin.Context) {
 		method = "GET"
 	}
 
+	// Validate URL
+	if req.URL == "" {
+		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "URL is required"})
+		return
+	}
+	if !strings.HasPrefix(req.URL, "http://") && !strings.HasPrefix(req.URL, "https://") {
+		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "invalid URL scheme: must be http or https"})
+		return
+	}
+
+	// Validate Method
+	allowedMethods := map[string]bool{
+		"GET": true, "POST": true, "PUT": true, "DELETE": true,
+		"PATCH": true, "HEAD": true, "OPTIONS": true,
+	}
+	if !allowedMethods[method] {
+		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "unsupported method: " + method})
+		return
+	}
+
 	switch method {
 	case "GET":
 		resp, err = r.Get(req.URL)
@@ -96,6 +116,19 @@ func CurlFetch(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "Fetch failed: " + err.Error()})
+		return
+	}
+
+	// Check for non-2xx status codes
+	if resp.StatusCode() < 200 || resp.StatusCode() >= 300 {
+		body := resp.String()
+		if len(body) > 200 {
+			body = body[:200] + "..."
+		}
+		c.JSON(http.StatusOK, util.APIResponse[any]{
+			StatusCode: -1,
+			Msg:        "Upstream error: " + resp.Status() + " - " + body,
+		})
 		return
 	}
 
