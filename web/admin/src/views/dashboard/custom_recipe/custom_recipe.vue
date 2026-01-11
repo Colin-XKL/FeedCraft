@@ -391,7 +391,7 @@
   };
 
   const saveRecipe = async () => {
-    if (quickCreate.value) {
+    if (quickCreate.value && !editing.value) {
       // Construct JSON for Quick Create
       const config = {
         http_fetcher: {
