@@ -685,6 +685,7 @@
         item_selector: config.item_selector,
         title: config.title_selector,
         link: config.link_selector,
+        date: config.date_selector,
         description: config.description_selector,
       },
       feed_meta: {
