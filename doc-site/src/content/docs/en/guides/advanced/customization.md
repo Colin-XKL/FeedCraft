@@ -42,7 +42,7 @@ The editor allows you to add AtomCrafts and arrange their execution order. Use t
 
 ### Recipe
 
-A **Recipe** binds a specific RSS feed URL to a Craft or FlowCraft. This allows you to create a persistent, customized feed URL.
+A **Recipe** binds a specific RSS feed URL to an AtomCraft or FlowCraft. This allows you to create a persistent, customized feed URL.
 
 **Example:**
 
