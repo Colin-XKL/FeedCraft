@@ -17,6 +17,8 @@ export default {
   'customRecipe.editModalTitle.create': '创建配方',
   'customRecipe.editModalTitle.edit': '编辑配方',
   'customRecipe.viewConfigModalTitle': '源配置',
+  'customRecipe.copyConfig': '复制配置',
+  'customRecipe.copied': '已复制!',
   'customRecipe.jsonConfigFallback': 'JSON 配置',
   'customRecipe.form.name': '名称',
   'customRecipe.form.description': '描述',
