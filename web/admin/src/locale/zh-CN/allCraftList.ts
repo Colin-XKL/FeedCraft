@@ -1,6 +1,6 @@
 export default {
   'allCraftList.description':
-    '展示所有系统内置 Craft Atom、用户自定义 Craft Atom 和用户自定义 Craft Flow',
+    '展示所有系统内置 AtomCraft、用户自定义 AtomCraft 和用户自定义 FlowCraft',
   'allCraftList.query': '查询',
   'allCraftList.table.name': '名称',
   'allCraftList.table.type': '类型',

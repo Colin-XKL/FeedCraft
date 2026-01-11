@@ -1,9 +1,9 @@
 ---
-title: System Craft Atoms
-description: Reference guide for built-in system craft atoms in FeedCraft.
+title: System AtomCrafts
+description: Reference guide for built-in system AtomCrafts in FeedCraft.
 ---
 
-FeedCraft comes with a set of built-in "Craft Atoms" that perform specific processing steps on your feeds. You can chain these atoms together in a Craft Flow to create powerful pipelines.
+FeedCraft comes with a set of built-in "AtomCrafts" that perform specific processing steps on your feeds. You can chain these AtomCrafts together in a FlowCraft to create powerful pipelines.
 
 ## Content Acquisition & Repair
 

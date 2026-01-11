@@ -1,13 +1,13 @@
 export default {
   'craftAtom.description':
-    'CraftAtom (Craft) refers to how an RSS feed should be processed, such as translation, text extraction, or AI-generated summaries.',
+    'AtomCraft (Craft) refers to how an RSS feed should be processed, such as translation, text extraction, or AI-generated summaries.',
   'craftAtom.query': 'Query',
-  'craftAtom.create': 'Create CraftAtom',
+  'craftAtom.create': 'Create AtomCraft',
   'craftAtom.edit': 'Edit',
   'craftAtom.delete': 'Delete',
-  'craftAtom.deleteConfirm': 'Are you sure you want to delete this craft atom?',
-  'craftAtom.editModalTitle.edit': 'Edit Craft Atom',
-  'craftAtom.editModalTitle.create': 'Create Craft Atom',
+  'craftAtom.deleteConfirm': 'Are you sure you want to delete this AtomCraft?',
+  'craftAtom.editModalTitle.edit': 'Edit AtomCraft',
+  'craftAtom.editModalTitle.create': 'Create AtomCraft',
   'craftAtom.form.name': 'Name',
   'craftAtom.form.description': 'Description',
   'craftAtom.form.template': 'Template',

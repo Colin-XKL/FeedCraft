@@ -17,32 +17,32 @@ For power users, FeedCraft offers a dashboard to customize how feeds are process
 
 ## Core Concepts
 
-### Craft Atom
+### AtomCraft
 
-A **Craft Atom** is a single processing unit. While there are built-in atoms (like `translate-title`, `fulltext`), you can create your own based on templates.
+An **AtomCraft** is a single processing unit. While there are built-in AtomCrafts (like `translate-title`, `fulltext`), you can create your own based on templates.
 
 **Example: Custom Translation Prompt**
-You can create a new Atom named `translate-to-french` based on the `translate-content` template, but with a custom prompt instructing the AI to translate to French.
+You can create a new AtomCraft named `translate-to-french` based on the `translate-content` template, but with a custom prompt instructing the AI to translate to French.
 
-### Craft Flow
+### FlowCraft
 
-A **Craft Flow** is a sequence of Craft Atoms. This allows you to chain multiple operations together.
+A **FlowCraft** is a sequence of AtomCrafts. This allows you to chain multiple operations together.
 
 **Example: Fulltext + Summary + Translation**
-You can define a flow named `digest-and-translate` that consists of:
+You can define a FlowCraft named `digest-and-translate` that consists of:
 
 1.  `fulltext` (Extract content)
 2.  `summary` (Generate summary)
 3.  `translate-content` (Translate the result)
 
-#### Managing Craft Flows
+#### Managing FlowCrafts
 
-You can create and manage Craft Flows in the **Craft Flow** section of the dashboard.
-The editor allows you to add atoms and arrange their execution order. Use the arrow buttons (⬆️/⬇️) to reorder atoms, or the trash icon to remove them from the flow. (See [2b2439b](https://github.com/Colin-XKL/FeedCraft/commit/2b2439b6a6eb5319c04b2c408635847971d42af2))
+You can create and manage FlowCrafts in the **FlowCraft** section of the dashboard.
+The editor allows you to add AtomCrafts and arrange their execution order. Use the arrow buttons (⬆️/⬇️) to reorder AtomCrafts, or the trash icon to remove them from the FlowCraft. (See [2b2439b](https://github.com/Colin-XKL/FeedCraft/commit/2b2439b6a6eb5319c04b2c408635847971d42af2))
 
 ### Recipe
 
-A **Recipe** binds a specific RSS feed URL to a Craft or Craft Flow. This allows you to create a persistent, customized feed URL.
+A **Recipe** binds a specific RSS feed URL to a Craft or FlowCraft. This allows you to create a persistent, customized feed URL.
 
 **Example:**
 

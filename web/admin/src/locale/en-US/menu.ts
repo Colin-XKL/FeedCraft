@@ -18,8 +18,8 @@ export default {
   'navbar.action.locale': 'Switch to English',
   // workplace menus
   'menu.dashboard.workplace': 'Workplace',
-  'menu.craftAtom': 'Craft Atom',
-  'menu.craftFlow': 'Craft Flow',
+  'menu.craftAtom': 'AtomCraft',
+  'menu.craftFlow': 'FlowCraft',
   'menu.customRecipe': 'Custom Recipe',
   'menu.allCraftList': 'All Craft List',
   'menu.quickStart': 'Quick Start',

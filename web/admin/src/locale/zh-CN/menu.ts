@@ -18,8 +18,8 @@ export default {
 
   // 工作台菜单
   'menu.dashboard.workplace': '工作台',
-  'menu.craftAtom': 'Craft Atom',
-  'menu.craftFlow': 'Craft Flow',
+  'menu.craftAtom': '原子工艺 (AtomCraft)',
+  'menu.craftFlow': '组合工艺 (FlowCraft)',
   'menu.customRecipe': '自定义配方',
   'menu.allCraftList': '所有 Craft 列表',
   'menu.quickStart': '快速开始',

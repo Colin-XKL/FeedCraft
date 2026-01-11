@@ -42,13 +42,13 @@ Gemini来生成文章摘要、通过自然语言筛选文章等
 
 FeedCraft中的几个核心概念:
 
-- CraftAtom(工艺), 指要如何处理一个rss源, 比如是要进行翻译,还是提取正文,还是AI生成摘要等
-- CraftFlow(工艺组合), 多个craft atom组成的序列, 比如你可以定义一个新的名叫 clean-article 的 craft flow,
+- AtomCraft(原子工艺), 指要如何处理一个rss源, 比如是要进行翻译,还是提取正文,还是AI生成摘要等
+- FlowCraft(组合工艺), 多个 AtomCraft 组成的序列, 比如你可以定义一个新的名叫 clean-article 的 FlowCraft,
   将提取全文、AI筛选文章、AI摘要组合到一起,
-- Recipe(食谱), 记录了以什么样的craft 或 craft flow对某个指定的rss源进行处理, 比如你可以指定一个名叫my-zhihu-daliy的recipe,
+- Recipe(食谱), 记录了以什么样的 Craft 或 FlowCraft 对某个指定的rss源进行处理, 比如你可以指定一个名叫my-zhihu-daliy的recipe,
   对知乎日报的rss自动进行AI生成摘要的操作, 这个recipe对应一个新的rss地址, 你可以直接订阅这个地址得到带摘要版本的知乎日报
 
-你可以先开始尝试下面的几个工艺(craft atom):
+你可以先开始尝试下面的几个原子工艺(AtomCraft):
 
 - **proxy**: 简易RSS代理, 不作任何处理
 - **limit**: 限制文章个数, 默认最新10个
@@ -201,13 +201,13 @@ GPLv3
 <img width="1900" alt="Xnip2024-08-08_00-48-49" src="https://github.com/user-attachments/assets/d3541f4e-9ab4-4948-9fc7-5b815db225ce">
 
 **RSS源比较工具**
-你可以输入一个RSS 源的地址, 然后选择要使用的craft atom, 就可以看到前后的对比.
-如下图我应用的craft是自定义的, 只显示文章标题带有`RSS`的文章, 可以看到筛选后的结果少了很多
+你可以输入一个RSS 源的地址, 然后选择要使用的 AtomCraft, 就可以看到前后的对比.
+如下图我应用的 Craft 是自定义的, 只显示文章标题带有`RSS`的文章, 可以看到筛选后的结果少了很多
 
 <img width="1907" alt="Xnip2024-08-08_01-05-09" src="https://github.com/user-attachments/assets/7abd764a-8b19-4a72-8c94-e3ea442ff385">
 
-**创建Craft Atom 自定义Prompt**
+**创建 AtomCraft 自定义Prompt**
 <img width="1918" alt="Xnip2024-08-08_00-46-13" src="https://github.com/user-attachments/assets/ff15fe79-3792-4a96-b991-f121d2a8973e">
 
-**自定义recipe, 指定使用哪个craft atom 处理哪个RSS源**
+**自定义recipe, 指定使用哪个 AtomCraft 处理哪个RSS源**
 <img width="1900" alt="Xnip2024-08-08_00-48-34" src="https://github.com/user-attachments/assets/5794de1d-28b6-45ff-8737-16f8adc6ed8a">

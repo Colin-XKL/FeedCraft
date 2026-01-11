@@ -1,13 +1,13 @@
 export default {
   'craftAtom.description':
-    'CraftAtom(工艺), 指要如何处理一个RSS源, 比如是要进行翻译,还是提取正文,还是AI生成摘要等',
+    'AtomCraft(原子工艺), 指要如何处理一个RSS源, 比如是要进行翻译,还是提取正文,还是AI生成摘要等',
   'craftAtom.query': '查询',
-  'craftAtom.create': '新建 CraftAtom',
+  'craftAtom.create': '新建原子工艺 (AtomCraft)',
   'craftAtom.edit': '编辑',
   'craftAtom.delete': '删除',
-  'craftAtom.deleteConfirm': '确认删除该 CraftAtom 吗？',
-  'craftAtom.editModalTitle.edit': '编辑 Craft Atom',
-  'craftAtom.editModalTitle.create': '创建 Craft Atom',
+  'craftAtom.deleteConfirm': '确认删除该 AtomCraft 吗？',
+  'craftAtom.editModalTitle.edit': '编辑原子工艺 (AtomCraft)',
+  'craftAtom.editModalTitle.create': '创建原子工艺 (AtomCraft)',
   'craftAtom.form.name': '名称',
   'craftAtom.form.description': '描述',
   'craftAtom.form.template': '模板',
