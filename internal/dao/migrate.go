@@ -13,15 +13,16 @@ import (
 func MigrateDatabases() {
 	logrus.Info("migrating databases...")
 	db := util.GetDatabase()
+
 	err := db.AutoMigrate(
-		&CustomRecipe{},
+		// &CustomRecipe{},
 		&CustomRecipeV2{}, // Create the new V2 table
 		&CraftFlow{}, &CraftAtom{},
 		&User{}, // 确保 User 表被初始化
 		&SystemSetting{},
 	)
 	if err != nil {
-		logrus.Error("migrate database error.", err)
+		logrus.Fatalf("migrate database error.", err)
 		return
 	}
 

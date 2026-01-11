@@ -144,3 +144,5 @@ feedcraft.exe
 .env
 *.log
 **/*.log
+.gocache
+

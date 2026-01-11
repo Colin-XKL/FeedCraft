@@ -598,7 +598,9 @@
       type: 'json',
       http_fetcher: {
         url: fetchReq.url,
+        method: fetchReq.method,
         headers: fetchReq.headers,
+        body: fetchReq.body,
       },
       json_parser: {
         items_iterator: parseReq.list_selector,

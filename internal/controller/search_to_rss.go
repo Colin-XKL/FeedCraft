@@ -48,7 +48,7 @@ func SearchPreview(c *gin.Context) {
 
 	feed, err := src.Generate(c.Request.Context())
 	if err != nil {
-		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "Generation failed: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{StatusCode: -1, Msg: "Generation failed: " + err.Error()})
 		return
 	}
 

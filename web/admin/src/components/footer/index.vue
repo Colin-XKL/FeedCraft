@@ -1,5 +1,5 @@
 <template>
-  <a-layout-footer class="footer">Feed Craft</a-layout-footer>
+  <a-layout-footer class="footer">FeedCraft</a-layout-footer>
 </template>
 
 <script lang="ts" setup></script>

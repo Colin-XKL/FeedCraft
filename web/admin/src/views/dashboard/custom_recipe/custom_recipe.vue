@@ -191,6 +191,7 @@
               v-model="form.source_config"
               :auto-size="{ minRows: 3, maxRows: 10 }"
               :placeholder="t('customRecipe.form.placeholder.sourceConfig')"
+              @blur="formatConfig"
             />
           </a-form-item>
         </template>
@@ -217,6 +218,18 @@
       :title="t('customRecipe.viewConfigModalTitle')"
       :footer="false"
     >
+      <div style="margin-bottom: 10px; text-align: right">
+        <a-tooltip
+          :content="
+            copied ? t('customRecipe.copied') : t('customRecipe.copyConfig')
+          "
+        >
+          <a-button size="mini" @click="handleCopyConfig">
+            <template #icon><icon-copy /></template>
+            {{ t('customRecipe.copyConfig') }}
+          </a-button>
+        </a-tooltip>
+      </div>
       <pre
         style="
           background-color: #f5f5f5;
@@ -242,10 +255,11 @@
   } from '@/api/custom_recipe';
   import XHeader from '@/components/header/x-header.vue';
   import { namingValidator } from '@/utils/validator';
-  import { IconEye, IconPlus } from '@arco-design/web-vue/es/icon';
+  import { IconEye, IconPlus, IconCopy } from '@arco-design/web-vue/es/icon';
   import { Message } from '@arco-design/web-vue';
   import dayjs from 'dayjs';
   import { useI18n } from 'vue-i18n';
+  import { useClipboard } from '@vueuse/core';
   import CraftSelector from '../craft_flow/CraftSelector.vue';
 
   const { t } = useI18n();
@@ -278,6 +292,22 @@
       }
     },
   });
+
+  const { copy, copied } = useClipboard();
+
+  const handleCopyConfig = () => {
+    copy(currentConfig.value);
+    Message.success(t('customRecipe.copied'));
+  };
+
+  const formatConfig = () => {
+    try {
+      const obj = JSON.parse(form.value.source_config);
+      form.value.source_config = JSON.stringify(obj, null, 2);
+    } catch (e) {
+      // invalid json, ignore
+    }
+  };
 
   const editing = ref(false);
   const selectedRecipe = ref<CustomRecipe | null>(null);
@@ -391,7 +421,7 @@
   };
 
   const saveRecipe = async () => {
-    if (quickCreate.value) {
+    if (quickCreate.value && !editing.value) {
       // Construct JSON for Quick Create
       const config = {
         http_fetcher: {

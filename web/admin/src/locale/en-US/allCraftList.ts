@@ -1,6 +1,6 @@
 export default {
   'allCraftList.description':
-    'Displays all system-built Craft Atoms, user-defined Craft Atoms, and user-defined Craft Flows.',
+    'Displays all system-built AtomCrafts, user-defined AtomCrafts, and user-defined FlowCrafts.',
   'allCraftList.query': 'Query',
   'allCraftList.table.name': 'Name',
   'allCraftList.table.type': 'Type',

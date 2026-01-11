@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="logo">
-      <div class="logo-text">Feed Craft Admin Panel</div>
+      <div class="logo-text">FeedCraft Admin Panel</div>
     </div>
     <div class="content">
       <div class="content-inner">

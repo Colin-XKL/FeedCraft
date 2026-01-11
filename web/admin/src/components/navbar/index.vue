@@ -7,7 +7,7 @@
           :style="{ margin: 0, fontSize: '1.5rem' }"
           :heading="5"
         >
-          Feed Craft
+          FeedCraft
         </a-typography-title>
         <icon-menu-fold
           v-if="!topMenu && appStore.device === 'mobile'"
@@ -98,22 +98,22 @@
                 </span>
               </a-space>
             </a-doption>
-            <a-doption>
+            <!-- <a-doption>
               <a-space @click="$router.push({ name: 'Info' })">
                 <icon-user />
                 <span>
                   {{ $t('messageBox.userCenter') }}
                 </span>
               </a-space>
-            </a-doption>
-            <a-doption>
+            </a-doption> -->
+            <!-- <a-doption>
               <a-space @click="$router.push({ name: 'Setting' })">
                 <icon-settings />
                 <span>
                   {{ $t('messageBox.userSettings') }}
                 </span>
               </a-space>
-            </a-doption>
+            </a-doption> -->
             <a-doption>
               <a-space @click="handleLogout">
                 <icon-export />

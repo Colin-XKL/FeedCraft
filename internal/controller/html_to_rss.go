@@ -162,39 +162,7 @@ func HtmlParse(c *gin.Context) {
 		}
 		if req.LinkSelector != "" {
 			sel := getSelection(req.LinkSelector)
-			// Try to get href from the element itself
-			href, exists := sel.Attr("href")
-			if exists {
-				item.Link = href
-			} else {
-				// If not found, try to find a child 'a' tag
-				childA := sel.Find("a").First()
-				if childA.Length() > 0 {
-					href, exists = childA.Attr("href")
-					if exists {
-						item.Link = href
-					}
-				}
-
-				// If still not found, try to find a parent 'a' tag (closest ancestor)
-				if item.Link == "" {
-					parentA := sel.Closest("a")
-					if parentA.Length() > 0 {
-						href, exists = parentA.Attr("href")
-						if exists {
-							item.Link = href
-						}
-					}
-				}
-			}
-
-			// Fallback to text if still empty, BUT only if it looks like a URL (no spaces)
-			if item.Link == "" {
-				text := strings.TrimSpace(sel.Text())
-				if text != "" && !strings.ContainsAny(text, " \t\n") {
-					item.Link = text
-				}
-			}
+			item.Link = util.ExtractLinkFromSelection(sel)
 
 			// Try to resolve relative URL to absolute URL
 			if req.URL != "" && item.Link != "" {
