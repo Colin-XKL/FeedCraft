@@ -89,3 +89,28 @@ services:
       USE_CHROME_STABLE: true
     restart: unless-stopped
 ```
+
+## Search Provider Configuration
+
+(See [ea6c69e](https://github.com/Colin-XKL/FeedCraft/commit/ea6c69eb55e114ccf7c32c7cc100e5a6514ea70b))
+
+To use the **Search to RSS** feature, you need to configure a search provider in the settings.
+
+1.  Navigate to **Settings > Search Provider** in the admin dashboard.
+2.  Configure the following fields based on your provider:
+
+### LiteLLM (Default)
+
+Use this if you have a LiteLLM instance (or compatible) that supports search tools.
+
+-   **API URL**: The endpoint of your LiteLLM instance.
+-   **API Key**: Your API key.
+-   **Search Tool Name**: The name of the tool defined in LiteLLM (e.g., `google_search`).
+
+### SearXNG
+
+Use this if you host your own SearXNG instance.
+
+-   **API URL**: The URL of your SearXNG instance (e.g., `http://localhost:8080`).
+-   **API Key**: (Optional) If your instance is private, provide the key here.
+-   **Engines**: (Optional) Comma-separated list of engines to use (e.g., `google,bing`). Leave empty to use default.
