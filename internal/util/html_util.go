@@ -14,17 +14,17 @@ import (
 // 4. Fallbacks to text content if it looks like a URL (no spaces).
 func ExtractLinkFromSelection(sel *goquery.Selection) string {
 	// 1. Try to get href from the element itself
-	if href, exists := sel.Attr("href"); exists {
+	if href, exists := sel.Attr("href"); exists && href != "" {
 		return href
 	}
 
 	// 2. If not found, try to find a child 'a' tag
-	if href, exists := sel.Find("a").First().Attr("href"); exists {
+	if href, exists := sel.Find("a").First().Attr("href"); exists && href != "" {
 		return href
 	}
 
 	// 3. If still not found, try to find a parent 'a' tag (closest ancestor)
-	if href, exists := sel.Closest("a").Attr("href"); exists {
+	if href, exists := sel.Closest("a").Attr("href"); exists && href != "" {
 		return href
 	}
 

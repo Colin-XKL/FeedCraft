@@ -7,7 +7,7 @@ import (
 // --- Fetcher-specific Configurations ---
 
 // HttpFetcherConfig holds the configuration for an HTTP fetcher.
-// It supports various HTTP methods, headers, and request bodies.
+// It supports some HTTP methods, headers, and request bodies.
 type HttpFetcherConfig struct {
 	URL            string            `json:"url"`
 	Method         string            `json:"method,omitempty"`
