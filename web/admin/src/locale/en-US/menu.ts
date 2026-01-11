@@ -14,6 +14,8 @@ export default {
   'menu.arcoWebsite': 'Arco Design',
   'menu.faq': 'FAQ',
   'menu.repo': 'Repository',
+  'menu.worktable': '工作台',
+  'menu.doc':"Docs Center",
   'navbar.docs': 'Docs Center',
   'navbar.action.locale': 'Switch to English',
   // workplace menus

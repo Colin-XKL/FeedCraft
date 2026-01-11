@@ -12,7 +12,6 @@
     </a-space>
 
     <a-table
-      :pagination="true"
       :data="allCrafts"
       :columns="columns"
       :loading="isLoading"
