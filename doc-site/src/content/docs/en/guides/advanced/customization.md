@@ -103,14 +103,14 @@ To use the **Search to RSS** feature, you need to configure a search provider in
 
 Use this if you have a LiteLLM instance (or compatible) that supports search tools.
 
--   **API URL**: The endpoint of your LiteLLM instance.
--   **API Key**: Your API key.
--   **Search Tool Name**: The name of the tool defined in LiteLLM (e.g., `google_search`).
+- **API URL**: The endpoint of your LiteLLM instance.
+- **API Key**: Your API key.
+- **Search Tool Name**: The name of the tool defined in LiteLLM (e.g., `google_search`).
 
 ### SearXNG
 
 Use this if you host your own SearXNG instance.
 
--   **API URL**: The URL of your SearXNG instance (e.g., `http://localhost:8080`).
--   **API Key**: (Optional) If your instance is private, provide the key here.
--   **Engines**: (Optional) Comma-separated list of engines to use (e.g., `google,bing`). Leave empty to use default.
+- **API URL**: The URL of your SearXNG instance (e.g., `http://localhost:8080`).
+- **API Key**: (Optional) If your instance is private, provide the key here.
+- **Engines**: (Optional) Comma-separated list of engines to use (e.g., `google,bing`). Leave empty to use default.
