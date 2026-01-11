@@ -6,7 +6,7 @@
           >{{ t('urlGenerator.welcome') }}<br />
           <span
             class="text-4xl font-bold text-sky-700 underline decoration-sky-500 decoration-wavy hover:underline-offset-2 hover:decoration-4"
-            >Feed Craft</span
+            >FeedCraft</span
           ></p
         >
       </div>

@@ -1,6 +1,6 @@
 ![logo.png](asset/logo-header.png)
 
-# Feed Craft
+# FeedCraft
 
 Craft all your feed in one place!
 
