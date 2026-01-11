@@ -14,7 +14,7 @@ export default {
   'menu.faq': '常见问题',
   'menu.repo': '项目地址',
   'menu.worktable': '工作台',
-  'menu.doc':"帮助文档",
+  'menu.doc': '帮助文档',
   'navbar.docs': '文档中心',
   'navbar.action.locale': '切换为中文',
 
