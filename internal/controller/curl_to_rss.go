@@ -79,10 +79,29 @@ func CurlFetch(c *gin.Context) {
 	var resp *resty.Response
 	var err error
 
+	if req.URL == "" {
+		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "URL cannot be empty"})
+		return
+	}
+	if !strings.HasPrefix(req.URL, "http://") && !strings.HasPrefix(req.URL, "https://") {
+		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "URL must start with http:// or https://"})
+		return
+	}
+
 	// Normalize method
 	method := strings.ToUpper(req.Method)
 	if method == "" {
 		method = "GET"
+	}
+
+	// Validate allowed methods
+	allowedMethods := map[string]bool{
+		"GET": true, "POST": true, "PUT": true, "DELETE": true,
+		"PATCH": true, "HEAD": true, "OPTIONS": true,
+	}
+	if !allowedMethods[method] {
+		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "Unsupported HTTP method: " + method})
+		return
 	}
 
 	switch method {
@@ -96,6 +115,18 @@ func CurlFetch(c *gin.Context) {
 
 	if err != nil {
 		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "Fetch failed: " + err.Error()})
+		return
+	}
+
+	if resp.StatusCode() >= 400 {
+		body := string(resp.Body())
+		if len(body) > 200 {
+			body = body[:200] + "..."
+		}
+		c.JSON(http.StatusOK, util.APIResponse[any]{
+			StatusCode: -1,
+			Msg:        "Upstream error " + resp.Status() + ": " + body,
+		})
 		return
 	}
 
