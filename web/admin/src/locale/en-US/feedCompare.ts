@@ -1,6 +1,6 @@
 export default {
   'feedCompare.description':
-    'Specify the feed source URL and the craft (craft flow or atom) to be applied, and compare the results before and after processing.',
+    'Specify the feed source URL and the craft (FlowCraft or AtomCraft) to be applied, and compare the results before and after processing.',
   'feedCompare.inputLink': 'Input Link',
   'feedCompare.placeholder': 'Enter RSS feed URL',
   'feedCompare.compare': 'Compare',
