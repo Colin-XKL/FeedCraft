@@ -38,7 +38,7 @@ You can define a FlowCraft named `digest-and-translate` that consists of:
 #### Managing FlowCrafts
 
 You can create and manage FlowCrafts in the **FlowCraft** section of the dashboard.
-The editor allows you to add AtomCrafts and arrange their execution order. Use the arrow buttons (⬆️/⬇️) to reorder AtomCrafts, or the trash icon to remove them from the FlowCraft. 
+The editor allows you to add AtomCrafts and arrange their execution order. Use the arrow buttons (⬆️/⬇️) to reorder AtomCrafts, or the trash icon to remove them from the FlowCraft.
 
 ### Recipe
 
