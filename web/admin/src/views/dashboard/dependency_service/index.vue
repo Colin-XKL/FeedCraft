@@ -62,23 +62,30 @@
 
 <script lang="ts" setup>
   import { ref, onMounted } from 'vue';
+  import { useI18n } from 'vue-i18n';
+  import { Message } from '@arco-design/web-vue';
   import {
     fetchDependencyStatus,
     checkDependencyStatus,
     DependencyStatus,
   } from '@/api/monitor';
 
+  const { t } = useI18n();
   const data = ref<DependencyStatus[]>([]);
   const loading = ref(false);
 
   const fetchConfig = async () => {
+    loading.value = true;
     try {
       const res = await fetchDependencyStatus();
       if (res.data) {
         data.value = res.data;
       }
     } catch (err) {
+      Message.error(t('dependencyService.fetchError'));
       console.error(err);
+    } finally {
+      loading.value = false;
     }
   };
 
@@ -88,8 +95,10 @@
       const res = await checkDependencyStatus();
       if (res.data) {
         data.value = res.data;
+        Message.success(t('dependencyService.checkSuccess'));
       }
     } catch (err) {
+      Message.error(t('dependencyService.checkError'));
       console.error(err);
     } finally {
       loading.value = false;
