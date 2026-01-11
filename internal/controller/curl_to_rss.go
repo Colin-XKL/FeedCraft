@@ -97,8 +97,8 @@ func CurlFetch(c *gin.Context) {
 
 	// Validate Method
 	allowedMethods := map[string]bool{
-		"GET": true, "POST": true, "PUT": true, "DELETE": true,
-		"PATCH": true, "HEAD": true, "OPTIONS": true,
+		"GET": true, "POST": true, "PUT": false, "DELETE": false,
+		"PATCH": false, "HEAD": false, "OPTIONS": false,
 	}
 	if !allowedMethods[method] {
 		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "Unsupported HTTP method: " + method})
