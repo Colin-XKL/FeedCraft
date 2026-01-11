@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"net/http"
 	"net/url"
 	"time"
 
@@ -55,6 +56,10 @@ func GetBrowserlessContent(websiteUrl string, timeout time.Duration) (string, er
 	response, err := client.R().SetHeaders(headers).SetBody(reqBody).Post("/content")
 	if err != nil {
 		return "", err
+	}
+
+	if response.StatusCode() != http.StatusOK {
+		return "", fmt.Errorf("browserless service returned status %d: %s", response.StatusCode(), response.String())
 	}
 
 	return response.String(), nil
