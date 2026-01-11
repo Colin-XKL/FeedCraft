@@ -19,7 +19,7 @@ Doc: [English](https://deepwiki.com/Colin-XKL/FeedCraft) | 简体中文
 
 **FeedCraft** is a powerful tool to process your rss feeds as a middleware, use it to translate your feed, extract
 fulltext, emulate browser
-to render js-heavy page, use llm such as google gemini to generate brief for your rss article, use natural language to
+to render js-heavy page, turn any webpage into RSS, use llm such as google gemini to generate brief for your rss article, use natural language to
 filter your rss feed, and more!
 
 **FeedCraft** 是一个简单、强大的RSS 源处理工具,他可以作为一个中间件处理你的RSS源.
@@ -30,6 +30,7 @@ Gemini来生成文章摘要、通过自然语言筛选文章等
 
 - 开源可自部署, 与现用任何RSS阅读器协同使用
 - AI Power, 可以接入所有Open AI接口兼容的LLM对RSS进行处理, 可自定义prompt
+- **HTML to RSS**: 内置可视化 HTML to RSS 生成器，可以将任意网页（如博客列表）转换为 RSS 订阅源
 - 支持保存规则批量应用到不同的RSS源
 - 支持**便携模式**(portable mode, 即用即走, 只需要在原RSS地址前面加个前缀即可), 和**高级模式**(dock mode,
   在后台页面自定义RSS地址和各类深度加工参数)
@@ -67,7 +68,7 @@ https://feed-craft.colinx.one
 例如, 现在你想要阅读这个RSS源 `https://feeds.feedburner.com/visualcapitalist`, 但是由于是全英文的不方便快速略读,
 使用FeedCraft对标题进行翻译,
 那么只需要将订阅地址改成
-`https://feed-craft.colinx.one/craft/translate-title?input_url=https://feeds.feedburner.com/visualcapitalist`  即可.
+`https://feed-craft.colinx.one/craft/translate-title?input_url=https://feeds.feedburner.com/visualcapitalist` 即可.
 
 (部分RSS订阅软件不会自动进行字符转义, 你可能需要把 input_url 后面的内容进行手动转义,
 结果为
@@ -80,7 +81,7 @@ https://feed-craft.colinx.one
 - 全英文，无全文
   https://ourworldindata.org/atom.xml
 
-*注意: Demo站点仅供体验使用
+\*注意: Demo站点仅供体验使用
 
 ## 部署
 
@@ -99,7 +100,7 @@ services:
     container_name: feed-craft
     restart: always
     ports:
-      - "10088:80"  # 10088可替换为任何你想使用的端口
+      - "10088:80" # 10088可替换为任何你想使用的端口
     volumes:
       - ./feed-craft-db:/usr/local/feed-craft/db # db file
     environment:
@@ -122,7 +123,7 @@ services:
     container_name: feed-craft
     restart: always
     ports:
-      - "10088:80"  # 10088可替换为任何你想使用的端口
+      - "10088:80" # 10088可替换为任何你想使用的端口
     volumes:
       - ./feed-craft-db:/usr/local/feed-craft/db # db file
     environment:
@@ -152,12 +153,13 @@ services:
 ### 环境设置
 
 1. 确保已安装以下依赖：
-   - Go 1.19+
-   - Node.js (推荐 18+)
+   - Go 1.23+
+   - Node.js (推荐 22+)
    - pnpm (安装方式: `npm install -g pnpm`)
    - Task (安装方式: [https://taskfile.dev/installation/](https://taskfile.dev/installation/))
 
 2. 复制环境变量文件：
+
    ```bash
    cp .env.example .env
    ```
@@ -169,14 +171,11 @@ services:
 使用 Task 运行开发模式：
 
 ```bash
-# 运行完整的开发环境（前端+后端）
-task dev
+# 运行后端
+task backend-dev
 
-# 只运行后端
-task dev-backend
-
-# 只运行前端
-task dev-frontend
+# 运行前端
+task frontend-dev
 ```
 
 ### 前端开发
@@ -185,7 +184,7 @@ task dev-frontend
 
 ### 后端开发
 
-后端使用 Go 和 Gin 框架，API 文档可以通过启动服务后访问 `/docs` 查看。
+后端使用 Go 和 Gin 框架
 
 ## 关于 FeedCraft
 
@@ -212,5 +211,3 @@ GPLv3
 
 **自定义recipe, 指定使用哪个craft atom 处理哪个RSS源**
 <img width="1900" alt="Xnip2024-08-08_00-48-34" src="https://github.com/user-attachments/assets/5794de1d-28b6-45ff-8737-16f8adc6ed8a">
-
-

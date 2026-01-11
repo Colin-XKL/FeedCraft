@@ -9,6 +9,7 @@ import (
 	"FeedCraft/internal/util"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -41,6 +42,10 @@ func RegisterRouters(router *gin.Engine) {
 	//})
 
 	router.NoRoute(func(c *gin.Context) {
+		if strings.HasPrefix(c.Request.URL.Path, "/api") {
+			c.JSON(http.StatusNotFound, gin.H{"code": 404, "msg": "Page not found"})
+			return
+		}
 		c.File("./web/index.html")
 	})
 
@@ -103,8 +108,21 @@ func RegisterRouters(router *gin.Engine) {
 		adminApi.PUT("/craft-atoms/:name", controller.UpdateCraftAtom)
 		adminApi.DELETE("/craft-atoms/:name", controller.DeleteCraftAtom)
 
-		adminApi.POST("/tools/fetch", controller.FetchURL)
-		adminApi.POST("/tools/parse", controller.ParseRSS)
+		adminApi.POST("/tools/fetch", controller.HtmlFetch)
+		adminApi.POST("/tools/parse", controller.HtmlParse)
+
+		adminApi.POST("/tools/json/fetch", controller.CurlFetch)
+		adminApi.POST("/tools/json/parse", controller.CurlParse)
+		adminApi.POST("/tools/json/parse_curl", controller.CurlParseCmd)
+
+		adminApi.POST("/tools/search/preview", controller.SearchPreview)
+
+		// Settings Routes
+		adminApi.GET("/settings/search-provider", controller.GetSearchProviderConfig)
+		adminApi.POST("/settings/search-provider", controller.SaveSearchProviderConfig)
+
+		adminApi.GET("/dependencies", controller.GetDependencyStatus)
+		adminApi.POST("/dependencies/check", controller.CheckDependencyStatus)
 	}
 
 }

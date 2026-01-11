@@ -48,7 +48,7 @@
     isLoading.value = true;
     try {
       const response = await axios.get('/api/list-all-craft');
-      allCrafts.value = response.data;
+      allCrafts.value = response.data.data;
     } catch (error) {
       Message.error(t('allCraftList.message.fetchFailed'));
     } finally {

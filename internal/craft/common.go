@@ -1,17 +1,20 @@
 package craft
 
 import (
+	"FeedCraft/internal/config"
 	"FeedCraft/internal/constant"
+	"FeedCraft/internal/source"
 	"FeedCraft/internal/util"
 	"fmt"
+	"net/http"
+	"net/url"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/feeds"
 	"github.com/mmcdole/gofeed"
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
-	"net/http"
-	"net/url"
-	"time"
 )
 
 const DefaultExtractFulltextTimeout = 30 * time.Second
@@ -27,16 +30,14 @@ func getCraftCacheKey(namespace, id string) string {
 type ContentTransformFunc func(item *gofeed.Item) string
 
 func TransformFeed(parsedFeed *gofeed.Feed, feedUrl string, transFunc ContentTransformFunc) feeds.Feed {
-	updatedTimePointer := parsedFeed.UpdatedParsed
 	updatedTime := time.Now()
-	if updatedTimePointer != nil {
-		updatedTime = *updatedTimePointer
+	if parsedFeed.UpdatedParsed != nil && !parsedFeed.UpdatedParsed.IsZero() {
+		updatedTime = *parsedFeed.UpdatedParsed
 	}
 
-	publishedTimePointer := parsedFeed.PublishedParsed
 	publishedTime := time.Now()
-	if publishedTimePointer != nil {
-		publishedTime = *publishedTimePointer
+	if parsedFeed.PublishedParsed != nil && !parsedFeed.PublishedParsed.IsZero() {
+		publishedTime = *parsedFeed.PublishedParsed
 	}
 
 	extractIterator := func(item *gofeed.Item, index int) *feeds.Item {
@@ -74,26 +75,67 @@ func TransformFeed(parsedFeed *gofeed.Feed, feedUrl string, transFunc ContentTra
 }
 
 func CommonCraftHandlerUsingCraftOptionList(c *gin.Context, optionList []CraftOption) {
-	feedUrl, ok := c.GetQuery("input_url")
-	if !ok || len(feedUrl) == 0 {
-		c.String(400, "empty feed url")
+	var sourceConfig *config.SourceConfig
+
+	// Exclusively rely on the legacy 'input_url' for compatibility and simplicity
+	feedUrl := c.Query("input_url")
+	if feedUrl != "" {
+		// Dynamically construct a source config for a simple RSS feed
+		sourceConfig = &config.SourceConfig{
+			Type: constant.SourceRSS,
+			HttpFetcher: &config.HttpFetcherConfig{
+				URL: feedUrl,
+			},
+		}
+	}
+
+	// If no source is specified after checking 'input_url', return an error
+	if sourceConfig == nil {
+		c.String(http.StatusBadRequest, "no source specified, 'input_url' is required")
 		return
 	}
 
-	craftedFeed, err := NewCraftedFeedFromUrl(feedUrl,
-		optionList...,
-	)
+	// 1. Unified Processing Logic
+	// Get the factory
+	factory, err := source.Get(sourceConfig.Type)
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	rssStr, err := craftedFeed.OutputFeed.ToRss()
+
+	// Create the source instance
+	sourceInstance, err := factory(sourceConfig)
 	if err != nil {
-		c.String(500, err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.Header("Content-Type", "application/xml")
-	c.String(200, rssStr)
+
+	// Generate the base feed
+	baseFeed, err := sourceInstance.Generate(c.Request.Context())
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// Get the base URL for link resolution
+	baseURL := sourceInstance.BaseURL()
+
+	// Craft the feed using the new, unified function
+	craftedFeed, err := NewCraftedFeedFromGofeed(baseFeed, baseURL, optionList...)
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// Render the result
+	rssStr, err := craftedFeed.OutputFeed.ToRss()
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.Header("Content-Type", "application/xml; charset=utf-8")
+	c.String(http.StatusOK, rssStr)
 }
 
 type RawTransformer func(item *feeds.Item) (string, error)
@@ -120,16 +162,14 @@ func GetCommonCachedTransformer(cacheKeyGenerator ContentCacheKeyGenerator, rawT
 }
 
 func TransformArticleContent(item *gofeed.Item, transFunc func(item *gofeed.Item) string) *feeds.Item {
-	updatedTimePointer := item.UpdatedParsed
 	updatedTime := time.Now()
-	if updatedTimePointer != nil {
-		updatedTime = *updatedTimePointer
+	if item.UpdatedParsed != nil && !item.UpdatedParsed.IsZero() {
+		updatedTime = *item.UpdatedParsed
 	}
 
-	publishedTimePointer := item.PublishedParsed
 	publishedTime := time.Now()
-	if publishedTimePointer != nil {
-		publishedTime = *publishedTimePointer
+	if item.PublishedParsed != nil && !item.PublishedParsed.IsZero() {
+		publishedTime = *item.PublishedParsed
 	}
 
 	articleContent := transFunc(item)

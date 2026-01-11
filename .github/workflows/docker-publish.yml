@@ -73,7 +73,7 @@ jobs:
             # set latest tag for default branch
             type=raw,value=latest,enable={{is_default_branch}}
             # set dev tag for dev branch
-            type=raw,value=dev,enable={{is_branch 'dev'}}
+            type=raw,value=dev,enable=${{ github.ref == 'refs/heads/dev' }}
             type=pep440,pattern={{major}}.{{minor}},enable={{is_default_branch}}
             type=pep440,pattern={{version}},enable={{is_default_branch}}
             # tag with branch name for other branches

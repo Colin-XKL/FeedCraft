@@ -26,4 +26,32 @@ export default {
   'settings.color.tooltip':
     '根据主题颜色生成的 10 个梯度色（将配置复制到项目中，主题色才能对亮色 / 暗黑模式同时生效）',
   'settings.menuFromServer': '菜单来源于后台',
+  'settings.searchProvider.title': '搜索提供商配置',
+  'settings.searchProvider.alert':
+    '配置“搜索转 RSS”功能使用的搜索提供商。支持 LiteLLM (代理) 和 SearXNG。',
+  'settings.searchProvider.provider': '提供商实现',
+  'settings.searchProvider.provider.tooltip':
+    "要使用的内部提供商逻辑。支持 'litellm' 和 'searxng'。",
+  'settings.searchProvider.apiUrl': 'API URL',
+  'settings.searchProvider.apiUrl.tooltip':
+    '搜索提供商的基准 URL (例如 http://litellm-proxy:4000 或 http://searxng.local)。',
+  'settings.searchProvider.apiKey': 'API Key',
+  'settings.searchProvider.apiKey.tooltip':
+    '如果提供商需要身份验证，则为可选 API 密钥。',
+  'settings.searchProvider.toolName': '工具名称',
+  'settings.searchProvider.toolName.tooltip':
+    "具体工具名称 (如 'google-search')。",
+  'settings.searchProvider.engines': '搜索引擎',
+  'settings.searchProvider.engines.tooltip':
+    "逗号分隔的引擎列表 (如 'google,bing')。留空使用默认值。",
+  'settings.searchProvider.save': '保存配置',
+  'settings.searchProvider.configure': '配置搜索提供商',
+  'settings.searchProvider.msg.urlRequired': 'API URL 是必填项',
+  'settings.searchProvider.msg.saved': '配置已保存',
+  'settings.searchProvider.msg.failed': '保存配置失败',
+  'settings.searchProvider.placeholder.selectProvider': '选择提供商',
+  'settings.searchProvider.placeholder.apiUrl': 'http://litellm-proxy:4000',
+  'settings.searchProvider.placeholder.apiKey': 'sk-...',
+  'settings.searchProvider.placeholder.toolName': 'google-search',
+  'settings.searchProvider.placeholder.engines': 'google,bing',
 };

@@ -26,4 +26,32 @@ export default {
   'settings.color.tooltip':
     '10 gradient colors generated according to the theme color',
   'settings.menuFromServer': 'Menu From Server',
+  'settings.searchProvider.title': 'Search Provider Configuration',
+  'settings.searchProvider.alert':
+    'Configure the search provider used by the "Search to RSS" feature. Supports LiteLLM (Proxy) and SearXNG.',
+  'settings.searchProvider.provider': 'Provider Implementation',
+  'settings.searchProvider.provider.tooltip':
+    "The internal provider logic to use. Supports 'litellm' and 'searxng'.",
+  'settings.searchProvider.apiUrl': 'API URL',
+  'settings.searchProvider.apiUrl.tooltip':
+    'The base URL of the search provider (e.g. http://litellm-proxy:4000 or http://searxng.local).',
+  'settings.searchProvider.apiKey': 'API Key',
+  'settings.searchProvider.apiKey.tooltip':
+    'Optional API Key if the provider requires authentication.',
+  'settings.searchProvider.toolName': 'Tool Name',
+  'settings.searchProvider.toolName.tooltip':
+    "The specific tool name (e.g. 'google-search').",
+  'settings.searchProvider.engines': 'Engines',
+  'settings.searchProvider.engines.tooltip':
+    "Comma-separated list of engines (e.g. 'google,bing'). Leave empty for default.",
+  'settings.searchProvider.save': 'Save Configuration',
+  'settings.searchProvider.configure': 'Configure Search Provider',
+  'settings.searchProvider.msg.urlRequired': 'API URL is required',
+  'settings.searchProvider.msg.saved': 'Configuration saved',
+  'settings.searchProvider.msg.failed': 'Failed to save configuration',
+  'settings.searchProvider.placeholder.selectProvider': 'Select Provider',
+  'settings.searchProvider.placeholder.apiUrl': 'http://litellm-proxy:4000',
+  'settings.searchProvider.placeholder.apiKey': 'sk-...',
+  'settings.searchProvider.placeholder.toolName': 'google-search',
+  'settings.searchProvider.placeholder.engines': 'google,bing',
 };

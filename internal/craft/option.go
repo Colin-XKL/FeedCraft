@@ -1,8 +1,10 @@
 package craft
 
 import (
+	"fmt"
 	"github.com/gorilla/feeds"
 	"github.com/mmcdole/gofeed"
+	"github.com/sirupsen/logrus"
 	"strings"
 )
 
@@ -27,6 +29,12 @@ func NewCraftedFeedFromUrl(feedUrl string, options ...CraftOption) (CraftedFeed,
 		return ingredient, err
 	}
 	ingredient.parsedFeed = parsedFeed
+
+	return NewCraftedFeedFromGofeed(parsedFeed, feedUrl, options...)
+}
+
+func NewCraftedFeedFromGofeed(parsedFeed *gofeed.Feed, feedUrl string, options ...CraftOption) (CraftedFeed, error) {
+	ingredient := CraftedFeed{originalFeedUrl: feedUrl, parsedFeed: parsedFeed}
 
 	byPass := func(item *gofeed.Item) string {
 		content := item.Content
@@ -80,12 +88,25 @@ type FeedItemProcessor func(feedItem *feeds.Item, payload ExtraPayload) error //
 // OptionTransformFeedItem 通用的feed item 处理
 func OptionTransformFeedItem(processor FeedItemProcessor) CraftOption {
 	return func(feed *feeds.Feed, payload ExtraPayload) error {
+		successCount := 0
+		var lastErr error
+
 		for _, itemPointer := range feed.Items {
 			err := processor(itemPointer, payload)
 			if err != nil {
-				return err
+				// 记录错误但不中断，除非全部失败
+				logrus.Warnf("failed to process item [%s], err: %v", itemPointer.Title, err)
+				lastErr = err
+			} else {
+				successCount++
 			}
 		}
+
+		if len(feed.Items) > 0 && successCount == 0 {
+			// 如果有文章且全部失败，则视为整体失败
+			return fmt.Errorf("all items failed to process. last error: %v", lastErr)
+		}
+
 		return nil
 	}
 }

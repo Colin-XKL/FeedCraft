@@ -5,10 +5,14 @@ import (
 	"FeedCraft/internal/util"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/feeds"
+	"github.com/mmcdole/gofeed"
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
+
 	"gorm.io/gorm"
 )
 
@@ -27,6 +31,12 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		Description:         "限制单页条目数量",
 		ParamTemplateDefine: limitCraftParamTmpl,
 		OptionFunc:          limitCraftLoadParams,
+	}
+	sysCraftTempList["time-limit"] = CraftTemplate{
+		Name:                "time-limit",
+		Description:         "根据时间限制文章保留天数",
+		ParamTemplateDefine: timeLimitCraftParamTmpl,
+		OptionFunc:          timeLimitCraftLoadParams,
 	}
 	sysCraftTempList["keyword"] = CraftTemplate{
 		Name:                "keyword",
@@ -92,6 +102,12 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		ParamTemplateDefine: llmFilterCraftParamTmpl,
 		OptionFunc:          llmFilterCraftLoadParam,
 	}
+	sysCraftTempList["llm-filter"] = CraftTemplate{
+		Name:                "llm-filter",
+		Description:         "使用 LLM 根据自定义条件过滤文章 (如果满足条件则排除)",
+		ParamTemplateDefine: llmFilterGenericParamTmpl,
+		OptionFunc:          llmFilterGenericLoadParam,
+	}
 	sysCraftTempList["translate-title"] = CraftTemplate{
 		Name:                "translate-title",
 		Description:         "使用 LLM 将标题翻译为中文",
@@ -125,7 +141,7 @@ func GetCraftAtomDict() map[string]dao.CraftAtom {
 	for name, craftTemplate := range tmplDict {
 		item := dao.CraftAtom{
 			Name:         craftTemplate.Name, // 默认会有个跟template 同名的craft atom
-			Description:  fmt.Sprintf("%s", craftTemplate.Description),
+			Description:  craftTemplate.Description,
 			TemplateName: craftTemplate.Name,
 			Params:       map[string]string{},
 		}
@@ -147,16 +163,53 @@ func GetCraftAtomDict() map[string]dao.CraftAtom {
 
 func Entry(c *gin.Context) {
 	craftName := c.Param("craft-name")
-	craftAtomDict := GetCraftAtomDict()
-	craftTmplDict := GetSysCraftTemplateDict()
 	db := util.GetDatabase()
 
-	craftOptionList, err := inner(db, &craftAtomDict, &craftTmplDict, craftName, 0)
+	craftOptionList, err := getCraftOptions(db, craftName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 	CommonCraftHandlerUsingCraftOptionList(c, craftOptionList)
+}
+
+func ProcessFeed(feed *gofeed.Feed, feedURL string, craftName string) (*feeds.Feed, error) {
+	db := util.GetDatabase()
+	craftOptionList, err := getCraftOptions(db, craftName)
+	if err != nil {
+		return nil, err
+	}
+
+	craftedFeed, err := NewCraftedFeedFromGofeed(feed, feedURL, craftOptionList...)
+	if err != nil {
+		return nil, err
+	}
+
+	return craftedFeed.OutputFeed, nil
+}
+
+func getCraftOptions(db *gorm.DB, craftName string) ([]CraftOption, error) {
+	craftAtomDict := GetCraftAtomDict()
+	craftTmplDict := GetSysCraftTemplateDict()
+
+	if strings.Contains(craftName, ",") {
+		var allOptions []CraftOption
+		parts := strings.Split(craftName, ",")
+		for _, part := range parts {
+			part = strings.TrimSpace(part)
+			if part == "" {
+				continue
+			}
+			options, err := inner(db, &craftAtomDict, &craftTmplDict, part, 0)
+			if err != nil {
+				return nil, err
+			}
+			allOptions = append(allOptions, options...)
+		}
+		return allOptions, nil
+	}
+
+	return inner(db, &craftAtomDict, &craftTmplDict, craftName, 0)
 }
 
 const MaxCallDepth = 5

@@ -11,12 +11,13 @@ export default {
   'menu.profile': '详情页',
   'menu.visualization': '数据可视化',
   'menu.user': '个人中心',
-  'menu.arcoWebsite': 'Arco Design',
   'menu.faq': '常见问题',
   'menu.repo': '项目地址',
   'navbar.docs': '文档中心',
   'navbar.action.locale': '切换为中文',
+
   // 工作台菜单
+  'menu.dashboard.workplace': '工作台',
   'menu.craftAtom': 'Craft Atom',
   'menu.craftFlow': 'Craft Flow',
   'menu.customRecipe': '自定义配方',
@@ -26,10 +27,15 @@ export default {
   // 调试菜单
   'menu.feedCompare': 'Feed 对比',
   'menu.feedViewer': 'RSS 预览',
-  'menu.rssGenerator': 'RSS 生成器',
+  'menu.rssGenerator': 'HTML 转 RSS',
+  'menu.curlToRss': 'Curl 转 RSS',
+  'menu.searchToRss': '搜索 转 RSS',
   'menu.llmDebug': 'LLM 调试',
   'menu.adCheckDebug': '广告软文检测',
   'menu.llmApiDebug': 'LLM API 调试',
+  'menu.dependencyStatus': '依赖服务状态',
   // 其他
   'menu.changePassword': '修改密码',
+  'menu.settings': '设置',
+  'menu.settings.searchProvider': '搜索服务提供商',
 };

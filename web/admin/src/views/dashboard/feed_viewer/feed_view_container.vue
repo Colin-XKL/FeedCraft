@@ -18,7 +18,13 @@
       <li v-for="item in feedData.items?.slice(0, 10)" :key="item.guid">
         <a-card class="my-2">
           <a-space>
-            <h3 class="font-bold">{{ item.title }}</h3>
+            <a
+              :href="item.link"
+              target="_blank"
+              class="hover:text-blue-600 no-underline"
+            >
+              <h3 class="font-bold cursor-pointer">{{ item.title }}</h3>
+            </a>
             <p>{{ dayjs(item.isoDate).format('YYYY-MM-DD hh:mm:ss') }}</p>
           </a-space>
 

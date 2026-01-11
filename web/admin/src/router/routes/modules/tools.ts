@@ -50,12 +50,38 @@ const TOOLS: AppRouteRecordRaw = {
       },
     },
     {
-      path: 'rss-generator',
-      name: 'RssGenerator',
-      component: () =>
-        import('@/views/dashboard/rss_generator/rss_generator.vue'),
+      path: 'html-to-rss',
+      name: 'HtmlToRss',
+      component: () => import('@/views/dashboard/html_to_rss/html_to_rss.vue'),
       meta: {
         locale: 'menu.rssGenerator',
+        requiresAuth: true,
+      },
+    },
+    {
+      path: 'curl-to-rss',
+      name: 'CurlToRss',
+      component: () => import('@/views/dashboard/curl_to_rss/curl_to_rss.vue'),
+      meta: {
+        locale: 'menu.curlToRss',
+        requiresAuth: true,
+      },
+    },
+    {
+      path: 'search-to-rss',
+      name: 'SearchToRss',
+      component: () => import('@/views/dashboard/search_to_rss/index.vue'),
+      meta: {
+        locale: 'menu.searchToRss',
+        requiresAuth: true,
+      },
+    },
+    {
+      path: 'dependencies',
+      name: 'DependencyStatus',
+      component: () => import('@/views/dashboard/dependency_service/index.vue'),
+      meta: {
+        locale: 'menu.dependencyStatus',
         requiresAuth: true,
       },
     },

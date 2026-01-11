@@ -23,7 +23,6 @@ module.exports = {
     // Airbnb JavaScript Style Guide https://github.com/airbnb/javascript
     'airbnb-base',
     'plugin:@typescript-eslint/recommended',
-    'plugin:import/recommended',
     'plugin:import/typescript',
     'plugin:vue/vue3-recommended',
     'plugin:prettier/recommended',
@@ -66,5 +65,7 @@ module.exports = {
     'no-param-reassign': 0,
     'prefer-regex-literals': 0,
     'import/no-extraneous-dependencies': 0,
+    'vue/attributes-order': 'warn',
+    'no-console': 'warn', // 或 'off' 用于开发
   },
 };

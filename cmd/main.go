@@ -5,6 +5,7 @@ import (
 	"FeedCraft/internal/recipe"
 	"FeedCraft/internal/router"
 	"FeedCraft/internal/util"
+	"context"
 	"fmt"
 	"net/http"
 	_ "net/http/pprof"
@@ -27,14 +28,11 @@ var (
 
 func init() {
 	logrus.Info("Preheating scheduler starting...")
-	// 设置预热任务函数
+	// Set up the preheating task function to use the new, encapsulated logic.
 	taskFunc := func(recipeName string) error {
-		recipeData, err := recipe.QueryCustomRecipeName(recipeName)
-		if err != nil {
-			return err
-		}
-		path := recipe.GetPathForCustomRecipe(recipeData)
-		_, err = recipe.RetrieveCraftRecipeUsingPath(path)
+		// The second return value (*feeds.Feed) is ignored as we only care about
+		// the side effect of caching, which happens inside ProcessRecipeByID.
+		_, err := recipe.ProcessRecipeByID(context.Background(), recipeName)
 		return err
 	}
 	recipe.Scheduler = util.NewPreheatingScheduler(taskFunc)
@@ -127,12 +125,7 @@ func startServer() {
 	dao.MigrateDatabases()
 	logrus.Info("Database migration done.")
 
-	localDefaultPort := util.GetLocalPort() // 让gin额外监听的一个端口,用于向自身发送请求时使用
 	listenAddr := os.Getenv("LISTEN_ADDR")
-	go func() {
-		_ = r.Run(fmt.Sprintf("localhost:%d", localDefaultPort))
-	}()
-
 	if !isProd {
 		logrus.Info("Pprof server starting on :6060...")
 		go func() {

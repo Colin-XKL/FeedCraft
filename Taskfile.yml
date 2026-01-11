@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 vars:
   PROJECT_NAME: FeedCraft
@@ -75,11 +75,6 @@ tasks:
       - ./internal/**/*.go
     generates:
       - ./{{.BINARY_NAME}}
-
-  build-local:
-    desc: "Build the application with version injection (local) - alias for backend-build"
-    cmds:
-      - task: backend-build
 
   # Frontend Build Commands
   frontend-build:
@@ -207,11 +202,6 @@ tasks:
           echo "Backend will run on {{.LISTEN_ADDR | default ":8080"}}"
           go run ./cmd/main.go
 
-  dev-backend:
-    desc: "Run development mode - starts only the backend (alias for backward compatibility)"
-    cmds:
-      - task: backend-dev
-
   # Frontend Development Commands
   frontend-dev:
     desc: "Run development mode - starts only the frontend"
@@ -226,11 +216,6 @@ tasks:
             exit 1
           fi
 
-  dev-frontend:
-    desc: "Run development mode - starts only the frontend (alias for backward compatibility)"
-    cmds:
-      - task: frontend-dev
-
   # Combined Development Commands
   dev:
     desc: "Run development mode - starts both backend and frontend in parallel"
@@ -243,3 +228,33 @@ tasks:
           (go run ./cmd/main.go) &
           (cd web/admin && pnpm dev) &
           wait
+  # Documentation Site Commands
+  docs-dev:
+    desc: "Run documentation site in development mode"
+    cmds:
+      - cmd: |
+          echo "Starting documentation site development mode..."
+          echo "Documentation site will run on http://localhost:4321"
+          cd doc-site && pnpm run dev
+
+  docs-build:
+    desc: "Build the documentation site"
+    cmds:
+      - cmd: |
+          echo "Building documentation site..."
+          cd doc-site && pnpm install && pnpm run build
+          echo "Documentation site build completed"
+
+  lint:
+    desc: "Lint and format code (Go and Web)"
+    cmds:
+      - cmd: |
+          echo "Running Go linter..."
+          if command -v golangci-lint >/dev/null 2>&1; then
+            golangci-lint run ./...
+          else
+            echo "golangci-lint not installed. Please install it to lint Go code."
+          fi
+      - cmd: |
+          echo "Running Prettier..."
+          npx --yes prettier --write .

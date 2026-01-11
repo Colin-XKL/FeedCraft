@@ -17,6 +17,7 @@ export default {
   'navbar.docs': 'Docs Center',
   'navbar.action.locale': 'Switch to English',
   // workplace menus
+  'menu.dashboard.workplace': 'Workplace',
   'menu.craftAtom': 'Craft Atom',
   'menu.craftFlow': 'Craft Flow',
   'menu.customRecipe': 'Custom Recipe',
@@ -26,10 +27,15 @@ export default {
   // tools menus
   'menu.feedCompare': 'Feed Compare',
   'menu.feedViewer': 'RSS Viewer',
-  'menu.rssGenerator': 'RSS Generator',
+  'menu.rssGenerator': 'HTML to RSS',
+  'menu.curlToRss': 'Curl to RSS',
+  'menu.searchToRss': 'Search to RSS',
   'menu.llmDebug': 'LLM Debug',
   'menu.changePassword': 'Change Password',
-  'menu.adCheckDebug': 'Ad/Advertorial Check',
-  // other menu
+  'menu.adCheckDebug': 'Ad Check',
+  'menu.dependencyStatus': 'Dependency Services',
   'menu.llmApiDebug': 'LLM API Debug',
+  // other menu
+  'menu.settings': 'Settings',
+  'menu.settings.searchProvider': 'Search Provider',
 };
