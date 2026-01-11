@@ -81,6 +81,7 @@ FeedCraft 内置了一系列“原子工艺 (AtomCrafts)”，用于对订阅源
 ## AI 增强 (AI Enhancement)
 
 使用大语言模型 (LLM) 来转换和丰富你的内容。
+
 :::note
 使用此类原子需要在环境变量中配置 LLM (API Key, Base URL 等)。
 :::

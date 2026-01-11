@@ -89,3 +89,5 @@ services:
       USE_CHROME_STABLE: true
     restart: unless-stopped
 ```
+
+服务默认监听在 80 端口，你也可以在同一网络下的其他容器中，使用 `http://app.feed-craft/xxx` 这样来进行访问(比如RSS 阅读器中通过这种方式来走内网通信订阅)。  

@@ -15,16 +15,15 @@ Craft all your feed in one place!
 ![Open Source Love](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Colin-XKL/FeedCraft)
 
-Doc: [English](https://deepwiki.com/Colin-XKL/FeedCraft) | 简体中文
+Doc: [English](https://feed-craft-doc.vercel.app/en) | [简体中文](https://feed-craft-doc.vercel.app/zh)
 
-**FeedCraft** is a powerful tool to process your rss feeds as a middleware, use it to translate your feed, extract
-fulltext, emulate browser
-to render js-heavy page, turn any webpage into RSS, use llm such as google gemini to generate brief for your rss article, use natural language to
-filter your rss feed, and more!
+**FeedCraft** is a simple, powerful RSS feed processing tool.  
+It can serve as middleware to handle your RSS feeds; you can use it to extract the main text, perform intelligent translation, generate article summaries through AI, filter articles using natural language, and more.  
+It can also generate RSS for any site that does not support RSS, using AI to automatically search for topics you want to subscribe to and create RSS feeds.
 
-**FeedCraft** 是一个简单、强大的RSS 源处理工具,他可以作为一个中间件处理你的RSS源.
-你可以用它来翻译、提取正文、模拟浏览器来渲染那些动态生成的网页并提取全文、通过大语言模型如Google
-Gemini来生成文章摘要、通过自然语言筛选文章等
+**FeedCraft** 是一个简单、强大的 RSS 源处理工具. 
+他可以作为一个中间件处理你的RSS源, 你可以用它来提取正文、智能翻译、通过AI生成文章摘要、通过自然语言筛选文章等.
+也可以为不支持RSS任意站点生成RSS、借助AI自动搜索你想要订阅的话题生成RSS
 
 ## 核心特性
 
@@ -38,7 +37,7 @@ Gemini来生成文章摘要、通过自然语言筛选文章等
 ## 快速开始
 
 访问以下URL格式即可快速调用FeedCraft对输入的RSS源进行指定的处理
-`https://feed-craft.colinx.one/craft/{craft_atom}?input_url={input_rss_url}`
+`https://feed-craft.colinx.one/craft/{craft_name_here}?input_url={input_rss_url}`
 
 FeedCraft中的几个核心概念:
 
@@ -88,7 +87,6 @@ https://feed-craft.colinx.one
 你可以通过docker快速自行部署一个FeedCraft实例,以获得更好的使用体验.
 下面为一个最小docker compose 示例:
 
-服务默认监听在 80 端口，你也可以在同一网络下的其他容器中，使用 `http://app.feed-craft/xxx` 这样来进行访问。  
 控制台默认账号`admin`, 密码 `adminadmin`, 登陆后请尽快修改默认密码
 
 ```yaml
@@ -145,46 +143,6 @@ services:
       USE_CHROME_STABLE: true
     restart: unless-stopped
 ```
-
-## 开发
-
-如果你想要在本地开发FeedCraft，可以按照以下步骤进行：
-
-### 环境设置
-
-1. 确保已安装以下依赖：
-   - Go 1.23+
-   - Node.js (推荐 22+)
-   - pnpm (安装方式: `npm install -g pnpm`)
-   - Task (安装方式: [https://taskfile.dev/installation/](https://taskfile.dev/installation/))
-
-2. 复制环境变量文件：
-
-   ```bash
-   cp .env.example .env
-   ```
-
-3. 根据需要编辑 `.env` 文件中的配置
-
-### 开发命令
-
-使用 Task 运行开发模式：
-
-```bash
-# 运行后端
-task backend-dev
-
-# 运行前端
-task frontend-dev
-```
-
-### 前端开发
-
-前端项目位于 `web/admin` 目录下，使用 Vue 3 和 Arco Design。
-
-### 后端开发
-
-后端使用 Go 和 Gin 框架
 
 ## 关于 FeedCraft
 
