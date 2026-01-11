@@ -1,5 +1,5 @@
 export default {
-  path: 'https://feed-craft-doc.vercel.app/',
+  path: 'https://feed-craft-doc.vercel.app/en',
   name: 'doc-center',
   meta: {
     locale: 'menu.doc',
