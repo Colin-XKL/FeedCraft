@@ -44,7 +44,7 @@ FeedCraft中的几个核心概念:
 - AtomCraft(原子工艺), 指要如何处理一个rss源, 比如是要进行翻译,还是提取正文,还是AI生成摘要等
 - FlowCraft(组合工艺), 多个 AtomCraft 组成的序列, 比如你可以定义一个新的名叫 clean-article 的 FlowCraft,
   将提取全文、AI筛选文章、AI摘要组合到一起,
-- Recipe(食谱), 记录了以什么样的 Craft 或 FlowCraft 对某个指定的rss源进行处理, 比如你可以指定一个名叫my-zhihu-daliy的recipe,
+- Recipe(配方), 记录了以什么样的 Craft 或 FlowCraft 对某个指定的rss源进行处理, 比如你可以指定一个名叫my-zhihu-daily的recipe,
   对知乎日报的rss自动进行AI生成摘要的操作, 这个recipe对应一个新的rss地址, 你可以直接订阅这个地址得到带摘要版本的知乎日报
 
 你可以先开始尝试下面的几个原子工艺(AtomCraft):

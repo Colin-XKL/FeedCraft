@@ -42,7 +42,7 @@ sidebar:
 
 ### 食谱 (Recipe)
 
-**Recipe** 将特定的 RSS 源 URL 与某个 Craft 或 FlowCraft 绑定。这允许你创建一个持久化的、经过定制的订阅源 URL。
+**Recipe** 将特定的 RSS 源 URL 与某个 原子工艺 (AtomCraft) 或组合工艺 (FlowCraft) 绑定。这允许你创建一个持久化的、经过定制的订阅源 URL。
 
 **示例：**
 

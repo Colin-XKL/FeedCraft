@@ -33,7 +33,7 @@ FeedCraft is a Go-based RSS feed processing middleware that allows users to tran
 - **Portable Mode**: Direct URL-based processing: `/craft/{craft-name}?input_url={rss-url}`
 - **Dock Mode**: Advanced configuration through admin panel
 
-note: In frontend ui text and document, we use the name `AtomCraft` and `FlowCraft`. But For now we haven't changed them in code, just for compability.
+note: In frontend ui text and document, we use the name `AtomCraft` and `FlowCraft`. But For now we haven't changed them in backend code, backend models/DB fields remain CraftAtom/CraftFlow for compatibility
 
 ## Development Commands
 
@@ -79,7 +79,7 @@ pnpm run lint-staged
 
 ## Hooks When You Are Ready to Submit Your Code Changes
 
-When you finish the task, before submit code changes, run these steps to make sure our code works as expected.
+When you finish the task, before submitting your code changes, run these steps to make sure our code works as expected.
 
 ```bash
 # code lint

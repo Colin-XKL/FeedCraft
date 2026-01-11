@@ -6,7 +6,7 @@ const WORKTABLE: AppRouteRecordRaw = {
   name: 'WorkTableRoot',
   component: DEFAULT_LAYOUT,
   meta: {
-    locale: 'menu.user',
+    locale: 'menu.worktable',
     requiresAuth: true,
     icon: 'icon-common',
     order: 1,

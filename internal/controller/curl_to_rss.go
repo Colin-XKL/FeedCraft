@@ -81,11 +81,11 @@ func CurlFetch(c *gin.Context) {
 
 	// Validate URL
 	if req.URL == "" {
-		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "URL is required"})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "URL is required"})
 		return
 	}
 	if !strings.HasPrefix(req.URL, "http://") && !strings.HasPrefix(req.URL, "https://") {
-		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "URL must start with http:// or https://"})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "URL must start with http:// or https://"})
 		return
 	}
 
@@ -96,12 +96,12 @@ func CurlFetch(c *gin.Context) {
 	}
 
 	// Validate Method
-	allowedMethods := map[string]bool{
-		"GET": true, "POST": true, "PUT": false, "DELETE": false,
-		"PATCH": false, "HEAD": false, "OPTIONS": false,
+	// Only explicitly allow supported methods.
+	supportedMethods := map[string]bool{
+		"GET": true, "POST": true,
 	}
-	if !allowedMethods[method] {
-		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "Unsupported HTTP method: " + method})
+	if !supportedMethods[method] {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "Unsupported HTTP method: " + method})
 		return
 	}
 
@@ -115,7 +115,7 @@ func CurlFetch(c *gin.Context) {
 	}
 
 	if err != nil {
-		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "Fetch failed: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{StatusCode: -1, Msg: "Fetch failed: " + err.Error()})
 		return
 	}
 
@@ -125,7 +125,7 @@ func CurlFetch(c *gin.Context) {
 		if len(body) > 200 {
 			body = body[:200] + "..."
 		}
-		c.JSON(http.StatusOK, util.APIResponse[any]{
+		c.JSON(http.StatusBadGateway, util.APIResponse[any]{
 			StatusCode: -1,
 			Msg:        "Upstream error: " + resp.Status() + " Body: " + body,
 		})
@@ -178,7 +178,7 @@ func CurlParse(c *gin.Context) {
 	// Execute List Selector
 	listQuery, err := gojq.Parse(req.ListSelector)
 	if err != nil {
-		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "List selector error: " + err.Error()})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "List selector error: " + err.Error()})
 		return
 	}
 
@@ -190,7 +190,7 @@ func CurlParse(c *gin.Context) {
 			break
 		}
 		if err, ok := v.(error); ok {
-			c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "List extraction error: " + err.Error()})
+			c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "List extraction error: " + err.Error()})
 			return
 		}
 		// If v is a slice, we iterate it. If it's a single object, we take it.
@@ -222,22 +222,22 @@ func CurlParse(c *gin.Context) {
 
 	titleQ, err := compile(req.TitleSelector)
 	if err != nil {
-		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "invalid TitleSelector: " + err.Error()})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "invalid TitleSelector: " + err.Error()})
 		return
 	}
 	linkQ, err := compile(req.LinkSelector)
 	if err != nil {
-		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "invalid LinkSelector: " + err.Error()})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "invalid LinkSelector: " + err.Error()})
 		return
 	}
 	dateQ, err := compile(req.DateSelector)
 	if err != nil {
-		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "invalid DateSelector: " + err.Error()})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "invalid DateSelector: " + err.Error()})
 		return
 	}
 	contentQ, err := compile(req.ContentSelector)
 	if err != nil {
-		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "invalid ContentSelector: " + err.Error()})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "invalid ContentSelector: " + err.Error()})
 		return
 	}
 
