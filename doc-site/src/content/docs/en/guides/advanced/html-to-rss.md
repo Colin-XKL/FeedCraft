@@ -40,6 +40,7 @@ This step allows you to map HTML elements to RSS feed fields.
     - Once the Item Selector is set, you can map the relative fields.
     - **Title Selector**: Click Pick and select the element containing the title text.
     - **Link Selector**: Click Pick and select the element containing the article URL (usually an `<a>` tag).
+      > **Tip:** The extractor is smart! If you select an element that isn't a link (e.g., a `div` or `span`), it will automatically look for a link in the parent or child elements. If no link is found, it will try to use the text content if it looks like a URL. (See [ea6c69e](https://github.com/Colin-XKL/FeedCraft/commit/ea6c69eb55e114ccf7c32c7cc100e5a6514ea70b))
     - **Date Selector**: (Optional) Pick the date element.
     - **Content Selector**: (Optional) Pick the element containing the summary or full content.
 4.  **Preview RSS Items**: Click this button to test your selectors. The parsed items will appear in the right-hand panel.

@@ -50,6 +50,23 @@ A **Recipe** binds a specific RSS feed URL to an AtomCraft or FlowCraft. This al
 - **Processor:** `digest-and-translate` (The flow created above)
 - **Result:** You get a new FeedCraft URL that serves Hacker News with full text, summaries, and translation.
 
+## Search Provider Configuration
+
+To use the **Search to RSS** feature, you must configure a search provider. (See [ea6c69e](https://github.com/Colin-XKL/FeedCraft/commit/ea6c69eb55e114ccf7c32c7cc100e5a6514ea70b))
+
+Navigate to **Settings > Search Provider** in the admin dashboard.
+
+### Supported Providers
+
+- **LiteLLM / OpenAI Compatible**
+  - **API URL**: The base URL of your provider (e.g., `https://api.openai.com/v1`).
+  - **API Key**: Your API key.
+  - **Tool Name**: The specific function calling tool name if required (e.g., `google_search` for some agents).
+
+- **SearXNG**
+  - **API URL**: The URL of your SearXNG instance (e.g., `http://my-searxng.com`).
+  - **Engines**: (Optional) Comma-separated list of engines to use (e.g., `google,bing`).
+
 ## Advanced Configuration
 
 ### Docker Environment Variables
