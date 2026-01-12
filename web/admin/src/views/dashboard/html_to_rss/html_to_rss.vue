@@ -475,6 +475,7 @@
   import { ref, reactive, nextTick } from 'vue';
   import axios from 'axios';
   import DOMPurify from 'dompurify';
+  import { kebabCase } from 'lodash';
   import { Message } from '@arco-design/web-vue';
   import {
     IconSelectAll,
@@ -536,6 +537,10 @@
   // --- Actions ---
 
   const nextStep = () => {
+    // If moving to step 4 (Save) and ID is empty, try to auto-generate from title
+    if (currentStep.value === 3 && !recipeMeta.id && feedMeta.title) {
+      recipeMeta.id = kebabCase(feedMeta.title);
+    }
     currentStep.value += 1;
   };
 
