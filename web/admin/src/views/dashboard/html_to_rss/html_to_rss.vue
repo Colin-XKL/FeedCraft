@@ -36,8 +36,12 @@
                 size="large"
                 allow-clear
                 @keyup.enter="fetchAndNext"
+                @input="fetchError = ''"
               />
             </a-form-item>
+            <a-alert v-if="fetchError" type="error" class="mb-4" show-icon>
+              {{ fetchError }}
+            </a-alert>
             <div class="text-center mt-8">
               <a-button
                 type="primary"
@@ -498,6 +502,7 @@
   const url = ref('');
   const enhancedMode = ref(false);
   const fetching = ref(false);
+  const fetchError = ref('');
   const parsing = ref(false);
   const saving = ref(false);
   const htmlContent = ref('');
@@ -551,6 +556,8 @@
   const fetchContent = async (advanceStep = false) => {
     if (!url.value) return;
     fetching.value = true;
+    fetchError.value = '';
+
     try {
       const { data: res } = (await axios.post('/api/admin/tools/fetch', {
         url: url.value,
@@ -606,10 +613,13 @@
           setTargetField('item_selector');
         }
       } else {
-        Message.error(res.msg || t('htmlToRss.msg.fetchFailed'));
+        const errorMsg = res.msg || t('htmlToRss.msg.fetchFailed');
+        fetchError.value = errorMsg;
       }
-    } catch (err) {
-      Message.error(t('htmlToRss.msg.errorFetching'));
+    } catch (err: any) {
+      // Axios interceptor throws an error with the backend message
+      const errorMsg = err.message || t('htmlToRss.msg.errorFetching');
+      fetchError.value = errorMsg;
     } finally {
       fetching.value = false;
     }
