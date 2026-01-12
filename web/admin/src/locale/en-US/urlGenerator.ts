@@ -9,4 +9,13 @@ export default {
   'urlGenerator.resultUrl': 'Crafted URL',
   'urlGenerator.copyUrl': 'Copy',
   'urlGenerator.copied': 'Copied to clipboard!',
+  'urlGenerator.tabGenerate': 'Generate URL',
+  'urlGenerator.tabParse': 'Parse URL',
+  'urlGenerator.inputFeedCraftUrl': 'Input FeedCraft URL',
+  'urlGenerator.inputFeedCraftUrlPlaceholder': 'http://feedcraft.example/craft/my-craft?input_url=...',
+  'urlGenerator.parseButton': 'Analyze URL',
+  'urlGenerator.parsedCraft': 'Detected Craft',
+  'urlGenerator.parsedSourceUrl': 'Original Source URL',
+  'urlGenerator.parsedParams': 'Other Parameters',
+  'urlGenerator.parseError': 'Invalid FeedCraft URL',
 };
