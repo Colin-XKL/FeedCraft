@@ -12,7 +12,8 @@ export default {
   'urlGenerator.tabGenerate': 'Generate URL',
   'urlGenerator.tabParse': 'Parse URL',
   'urlGenerator.inputFeedCraftUrl': 'Input FeedCraft URL',
-  'urlGenerator.inputFeedCraftUrlPlaceholder': 'http://feedcraft.example/craft/my-craft?input_url=...',
+  'urlGenerator.inputFeedCraftUrlPlaceholder':
+    'http://feedcraft.example/craft/my-craft?input_url=...',
   'urlGenerator.parseButton': 'Analyze URL',
   'urlGenerator.parsedCraft': 'Detected Craft',
   'urlGenerator.parsedSourceUrl': 'Original Source URL',

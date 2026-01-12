@@ -77,7 +77,9 @@
                 <span class="font-bold block mb-2"
                   >{{ t('urlGenerator.parsedCraft') }}:</span
                 >
-                <a-tag color="blue" size="large">{{ parsedResult.craft }}</a-tag>
+                <a-tag color="blue" size="large">{{
+                  parsedResult.craft
+                }}</a-tag>
               </div>
               <!-- Display Source URL -->
               <div class="mb-4">
