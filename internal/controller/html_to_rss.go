@@ -66,7 +66,9 @@ func fetchHTML(targetURL string, useBrowserless bool) (string, error) {
 	}
 
 	if useBrowserless {
-		return util.GetBrowserlessContent(targetURL, craft.DefaultExtractFulltextTimeout)
+		return util.GetBrowserlessContent(targetURL, util.BrowserlessOptions{
+			Timeout: craft.DefaultExtractFulltextTimeout,
+		})
 	}
 
 	// Try standard HTTP request (simulating a browser user agent)
@@ -83,21 +85,8 @@ func fetchHTML(targetURL string, useBrowserless bool) (string, error) {
 		SetHeader("Sec-Fetch-User", "?1").
 		Get(targetURL)
 
-	if req.UseBrowserless {
-		htmlContent, err = util.GetBrowserlessContent(req.URL, util.BrowserlessOptions{
-			Timeout: craft.DefaultExtractFulltextTimeout,
-		})
-	} else {
-		// Try standard HTTP request first (simulating a browser user agent)
-		client := resty.New()
-		client.SetTimeout(craft.DefaultExtractFulltextTimeout)
-		var resp *resty.Response
-		resp, err = client.R().
-			SetHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36").
-			Get(req.URL)
-		if err == nil {
-			htmlContent = resp.String()
-		}
+	if err != nil {
+		return "", fmt.Errorf("fetch failed: %w", err)
 	}
 
 	if resp.StatusCode() != http.StatusOK {
