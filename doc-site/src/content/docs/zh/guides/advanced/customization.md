@@ -38,7 +38,7 @@ sidebar:
 #### 管理组合工艺
 
 你可以在后台的 **FlowCraft** 页面创建和管理组合工艺。
-编辑器允许你添加原子工艺并安排它们的执行顺序。使用箭头按钮 (⬆️/⬇️) 调整顺序，或使用垃圾桶图标将其从流程中移除。(See [2b2439b](https://github.com/Colin-XKL/FeedCraft/commit/2b2439b6a6eb5319c04b2c408635847971d42af2))
+编辑器允许你添加原子工艺并安排它们的执行顺序。使用箭头按钮 (⬆️/⬇️) 调整顺序，或使用垃圾桶图标将其从流程中移除。
 
 ### 食谱 (Recipe)
 
@@ -49,6 +49,23 @@ sidebar:
 - **输入 URL：** `https://news.ycombinator.com/rss`
 - **处理器：** `digest-and-translate` (上面创建的工作流)
 - **结果：** 你会得到一个新的 FeedCraft URL，订阅它即可获得带全文、摘要和翻译的 Hacker News。
+
+## 搜索提供商配置 (Search Provider)
+
+要使用 **搜索转 RSS (Search to RSS)** 功能，你必须配置搜索提供商。
+
+在管理后台导航至 **设置 (Settings) > Search Provider**。
+
+### 支持的提供商
+
+- **LiteLLM / OpenAI Compatible**
+  - **API URL**: 提供商的基础 URL（例如 `https://api.openai.com/v1`）。
+  - **API Key**: 你的 API 密钥。
+  - **Tool Name**: 特定函数调用工具名称（如果需要，例如某些 Agent 的 `google_search`）。
+
+- **SearXNG**
+  - **API URL**: 你的 SearXNG 实例 URL（例如 `http://my-searxng.com`）。
+  - **Engines**: (可选) 逗号分隔的搜索引擎列表（例如 `google,bing`）。
 
 ## 高级配置
 

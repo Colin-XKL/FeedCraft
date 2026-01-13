@@ -38,7 +38,7 @@ You can define a FlowCraft named `digest-and-translate` that consists of:
 #### Managing FlowCrafts
 
 You can create and manage FlowCrafts in the **FlowCraft** section of the dashboard.
-The editor allows you to add AtomCrafts and arrange their execution order. Use the arrow buttons (⬆️/⬇️) to reorder AtomCrafts, or the trash icon to remove them from the FlowCraft. (See [2b2439b](https://github.com/Colin-XKL/FeedCraft/commit/2b2439b6a6eb5319c04b2c408635847971d42af2))
+The editor allows you to add AtomCrafts and arrange their execution order. Use the arrow buttons (⬆️/⬇️) to reorder AtomCrafts, or the trash icon to remove them from the FlowCraft.
 
 ### Recipe
 
@@ -49,6 +49,23 @@ A **Recipe** binds a specific RSS feed URL to an AtomCraft or FlowCraft. This al
 - **Input URL:** `https://news.ycombinator.com/rss`
 - **Processor:** `digest-and-translate` (The flow created above)
 - **Result:** You get a new FeedCraft URL that serves Hacker News with full text, summaries, and translation.
+
+## Search Provider Configuration
+
+To use the **Search to RSS** feature, you must configure a search provider.
+
+Navigate to **Settings > Search Provider** in the admin dashboard.
+
+### Supported Providers
+
+- **LiteLLM / OpenAI Compatible**
+  - **API URL**: The base URL of your provider (e.g., `https://api.openai.com/v1`).
+  - **API Key**: Your API key.
+  - **Tool Name**: The specific function calling tool name if required (e.g., `google_search` for some agents).
+
+- **SearXNG**
+  - **API URL**: The URL of your SearXNG instance (e.g., `http://my-searxng.com`).
+  - **Engines**: (Optional) Comma-separated list of engines to use (e.g., `google,bing`).
 
 ## Advanced Configuration
 
