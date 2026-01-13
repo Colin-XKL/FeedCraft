@@ -106,7 +106,9 @@ func DebugCheckIfAdvertorial(c *gin.Context) {
 	}
 	var webContent string
 	if reqBody.EnhanceMode {
-		webContent, err = getRenderedHTML2(reqBody.Url, 1*time.Minute)
+		webContent, err = getRenderedHTML2(reqBody.Url, util.BrowserlessOptions{
+			Timeout: 1 * time.Minute,
+		})
 	} else {
 		webContent, err = TrivialExtractor(reqBody.Url, 1*time.Minute)
 	}

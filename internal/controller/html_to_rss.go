@@ -75,7 +75,9 @@ func HtmlFetch(c *gin.Context) {
 	var err error
 
 	if req.UseBrowserless {
-		htmlContent, err = util.GetBrowserlessContent(req.URL, craft.DefaultExtractFulltextTimeout)
+		htmlContent, err = util.GetBrowserlessContent(req.URL, util.BrowserlessOptions{
+			Timeout: craft.DefaultExtractFulltextTimeout,
+		})
 	} else {
 		// Try standard HTTP request first (simulating a browser user agent)
 		client := resty.New()
