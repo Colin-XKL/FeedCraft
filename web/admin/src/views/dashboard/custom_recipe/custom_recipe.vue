@@ -49,7 +49,7 @@
           :content="
             t('customRecipe.status.activeTooltip', {
               time: dayjs(record.last_accessed_at).format(
-                'YYYY-MM-DD HH:mm:ss'
+                'YYYY-MM-DD HH:mm:ss',
               ),
             })
           "
@@ -134,8 +134,8 @@
         editing
           ? t('customRecipe.editModalTitle.edit')
           : quickCreate
-          ? t('customRecipe.quickCreateRSS')
-          : t('customRecipe.editModalTitle.create')
+            ? t('customRecipe.quickCreateRSS')
+            : t('customRecipe.editModalTitle.create')
       "
     >
       <a-form
