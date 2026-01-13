@@ -22,6 +22,9 @@ Extracts full content using a headless browser (Puppeteer).
 
 - **Use case:** For websites that require JavaScript to render content or have strong anti-bot protections.
 - **Mechanism:** Connects to the configured Browserless/Puppeteer service to render the page. Slower but more robust.
+- **Parameters:**
+  - `mode` (default: `networkidle2`): Wait condition. Options: `load`, `domcontentloaded`, `networkidle0`, `networkidle2`.
+  - `wait` (default: `0`): Explicit wait time in seconds (e.g., `5`).
 
 ### `proxy`
 

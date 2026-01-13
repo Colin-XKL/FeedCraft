@@ -22,6 +22,9 @@ FeedCraft 内置了一系列“原子工艺 (AtomCrafts)”，用于对订阅源
 
 - **适用场景:** 针对通过 JavaScript 动态渲染内容或有较强反爬虫措施的网站。
 - **机制:** 连接到配置的 Browserless/Puppeteer 服务来渲染页面。速度较慢但兼容性更强。
+- **参数:**
+  - `mode` (默认: `networkidle2`): 页面加载等待模式。可选值: `load`, `domcontentloaded`, `networkidle0`, `networkidle2`。
+  - `wait` (默认: `0`): 显式等待时间（秒），例如 `5`。
 
 ### `proxy` (代理)
 
