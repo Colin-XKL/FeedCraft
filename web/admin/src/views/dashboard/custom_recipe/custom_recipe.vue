@@ -49,7 +49,7 @@
           :content="
             t('customRecipe.status.activeTooltip', {
               time: dayjs(record.last_accessed_at).format(
-                'YYYY-MM-DD HH:mm:ss',
+                'YYYY-MM-DD HH:mm:ss'
               ),
             })
           "
@@ -111,9 +111,18 @@
           >
             <a-button status="danger">{{ t('customRecipe.delete') }}</a-button>
           </a-popconfirm>
-          <a-link :href="`${baseUrl}/recipe/${record?.id}`">{{
+          <a-link :href="`${baseUrl}/recipe/${record?.id}`" target="_blank">{{
             t('customRecipe.link')
           }}</a-link>
+          <a-tooltip :content="t('customRecipe.copyLink')">
+            <a-button
+              type="text"
+              size="small"
+              @click="handleCopyLink(record.id)"
+            >
+              <template #icon><icon-copy /></template>
+            </a-button>
+          </a-tooltip>
         </a-space>
       </template>
     </a-table>
@@ -125,8 +134,8 @@
         editing
           ? t('customRecipe.editModalTitle.edit')
           : quickCreate
-            ? t('customRecipe.quickCreateRSS')
-            : t('customRecipe.editModalTitle.create')
+          ? t('customRecipe.quickCreateRSS')
+          : t('customRecipe.editModalTitle.create')
       "
     >
       <a-form
@@ -297,6 +306,18 @@
 
   const handleCopyConfig = () => {
     copy(currentConfig.value);
+    Message.success(t('customRecipe.copied'));
+  };
+
+  const handleCopyLink = (id: string) => {
+    const fullBaseUrl = baseUrl || window.location.origin;
+    let url = '';
+    if (fullBaseUrl.startsWith('http')) {
+      url = `${fullBaseUrl}/recipe/${id}`;
+    } else {
+      url = `${window.location.origin}${fullBaseUrl}/recipe/${id}`;
+    }
+    copy(url);
     Message.success(t('customRecipe.copied'));
   };
 

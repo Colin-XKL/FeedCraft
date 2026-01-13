@@ -19,6 +19,7 @@ export default {
   'customRecipe.editModalTitle.edit': 'Edit Recipe',
   'customRecipe.viewConfigModalTitle': 'Source Configuration',
   'customRecipe.copyConfig': 'Copy Configuration',
+  'customRecipe.copyLink': 'Copy Link',
   'customRecipe.copied': 'Copied!',
   'customRecipe.jsonConfigFallback': 'JSON Config',
   'customRecipe.form.name': 'Name',
