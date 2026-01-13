@@ -39,6 +39,16 @@
                 @input="fetchError = ''"
               />
             </a-form-item>
+
+            <div class="flex items-center gap-2 mb-6 ml-1">
+              <span class="text-gray-600">{{
+                $t('htmlToRss.step2.enhanceMode')
+              }}</span>
+              <a-tooltip :content="$t('htmlToRss.step2.enhanceMode.tooltip')">
+                <a-switch v-model="enhancedMode" />
+              </a-tooltip>
+            </div>
+
             <a-alert v-if="fetchError" type="error" class="mb-4" show-icon>
               {{ fetchError }}
             </a-alert>
@@ -66,22 +76,6 @@
                   <span class="font-bold">{{
                     $t('htmlToRss.step2.pagePreview')
                   }}</span>
-                  <a-divider direction="vertical" />
-                  <div class="flex items-center gap-2">
-                    <span class="text-sm">{{
-                      $t('htmlToRss.step2.enhanceMode')
-                    }}</span>
-                    <a-tooltip
-                      :content="$t('htmlToRss.step2.enhanceMode.tooltip')"
-                    >
-                      <a-switch
-                        v-model="enhancedMode"
-                        size="small"
-                        @change="handleEnhanceModeChange"
-                      >
-                      </a-switch>
-                    </a-tooltip>
-                  </div>
                 </div>
                 <a-tag v-if="isSelectionMode" color="blue">{{
                   $t('htmlToRss.step2.selectionModeOn')
@@ -628,10 +622,6 @@
   // Step 1 -> 2
   const fetchAndNext = async () => {
     await fetchContent(true);
-  };
-
-  const handleEnhanceModeChange = async () => {
-    await fetchContent(false);
   };
 
   // Step 2 -> 3
