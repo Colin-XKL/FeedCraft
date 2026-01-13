@@ -22,6 +22,13 @@ Where:
 
 **Note:** You may need to URL-encode the `{input_rss_url}` if your RSS reader does not handle it automatically.
 
+### URL Generator
+
+For convenience, you can use the **URL Generator** included in the web interface to build these URLs easily.
+
+- Access the standalone generator at: `/start.html`
+- Or use the "URL Generator" tool in the admin dashboard.
+
 ### Common AtomCrafts
 
 Here are some basic AtomCrafts you can use immediately:
