@@ -22,7 +22,7 @@ URL 格式为：
 
 ### URL 生成器
 
-为了方便使用，你可以利用 Web 界面中内置的 **URL 生成器** 来轻松构建这些 URL。(See [ea6c69e](https://github.com/Colin-XKL/FeedCraft/commit/ea6c69eb55e114ccf7c32c7cc100e5a6514ea70b))
+为了方便使用，你可以利用 Web 界面中内置的 **URL 生成器** 来轻松构建这些 URL。
 
 - 访问独立的生成器页面：`/start.html`
 - 或者在管理后台使用 "URL Generator" 工具。

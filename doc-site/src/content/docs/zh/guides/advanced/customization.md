@@ -38,7 +38,7 @@ sidebar:
 #### 管理组合工艺
 
 你可以在后台的 **FlowCraft** 页面创建和管理组合工艺。
-编辑器允许你添加原子工艺并安排它们的执行顺序。使用箭头按钮 (⬆️/⬇️) 调整顺序，或使用垃圾桶图标将其从流程中移除。(See [2b2439b](https://github.com/Colin-XKL/FeedCraft/commit/2b2439b6a6eb5319c04b2c408635847971d42af2))
+编辑器允许你添加原子工艺并安排它们的执行顺序。使用箭头按钮 (⬆️/⬇️) 调整顺序，或使用垃圾桶图标将其从流程中移除。
 
 ### 食谱 (Recipe)
 
@@ -52,7 +52,7 @@ sidebar:
 
 ## 搜索提供商配置 (Search Provider)
 
-要使用 **搜索转 RSS (Search to RSS)** 功能，你必须配置搜索提供商。(See [ea6c69e](https://github.com/Colin-XKL/FeedCraft/commit/ea6c69eb55e114ccf7c32c7cc100e5a6514ea70b))
+要使用 **搜索转 RSS (Search to RSS)** 功能，你必须配置搜索提供商。
 
 在管理后台导航至 **设置 (Settings) > Search Provider**。
 

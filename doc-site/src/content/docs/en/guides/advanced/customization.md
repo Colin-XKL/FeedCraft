@@ -38,7 +38,7 @@ You can define a FlowCraft named `digest-and-translate` that consists of:
 #### Managing FlowCrafts
 
 You can create and manage FlowCrafts in the **FlowCraft** section of the dashboard.
-The editor allows you to add AtomCrafts and arrange their execution order. Use the arrow buttons (⬆️/⬇️) to reorder AtomCrafts, or the trash icon to remove them from the FlowCraft. (See [2b2439b](https://github.com/Colin-XKL/FeedCraft/commit/2b2439b6a6eb5319c04b2c408635847971d42af2))
+The editor allows you to add AtomCrafts and arrange their execution order. Use the arrow buttons (⬆️/⬇️) to reorder AtomCrafts, or the trash icon to remove them from the FlowCraft.
 
 ### Recipe
 
@@ -52,7 +52,7 @@ A **Recipe** binds a specific RSS feed URL to an AtomCraft or FlowCraft. This al
 
 ## Search Provider Configuration
 
-To use the **Search to RSS** feature, you must configure a search provider. (See [ea6c69e](https://github.com/Colin-XKL/FeedCraft/commit/ea6c69eb55e114ccf7c32c7cc100e5a6514ea70b))
+To use the **Search to RSS** feature, you must configure a search provider.
 
 Navigate to **Settings > Search Provider** in the admin dashboard.
 
