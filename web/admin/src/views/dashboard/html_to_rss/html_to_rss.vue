@@ -476,6 +476,7 @@
   import axios from 'axios';
   import DOMPurify from 'dompurify';
   import { kebabCase } from 'lodash';
+  import { md5 } from 'js-md5';
   import { Message } from '@arco-design/web-vue';
   import {
     IconSelectAll,
@@ -539,7 +540,13 @@
   const nextStep = () => {
     // If moving to step 4 (Save) and ID is empty, try to auto-generate from title
     if (currentStep.value === 3 && !recipeMeta.id && feedMeta.title) {
-      recipeMeta.id = kebabCase(feedMeta.title);
+      const slug = kebabCase(feedMeta.title);
+      // If slug is empty or contains non-ascii characters, use MD5 of title
+      if (!slug || /[^\x00-\x7F]/.test(slug)) {
+        recipeMeta.id = md5(feedMeta.title);
+      } else {
+        recipeMeta.id = slug;
+      }
     }
     currentStep.value += 1;
   };
