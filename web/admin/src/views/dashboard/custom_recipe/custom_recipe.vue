@@ -111,6 +111,9 @@
           >
             <a-button status="danger">{{ t('customRecipe.delete') }}</a-button>
           </a-popconfirm>
+          <a-button type="outline" @click="previewRecipe(record)">{{
+            t('customRecipe.preview')
+          }}</a-button>
           <a-link :href="`${baseUrl}/recipe/${record?.id}`" target="_blank">{{
             t('customRecipe.link')
           }}</a-link>
@@ -268,10 +271,12 @@
   import { Message } from '@arco-design/web-vue';
   import dayjs from 'dayjs';
   import { useI18n } from 'vue-i18n';
+  import { useRouter } from 'vue-router';
   import { useClipboard } from '@vueuse/core';
   import CraftSelector from '../craft_flow/CraftSelector.vue';
 
   const { t } = useI18n();
+  const router = useRouter();
 
   const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
@@ -506,6 +511,11 @@
   const deleteRecipe = async (id: string) => {
     await deleteCustomRecipe(id);
     await listCustomRecipes();
+  };
+
+  const previewRecipe = (record: CustomRecipe) => {
+    const feedUrl = `${baseUrl}/recipe/${record.id}`;
+    router.push({ name: 'FeedViewer', query: { url: feedUrl } });
   };
 
   function resetForm() {
