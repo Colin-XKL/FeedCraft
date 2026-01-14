@@ -53,3 +53,28 @@ func TestJsonParser_Parse(t *testing.T) {
 		}
 	}
 }
+
+func TestJsonParser_Parse_Error(t *testing.T) {
+	// Test case where field selector causes a runtime error in jq
+	// e.g. trying to iterate a string
+	jsonContent := `{
+	  "items": [
+	    {
+	      "title": "Title 1"
+	    }
+	  ]
+	}`
+
+	cfg := &config.JsonParserConfig{
+		ItemsIterator: ".items[]",
+		Title:         ".title[]", // Invalid: title is a string, cannot be iterated
+		Link:          ".url",
+	}
+
+	parser := &JsonParser{Config: cfg}
+	feed, err := parser.Parse([]byte(jsonContent))
+
+	assert.Error(t, err)
+	assert.Nil(t, feed)
+	assert.Contains(t, err.Error(), "failed to extract title")
+}

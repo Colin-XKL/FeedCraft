@@ -86,33 +86,39 @@ func (p *JsonParser) Parse(data []byte) (*gofeed.Feed, error) {
 		return nil, fmt.Errorf("invalid description selector: %w", err)
 	}
 
-	runQuery := func(q *gojq.Query, data interface{}) interface{} {
+	runQuery := func(q *gojq.Query, data interface{}) (interface{}, error) {
 		if q == nil {
-			return nil
+			return nil, nil
 		}
 		iter := q.Run(data)
 		v, ok := iter.Next()
 		if !ok {
-			return nil
+			return nil, nil
 		}
-		if _, ok := v.(error); ok {
-			return nil
+		if err, ok := v.(error); ok {
+			return nil, err
 		}
-		return v
+		return v, nil
 	}
 
 	for _, itemNode := range itemsArray {
 		item := &gofeed.Item{}
 
-		if val := runQuery(titleQ, itemNode); val != nil {
+		if val, err := runQuery(titleQ, itemNode); err != nil {
+			return nil, fmt.Errorf("failed to extract title: %w", err)
+		} else if val != nil {
 			item.Title = fmt.Sprintf("%v", val)
 		}
 
-		if val := runQuery(linkQ, itemNode); val != nil {
+		if val, err := runQuery(linkQ, itemNode); err != nil {
+			return nil, fmt.Errorf("failed to extract link: %w", err)
+		} else if val != nil {
 			item.Link = fmt.Sprintf("%v", val)
 		}
 
-		if val := runQuery(dateQ, itemNode); val != nil {
+		if val, err := runQuery(dateQ, itemNode); err != nil {
+			return nil, fmt.Errorf("failed to extract date: %w", err)
+		} else if val != nil {
 			dateStr := fmt.Sprintf("%v", val)
 			item.Published = dateStr
 			// Attempt to parse into PublishedParsed
@@ -123,7 +129,9 @@ func (p *JsonParser) Parse(data []byte) (*gofeed.Feed, error) {
 			}
 		}
 
-		if val := runQuery(descQ, itemNode); val != nil {
+		if val, err := runQuery(descQ, itemNode); err != nil {
+			return nil, fmt.Errorf("failed to extract description: %w", err)
+		} else if val != nil {
 			item.Description = fmt.Sprintf("%v", val)
 			item.Content = item.Description
 		}
