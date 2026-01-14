@@ -49,7 +49,7 @@
           :content="
             t('customRecipe.status.activeTooltip', {
               time: dayjs(record.last_accessed_at).format(
-                'YYYY-MM-DD HH:mm:ss',
+                'YYYY-MM-DD HH:mm:ss'
               ),
             })
           "
@@ -134,8 +134,8 @@
         editing
           ? t('customRecipe.editModalTitle.edit')
           : quickCreate
-            ? t('customRecipe.quickCreateRSS')
-            : t('customRecipe.editModalTitle.create')
+          ? t('customRecipe.quickCreateRSS')
+          : t('customRecipe.editModalTitle.create')
       "
     >
       <a-form
@@ -304,12 +304,16 @@
 
   const { copy, copied } = useClipboard();
 
-  const handleCopyConfig = () => {
-    copy(currentConfig.value);
-    Message.success(t('customRecipe.copied'));
+  const handleCopyConfig = async () => {
+    try {
+      await copy(currentConfig.value);
+      Message.success(t('customRecipe.copied'));
+    } catch (e: any) {
+      Message.error(t('customRecipe.copyFailed', { msg: e.message || e }));
+    }
   };
 
-  const handleCopyLink = (id: string) => {
+  const handleCopyLink = async (id: string) => {
     const fullBaseUrl = baseUrl || window.location.origin;
     let url = '';
     if (fullBaseUrl.startsWith('http')) {
@@ -317,8 +321,12 @@
     } else {
       url = `${window.location.origin}${fullBaseUrl}/recipe/${id}`;
     }
-    copy(url);
-    Message.success(t('customRecipe.copied'));
+    try {
+      await copy(url);
+      Message.success(t('customRecipe.copied'));
+    } catch (e: any) {
+      Message.error(t('customRecipe.copyFailed', { msg: e.message || e }));
+    }
   };
 
   const formatConfig = () => {

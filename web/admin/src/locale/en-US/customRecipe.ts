@@ -21,6 +21,7 @@ export default {
   'customRecipe.copyConfig': 'Copy Configuration',
   'customRecipe.copyLink': 'Copy Link',
   'customRecipe.copied': 'Copied!',
+  'customRecipe.copyFailed': 'Copy failed: {msg}',
   'customRecipe.jsonConfigFallback': 'JSON Config',
   'customRecipe.form.name': 'Name',
   'customRecipe.form.description': 'Description',

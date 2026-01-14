@@ -20,6 +20,7 @@ export default {
   'customRecipe.copyConfig': '复制配置',
   'customRecipe.copyLink': '复制链接',
   'customRecipe.copied': '已复制!',
+  'customRecipe.copyFailed': '复制失败: {msg}',
   'customRecipe.jsonConfigFallback': 'JSON 配置',
   'customRecipe.form.name': '名称',
   'customRecipe.form.description': '描述',
