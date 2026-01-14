@@ -582,15 +582,13 @@
 
         const node: TreeNodeData = {
           key: currentPath,
-          title: `[${index}]`,
+          title: isPrimitive ? `[${index}]: ${item}` : `[${index}]`,
           isLeaf: isPrimitive,
           data: { type: isArr ? 'array' : isObj ? 'object' : 'primitive' },
         };
 
         if (!isPrimitive) {
           node.children = jsonToTree(item, currentPath);
-        } else {
-          node.title = `[${index}]: ${item}`;
         }
 
         nodes.push(node);
