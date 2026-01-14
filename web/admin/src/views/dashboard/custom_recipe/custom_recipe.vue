@@ -114,9 +114,18 @@
           <a-button type="outline" @click="previewRecipe(record)">{{
             t('customRecipe.preview')
           }}</a-button>
-          <a-link :href="`${baseUrl}/recipe/${record?.id}`">{{
+          <a-link :href="`${baseUrl}/recipe/${record?.id}`" target="_blank">{{
             t('customRecipe.link')
           }}</a-link>
+          <a-tooltip :content="t('customRecipe.copyLink')">
+            <a-button
+              type="text"
+              size="small"
+              @click="handleCopyLink(record.id)"
+            >
+              <template #icon><icon-copy /></template>
+            </a-button>
+          </a-tooltip>
         </a-space>
       </template>
     </a-table>
@@ -300,9 +309,29 @@
 
   const { copy, copied } = useClipboard();
 
-  const handleCopyConfig = () => {
-    copy(currentConfig.value);
-    Message.success(t('customRecipe.copied'));
+  const handleCopyConfig = async () => {
+    try {
+      await copy(currentConfig.value);
+      Message.success(t('customRecipe.copied'));
+    } catch (e: any) {
+      Message.error(t('customRecipe.copyFailed', { msg: e.message || e }));
+    }
+  };
+
+  const handleCopyLink = async (id: string) => {
+    const fullBaseUrl = baseUrl || window.location.origin;
+    let url = '';
+    if (fullBaseUrl.startsWith('http')) {
+      url = `${fullBaseUrl}/recipe/${id}`;
+    } else {
+      url = `${window.location.origin}${fullBaseUrl}/recipe/${id}`;
+    }
+    try {
+      await copy(url);
+      Message.success(t('customRecipe.copied'));
+    } catch (e: any) {
+      Message.error(t('customRecipe.copyFailed', { msg: e.message || e }));
+    }
   };
 
   const formatConfig = () => {
