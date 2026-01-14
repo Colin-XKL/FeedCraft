@@ -45,10 +45,19 @@ RSS 生成器允许你：
     - **内容选择器 (Content Selector)**：（可选）选择包含摘要或正文的元素。
 4.  **预览 RSS 条目 (Preview RSS Items)**：点击此按钮测试你的选择器。解析出的条目将显示在右侧面板中。
 
-### 第三步：在自定义食谱中使用 (Use in Custom Recipe)
+### 第三步：订阅源元数据 (Feed Metadata)
 
-一旦你在预览中验证了选择器：
+在预览中验证选择器后：
 
-1.  记下生成的选择器（列表项、标题、链接、日期、内容）。
-2.  导航至 **Custom Recipes** > **Create**。
-3.  使用这些选择器配置你的食谱以解析目标网站。
+1.  点击 **Next Step**。
+2.  **Feed Title**：为你的订阅源起一个名称。
+3.  **Feed Description**：（可选）添加描述。
+4.  **Site Link**：（可选）网站的 URL。
+
+### 第四步：保存食谱 (Save Recipe)
+
+1.  **Recipe Unique ID**：为此食谱选择一个唯一标识符（例如 `my-blog-feed`）。
+2.  **Internal Description**：关于此食谱的备注。
+3.  点击 **Confirm & Save**。
+
+保存后，该食谱将存储为 **Custom Recipe**（自定义食谱）。

@@ -44,35 +44,19 @@ The tool uses **[jq](https://jqlang.github.io/jq/)** syntax for querying JSON.
 - **Date Selector**: (Optional) Path to the publication date.
 - **Content Selector**: (Optional) Path to the full content or summary.
 
-### Step 3: Preview
+### Step 3: Feed Metadata
 
-Click **Preview RSS** to see how your selectors work. The parsed items will appear in the list below.
+Once you have verified the selectors in the preview:
 
-## Saving Your Recipe
+1.  Click **Next Step**.
+2.  **Feed Title**: Give your feed a recognizable name.
+3.  **Feed Description**: (Optional) Add a description.
+4.  **Site Link**: (Optional) The URL of the website this feed is related to.
 
-Currently, the CURL to RSS is a tool for **finding and testing** the correct selectors.
+### Step 4: Save Recipe
 
-To save your configuration as a permanent feed:
+1.  **Recipe Unique ID**: Choose a unique identifier for this recipe (e.g., `my-api-feed`). This will be part of your feed URL.
+2.  **Internal Description**: Notes for yourself about this recipe.
+3.  Click **Confirm & Save**.
 
-1.  Copy your **URL** and **Selector** values.
-2.  Go to **Custom Recipes** > **Create**.
-3.  Select **Source Type**: `JSON`.
-4.  Paste your configuration into the **Source Config** JSON format:
-
-```json
-{
-  "http_fetcher": {
-    "url": "https://api.example.com/posts",
-    "method": "GET",
-    "headers": {
-      "Authorization": "Bearer token"
-    }
-  },
-  "json_parser": {
-    "list_selector": ".data[]",
-    "title_selector": ".title",
-    "link_selector": ".url",
-    "content_selector": ".body"
-  }
-}
-```
+Once saved, the recipe is stored as a **Custom Recipe**. You can manage it in the **Custom Recipes** dashboard.
