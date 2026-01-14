@@ -4,7 +4,12 @@
 
     <div class="content-wrapper">
       <a-card class="wizard-card">
-        <a-steps :current="currentStep" class="mb-8">
+        <a-steps
+          :current="currentStep"
+          changeable
+          class="mb-8"
+          @change="onStepChange"
+        >
           <a-step
             :title="$t('htmlToRss.step.targetUrl')"
             :description="$t('htmlToRss.step.targetUrl.desc')"
@@ -540,6 +545,12 @@
 
   const prevStep = () => {
     if (currentStep.value > 1) currentStep.value -= 1;
+  };
+
+  const onStepChange = (step: number) => {
+    if (step <= currentStep.value) {
+      currentStep.value = step;
+    }
   };
 
   const setTargetField = (field: string) => {
