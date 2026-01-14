@@ -14,18 +14,14 @@ RUN --mount=type=cache,id=gomod,target="/root/.cache/go-mod-cache" go mod downlo
 # copy directory files i.e all files ending with .go
 COPY . .
 
-# Get git commit hash if available
-RUN git rev-parse --short HEAD > /tmp/git-commit 2>/dev/null || echo "unknown" > /tmp/git-commit
-
-# Get current timestamp
-RUN date -u +%Y-%m-%dT%H:%M:%SZ > /tmp/build-time 2>/dev/null || echo "unknown" > /tmp/build-time
-
-# Get version from git tags if available or use a default
-RUN git describe --tags --always > /tmp/version 2>/dev/null || echo "v0.0.0-$(date +%Y%m%d)-$(cat /tmp/git-commit)" > /tmp/version
+# ARGs for version info, passed from the build system (e.g., GitHub Actions)
+ARG VERSION=unknown
+ARG GIT_COMMIT=unknown
+ARG BUILD_TIME=unknown
 
 # compile application with version information
 RUN --mount=type=cache,id=gobuild,target="/root/.cache/go-build" GO111MODULE=on CGO_ENABLED=0 go build \
-    -ldflags "-X main.Version=$(cat /tmp/version) -X main.BuildTime=$(cat /tmp/build-time) -X main.GitCommit=$(cat /tmp/git-commit)" \
+    -ldflags "-X main.Version=${VERSION} -X main.BuildTime=${BUILD_TIME} -X main.GitCommit=${GIT_COMMIT}" \
     -o /feed-craft /app/cmd/main.go
 
 FROM node:22-slim AS frontend-builder

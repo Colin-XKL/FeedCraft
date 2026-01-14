@@ -71,10 +71,8 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 	sysCraftTempList["fulltext-plus"] = CraftTemplate{
 		Name:                "fulltext-plus",
 		Description:         "模拟浏览器提取 RSS 订阅源的全文",
-		ParamTemplateDefine: []ParamTemplate{},
-		OptionFunc: func(m map[string]string) []CraftOption {
-			return GetFulltextPlusCraftOptions()
-		},
+		ParamTemplateDefine: fulltextPlusParamTmpl,
+		OptionFunc:          fulltextPlusLoadParam,
 	}
 	sysCraftTempList["cleanup"] = CraftTemplate{
 		Name:                "cleanup",

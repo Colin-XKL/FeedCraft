@@ -3,6 +3,7 @@ export default {
   'customRecipe.description':
     'Manage custom recipes to generate RSS feeds from various sources.',
   'customRecipe.viewConfig': 'View Configuration',
+  'customRecipe.preview': 'Preview',
   'customRecipe.query': 'Query',
   'customRecipe.create': 'Create',
   'customRecipe.quickCreate': 'Quick Create',
@@ -19,7 +20,9 @@ export default {
   'customRecipe.editModalTitle.edit': 'Edit Recipe',
   'customRecipe.viewConfigModalTitle': 'Source Configuration',
   'customRecipe.copyConfig': 'Copy Configuration',
+  'customRecipe.copyLink': 'Copy Link',
   'customRecipe.copied': 'Copied!',
+  'customRecipe.copyFailed': 'Copy failed: {msg}',
   'customRecipe.jsonConfigFallback': 'JSON Config',
   'customRecipe.form.name': 'Name',
   'customRecipe.form.description': 'Description',
