@@ -162,7 +162,10 @@
         </div>
 
         <!-- STEP 2: Parsing Rules -->
-        <div v-show="currentStep === 2" class="step-content h-full">
+        <div
+          v-show="currentStep === 2"
+          class="step-content h-full step-fixed-height"
+        >
           <a-row :gutter="16" class="h-full">
             <!-- Left: JSON View -->
             <a-col :span="12" class="h-full flex flex-col">
@@ -827,10 +830,14 @@
 
   .step-content {
     margin-top: 24px;
-    height: 600px;
+    min-height: 600px;
     /* Ensure content takes available space */
     display: flex;
     flex-direction: column;
+  }
+
+  .step-fixed-height {
+    height: 600px;
   }
 
   .header-row {
