@@ -33,14 +33,16 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed, ref } from 'vue';
+  import { computed, ref, onMounted } from 'vue';
   import Parser from 'rss-parser';
   import { Message } from '@arco-design/web-vue';
   import FeedViewContainer from '@/views/dashboard/feed_viewer/feed_view_container.vue';
   import XHeader from '@/components/header/x-header.vue';
   import { useI18n } from 'vue-i18n';
+  import { useRoute } from 'vue-router';
 
   const { t } = useI18n();
+  const route = useRoute();
 
   const feedUrl = ref('');
   const feedContent = ref<any>(null);
@@ -68,6 +70,13 @@
       isLoading.value = false;
     }
   }
+
+  onMounted(() => {
+    if (route.query.url) {
+      feedUrl.value = route.query.url as string;
+      fetchFeed();
+    }
+  });
 </script>
 
 <script lang="ts">

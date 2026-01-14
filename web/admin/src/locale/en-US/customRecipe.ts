@@ -3,6 +3,7 @@ export default {
   'customRecipe.description':
     'Manage custom recipes to generate RSS feeds from various sources.',
   'customRecipe.viewConfig': 'View Configuration',
+  'customRecipe.preview': 'Preview',
   'customRecipe.query': 'Query',
   'customRecipe.create': 'Create',
   'customRecipe.quickCreate': 'Quick Create',
