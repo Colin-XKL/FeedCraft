@@ -23,7 +23,9 @@ func searchSourceFactory(cfg *config.SourceConfig) (Source, error) {
 	// Load global provider config to decide default parser
 	db := util.GetDatabase()
 	var providerConfig config.SearchProviderConfig
-	_ = dao.GetJsonSetting(db, constant.KeySearchProviderConfig, &providerConfig)
+	if err := dao.GetJsonSetting(db, constant.KeySearchProviderConfig, &providerConfig); err != nil {
+		return nil, fmt.Errorf("failed to load search provider config: %w", err)
+	}
 
 	// Determine Parser
 	var p parser.Parser

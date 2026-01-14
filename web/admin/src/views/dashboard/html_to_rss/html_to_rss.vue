@@ -4,7 +4,12 @@
 
     <div class="content-wrapper">
       <a-card class="wizard-card">
-        <a-steps :current="currentStep" class="mb-8">
+        <a-steps
+          :current="currentStep"
+          changeable
+          class="mb-8"
+          @change="onStepChange"
+        >
           <a-step
             :title="$t('htmlToRss.step.targetUrl')"
             :description="$t('htmlToRss.step.targetUrl.desc')"
@@ -36,8 +41,22 @@
                 size="large"
                 allow-clear
                 @keyup.enter="fetchAndNext"
+                @input="fetchError = ''"
               />
             </a-form-item>
+
+            <div class="flex items-center gap-2 mb-6 ml-1">
+              <span class="text-gray-600">{{
+                $t('htmlToRss.step2.enhanceMode')
+              }}</span>
+              <a-tooltip :content="$t('htmlToRss.step2.enhanceMode.tooltip')">
+                <a-switch v-model="enhancedMode" />
+              </a-tooltip>
+            </div>
+
+            <a-alert v-if="fetchError" type="error" class="mb-4" show-icon>
+              {{ fetchError }}
+            </a-alert>
             <div class="text-center mt-8">
               <a-button
                 type="primary"
@@ -62,22 +81,6 @@
                   <span class="font-bold">{{
                     $t('htmlToRss.step2.pagePreview')
                   }}</span>
-                  <a-divider direction="vertical" />
-                  <div class="flex items-center gap-2">
-                    <span class="text-sm">{{
-                      $t('htmlToRss.step2.enhanceMode')
-                    }}</span>
-                    <a-tooltip
-                      :content="$t('htmlToRss.step2.enhanceMode.tooltip')"
-                    >
-                      <a-switch
-                        v-model="enhancedMode"
-                        size="small"
-                        @change="handleEnhanceModeChange"
-                      >
-                      </a-switch>
-                    </a-tooltip>
-                  </div>
                 </div>
                 <a-tag v-if="isSelectionMode" color="blue">{{
                   $t('htmlToRss.step2.selectionModeOn')
@@ -498,6 +501,7 @@
   const url = ref('');
   const enhancedMode = ref(false);
   const fetching = ref(false);
+  const fetchError = ref('');
   const parsing = ref(false);
   const saving = ref(false);
   const htmlContent = ref('');
@@ -543,6 +547,12 @@
     if (currentStep.value > 1) currentStep.value -= 1;
   };
 
+  const onStepChange = (step: number) => {
+    if (step <= currentStep.value) {
+      currentStep.value = step;
+    }
+  };
+
   const setTargetField = (field: string) => {
     currentTargetField.value = field;
     Message.info(t('htmlToRss.msg.pickInfo', { field }));
@@ -551,6 +561,8 @@
   const fetchContent = async (advanceStep = false) => {
     if (!url.value) return;
     fetching.value = true;
+    fetchError.value = '';
+
     try {
       const { data: res } = (await axios.post('/api/admin/tools/fetch', {
         url: url.value,
@@ -564,6 +576,22 @@
         } else {
           raw = `${baseTag}${raw}`;
         }
+
+        // Auto-extract metadata for Step 3
+        try {
+          const doc = new DOMParser().parseFromString(raw, 'text/html');
+          const title = doc.querySelector('title')?.innerText || '';
+          const descMeta =
+            doc.querySelector('meta[name="description"]') ||
+            doc.querySelector('meta[property="og:description"]');
+          const description = descMeta ? descMeta.getAttribute('content') : '';
+
+          if (title) feedMeta.title = title.trim();
+          if (description) feedMeta.description = description.trim();
+        } catch (e) {
+          // Ignore extraction errors
+        }
+
         htmlContent.value = DOMPurify.sanitize(raw, {
           WHOLE_DOCUMENT: true,
           ADD_TAGS: ['link', 'style', 'head', 'meta', 'body', 'html', 'base'],
@@ -590,10 +618,13 @@
           setTargetField('item_selector');
         }
       } else {
-        Message.error(res.msg || t('htmlToRss.msg.fetchFailed'));
+        const errorMsg = res.msg || t('htmlToRss.msg.fetchFailed');
+        fetchError.value = errorMsg;
       }
-    } catch (err) {
-      Message.error(t('htmlToRss.msg.errorFetching'));
+    } catch (err: any) {
+      // Axios interceptor throws an error with the backend message
+      const errorMsg = err.message || t('htmlToRss.msg.errorFetching');
+      fetchError.value = errorMsg;
     } finally {
       fetching.value = false;
     }
@@ -602,10 +633,6 @@
   // Step 1 -> 2
   const fetchAndNext = async () => {
     await fetchContent(true);
-  };
-
-  const handleEnhanceModeChange = async () => {
-    await fetchContent(false);
   };
 
   // Step 2 -> 3
@@ -669,6 +696,7 @@
         item_selector: config.item_selector,
         title: config.title_selector,
         link: config.link_selector,
+        date: config.date_selector,
         description: config.description_selector,
       },
       feed_meta: {

@@ -59,6 +59,49 @@ func validateURL(rawUrl string) error {
 	return nil
 }
 
+// fetchHTML extracts common fetching logic with browser emulation and error handling
+func fetchHTML(targetURL string, useBrowserless bool) (string, error) {
+	if err := validateURL(targetURL); err != nil {
+		return "", err
+	}
+
+	if useBrowserless {
+		return util.GetBrowserlessContent(targetURL, util.BrowserlessOptions{
+			Timeout: craft.DefaultExtractFulltextTimeout,
+		})
+	}
+
+	// Try standard HTTP request (simulating a browser user agent)
+	client := resty.New()
+	client.SetTimeout(craft.DefaultExtractFulltextTimeout)
+	resp, err := client.R().
+		SetHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36").
+		SetHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7").
+		SetHeader("Accept-Language", "en-US,en;q=0.9").
+		SetHeader("Upgrade-Insecure-Requests", "1").
+		SetHeader("Sec-Fetch-Dest", "document").
+		SetHeader("Sec-Fetch-Mode", "navigate").
+		SetHeader("Sec-Fetch-Site", "none").
+		SetHeader("Sec-Fetch-User", "?1").
+		Get(targetURL)
+
+	if err != nil {
+		return "", fmt.Errorf("fetch failed: %w", err)
+	}
+
+	if resp.StatusCode() != http.StatusOK {
+		return "", fmt.Errorf("upstream returned status %d. The site might be blocking bots. Try enabling 'Enhance Mode'", resp.StatusCode())
+	}
+
+	content := resp.String()
+	// Check if body is empty even with 200 OK
+	if strings.TrimSpace(content) == "" {
+		return "", fmt.Errorf("upstream returned 200 OK but the content is empty. Try enabling 'Enhance Mode'")
+	}
+
+	return content, nil
+}
+
 func HtmlFetch(c *gin.Context) {
 	var req FetchReq
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -66,31 +109,10 @@ func HtmlFetch(c *gin.Context) {
 		return
 	}
 
-	if err := validateURL(req.URL); err != nil {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
-		return
-	}
-
-	var htmlContent string
-	var err error
-
-	if req.UseBrowserless {
-		htmlContent, err = util.GetBrowserlessContent(req.URL, craft.DefaultExtractFulltextTimeout)
-	} else {
-		// Try standard HTTP request first (simulating a browser user agent)
-		client := resty.New()
-		client.SetTimeout(craft.DefaultExtractFulltextTimeout)
-		var resp *resty.Response
-		resp, err = client.R().
-			SetHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36").
-			Get(req.URL)
-		if err == nil {
-			htmlContent = resp.String()
-		}
-	}
-
+	htmlContent, err := fetchHTML(req.URL, req.UseBrowserless)
 	if err != nil {
-		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "Fetch failed: " + err.Error()})
+		// Use StatusCode: -1 to indicate logic/upstream error rather than system error
+		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
 		return
 	}
 
@@ -108,24 +130,17 @@ func HtmlParse(c *gin.Context) {
 	}
 
 	var htmlContent string
+	var err error
+
 	if req.HTML != "" {
 		htmlContent = req.HTML
 	} else if req.URL != "" {
-		if err := validateURL(req.URL); err != nil {
-			c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
-			return
-		}
-		// Fetch if HTML not provided
-		client := resty.New()
-		client.SetTimeout(craft.DefaultExtractFulltextTimeout)
-		resp, err := client.R().
-			SetHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36").
-			Get(req.URL)
+		// Fallback fetch if HTML not provided. Default to standard fetch (no browserless) as ParseReq doesn't support it yet.
+		htmlContent, err = fetchHTML(req.URL, false)
 		if err != nil {
-			c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "Fetch failed: " + err.Error()})
+			c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
 			return
 		}
-		htmlContent = resp.String()
 	} else {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "Either html or url is required"})
 		return
@@ -162,39 +177,7 @@ func HtmlParse(c *gin.Context) {
 		}
 		if req.LinkSelector != "" {
 			sel := getSelection(req.LinkSelector)
-			// Try to get href from the element itself
-			href, exists := sel.Attr("href")
-			if exists {
-				item.Link = href
-			} else {
-				// If not found, try to find a child 'a' tag
-				childA := sel.Find("a").First()
-				if childA.Length() > 0 {
-					href, exists = childA.Attr("href")
-					if exists {
-						item.Link = href
-					}
-				}
-
-				// If still not found, try to find a parent 'a' tag (closest ancestor)
-				if item.Link == "" {
-					parentA := sel.Closest("a")
-					if parentA.Length() > 0 {
-						href, exists = parentA.Attr("href")
-						if exists {
-							item.Link = href
-						}
-					}
-				}
-			}
-
-			// Fallback to text if still empty, BUT only if it looks like a URL (no spaces)
-			if item.Link == "" {
-				text := strings.TrimSpace(sel.Text())
-				if text != "" && !strings.ContainsAny(text, " \t\n") {
-					item.Link = text
-				}
-			}
+			item.Link = util.ExtractLinkFromSelection(sel)
 
 			// Try to resolve relative URL to absolute URL
 			if req.URL != "" && item.Link != "" {

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -21,14 +22,26 @@ func (f *HttpFetcher) Fetch(ctx context.Context) ([]byte, error) {
 	}
 
 	if f.Config.UseBrowserless {
-		content, err := util.GetBrowserlessContent(f.Config.URL, 30*time.Second) // TODO: Make timeout configurable?
+		content, err := util.GetBrowserlessContent(f.Config.URL, util.BrowserlessOptions{
+			Timeout: 30 * time.Second,
+		}) // TODO: Make timeout configurable?
 		if err != nil {
 			return nil, fmt.Errorf("browserless fetch failed: %w", err)
 		}
 		return []byte(content), nil
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "GET", f.Config.URL, nil)
+	method := f.Config.Method
+	if method == "" {
+		method = "GET"
+	}
+
+	var bodyReader io.Reader
+	if f.Config.Body != "" {
+		bodyReader = strings.NewReader(f.Config.Body)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, f.Config.URL, bodyReader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}

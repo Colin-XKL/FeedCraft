@@ -17,38 +17,55 @@ sidebar:
 
 ## 核心概念
 
-### 工艺 (Craft Atom)
+### 原子工艺 (AtomCraft)
 
-**Craft Atom** 是最小的处理单元。除了内置的工艺（如 `translate-title`, `fulltext`），你可以基于模版创建自定义的工艺。
+**AtomCraft** 是最小的处理单元。除了内置的原子工艺（如 `translate-title`, `fulltext`），你可以基于模版创建自定义的原子工艺。
 
 **示例：自定义翻译 Prompt**
-你可以基于 `translate-content` 模版创建一个名为 `translate-to-french` 的新工艺，并在参数中填入自定义的 Prompt，指示 AI 将内容翻译成法语。
+你可以基于 `translate-content` 模版创建一个名为 `translate-to-french` 的新原子工艺，并在参数中填入自定义的 Prompt，指示 AI 将内容翻译成法语。
 
-### 工艺流 (Craft Flow)
+### 组合工艺 (FlowCraft)
 
-**Craft Flow** 是多个 Craft Atom 的组合序列。这允许你将多个操作串联起来。
+**FlowCraft** 是多个 AtomCraft 的组合序列。这允许你将多个操作串联起来。
 
 **示例：全文 + 摘要 + 翻译**
-你可以定义一个名为 `digest-and-translate` 的工作流，包含以下步骤：
+你可以定义一个名为 `digest-and-translate` 的组合工艺，包含以下步骤：
 
 1.  `fulltext` (提取正文)
 2.  `summary` (生成摘要)
 3.  `translate-content` (翻译内容)
 
-#### 管理工艺流
+#### 管理组合工艺
 
-你可以在后台的 **Craft Flow** 页面创建和管理工艺流。
-编辑器允许你添加工艺并安排它们的执行顺序。使用箭头按钮 (⬆️/⬇️) 调整顺序，或使用垃圾桶图标将其从流程中移除。(See [2b2439b](https://github.com/Colin-XKL/FeedCraft/commit/2b2439b6a6eb5319c04b2c408635847971d42af2))
+你可以在后台的 **FlowCraft** 页面创建和管理组合工艺。
+编辑器允许你添加原子工艺并安排它们的执行顺序。使用箭头按钮 (⬆️/⬇️) 调整顺序，或使用垃圾桶图标将其从流程中移除。
 
 ### 食谱 (Recipe)
 
-**Recipe** 将特定的 RSS 源 URL 与某个 Craft 或 Craft Flow 绑定。这允许你创建一个持久化的、经过定制的订阅源 URL。
+**Recipe** 将特定的 RSS 源 URL 与某个 原子工艺 (AtomCraft) 或组合工艺 (FlowCraft) 绑定。这允许你创建一个持久化的、经过定制的订阅源 URL。
 
 **示例：**
 
 - **输入 URL：** `https://news.ycombinator.com/rss`
 - **处理器：** `digest-and-translate` (上面创建的工作流)
 - **结果：** 你会得到一个新的 FeedCraft URL，订阅它即可获得带全文、摘要和翻译的 Hacker News。
+
+## 搜索提供商配置 (Search Provider)
+
+要使用 **搜索转 RSS (Search to RSS)** 功能，你必须配置搜索提供商。
+
+在管理后台导航至 **设置 (Settings) > Search Provider**。
+
+### 支持的提供商
+
+- **LiteLLM / OpenAI Compatible**
+  - **API URL**: 提供商的基础 URL（例如 `https://api.openai.com/v1`）。
+  - **API Key**: 你的 API 密钥。
+  - **Tool Name**: 特定函数调用工具名称（如果需要，例如某些 Agent 的 `google_search`）。
+
+- **SearXNG**
+  - **API URL**: 你的 SearXNG 实例 URL（例如 `http://my-searxng.com`）。
+  - **Engines**: (可选) 逗号分隔的搜索引擎列表（例如 `google,bing`）。
 
 ## 高级配置
 
@@ -89,3 +106,5 @@ services:
       USE_CHROME_STABLE: true
     restart: unless-stopped
 ```
+
+服务默认监听在 80 端口，你也可以在同一网络下的其他容器中，使用 `http://app.feed-craft/xxx` 这样来进行访问(比如RSS 阅读器中通过这种方式来走内网通信订阅)。

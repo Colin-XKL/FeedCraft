@@ -1,10 +1,10 @@
 export default {
   path: 'https://github.com/Colin-XKL/FeedCraft',
-  name: 'faq',
+  name: 'github-repo',
   meta: {
     locale: 'menu.repo',
-    icon: 'icon-question-circle',
-    requiresAuth: true,
+    icon: 'icon-github',
+    requiresAuth: false,
     order: 9,
   },
 };

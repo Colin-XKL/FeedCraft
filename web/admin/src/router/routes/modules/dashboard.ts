@@ -6,7 +6,7 @@ const DASHBOARD: AppRouteRecordRaw = {
   name: 'dashboard',
   component: DEFAULT_LAYOUT,
   meta: {
-    locale: 'menu.dashboard.workplace',
+    locale: 'menu.dashboard',
     requiresAuth: true,
     icon: 'icon-dashboard',
     order: 0,
@@ -30,34 +30,6 @@ const DASHBOARD: AppRouteRecordRaw = {
       meta: {
         requiresAuth: false,
         locale: 'menu.quickStart',
-      },
-    },
-    {
-      path: 'custom_recipe',
-      name: 'CustomRecipe',
-      component: () =>
-        import('@/views/dashboard/custom_recipe/custom_recipe.vue'),
-      meta: {
-        requiresAuth: true,
-        locale: 'menu.customRecipe',
-      },
-    },
-    {
-      path: 'craft_flow',
-      name: 'CraftFlow',
-      component: () => import('@/views/dashboard/craft_flow/craft_flow.vue'),
-      meta: {
-        requiresAuth: true,
-        locale: 'menu.craftFlow',
-      },
-    },
-    {
-      path: 'craft_atom',
-      name: 'CraftAtom',
-      component: () => import('@/views/dashboard/craft_atom/craft_atom.vue'),
-      meta: {
-        requiresAuth: true,
-        locale: 'menu.craftAtom',
       },
     },
     {

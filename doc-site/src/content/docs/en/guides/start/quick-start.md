@@ -22,9 +22,16 @@ Where:
 
 **Note:** You may need to URL-encode the `{input_rss_url}` if your RSS reader does not handle it automatically.
 
-### Common Craft Atoms
+### URL Generator
 
-Here are some basic Craft Atoms you can use immediately:
+For convenience, you can use the **URL Generator** included in the web interface to build these URLs easily.
+
+- Access the standalone generator at: `/start.html`
+- Or use the "URL Generator" tool in the admin dashboard.
+
+### Common AtomCrafts
+
+Here are some basic AtomCrafts you can use immediately:
 
 - **proxy**: Simple RSS proxy, no processing.
 - **limit**: Limits the number of articles (default latest 10).

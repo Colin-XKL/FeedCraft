@@ -1,9 +1,9 @@
 ---
-title: 系统内置 Atom
-description: FeedCraft 系统内置处理原子 (Craft Atoms) 的详细参考指南。
+title: 系统内置 AtomCraft
+description: FeedCraft 系统内置处理原子工艺 (AtomCrafts) 的详细参考指南。
 ---
 
-FeedCraft 内置了一系列“处理原子 (Craft Atoms)”，用于对订阅源进行特定的处理。你可以将这些原子组合成“处理流 (Craft Flow)”来构建强大的数据管道。
+FeedCraft 内置了一系列“原子工艺 (AtomCrafts)”，用于对订阅源进行特定的处理。你可以将这些原子工艺组合成“组合工艺 (FlowCraft)”来构建强大的数据管道。
 
 ## 内容获取与修复
 
@@ -22,6 +22,13 @@ FeedCraft 内置了一系列“处理原子 (Craft Atoms)”，用于对订阅�
 
 - **适用场景:** 针对通过 JavaScript 动态渲染内容或有较强反爬虫措施的网站。
 - **机制:** 连接到配置的 Browserless/Puppeteer 服务来渲染页面。速度较慢但兼容性更强。
+- **参数:**
+  - `mode` (默认: `networkidle2`): 页面加载等待模式。
+    - `load`: 等待 `load` 事件。
+    - `domcontentloaded`: 等待 `DOMContentLoaded` 事件。
+    - `networkidle0`: 等待直到 500ms 内没有活跃的网络连接。
+    - `networkidle2`: 等待直到 500ms 内活跃的网络连接数不超过 **2** 个。(推荐用于 SPA 单页应用)。
+  - `wait` (默认: `0`): 显式等待时间（秒），例如 `5`。
 
 ### `proxy` (代理)
 
@@ -81,6 +88,7 @@ FeedCraft 内置了一系列“处理原子 (Craft Atoms)”，用于对订阅�
 ## AI 增强 (AI Enhancement)
 
 使用大语言模型 (LLM) 来转换和丰富你的内容。
+
 :::note
 使用此类原子需要在环境变量中配置 LLM (API Key, Base URL 等)。
 :::

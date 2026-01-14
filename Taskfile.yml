@@ -245,6 +245,20 @@ tasks:
           cd doc-site && pnpm install && pnpm run build
           echo "Documentation site build completed"
 
+  # Testing Commands
+  test:
+    desc: "Run all Go tests"
+    cmds:
+      - cmd: |
+          echo "Running Go tests..."
+          export GOCACHE=$(pwd)/.gocache
+          go test -v ./...
+
+  backend-test:
+    desc: "Run all backend Go tests (alias for test)"
+    cmds:
+      - task: test
+
   lint:
     desc: "Lint and format code (Go and Web)"
     cmds:

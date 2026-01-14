@@ -111,9 +111,21 @@
           >
             <a-button status="danger">{{ t('customRecipe.delete') }}</a-button>
           </a-popconfirm>
-          <a-link :href="`${baseUrl}/recipe/${record?.id}`">{{
+          <a-button type="outline" @click="previewRecipe(record)">{{
+            t('customRecipe.preview')
+          }}</a-button>
+          <a-link :href="`${baseUrl}/recipe/${record?.id}`" target="_blank">{{
             t('customRecipe.link')
           }}</a-link>
+          <a-tooltip :content="t('customRecipe.copyLink')">
+            <a-button
+              type="text"
+              size="small"
+              @click="handleCopyLink(record.id)"
+            >
+              <template #icon><icon-copy /></template>
+            </a-button>
+          </a-tooltip>
         </a-space>
       </template>
     </a-table>
@@ -191,6 +203,7 @@
               v-model="form.source_config"
               :auto-size="{ minRows: 3, maxRows: 10 }"
               :placeholder="t('customRecipe.form.placeholder.sourceConfig')"
+              @blur="formatConfig"
             />
           </a-form-item>
         </template>
@@ -217,6 +230,18 @@
       :title="t('customRecipe.viewConfigModalTitle')"
       :footer="false"
     >
+      <div style="margin-bottom: 10px; text-align: right">
+        <a-tooltip
+          :content="
+            copied ? t('customRecipe.copied') : t('customRecipe.copyConfig')
+          "
+        >
+          <a-button size="mini" @click="handleCopyConfig">
+            <template #icon><icon-copy /></template>
+            {{ t('customRecipe.copyConfig') }}
+          </a-button>
+        </a-tooltip>
+      </div>
       <pre
         style="
           background-color: #f5f5f5;
@@ -242,13 +267,16 @@
   } from '@/api/custom_recipe';
   import XHeader from '@/components/header/x-header.vue';
   import { namingValidator } from '@/utils/validator';
-  import { IconEye, IconPlus } from '@arco-design/web-vue/es/icon';
+  import { IconEye, IconPlus, IconCopy } from '@arco-design/web-vue/es/icon';
   import { Message } from '@arco-design/web-vue';
   import dayjs from 'dayjs';
   import { useI18n } from 'vue-i18n';
+  import { useRouter } from 'vue-router';
+  import { useClipboard } from '@vueuse/core';
   import CraftSelector from '../craft_flow/CraftSelector.vue';
 
   const { t } = useI18n();
+  const router = useRouter();
 
   const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
@@ -278,6 +306,42 @@
       }
     },
   });
+
+  const { copy, copied } = useClipboard();
+
+  const handleCopyConfig = async () => {
+    try {
+      await copy(currentConfig.value);
+      Message.success(t('customRecipe.copied'));
+    } catch (e: any) {
+      Message.error(t('customRecipe.copyFailed', { msg: e.message || e }));
+    }
+  };
+
+  const handleCopyLink = async (id: string) => {
+    const fullBaseUrl = baseUrl || window.location.origin;
+    let url = '';
+    if (fullBaseUrl.startsWith('http')) {
+      url = `${fullBaseUrl}/recipe/${id}`;
+    } else {
+      url = `${window.location.origin}${fullBaseUrl}/recipe/${id}`;
+    }
+    try {
+      await copy(url);
+      Message.success(t('customRecipe.copied'));
+    } catch (e: any) {
+      Message.error(t('customRecipe.copyFailed', { msg: e.message || e }));
+    }
+  };
+
+  const formatConfig = () => {
+    try {
+      const obj = JSON.parse(form.value.source_config);
+      form.value.source_config = JSON.stringify(obj, null, 2);
+    } catch (e) {
+      // invalid json, ignore
+    }
+  };
 
   const editing = ref(false);
   const selectedRecipe = ref<CustomRecipe | null>(null);
@@ -391,7 +455,7 @@
   };
 
   const saveRecipe = async () => {
-    if (quickCreate.value) {
+    if (quickCreate.value && !editing.value) {
       // Construct JSON for Quick Create
       const config = {
         http_fetcher: {
@@ -447,6 +511,11 @@
   const deleteRecipe = async (id: string) => {
     await deleteCustomRecipe(id);
     await listCustomRecipes();
+  };
+
+  const previewRecipe = (record: CustomRecipe) => {
+    const feedUrl = `${baseUrl}/recipe/${record.id}`;
+    router.push({ name: 'FeedViewer', query: { url: feedUrl } });
   };
 
   function resetForm() {

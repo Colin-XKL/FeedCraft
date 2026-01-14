@@ -13,13 +13,15 @@ export default {
   'menu.user': '个人中心',
   'menu.faq': '常见问题',
   'menu.repo': '项目地址',
+  'menu.worktable': '工作台',
+  'menu.doc': '帮助文档',
   'navbar.docs': '文档中心',
   'navbar.action.locale': '切换为中文',
 
   // 工作台菜单
   'menu.dashboard.workplace': '工作台',
-  'menu.craftAtom': 'Craft Atom',
-  'menu.craftFlow': 'Craft Flow',
+  'menu.craftAtom': '原子工艺 (AtomCraft)',
+  'menu.craftFlow': '组合工艺 (FlowCraft)',
   'menu.customRecipe': '自定义配方',
   'menu.allCraftList': '所有 Craft 列表',
   'menu.quickStart': '快速开始',
@@ -33,8 +35,8 @@ export default {
   'menu.llmDebug': 'LLM 调试',
   'menu.adCheckDebug': '广告软文检测',
   'menu.llmApiDebug': 'LLM API 调试',
-  'menu.dependencyStatus': '依赖服务状态',
   // 其他
+  'menu.dependencyStatus': '依赖服务状态',
   'menu.changePassword': '修改密码',
   'menu.settings': '设置',
   'menu.settings.searchProvider': '搜索服务提供商',

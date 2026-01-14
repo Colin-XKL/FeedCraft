@@ -1,6 +1,6 @@
 ![logo.png](asset/logo-header.png)
 
-# Feed Craft
+# FeedCraft
 
 Craft all your feed in one place!
 
@@ -15,16 +15,15 @@ Craft all your feed in one place!
 ![Open Source Love](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Colin-XKL/FeedCraft)
 
-Doc: [English](https://deepwiki.com/Colin-XKL/FeedCraft) | 简体中文
+Doc: [English](https://feed-craft-doc.vercel.app/en) | [简体中文](https://feed-craft-doc.vercel.app/zh)
 
-**FeedCraft** is a powerful tool to process your rss feeds as a middleware, use it to translate your feed, extract
-fulltext, emulate browser
-to render js-heavy page, turn any webpage into RSS, use llm such as google gemini to generate brief for your rss article, use natural language to
-filter your rss feed, and more!
+**FeedCraft** is a simple, powerful RSS feed processing tool.
+It can serve as middleware to handle your RSS feeds; you can use it to extract the main text, perform intelligent translation, generate article summaries through AI, filter articles using natural language, and more.
+It can also generate RSS for any site that does not support RSS, using AI to automatically search for topics you want to subscribe to and create RSS feeds.
 
-**FeedCraft** 是一个简单、强大的RSS 源处理工具,他可以作为一个中间件处理你的RSS源.
-你可以用它来翻译、提取正文、模拟浏览器来渲染那些动态生成的网页并提取全文、通过大语言模型如Google
-Gemini来生成文章摘要、通过自然语言筛选文章等
+**FeedCraft** 是一个简单、强大的 RSS 源处理工具.
+他可以作为一个中间件处理你的RSS源, 你可以用它来提取正文、智能翻译、通过AI生成文章摘要、通过自然语言筛选文章等.
+也可以为不支持RSS任意站点生成RSS、借助AI自动搜索你想要订阅的话题生成RSS
 
 ## 核心特性
 
@@ -38,17 +37,17 @@ Gemini来生成文章摘要、通过自然语言筛选文章等
 ## 快速开始
 
 访问以下URL格式即可快速调用FeedCraft对输入的RSS源进行指定的处理
-`https://feed-craft.colinx.one/craft/{craft_atom}?input_url={input_rss_url}`
+`https://feed-craft.colinx.one/craft/{craft_name_here}?input_url={input_rss_url}`
 
 FeedCraft中的几个核心概念:
 
-- CraftAtom(工艺), 指要如何处理一个rss源, 比如是要进行翻译,还是提取正文,还是AI生成摘要等
-- CraftFlow(工艺组合), 多个craft atom组成的序列, 比如你可以定义一个新的名叫 clean-article 的 craft flow,
+- AtomCraft(原子工艺), 指要如何处理一个rss源, 比如是要进行翻译,还是提取正文,还是AI生成摘要等
+- FlowCraft(组合工艺), 多个 AtomCraft 组成的序列, 比如你可以定义一个新的名叫 clean-article 的 FlowCraft,
   将提取全文、AI筛选文章、AI摘要组合到一起,
-- Recipe(食谱), 记录了以什么样的craft 或 craft flow对某个指定的rss源进行处理, 比如你可以指定一个名叫my-zhihu-daliy的recipe,
+- Recipe(配方), 记录了以什么样的 Craft 或 FlowCraft 对某个指定的rss源进行处理, 比如你可以指定一个名叫my-zhihu-daily的recipe,
   对知乎日报的rss自动进行AI生成摘要的操作, 这个recipe对应一个新的rss地址, 你可以直接订阅这个地址得到带摘要版本的知乎日报
 
-你可以先开始尝试下面的几个工艺(craft atom):
+你可以先开始尝试下面的几个原子工艺(AtomCraft):
 
 - **proxy**: 简易RSS代理, 不作任何处理
 - **limit**: 限制文章个数, 默认最新10个
@@ -88,7 +87,6 @@ https://feed-craft.colinx.one
 你可以通过docker快速自行部署一个FeedCraft实例,以获得更好的使用体验.
 下面为一个最小docker compose 示例:
 
-服务默认监听在 80 端口，你也可以在同一网络下的其他容器中，使用 `http://app.feed-craft/xxx` 这样来进行访问。  
 控制台默认账号`admin`, 密码 `adminadmin`, 登陆后请尽快修改默认密码
 
 ```yaml
@@ -146,46 +144,6 @@ services:
     restart: unless-stopped
 ```
 
-## 开发
-
-如果你想要在本地开发FeedCraft，可以按照以下步骤进行：
-
-### 环境设置
-
-1. 确保已安装以下依赖：
-   - Go 1.23+
-   - Node.js (推荐 22+)
-   - pnpm (安装方式: `npm install -g pnpm`)
-   - Task (安装方式: [https://taskfile.dev/installation/](https://taskfile.dev/installation/))
-
-2. 复制环境变量文件：
-
-   ```bash
-   cp .env.example .env
-   ```
-
-3. 根据需要编辑 `.env` 文件中的配置
-
-### 开发命令
-
-使用 Task 运行开发模式：
-
-```bash
-# 运行后端
-task backend-dev
-
-# 运行前端
-task frontend-dev
-```
-
-### 前端开发
-
-前端项目位于 `web/admin` 目录下，使用 Vue 3 和 Arco Design。
-
-### 后端开发
-
-后端使用 Go 和 Gin 框架
-
 ## 关于 FeedCraft
 
 FeedCraft 的名称和Logo参考并致敬两款游戏: MineCraft和塞尔达, 初衷和愿景是做一个简单易用、同时足够灵活, 能够有更多可能性的RSS工具.
@@ -201,13 +159,13 @@ GPLv3
 <img width="1900" alt="Xnip2024-08-08_00-48-49" src="https://github.com/user-attachments/assets/d3541f4e-9ab4-4948-9fc7-5b815db225ce">
 
 **RSS源比较工具**
-你可以输入一个RSS 源的地址, 然后选择要使用的craft atom, 就可以看到前后的对比.
-如下图我应用的craft是自定义的, 只显示文章标题带有`RSS`的文章, 可以看到筛选后的结果少了很多
+你可以输入一个RSS 源的地址, 然后选择要使用的 AtomCraft, 就可以看到前后的对比.
+如下图我应用的 Craft 是自定义的, 只显示文章标题带有`RSS`的文章, 可以看到筛选后的结果少了很多
 
 <img width="1907" alt="Xnip2024-08-08_01-05-09" src="https://github.com/user-attachments/assets/7abd764a-8b19-4a72-8c94-e3ea442ff385">
 
-**创建Craft Atom 自定义Prompt**
+**创建 AtomCraft 自定义Prompt**
 <img width="1918" alt="Xnip2024-08-08_00-46-13" src="https://github.com/user-attachments/assets/ff15fe79-3792-4a96-b991-f121d2a8973e">
 
-**自定义recipe, 指定使用哪个craft atom 处理哪个RSS源**
+**自定义recipe, 指定使用哪个 AtomCraft 处理哪个RSS源**
 <img width="1900" alt="Xnip2024-08-08_00-48-34" src="https://github.com/user-attachments/assets/5794de1d-28b6-45ff-8737-16f8adc6ed8a">

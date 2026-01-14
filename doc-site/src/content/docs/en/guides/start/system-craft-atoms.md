@@ -1,9 +1,9 @@
 ---
-title: System Craft Atoms
-description: Reference guide for built-in system craft atoms in FeedCraft.
+title: System AtomCrafts
+description: Reference guide for built-in system AtomCrafts in FeedCraft.
 ---
 
-FeedCraft comes with a set of built-in "Craft Atoms" that perform specific processing steps on your feeds. You can chain these atoms together in a Craft Flow to create powerful pipelines.
+FeedCraft comes with a set of built-in "AtomCrafts" that perform specific processing steps on your feeds. You can chain these AtomCrafts together in a FlowCraft to create powerful pipelines.
 
 ## Content Acquisition & Repair
 
@@ -22,6 +22,13 @@ Extracts full content using a headless browser (Puppeteer).
 
 - **Use case:** For websites that require JavaScript to render content or have strong anti-bot protections.
 - **Mechanism:** Connects to the configured Browserless/Puppeteer service to render the page. Slower but more robust.
+- **Parameters:**
+  - `mode` (default: `networkidle2`): Wait condition.
+    - `load`: Wait for the `load` event.
+    - `domcontentloaded`: Wait for the `DOMContentLoaded` event.
+    - `networkidle0`: Wait until there are **0** active network connections for at least 500ms.
+    - `networkidle2`: Wait until there are no more than **2** active network connections for at least 500ms. (Recommended for SPAs).
+  - `wait` (default: `0`): Explicit wait time in seconds (e.g., `5`).
 
 ### `proxy`
 

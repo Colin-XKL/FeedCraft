@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
 	"github.com/itchyny/gojq"
-	"github.com/mattn/go-shellwords"
 )
 
 type JsonFetchReq struct {
@@ -39,51 +38,17 @@ func CurlParseCmd(c *gin.Context) {
 		return
 	}
 
-	args, err := shellwords.Parse(req.CurlCommand)
+	parsed, err := util.ParseCurlCommand(req.CurlCommand)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "Parse curl command failed: " + err.Error()})
-		return
-	}
-
-	if len(args) == 0 || args[0] != "curl" {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "Invalid curl command"})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
 		return
 	}
 
 	result := JsonFetchReq{
-		Headers: make(map[string]string),
-		Method:  "GET", // Default
-	}
-
-	for i := 1; i < len(args); i++ {
-		arg := args[i]
-		switch arg {
-		case "-X", "--request":
-			if i+1 < len(args) {
-				result.Method = args[i+1]
-				i++
-			}
-		case "-H", "--header":
-			if i+1 < len(args) {
-				parts := strings.SplitN(args[i+1], ":", 2)
-				if len(parts) == 2 {
-					result.Headers[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
-				}
-				i++
-			}
-		case "-d", "--data", "--data-raw", "--data-binary":
-			if i+1 < len(args) {
-				result.Body = args[i+1]
-				if result.Method == "GET" {
-					result.Method = "POST"
-				}
-				i++
-			}
-		default:
-			if !strings.HasPrefix(arg, "-") {
-				result.URL = arg
-			}
-		}
+		Method:  parsed.Method,
+		URL:     parsed.URL,
+		Headers: parsed.Headers,
+		Body:    parsed.Body,
 	}
 
 	c.JSON(http.StatusOK, util.APIResponse[JsonFetchReq]{
@@ -114,10 +79,30 @@ func CurlFetch(c *gin.Context) {
 	var resp *resty.Response
 	var err error
 
+	// Validate URL
+	if req.URL == "" {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "URL is required"})
+		return
+	}
+	if !strings.HasPrefix(req.URL, "http://") && !strings.HasPrefix(req.URL, "https://") {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "URL must start with http:// or https://"})
+		return
+	}
+
 	// Normalize method
 	method := strings.ToUpper(req.Method)
 	if method == "" {
 		method = "GET"
+	}
+
+	// Validate Method
+	// Only explicitly allow supported methods.
+	supportedMethods := map[string]bool{
+		"GET": true, "POST": true,
+	}
+	if !supportedMethods[method] {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "Unsupported HTTP method: " + method})
+		return
 	}
 
 	switch method {
@@ -130,7 +115,20 @@ func CurlFetch(c *gin.Context) {
 	}
 
 	if err != nil {
-		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "Fetch failed: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{StatusCode: -1, Msg: "Fetch failed: " + err.Error()})
+		return
+	}
+
+	// Validate Upstream Response
+	if !resp.IsSuccess() {
+		body := resp.String()
+		if len(body) > 200 {
+			body = body[:200] + "..."
+		}
+		c.JSON(http.StatusBadGateway, util.APIResponse[any]{
+			StatusCode: -1,
+			Msg:        "Upstream error: " + resp.Status() + " Body: " + body,
+		})
 		return
 	}
 
@@ -180,7 +178,7 @@ func CurlParse(c *gin.Context) {
 	// Execute List Selector
 	listQuery, err := gojq.Parse(req.ListSelector)
 	if err != nil {
-		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "List selector error: " + err.Error()})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "List selector error: " + err.Error()})
 		return
 	}
 
@@ -192,7 +190,7 @@ func CurlParse(c *gin.Context) {
 			break
 		}
 		if err, ok := v.(error); ok {
-			c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "List extraction error: " + err.Error()})
+			c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "List extraction error: " + err.Error()})
 			return
 		}
 		// If v is a slice, we iterate it. If it's a single object, we take it.
@@ -224,22 +222,22 @@ func CurlParse(c *gin.Context) {
 
 	titleQ, err := compile(req.TitleSelector)
 	if err != nil {
-		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "invalid TitleSelector: " + err.Error()})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "invalid TitleSelector: " + err.Error()})
 		return
 	}
 	linkQ, err := compile(req.LinkSelector)
 	if err != nil {
-		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "invalid LinkSelector: " + err.Error()})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "invalid LinkSelector: " + err.Error()})
 		return
 	}
 	dateQ, err := compile(req.DateSelector)
 	if err != nil {
-		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "invalid DateSelector: " + err.Error()})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "invalid DateSelector: " + err.Error()})
 		return
 	}
 	contentQ, err := compile(req.ContentSelector)
 	if err != nil {
-		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: "invalid ContentSelector: " + err.Error()})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "invalid ContentSelector: " + err.Error()})
 		return
 	}
 
