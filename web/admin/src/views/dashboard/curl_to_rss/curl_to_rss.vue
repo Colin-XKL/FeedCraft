@@ -7,7 +7,12 @@
 
     <div class="content-wrapper">
       <a-card class="wizard-card">
-        <a-steps :current="currentStep" class="mb-8">
+        <a-steps
+          :current="currentStep"
+          changeable
+          class="mb-8"
+          @change="onStepChange"
+        >
           <a-step
             :title="$t('curlToRss.step.requestConfig')"
             :description="$t('curlToRss.step.requestConfig.desc')"
@@ -484,6 +489,12 @@
 
   const prevStep = () => {
     if (currentStep.value > 1) currentStep.value -= 1;
+  };
+
+  const onStepChange = (step: number) => {
+    if (step <= currentStep.value) {
+      currentStep.value = step;
+    }
   };
 
   // Step 1 Logic
