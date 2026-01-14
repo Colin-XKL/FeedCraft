@@ -45,10 +45,19 @@ This step allows you to map HTML elements to RSS feed fields.
     - **Content Selector**: (Optional) Pick the element containing the summary or full content.
 4.  **Preview RSS Items**: Click this button to test your selectors. The parsed items will appear in the right-hand panel.
 
-### Step 3: Use in Custom Recipe
+### Step 3: Feed Metadata
 
 Once you have verified the selectors in the preview:
 
-1.  Note down the generated selectors (Item, Title, Link, Date, Content).
-2.  Navigate to **Custom Recipes** > **Create**.
-3.  Configure your recipe using these selectors to parse the target website.
+1.  Click **Next Step**.
+2.  **Feed Title**: Give your feed a name.
+3.  **Feed Description**: (Optional) Add a description.
+4.  **Site Link**: (Optional) The URL of the website.
+
+### Step 4: Save Recipe
+
+1.  **Recipe Unique ID**: Choose a unique identifier for this recipe (e.g., `my-blog-feed`).
+2.  **Internal Description**: Notes for yourself about this recipe.
+3.  Click **Confirm & Save**.
+
+Once saved, the recipe is stored as a **Custom Recipe**.

@@ -44,35 +44,19 @@ JSON RSS 生成器可以帮助你：
 - **日期选择器 (Date Selector)**：（可选）发布日期的路径。
 - **内容选择器 (Content Selector)**：（可选）完整内容或摘要的路径。
 
-### 第三步：预览 (Preview)
+### 第三步：订阅源元数据 (Feed Metadata)
 
-点击 **Preview RSS** 查看你的选择器效果。解析出的条目将显示在下方的列表中。
+在预览中验证选择器后：
 
-## 保存你的食谱
+1.  点击 **Next Step**。
+2.  **Feed Title**：为你的订阅源起一个可识别的名称。
+3.  **Feed Description**：（可选）添加描述。
+4.  **Site Link**：（可选）与此订阅源相关的网站 URL。
 
-目前，JSON RSS 生成器是一个用于 **查找和测试** 正确选择器的工具。
+### 第四步：保存食谱 (Save Recipe)
 
-要将你的配置保存为永久订阅源：
+1.  **Recipe Unique ID**：为此食谱选择一个唯一标识符（例如 `my-api-feed`）。这将成为你订阅源 URL 的一部分。
+2.  **Internal Description**：关于此食谱的备注。
+3.  点击 **Confirm & Save**。
 
-1.  复制你的 **URL** 和 **Selector** 值。
-2.  前往 **Custom Recipes** > **Create**。
-3.  选择 **Source Type**：`JSON`。
-4.  将你的配置粘贴到 **Source Config** JSON 格式中：
-
-```json
-{
-  "http_fetcher": {
-    "url": "https://api.example.com/posts",
-    "method": "GET",
-    "headers": {
-      "Authorization": "Bearer token"
-    }
-  },
-  "json_parser": {
-    "list_selector": ".data[]",
-    "title_selector": ".title",
-    "link_selector": ".url",
-    "content_selector": ".body"
-  }
-}
-```
+保存后，该食谱将存储为 **Custom Recipe**（自定义食谱）。你可以在 **Custom Recipes** 仪表板中管理它。
