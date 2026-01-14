@@ -22,7 +22,9 @@ func (f *HttpFetcher) Fetch(ctx context.Context) ([]byte, error) {
 	}
 
 	if f.Config.UseBrowserless {
-		content, err := util.GetBrowserlessContent(f.Config.URL, 30*time.Second) // TODO: Make timeout configurable?
+		content, err := util.GetBrowserlessContent(f.Config.URL, util.BrowserlessOptions{
+			Timeout: 30 * time.Second,
+		}) // TODO: Make timeout configurable?
 		if err != nil {
 			return nil, fmt.Errorf("browserless fetch failed: %w", err)
 		}

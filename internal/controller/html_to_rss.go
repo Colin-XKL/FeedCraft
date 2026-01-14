@@ -66,7 +66,9 @@ func fetchHTML(targetURL string, useBrowserless bool) (string, error) {
 	}
 
 	if useBrowserless {
-		return util.GetBrowserlessContent(targetURL, craft.DefaultExtractFulltextTimeout)
+		return util.GetBrowserlessContent(targetURL, util.BrowserlessOptions{
+			Timeout: craft.DefaultExtractFulltextTimeout,
+		})
 	}
 
 	// Try standard HTTP request (simulating a browser user agent)
