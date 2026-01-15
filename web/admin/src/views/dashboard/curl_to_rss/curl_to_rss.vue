@@ -501,7 +501,7 @@
   } from '@/api/json_rss';
   import { createCustomRecipe } from '@/api/custom_recipe';
   import { useI18n } from 'vue-i18n';
-  import _ from 'lodash';
+  import { kebabCase, isPlainObject, isArray } from 'lodash';
 
   const router = useRouter();
   const { t } = useI18n();
@@ -556,11 +556,11 @@
 
   const jsonToTree = (data: any, rootPath = ''): TreeNodeData[] => {
     const nodes: TreeNodeData[] = [];
-    if (_.isPlainObject(data)) {
+    if (isPlainObject(data)) {
       Object.entries(data).forEach(([key, value]) => {
         const currentPath = rootPath ? `${rootPath}.${key}` : `.${key}`;
-        const isObj = _.isPlainObject(value);
-        const isArr = _.isArray(value);
+        const isObj = isPlainObject(value);
+        const isArr = isArray(value);
         const isPrimitive = !isObj && !isArr;
 
         const node: TreeNodeData = {
@@ -577,11 +577,11 @@
 
         nodes.push(node);
       });
-    } else if (_.isArray(data)) {
+    } else if (isArray(data)) {
       data.forEach((item: any, index: number) => {
         const currentPath = `${rootPath}[${index}]`;
-        const isObj = _.isPlainObject(item);
-        const isArr = _.isArray(item);
+        const isObj = isPlainObject(item);
+        const isArr = isArray(item);
         const isPrimitive = !isObj && !isArr;
 
         const node: TreeNodeData = {
@@ -673,6 +673,15 @@
       currentStep.value = step;
     }
   };
+
+  watch(
+    () => currentStep.value,
+    (val) => {
+      if (val === 4 && !recipeMeta.id && feedMeta.title) {
+        recipeMeta.id = kebabCase(feedMeta.title);
+      }
+    },
+  );
 
   // Step 1 Logic
   const addHeader = () => {
