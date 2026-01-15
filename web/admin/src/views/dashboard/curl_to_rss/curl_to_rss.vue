@@ -49,6 +49,7 @@
                       <a-button
                         type="primary"
                         status="success"
+                        :loading="parsingCurl"
                         @click="handleParseCurl"
                       >
                         <template #icon><icon-import /></template>
@@ -509,6 +510,7 @@
   const currentStep = ref(1);
   const fetching = ref(false);
   const parsing = ref(false);
+  const parsingCurl = ref(false);
   const saving = ref(false);
 
   // Step 1 State
@@ -690,6 +692,7 @@
       Message.warning(t('curlToRss.msg.enterCurl'));
       return;
     }
+    parsingCurl.value = true;
     try {
       const res = await parseCurl(curlInput.value);
       if (res.data) {
@@ -702,6 +705,8 @@
     } catch (err) {
       // Error handled by interceptor usually
       console.error(err);
+    } finally {
+      parsingCurl.value = false;
     }
   };
 
