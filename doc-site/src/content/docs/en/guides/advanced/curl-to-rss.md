@@ -11,7 +11,8 @@ The CURL to RSS tool helps you:
 
 1.  **Fetch** JSON data from an API endpoint (supporting custom headers and methods).
 2.  **Parse** the JSON structure using `jq` syntax to map fields to RSS items.
-3.  **Preview** the generated feed to verify your selectors.
+3.  **Metadata** Define feed details like title and description.
+4.  **Save** the configuration as a Custom Recipe directly.
 
 ## How to use
 
@@ -27,52 +28,37 @@ You need to define how to fetch the JSON data.
 - **Headers**: Add any necessary headers (e.g., `Authorization`, `Content-Type`).
 - **Request Body**: For POST requests, provide the JSON body.
 
-Click **Fetch JSON** to retrieve the data.
+Click **Fetch and Next** to retrieve the data.
 
-### Step 2: JQ Parsing Rules
+### Step 2: Parsing Rules
 
-Once the JSON is fetched, you will see the raw response in the left panel. You can now define selectors to extract feed items.
+Once the JSON is fetched, you will see the raw response in the left panel (visualized as a tree). You can now define selectors to extract feed items.
 
 The tool uses **[jq](https://jqlang.github.io/jq/)** syntax for querying JSON.
 
-- **List Selector**: The path to the array of items.
-  - Example: `.items[]` or `.data.posts[]` or just `.` if the root is an array.
+- **List Selector** (Items Iterator): The path to the array of items.
+  - Tip: You can click on a node in the tree view to auto-fill selectors.
 - **Title Selector**: The path to the item's title _relative to the item object_.
-  - Example: `.title` or `.attributes.name`.
 - **Link Selector**: The path to the item's URL.
-  - Example: `.url` or `.permalink`.
 - **Date Selector**: (Optional) Path to the publication date.
 - **Content Selector**: (Optional) Path to the full content or summary.
 
-### Step 3: Preview
+Click **Run Preview** to verify your selectors, then click **Next Step**.
 
-Click **Preview RSS** to see how your selectors work. The parsed items will appear in the list below.
+### Step 3: Feed Metadata
 
-## Saving Your Recipe
+Configure the RSS feed details:
 
-Currently, the CURL to RSS is a tool for **finding and testing** the correct selectors.
+- **Feed Title**: The name of your new feed.
+- **Description**: A short description.
+- **Site Link**: The URL of the original website.
+- **Author**: (Optional) Author details.
 
-To save your configuration as a permanent feed:
+### Step 4: Save Recipe
 
-1.  Copy your **URL** and **Selector** values.
-2.  Go to **Custom Recipes** > **Create**.
-3.  Select **Source Type**: `JSON`.
-4.  Paste your configuration into the **Source Config** JSON format:
+Review your configuration and save it as a permanent recipe.
 
-```json
-{
-  "http_fetcher": {
-    "url": "https://api.example.com/posts",
-    "method": "GET",
-    "headers": {
-      "Authorization": "Bearer token"
-    }
-  },
-  "json_parser": {
-    "list_selector": ".data[]",
-    "title_selector": ".title",
-    "link_selector": ".url",
-    "content_selector": ".body"
-  }
-}
-```
+- **Recipe Unique ID**: A unique identifier for this feed configuration (e.g., `my-custom-api-feed`).
+- **Internal Description**: Notes for yourself about this recipe.
+
+Click **Confirm and Save**. The tool will automatically create a new Custom Recipe with your configuration, which you can manage in the **Custom Recipes** dashboard.
