@@ -21,7 +21,7 @@ JSON RSS 生成器可以帮助你：
 
 你需要定义如何获取 JSON 数据。
 
-- **Import from Curl**：你可以粘贴 `curl` 命令来自动填充 URL、方法、请求头和请求体。这在你从浏览器开发者工具复制请求时非常有用。
+- **Import from Curl**：将 `curl` 命令粘贴到输入区域并点击 **Import** 按钮。按钮在解析时会显示加载状态，解析完成后将自动填充 URL、方法、请求头和请求体。这在从浏览器开发者工具复制请求时非常有用。
 - **Method**：选择 `GET` 或 `POST`。
 - **URL**：API 端点 URL。
 - **Headers**：添加任何必要的请求头（例如 `Authorization`, `Content-Type`）。

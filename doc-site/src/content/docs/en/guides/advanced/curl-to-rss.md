@@ -21,7 +21,7 @@ Navigate to **Tools > CURL to RSS** in the admin dashboard.
 
 You need to define how to fetch the JSON data.
 
-- **Import from Curl**: You can paste a `curl` command to automatically populate the URL, method, headers, and body. This is useful if you copy the request from your browser's Developer Tools.
+- **Import from Curl**: Paste a `curl` command into the input area and click the **Import** button. The button will display a loading spinner while parsing to automatically populate the URL, method, headers, and body. This is useful if you copy the request from your browser's Developer Tools.
 - **Method**: Select `GET` or `POST`.
 - **URL**: The API endpoint URL.
 - **Headers**: Add any necessary headers (e.g., `Authorization`, `Content-Type`).
