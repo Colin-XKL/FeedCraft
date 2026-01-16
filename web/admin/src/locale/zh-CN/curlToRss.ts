@@ -32,8 +32,7 @@ export default {
   'curlToRss.step2.contentSelector': '内容/描述选择器',
   'curlToRss.step2.previewResults': '预览结果 ({count})',
   'curlToRss.step2.previewPlaceholder': '预览结果将出现在这里',
-  'curlToRss.step2.previewPlaceholder.help':
-    '请配置上方选择器并点击“运行预览”',
+  'curlToRss.step2.previewPlaceholder.help': '请配置上方选择器并点击“运行预览”',
   'curlToRss.step2.runPreview': '运行预览',
   'curlToRss.step2.nextStep': '下一步',
   'curlToRss.step3.alert': '成功提取 {count} 个条目！现在配置 Feed 元数据。',
