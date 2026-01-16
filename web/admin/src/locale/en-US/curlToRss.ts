@@ -33,6 +33,9 @@ export default {
   'curlToRss.step2.dateSelector': 'Date Selector',
   'curlToRss.step2.contentSelector': 'Content/Description Selector',
   'curlToRss.step2.previewResults': 'Preview Results ({count})',
+  'curlToRss.step2.previewPlaceholder': 'Preview results will appear here',
+  'curlToRss.step2.previewPlaceholder.help':
+    'Configure selectors above and click "Run Preview"',
   'curlToRss.step2.runPreview': 'Run Preview',
   'curlToRss.step2.nextStep': 'Next Step',
   'curlToRss.step3.alert':

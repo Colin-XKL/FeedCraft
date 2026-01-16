@@ -329,6 +329,16 @@
                     </a-collapse-item>
                   </a-collapse>
                 </div>
+                <!-- Empty State -->
+                <div v-else class="mt-8 text-center text-gray-400">
+                  <a-empty
+                    :description="$t('curlToRss.step2.previewPlaceholder')"
+                  >
+                    <template #extra>
+                      {{ $t('curlToRss.step2.previewPlaceholder.help') }}
+                    </template>
+                  </a-empty>
+                </div>
               </div>
 
               <!-- Footer -->
@@ -617,7 +627,7 @@
         console.error('Invalid JSON content:', e);
         treeData.value = [];
       }
-    },
+    }
   );
 
   const getRelativePath = (fullPath: string, listSel: string) => {
@@ -637,7 +647,7 @@
 
   const handleNodeSelect = (
     selectedKeys: (string | number)[],
-    { node }: { node: TreeNodeData },
+    { node }: { node: TreeNodeData }
   ) => {
     if (!activeField.value || !node.key) return;
 
@@ -756,7 +766,7 @@
         Message.warning(t('curlToRss.msg.noItems'));
       } else {
         Message.success(
-          t('curlToRss.msg.parsedItems', { count: parsedItems.value.length }),
+          t('curlToRss.msg.parsedItems', { count: parsedItems.value.length })
         );
       }
     } catch (err) {

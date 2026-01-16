@@ -307,6 +307,16 @@
                     </a-collapse-item>
                   </a-collapse>
                 </div>
+                <!-- Empty State -->
+                <div v-else class="mt-8 text-center text-gray-400">
+                  <a-empty
+                    :description="$t('htmlToRss.step2.previewPlaceholder')"
+                  >
+                    <template #extra>
+                      {{ $t('htmlToRss.step2.previewPlaceholder.help') }}
+                    </template>
+                  </a-empty>
+                </div>
               </div>
 
               <!-- Actions Footer -->
@@ -657,7 +667,7 @@
           return;
         }
         Message.success(
-          t('htmlToRss.msg.extracted', { count: parsedItems.value.length }),
+          t('htmlToRss.msg.extracted', { count: parsedItems.value.length })
         );
         // Do not auto-advance. Let user check preview first.
         nextTick(() => {
@@ -743,7 +753,7 @@
     const fullSelector = getCssSelector(
       target,
       doc || undefined,
-      isItemSelector,
+      isItemSelector
     );
 
     if (!doc) return;
@@ -755,11 +765,11 @@
         Message.success(
           t('htmlToRss.msg.matchedItems', {
             count: matches.length,
-          }),
+          })
         );
       } catch {
         Message.success(
-          t('htmlToRss.msg.setItemSelector', { selector: fullSelector }),
+          t('htmlToRss.msg.setItemSelector', { selector: fullSelector })
         );
       }
       currentTargetField.value = 'title_selector';
@@ -795,7 +805,7 @@
             let selector = curr.tagName.toLowerCase();
             if (curr.classList.length > 0) {
               const validClasses = Array.from(curr.classList).filter(
-                (c) => !IGNORED_CLASSES.includes(c),
+                (c) => !IGNORED_CLASSES.includes(c)
               );
               if (validClasses.length > 0)
                 selector += `.${CSS.escape(validClasses[0])}`;
@@ -806,7 +816,7 @@
 
           config[currentTargetField.value] = relPath.join(' ');
           Message.success(
-            t('htmlToRss.msg.setRelativePath', { path: relPath.join(' ') }),
+            t('htmlToRss.msg.setRelativePath', { path: relPath.join(' ') })
           );
         }
       } else {
