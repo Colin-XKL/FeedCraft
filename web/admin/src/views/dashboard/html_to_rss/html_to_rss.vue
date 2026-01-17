@@ -478,7 +478,7 @@
   import { ref, reactive, nextTick, watch } from 'vue';
   import axios from 'axios';
   import DOMPurify from 'dompurify';
-  import { kebabCase } from 'lodash';
+  import kebabCase from 'lodash/kebabCase';
   import { Message } from '@arco-design/web-vue';
   import {
     IconSelectAll,

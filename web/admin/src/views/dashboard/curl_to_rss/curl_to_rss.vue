@@ -501,7 +501,9 @@
   } from '@/api/json_rss';
   import { createCustomRecipe } from '@/api/custom_recipe';
   import { useI18n } from 'vue-i18n';
-  import { kebabCase, isPlainObject, isArray } from 'lodash';
+  import kebabCase from 'lodash/kebabCase';
+  import isPlainObject from 'lodash/isPlainObject';
+  import isArray from 'lodash/isArray';
 
   const router = useRouter();
   const { t } = useI18n();
