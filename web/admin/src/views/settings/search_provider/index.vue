@@ -27,7 +27,7 @@
           :label="$t('settings.searchProvider.apiUrl')"
           field="api_url"
           required
-          :tooltip="$t('settings.searchProvider.apiUrl.tooltip')"
+          :tooltip="apiUrlTooltip"
         >
           <a-input v-model="form.api_url" :placeholder="apiUrlPlaceholder" />
         </a-form-item>
@@ -104,6 +104,13 @@
       return 'http://localhost:8080';
     }
     return t('settings.searchProvider.placeholder.apiUrl');
+  });
+
+  const apiUrlTooltip = computed(() => {
+    if (form.provider === 'searxng') {
+      return t('settings.searchProvider.apiUrl.tooltip.searxng');
+    }
+    return t('settings.searchProvider.apiUrl.tooltip.litellm');
   });
 
   const saving = ref(false);

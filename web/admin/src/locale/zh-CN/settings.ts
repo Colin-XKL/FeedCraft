@@ -34,7 +34,11 @@ export default {
     "要使用的内部提供商逻辑。支持 'litellm' 和 'searxng'。",
   'settings.searchProvider.apiUrl': 'API URL',
   'settings.searchProvider.apiUrl.tooltip':
-    '搜索提供商的基准 URL (例如 http://litellm-proxy:4000 或 http://searxng.local)。',
+    '搜索提供商的基准 URL。',
+  'settings.searchProvider.apiUrl.tooltip.litellm':
+    'LiteLLM 代理的搜索端点 (例如 http://litellm-proxy:4000/v1/search)。如果配置了工具名称，它将被追加到 URL 中。',
+  'settings.searchProvider.apiUrl.tooltip.searxng':
+    'SearXNG 实例的基准 URL (例如 http://searxng.local)。会自动追加 /search 路径。',
   'settings.searchProvider.apiKey': 'API Key',
   'settings.searchProvider.apiKey.tooltip':
     '如果提供商需要身份验证，则为可选 API 密钥。',
