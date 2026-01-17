@@ -13,10 +13,15 @@
           v-model="feedUrl"
           type="text"
           :placeholder="t('feedViewer.placeholder')"
+          allow-clear
+          @keyup.enter="fetchFeed"
         />
-        <a-button :loading="isLoading" @click="fetchFeed">{{
-          t('feedViewer.preview')
-        }}</a-button>
+        <a-button
+          :loading="isLoading"
+          :disabled="!feedUrl"
+          @click="fetchFeed"
+          >{{ t('feedViewer.preview') }}</a-button
+        >
       </a-space>
     </a-card>
     <a-card
@@ -50,6 +55,7 @@
   const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
   async function fetchFeed() {
+    if (!feedUrl.value) return;
     isLoading.value = true;
     const requestUrl = `${baseUrl}/craft/proxy?input_url=${encodeURIComponent(
       feedUrl.value,
