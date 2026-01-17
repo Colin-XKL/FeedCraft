@@ -14,7 +14,9 @@
         <span
           v-if="!modelValue || modelValue.length === 0"
           class="text-[var(--color-text-3)]"
-          >{{ placeholder || t('feedCompare.selectCraftFlow.placeholder') }}</span
+          >{{
+            placeholder || t('feedCompare.selectCraftFlow.placeholder')
+          }}</span
         >
         <span v-else class="text-[var(--color-text-1)] py-0.5 pl-1">{{
           modelValue
