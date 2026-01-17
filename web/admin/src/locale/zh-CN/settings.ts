@@ -33,8 +33,7 @@ export default {
   'settings.searchProvider.provider.tooltip':
     "要使用的内部提供商逻辑。支持 'litellm' 和 'searxng'。",
   'settings.searchProvider.apiUrl': 'API URL',
-  'settings.searchProvider.apiUrl.tooltip':
-    '搜索提供商的基准 URL。',
+  'settings.searchProvider.apiUrl.tooltip': '搜索提供商的基准 URL。',
   'settings.searchProvider.apiUrl.tooltip.litellm':
     'LiteLLM 代理的搜索端点 (例如 http://litellm-proxy:4000/v1/search)。如果配置了工具名称，它将被追加到 URL 中。',
   'settings.searchProvider.apiUrl.tooltip.searxng':
