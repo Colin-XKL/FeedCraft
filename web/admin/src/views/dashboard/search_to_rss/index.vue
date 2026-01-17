@@ -46,6 +46,23 @@
                 allow-clear
                 @press-enter="handlePreview"
               />
+              <div class="mt-2">
+                <a-checkbox v-model="fetchReq.enhanced_mode">
+                  {{
+                    $t('searchToRss.step1.enhancedMode') ||
+                    'Enhanced Mode (LLM Powered)'
+                  }}
+                </a-checkbox>
+                <div
+                  v-if="fetchReq.enhanced_mode"
+                  class="text-xs text-gray-400 ml-6"
+                >
+                  {{
+                    $t('searchToRss.step1.enhancedMode.desc') ||
+                    'Uses AI to generate multiple optimized queries for better coverage.'
+                  }}
+                </div>
+              </div>
             </a-form-item>
             <div class="text-center mt-8">
               <a-button
@@ -237,6 +254,7 @@
   // Step 1: Query
   const fetchReq = reactive<SearchFetchReq>({
     query: '',
+    enhanced_mode: false,
   });
 
   // Step 3: Feed Meta
@@ -326,6 +344,7 @@
       type: 'search',
       search_fetcher: {
         query: fetchReq.query,
+        enhanced_mode: fetchReq.enhanced_mode,
       },
       feed_meta: {
         title: feedMeta.title,
