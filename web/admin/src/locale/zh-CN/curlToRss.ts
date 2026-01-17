@@ -55,6 +55,7 @@ export default {
   'curlToRss.msg.curlParsed': 'Curl 解析成功',
   'curlToRss.msg.urlRequired': 'URL 是必填项',
   'curlToRss.msg.fetched': '获取成功',
+  'curlToRss.msg.invalidJson': '响应不是有效的 JSON',
   'curlToRss.msg.emptyResponse': '响应为空',
   'curlToRss.msg.iteratorRequired': '条目迭代器选择器是必填项',
   'curlToRss.msg.titleRequired': '标题选择器是必填项',
