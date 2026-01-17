@@ -127,7 +127,7 @@
   const { t } = useI18n();
 
   // Mode 1: Generate
-  const selectedCraft = ref<string[]>([]);
+  const selectedCraft = ref('');
   const customCraft = ref('');
   const inputUrl = ref('');
   const resultUrl = ref('');

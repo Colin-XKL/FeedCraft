@@ -11,9 +11,11 @@
       @keydown.space.prevent="openModal"
     >
       <div class="flex flex-wrap gap-1 flex-1 overflow-hidden">
-        <span v-if="!modelValue" class="text-[var(--color-text-3)]">{{
-          placeholder || t('feedCompare.selectCraftFlow.placeholder')
-        }}</span>
+        <span
+          v-if="!modelValue || modelValue.length === 0"
+          class="text-[var(--color-text-3)]"
+          >{{ placeholder || t('feedCompare.selectCraftFlow.placeholder') }}</span
+        >
         <span v-else class="text-[var(--color-text-1)] py-0.5 pl-1">{{
           modelValue
         }}</span>
