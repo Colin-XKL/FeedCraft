@@ -72,16 +72,16 @@ Limits the number of items in the feed.
 Filters out items that are older than a specific number of days.
 
 - **Parameters:**
-  - `days` (default: `30`): Max age of articles in days.
+  - `days` (default: `7`): Max age of articles in days.
 
 ### `keyword`
 
 Filters items based on keywords in the title or content.
 
 - **Parameters:**
-  - `keyword`: The Regex pattern to match.
-  - `mode`: `keep` (default) to keep matching items, or `block` to remove them.
-  - `target`: `title`, `content`, or `all` (default).
+  - `keywords`: A comma-separated list of keywords to match (substring match, case-sensitive). Example: `ad,sell,SALE`.
+  - `mode`: `include` (default) to keep matching items, or `exclude` to remove them.
+  - `scope`: `title`, `content`, or `all` (default).
 
 ---
 
