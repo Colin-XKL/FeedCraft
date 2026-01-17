@@ -31,6 +31,8 @@ export default {
   'htmlToRss.step2.date': '日期 (可选)',
   'htmlToRss.step2.description': '描述 (可选)',
   'htmlToRss.step2.previewResults': '预览结果',
+  'htmlToRss.step2.previewPlaceholder': '预览结果将出现在这里',
+  'htmlToRss.step2.previewPlaceholder.help': '请配置上方选择器并点击“运行预览”',
   'htmlToRss.step2.noTitle': '(无标题)',
   'htmlToRss.step2.runPreview': '运行预览',
   'htmlToRss.step2.nextStep': '下一步',

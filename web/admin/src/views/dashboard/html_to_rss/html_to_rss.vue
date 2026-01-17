@@ -307,6 +307,16 @@
                     </a-collapse-item>
                   </a-collapse>
                 </div>
+                <!-- Empty State -->
+                <div v-else class="mt-8 text-center text-gray-400">
+                  <a-empty
+                    :description="$t('htmlToRss.step2.previewPlaceholder')"
+                  >
+                    <template #extra>
+                      {{ $t('htmlToRss.step2.previewPlaceholder.help') }}
+                    </template>
+                  </a-empty>
+                </div>
               </div>
 
               <!-- Actions Footer -->
