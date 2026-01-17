@@ -56,7 +56,7 @@ HTML to RSS 工具允许你：
 
 审查你的配置并将其保存为永久食谱。
 
-- **食谱唯一 ID (Recipe Unique ID)**：此订阅源配置的唯一标识符（例如 `tech-blog-feed`）。
+- **食谱唯一 ID (Recipe Unique ID)**：此订阅源配置的唯一标识符（例如 `tech-blog-feed`）。如果留空，将自动根据订阅源标题生成。
 - **内部描述 (Internal Description)**：关于此食谱的备注。
 
 点击 **确认并保存 (Confirm and Save)**。工具将自动创建一个包含你的配置的新自定义食谱，你可以在 **自定义食谱 (Custom Recipes)** 仪表板中管理它。
