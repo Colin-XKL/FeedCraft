@@ -17,9 +17,12 @@
           allow-clear
           @keypress.enter="fetchFeed"
         />
-        <a-button :loading="isLoading" :disabled="!feedUrl" @click="fetchFeed">{{
-          t('feedViewer.preview')
-        }}</a-button>
+        <a-button
+          :loading="isLoading"
+          :disabled="!feedUrl"
+          @click="fetchFeed"
+          >{{ t('feedViewer.preview') }}</a-button
+        >
       </a-space>
     </a-card>
     <a-card
