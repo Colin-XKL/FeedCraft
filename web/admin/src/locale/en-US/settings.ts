@@ -56,6 +56,11 @@ export default {
   'settings.searchProvider.placeholder.selectProvider': 'Select Provider',
   'settings.searchProvider.placeholder.apiUrl': 'http://litellm-proxy:4000',
   'settings.searchProvider.placeholder.apiKey': 'sk-...',
+  'settings.searchProvider.placeholder.apiKeyConfigured':
+    'Configured (leave empty to keep)',
   'settings.searchProvider.placeholder.toolName': 'google-search',
   'settings.searchProvider.placeholder.engines': 'google,bing',
+  'settings.searchProvider.checkConnection': 'Check Connection',
+  'settings.searchProvider.msg.checkSuccess': 'Connection successful',
+  'settings.searchProvider.msg.checkFailed': 'Connection failed',
 };

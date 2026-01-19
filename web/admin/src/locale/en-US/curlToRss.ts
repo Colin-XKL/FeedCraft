@@ -60,6 +60,7 @@ export default {
   'curlToRss.msg.curlParsed': 'Curl parsed successfully',
   'curlToRss.msg.urlRequired': 'URL is required',
   'curlToRss.msg.fetched': 'Fetched successfully',
+  'curlToRss.msg.invalidJson': 'Response is not a valid JSON',
   'curlToRss.msg.emptyResponse': 'Empty response',
   'curlToRss.msg.iteratorRequired': 'Items Iterator selector is required',
   'curlToRss.msg.titleRequired': 'Title selector is required',

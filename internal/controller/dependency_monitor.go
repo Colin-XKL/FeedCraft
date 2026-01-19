@@ -2,6 +2,10 @@ package controller
 
 import (
 	"FeedCraft/internal/adapter"
+	"FeedCraft/internal/config"
+	"FeedCraft/internal/constant"
+	"FeedCraft/internal/dao"
+	"FeedCraft/internal/source/fetcher/provider"
 	"FeedCraft/internal/util"
 	"context"
 	"fmt"
@@ -159,6 +163,39 @@ func checkLLM(env *viper.Viper, activeCheck bool) DependencyStatus {
 	return DependencyStatus{Name: "LLM Service", Status: "Healthy", Details: details, Latency: time.Since(start).String()}
 }
 
+func checkSearchProvider(activeCheck bool) DependencyStatus {
+	db := util.GetDatabase()
+	var cfg config.SearchProviderConfig
+	err := dao.GetJsonSetting(db, constant.KeySearchProviderConfig, &cfg)
+
+	// If error or no URL, consider not configured
+	if err != nil || cfg.APIUrl == "" {
+		return DependencyStatus{Name: "Search Provider", Status: "Not Configured", Error: "Not configured in settings"}
+	}
+
+	details := fmt.Sprintf("Provider: %s, URL: %s", cfg.Provider, cfg.APIUrl)
+	if cfg.APIKey != "" {
+		details += fmt.Sprintf(", Key: %s", maskString(cfg.APIKey))
+	}
+
+	if !activeCheck {
+		return DependencyStatus{Name: "Search Provider", Status: "Configured", Details: details}
+	}
+
+	start := time.Now()
+	prv, err := provider.Get(cfg.Provider, &cfg)
+	if err != nil {
+		return DependencyStatus{Name: "Search Provider", Status: "Unhealthy", Details: details, Error: "Failed to create provider: " + err.Error()}
+	}
+
+	_, err = prv.Fetch(context.Background(), "FeedCraft")
+	if err != nil {
+		return DependencyStatus{Name: "Search Provider", Status: "Unhealthy", Details: details, Error: err.Error()}
+	}
+
+	return DependencyStatus{Name: "Search Provider", Status: "Healthy", Details: details, Latency: time.Since(start).String()}
+}
+
 func getStatuses(activeCheck bool) []DependencyStatus {
 	envClient := util.GetEnvClient()
 	return []DependencyStatus{
@@ -166,6 +203,7 @@ func getStatuses(activeCheck bool) []DependencyStatus {
 		checkRedis(envClient, activeCheck),
 		checkBrowserless(envClient, activeCheck),
 		checkLLM(envClient, activeCheck),
+		checkSearchProvider(activeCheck),
 	}
 }
 
