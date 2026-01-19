@@ -119,7 +119,7 @@
       return t('settings.searchProvider.apiUrl.tooltip.searxng');
     }
     return t('settings.searchProvider.apiUrl.tooltip.litellm');
-   });
+  });
   const apiKeyPlaceholder = computed(() => {
     if (hasApiKey.value) {
       return t('settings.searchProvider.placeholder.apiKeyConfigured');
