@@ -44,6 +44,13 @@ sidebar:
 
 **Recipe** 将特定的 RSS 源 URL 与某个 原子工艺 (AtomCraft) 或组合工艺 (FlowCraft) 绑定。这允许你创建一个持久化的、经过定制的订阅源 URL。
 
+**管理食谱：**
+在后台 **自定义食谱 (Custom Recipes)** 页面，你可以管理所有已创建的食谱。
+
+- **创建 (Create)**：绑定新的 URL 和工艺。
+- **预览 (Preview)**：点击预览按钮，直接在内置的 Feed Viewer 中查看生成的效果。
+- **复制链接 (Copy Link)**：点击复制图标获取完整的订阅 URL。
+
 **示例：**
 
 - **输入 URL：** `https://news.ycombinator.com/rss`
