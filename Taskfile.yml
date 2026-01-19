@@ -107,7 +107,7 @@ tasks:
     deps:
       - fetch-remote-tags
     preconditions:
-      - sh: git status --porcelain | grep -q "nothing to commit"
+      - sh: test -z "$(git status --porcelain)"
         msg: "Working directory is not clean. Please commit your changes first."
     cmds:
       - cmd: |
@@ -124,7 +124,7 @@ tasks:
     deps:
       - fetch-remote-tags
     preconditions:
-      - sh: git status --porcelain | grep -q "nothing to commit"
+      - sh: test -z "$(git status --porcelain)"
         msg: "Working directory is not clean. Please commit your changes first."
     cmds:
       - cmd: |
@@ -141,7 +141,7 @@ tasks:
     deps:
       - fetch-remote-tags
     preconditions:
-      - sh: git status --porcelain | grep -q "nothing to commit"
+      - sh: test -z "$(git status --porcelain)"
         msg: "Working directory is not clean. Please commit your changes first."
     cmds:
       - cmd: |
