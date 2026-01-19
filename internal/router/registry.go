@@ -123,6 +123,7 @@ func RegisterRouters(router *gin.Engine) {
 
 		adminApi.GET("/dependencies", controller.GetDependencyStatus)
 		adminApi.POST("/dependencies/check", controller.CheckDependencyStatus)
+		adminApi.GET("/dependencies/health", controller.AnalyzeDependencies)
 	}
 
 }
