@@ -66,13 +66,13 @@ Navigate to **Settings > Search Provider** in the admin dashboard.
 ### Supported Providers
 
 - **LiteLLM / OpenAI Compatible**
-  - **API URL**: The base URL of the provider (e.g., `https://api.openai.com/v1`).
+  - **API URL**: The search endpoint of your provider (e.g., `http://litellm-proxy:4000/v1/search`).
   - **API Key**: Your API key.
-  - **Tool Name**: Specific function calling tool name (if needed, e.g., `google_search` for some agents).
+  - **Tool Name**: The specific function calling tool name if required (e.g., `google_search` for some agents). The tool name is appended to the API URL (e.g. `.../v1/search/google_search`).
 
 - **SearXNG**
-  - **API URL**: Your SearXNG instance URL (e.g., `http://my-searxng.com`).
-  - **Engines**: (Optional) Comma-separated list of search engines (e.g., `google,bing`).
+  - **API URL**: The base URL of your SearXNG instance (e.g., `http://my-searxng.com`). The `/search` path is automatically appended.
+  - **Engines**: (Optional) Comma-separated list of engines to use (e.g., `google,bing`).
 
 ## Advanced Configuration
 

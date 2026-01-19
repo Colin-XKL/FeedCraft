@@ -66,12 +66,12 @@ sidebar:
 ### 支持的提供商
 
 - **LiteLLM / OpenAI Compatible**
-  - **API URL**: 提供商的基础 URL（例如 `https://api.openai.com/v1`）。
+  - **API URL**: 搜索服务的 API 端点（例如 `http://litellm-proxy:4000/v1/search`）。
   - **API Key**: 你的 API 密钥。
-  - **Tool Name**: 特定函数调用工具名称（如果需要，例如某些 Agent 的 `google_search`）。
+  - **Tool Name**: 特定函数调用工具名称（如果需要，例如某些 Agent 的 `google_search`）。工具名称将追加到 API URL 之后（例如 `.../v1/search/google_search`）。
 
 - **SearXNG**
-  - **API URL**: 你的 SearXNG 实例 URL（例如 `http://my-searxng.com`）。
+  - **API URL**: 你的 SearXNG 实例基础 URL（例如 `http://my-searxng.com`）。`/search` 路径会自动追加。
   - **Engines**: (可选) 逗号分隔的搜索引擎列表（例如 `google,bing`）。
 
 ## 高级配置
