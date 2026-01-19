@@ -3,190 +3,182 @@
     class="w-full min-h-[calc(100vh-60px)] flex justify-center items-start pt-20 bg-gray-50"
   >
     <div class="w-full max-w-3xl px-4 pb-20">
-      <!-- Custom Tabs -->
-      <div class="flex justify-center gap-4 mb-8">
-        <button
-          class="px-8 py-3 rounded-lg text-base font-bold transition-all duration-200 flex items-center gap-2 shadow-sm"
-          :class="
-            activeTab === 'generate'
-              ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-200'
-              : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
-          "
-          @click="activeTab = 'generate'"
-        >
-          <icon-link class="text-lg" />
-          {{ t('urlGenerator.tabGenerate') }}
-        </button>
-        <button
-          class="px-8 py-3 rounded-lg text-base font-bold transition-all duration-200 flex items-center gap-2 shadow-sm"
-          :class="
-            activeTab === 'parse'
-              ? 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-emerald-200'
-              : 'bg-white text-gray-600 hover:bg-gray-50 border border-gray-200'
-          "
-          @click="activeTab = 'parse'"
-        >
-          <icon-thunderbolt class="text-lg" />
-          {{ t('urlGenerator.tabParse') }}
-        </button>
-      </div>
+      <a-card class="rounded-3xl shadow-lg p-2" :bordered="false">
+        <a-tabs type="capsule" size="large" animation>
+          <!-- Tab 1: Generate -->
+          <a-tab-pane key="generate" :title="t('urlGenerator.tabGenerate')">
+            <div class="px-6 py-4 space-y-8">
+              <h1 class="text-3xl font-bold text-center text-gray-900">{{
+                t('urlGenerator.title')
+              }}</h1>
 
-      <!-- Main Card -->
-      <div
-        class="bg-white rounded-3xl shadow-lg p-10 transition-all duration-300"
-      >
-        <!-- Tab 1: Generate -->
-        <div v-if="activeTab === 'generate'" class="space-y-8">
-          <h1 class="text-3xl font-bold text-center text-gray-900">{{
-            t('urlGenerator.title')
-          }}</h1>
-
-          <div class="space-y-6">
-            <div>
-              <label class="block text-sm font-bold text-gray-900 mb-2">{{
-                t('urlGenerator.selectCraft')
-              }}</label>
-              <CraftFlowSelect
-                v-model="selectedCraft"
-                mode="single"
-                class="w-full"
-              />
-            </div>
-
-            <div>
-              <label class="block text-sm font-bold text-gray-900 mb-2">{{
-                t('urlGenerator.inputOriginalUrl')
-              }}</label>
-              <a-input
-                v-model="inputUrl"
-                :placeholder="t('urlGenerator.inputUrlPlaceholder')"
-                class="!rounded-lg !bg-gray-50 !border-gray-200 !py-2.5 focus:!bg-white focus:!border-emerald-500"
-                size="large"
-              />
-            </div>
-
-            <button
-              class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 px-4 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg active:scale-[0.99]"
-              @click="generateUrl"
-            >
-              {{ t('urlGenerator.showCraftedUrl') }}
-            </button>
-
-            <!-- Result Area -->
-            <div v-if="resultUrl" class="mt-8">
-              <div class="relative group">
-                <div
-                  class="bg-gray-50 border border-gray-200 rounded-xl p-4 pr-14 break-all text-gray-600 font-mono text-sm leading-relaxed"
-                >
-                  {{ resultUrl }}
+              <div class="space-y-6">
+                <div>
+                  <label class="block text-sm font-bold text-gray-900 mb-2">{{
+                    t('urlGenerator.selectCraft')
+                  }}</label>
+                  <CraftFlowSelect
+                    v-model="selectedCraft"
+                    mode="single"
+                    class="w-full"
+                  />
                 </div>
-                <div class="absolute right-2 top-2 h-full">
-                  <button
-                    class="p-2 text-gray-500 hover:text-gray-700 bg-white border border-gray-200 rounded-lg shadow-sm transition-all hover:scale-105 active:scale-95"
-                    :title="t('urlGenerator.copyUrl')"
-                    @click="copyUrl"
-                  >
-                    <icon-check v-if="copied" class="text-green-500 text-lg" />
-                    <icon-copy v-else class="text-lg" />
-                  </button>
+
+                <div>
+                  <label class="block text-sm font-bold text-gray-900 mb-2">{{
+                    t('urlGenerator.inputOriginalUrl')
+                  }}</label>
+                  <a-input
+                    v-model="inputUrl"
+                    :placeholder="t('urlGenerator.inputUrlPlaceholder')"
+                    class="!rounded-lg !bg-gray-50 !border-gray-200 !py-2.5 focus:!bg-white focus:!border-emerald-500"
+                    size="large"
+                  />
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <!-- Tab 2: Parse -->
-        <div v-if="activeTab === 'parse'" class="space-y-8">
-          <h1 class="text-3xl font-bold text-center text-gray-900">{{
-            t('urlGenerator.tabParse')
-          }}</h1>
+                <a-button
+                  type="primary"
+                  size="large"
+                  long
+                  class="!rounded-lg !h-12 !text-base !font-bold"
+                  :style="{ backgroundColor: 'rgb(16, 185, 129)' }"
+                  @click="generateUrl"
+                >
+                  {{ t('urlGenerator.showCraftedUrl') }}
+                </a-button>
 
-          <div class="space-y-6">
-            <div>
-              <label class="block text-sm font-bold text-gray-900 mb-2">{{
-                t('urlGenerator.inputFeedCraftUrl')
-              }}</label>
-              <a-input
-                v-model="parseInputUrl"
-                :placeholder="t('urlGenerator.inputFeedCraftUrlPlaceholder')"
-                allow-clear
-                class="!rounded-lg !bg-gray-50 !border-gray-200 !py-2.5 focus:!bg-white focus:!border-emerald-500"
-                size="large"
-              />
-            </div>
-
-            <button
-              class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3.5 px-4 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg active:scale-[0.99]"
-              @click="parseUrl"
-            >
-              <icon-thunderbolt class="mr-2" />
-              {{ t('urlGenerator.parseButton') }}
-            </button>
-
-            <div
-              v-if="parsedResult"
-              class="mt-8 p-6 bg-gray-50 rounded-xl border border-gray-100"
-            >
-              <!-- Display Craft -->
-              <div class="mb-5">
-                <span
-                  class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2"
-                >
-                  {{ t('urlGenerator.parsedCraft') }}
-                </span>
-                <div class="flex items-center">
-                  <span
-                    class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-100 text-emerald-800"
-                  >
-                    {{ parsedResult.craft }}
-                  </span>
-                </div>
-              </div>
-              <!-- Display Source URL -->
-              <div class="mb-5">
-                <span
-                  class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2"
-                >
-                  {{ t('urlGenerator.parsedSourceUrl') }}
-                </span>
-                <div class="bg-white p-3 rounded-lg border border-gray-200">
-                  <a
-                    :href="parsedResult.sourceUrl"
-                    target="_blank"
-                    class="text-emerald-600 hover:text-emerald-700 break-all hover:underline"
-                  >
-                    {{ parsedResult.sourceUrl }}
-                  </a>
-                </div>
-              </div>
-              <!-- Other Params -->
-              <div v-if="Object.keys(parsedResult.params).length > 0">
-                <span
-                  class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2"
-                >
-                  {{ t('urlGenerator.parsedParams') }}
-                </span>
-                <div
-                  class="bg-white rounded-lg border border-gray-200 overflow-hidden"
-                >
-                  <div
-                    v-for="(val, key) in parsedResult.params"
-                    :key="key"
-                    class="flex border-b border-gray-100 last:border-0 px-4 py-3 text-sm"
-                  >
-                    <span class="text-gray-500 w-1/3 shrink-0 font-medium">{{
-                      key
-                    }}</span>
-                    <span class="text-gray-900 font-mono break-all">{{
-                      val
-                    }}</span>
+                <!-- Result Area -->
+                <div v-if="resultUrl" class="mt-8">
+                  <div class="relative group">
+                    <div
+                      class="bg-gray-50 border border-gray-200 rounded-xl p-4 pr-14 break-all text-gray-600 font-mono text-sm leading-relaxed"
+                    >
+                      {{ resultUrl }}
+                    </div>
+                    <div class="absolute right-2 top-2 h-full">
+                      <a-button
+                        type="text"
+                        shape="square"
+                        size="large"
+                        @click="copyUrl"
+                      >
+                        <template #icon>
+                          <icon-check
+                            v-if="copied"
+                            class="text-green-500 text-lg"
+                          />
+                          <icon-copy v-else class="text-lg text-gray-500" />
+                        </template>
+                      </a-button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
+          </a-tab-pane>
+
+          <!-- Tab 2: Parse -->
+          <a-tab-pane key="parse" :title="t('urlGenerator.tabParse')">
+            <div class="px-6 py-4 space-y-8">
+              <h1 class="text-3xl font-bold text-center text-gray-900">{{
+                t('urlGenerator.tabParse')
+              }}</h1>
+
+              <div class="space-y-6">
+                <div>
+                  <label class="block text-sm font-bold text-gray-900 mb-2">{{
+                    t('urlGenerator.inputFeedCraftUrl')
+                  }}</label>
+                  <a-input
+                    v-model="parseInputUrl"
+                    :placeholder="
+                      t('urlGenerator.inputFeedCraftUrlPlaceholder')
+                    "
+                    allow-clear
+                    class="!rounded-lg !bg-gray-50 !border-gray-200 !py-2.5 focus:!bg-white focus:!border-emerald-500"
+                    size="large"
+                  />
+                </div>
+
+                <a-button
+                  type="primary"
+                  size="large"
+                  long
+                  class="!rounded-lg !h-12 !text-base !font-bold"
+                  :style="{ backgroundColor: 'rgb(16, 185, 129)' }"
+                  @click="parseUrl"
+                >
+                  <template #icon>
+                    <icon-thunderbolt />
+                  </template>
+                  {{ t('urlGenerator.parseButton') }}
+                </a-button>
+
+                <div
+                  v-if="parsedResult"
+                  class="mt-8 p-6 bg-gray-50 rounded-xl border border-gray-100"
+                >
+                  <!-- Display Craft -->
+                  <div class="mb-5">
+                    <span
+                      class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2"
+                    >
+                      {{ t('urlGenerator.parsedCraft') }}
+                    </span>
+                    <div class="flex items-center">
+                      <a-tag color="arcoblue" size="large">
+                        {{ parsedResult.craft }}
+                      </a-tag>
+                    </div>
+                  </div>
+                  <!-- Display Source URL -->
+                  <div class="mb-5">
+                    <span
+                      class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2"
+                    >
+                      {{ t('urlGenerator.parsedSourceUrl') }}
+                    </span>
+                    <div class="bg-white p-3 rounded-lg border border-gray-200">
+                      <a
+                        :href="parsedResult.sourceUrl"
+                        target="_blank"
+                        class="text-emerald-600 hover:text-emerald-700 break-all hover:underline"
+                      >
+                        {{ parsedResult.sourceUrl }}
+                      </a>
+                    </div>
+                  </div>
+                  <!-- Other Params -->
+                  <div v-if="Object.keys(parsedResult.params).length > 0">
+                    <span
+                      class="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-2"
+                    >
+                      {{ t('urlGenerator.parsedParams') }}
+                    </span>
+                    <div
+                      class="bg-white rounded-lg border border-gray-200 overflow-hidden"
+                    >
+                      <div
+                        v-for="(val, key) in parsedResult.params"
+                        :key="key"
+                        class="flex border-b border-gray-100 last:border-0 px-4 py-3 text-sm"
+                      >
+                        <span
+                          class="text-gray-500 w-1/3 shrink-0 font-medium"
+                          >{{ key }}</span
+                        >
+                        <span class="text-gray-900 font-mono break-all">{{
+                          val
+                        }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </a-tab-pane>
+        </a-tabs>
+      </a-card>
     </div>
   </div>
 </template>
@@ -199,14 +191,10 @@
   import {
     IconCopy,
     IconCheck,
-    IconLink,
     IconThunderbolt,
   } from '@arco-design/web-vue/es/icon';
 
   const { t } = useI18n();
-
-  // Tabs
-  const activeTab = ref<'generate' | 'parse'>('generate');
 
   // Mode 1: Generate
   const selectedCraft = ref<string[]>([]);
@@ -295,5 +283,8 @@
 </script>
 
 <style scoped>
-  /* Scoped styles can be used if Tailwind is not enough */
+  /* Override styles for deep customization if needed */
+  :deep(.arco-tabs-nav-tab) {
+    justify-content: center;
+  }
 </style>
