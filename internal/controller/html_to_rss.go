@@ -61,10 +61,6 @@ func validateURL(rawUrl string) error {
 
 // fetchHTML extracts common fetching logic with browser emulation and error handling
 func fetchHTML(targetURL string, useBrowserless bool) (string, error) {
-	if err := validateURL(targetURL); err != nil {
-		return "", err
-	}
-
 	if useBrowserless {
 		return util.GetBrowserlessContent(targetURL, util.BrowserlessOptions{
 			Timeout: craft.DefaultExtractFulltextTimeout,
@@ -109,6 +105,11 @@ func HtmlFetch(c *gin.Context) {
 		return
 	}
 
+	if err := validateURL(req.URL); err != nil {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
+		return
+	}
+
 	htmlContent, err := fetchHTML(req.URL, req.UseBrowserless)
 	if err != nil {
 		// Use StatusCode: -1 to indicate logic/upstream error rather than system error
@@ -135,6 +136,11 @@ func HtmlParse(c *gin.Context) {
 	if req.HTML != "" {
 		htmlContent = req.HTML
 	} else if req.URL != "" {
+		if err := validateURL(req.URL); err != nil {
+			c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
+			return
+		}
+
 		// Fallback fetch if HTML not provided. Default to standard fetch (no browserless) as ParseReq doesn't support it yet.
 		htmlContent, err = fetchHTML(req.URL, false)
 		if err != nil {
