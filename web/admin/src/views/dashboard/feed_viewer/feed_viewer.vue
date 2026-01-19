@@ -13,8 +13,11 @@
           v-model="feedUrl"
           type="text"
           :placeholder="t('feedViewer.placeholder')"
+          style="width: 450px"
+          allow-clear
+          @keypress.enter="fetchFeed"
         />
-        <a-button :loading="isLoading" @click="fetchFeed">{{
+        <a-button :loading="isLoading" :disabled="!feedUrl" @click="fetchFeed">{{
           t('feedViewer.preview')
         }}</a-button>
       </a-space>
