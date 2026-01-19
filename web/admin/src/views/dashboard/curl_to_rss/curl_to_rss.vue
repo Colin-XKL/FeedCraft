@@ -35,6 +35,9 @@
         <div v-show="currentStep === 1" class="step-content">
           <a-space direction="vertical" size="large" fill>
             <a-alert>{{ $t('curlToRss.step1.alert') }}</a-alert>
+            <a-alert v-if="fetchError" type="error" show-icon>
+              {{ fetchError }}
+            </a-alert>
 
             <a-form :model="fetchReq" layout="vertical">
               <a-row :gutter="16">
@@ -527,6 +530,7 @@
 
   // Step 1 State
   const curlInput = ref('');
+  const fetchError = ref('');
   const fetchReq = reactive<JsonFetchReq>({
     method: 'GET',
     url: '',
@@ -568,6 +572,12 @@
 
   const jsonToTree = (data: any, rootPath = ''): TreeNodeData[] => {
     const nodes: TreeNodeData[] = [];
+    const getType = (val: any) => {
+      if (isArray(val)) return 'array';
+      if (isPlainObject(val)) return 'object';
+      return 'primitive';
+    };
+
     if (isPlainObject(data)) {
       Object.entries(data).forEach(([key, value]) => {
         const currentPath = rootPath ? `${rootPath}.${key}` : `.${key}`;
@@ -580,7 +590,7 @@
           title: isPrimitive ? `${key}: ${value}` : key,
           isLeaf: isPrimitive,
           // store meta data if needed, e.g. type
-          data: { type: isArr ? 'array' : isObj ? 'object' : 'primitive' },
+          data: { type: getType(value) },
         };
 
         if (!isPrimitive) {
@@ -600,7 +610,7 @@
           key: currentPath,
           title: `[${index}]`,
           isLeaf: isPrimitive,
-          data: { type: isArr ? 'array' : isObj ? 'object' : 'primitive' },
+          data: { type: getType(item) },
         };
 
         if (!isPrimitive) {
@@ -737,19 +747,55 @@
       return;
     }
     fetching.value = true;
+    fetchError.value = '';
+
     try {
       const res = await fetchJson(fetchReq);
-      jsonContent.value = res.data;
-      if (jsonContent.value) {
-        // Auto-fill link in meta if possible
-        feedMeta.link = fetchReq.url;
-        Message.success(t('curlToRss.msg.fetched'));
-        nextStep();
-      } else {
-        Message.warning(t('curlToRss.msg.emptyResponse'));
+      const { data } = res;
+
+      if (!data) {
+        const msg = t('curlToRss.msg.emptyResponse');
+        fetchError.value = msg;
+        Message.warning(msg);
+        return;
       }
-    } catch (err) {
+
+      // Robust Validation
+      let isValid = false;
+      if (typeof data === 'string') {
+        try {
+          JSON.parse(data);
+          isValid = true;
+        } catch (e) {
+          isValid = false;
+        }
+      } else if (typeof data === 'object') {
+        // If data is already an object, it is valid JSON structure
+        isValid = true;
+      }
+
+      if (!isValid) {
+        const msg = t('curlToRss.msg.invalidJson');
+        fetchError.value = msg;
+        Message.error(msg);
+        return;
+      }
+
+      // Assign to jsonContent
+      // jsonContent expects a string for the watcher to parse it again
+      if (typeof data === 'object') {
+        jsonContent.value = JSON.stringify(data, null, 2);
+      } else {
+        jsonContent.value = data;
+      }
+
+      // Auto-fill link in meta if possible
+      feedMeta.link = fetchReq.url;
+      Message.success(t('curlToRss.msg.fetched'));
+      nextStep();
+    } catch (err: any) {
       console.error(err);
+      fetchError.value = err.message || String(err);
     } finally {
       fetching.value = false;
     }
