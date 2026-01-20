@@ -188,7 +188,10 @@ func checkSearchProvider(activeCheck bool) DependencyStatus {
 		return DependencyStatus{Name: "Search Provider", Status: "Unhealthy", Details: details, Error: "Failed to create provider: " + err.Error()}
 	}
 
-	_, err = prv.Fetch(context.Background(), "FeedCraft")
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	_, err = prv.Fetch(ctx, "FeedCraft")
 	if err != nil {
 		return DependencyStatus{Name: "Search Provider", Status: "Unhealthy", Details: details, Error: err.Error()}
 	}
