@@ -168,8 +168,13 @@ func checkSearchProvider(activeCheck bool) DependencyStatus {
 	var cfg config.SearchProviderConfig
 	err := dao.GetJsonSetting(db, constant.KeySearchProviderConfig, &cfg)
 
-	// If error or no URL, consider not configured
-	if err != nil || cfg.APIUrl == "" {
+	// If error, return unhealthy
+	if err != nil {
+		return DependencyStatus{Name: "Search Provider", Status: "Unhealthy", Error: err.Error()}
+	}
+
+	// If no URL, consider not configured
+	if cfg.APIUrl == "" {
 		return DependencyStatus{Name: "Search Provider", Status: "Not Configured", Error: "Not configured in settings"}
 	}
 
