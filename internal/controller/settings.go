@@ -46,7 +46,10 @@ func SaveSearchProviderConfig(c *gin.Context) {
 
 	// Fetch existing config to handle empty APIKey
 	var existingCfg config.SearchProviderConfig
-	_ = dao.GetJsonSetting(db, constant.KeySearchProviderConfig, &existingCfg)
+	if err := dao.GetJsonSetting(db, constant.KeySearchProviderConfig, &existingCfg); err != nil {
+		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
+		return
+	}
 
 	if cfg.APIKey == "" {
 		cfg.APIKey = existingCfg.APIKey
