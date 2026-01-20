@@ -18,7 +18,8 @@ type HttpFetcherConfig struct {
 
 // SearchFetcherConfig holds the configuration for search-based fetching.
 type SearchFetcherConfig struct {
-	Query string `json:"query"`
+	Query        string `json:"query"`
+	EnhancedMode bool   `json:"enhanced_mode,omitempty"`
 }
 
 // --- Parser-specific Configurations ---

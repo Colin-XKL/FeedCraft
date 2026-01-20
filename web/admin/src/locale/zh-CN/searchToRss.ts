@@ -12,6 +12,9 @@ export default {
   'searchToRss.step1.label': '搜索查询',
   'searchToRss.step1.help': '输入您想要跟踪的关键词或问题。',
   'searchToRss.step1.placeholder': "例如 '最新 AI 新闻' 或 'SpaceX 发射'",
+  'searchToRss.step1.enhancedMode': '增强模式 (AI 驱动)',
+  'searchToRss.step1.enhancedMode.desc':
+    '使用 AI 生成多个优化后的查询词以获得更全面的结果。',
   'searchToRss.step1.button': '预览结果',
   'searchToRss.step2.alert': '找到 {count} 个条目。请在继续之前检查它们。',
   'searchToRss.step3.alert': '自定义此 Feed 在 RSS 阅读器中的显示方式。',

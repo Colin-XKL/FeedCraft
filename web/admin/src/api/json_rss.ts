@@ -27,6 +27,7 @@ export interface ParsedItem {
 
 export interface SearchFetchReq {
   query: string;
+  enhanced_mode?: boolean;
 }
 
 export function parseCurl(
