@@ -40,5 +40,5 @@ export default {
   // other menu
   'menu.settings': 'Settings',
   'menu.settings.searchProvider': 'Search Provider',
-  'menu.systemHealth': 'System Health',
+  'menu.systemHealth': 'Craft Dependencies',
 };

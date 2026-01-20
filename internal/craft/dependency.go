@@ -1,14 +1,10 @@
-package controller
+package craft
 
 import (
-	"FeedCraft/internal/craft"
 	"FeedCraft/internal/dao"
 	"FeedCraft/internal/util"
 	"fmt"
-	"net/http"
 	"strings"
-
-	"github.com/gin-gonic/gin"
 )
 
 type DependencyNode struct {
@@ -20,20 +16,18 @@ type DependencyNode struct {
 	Key      string            `json:"key"` // Unique key for tree
 }
 
-func AnalyzeDependencies(c *gin.Context) {
+func AnalyzeDependencies() ([]*DependencyNode, error) {
 	db := util.GetDatabase()
 
 	// 1. Load Data
 	recipes, err := dao.ListCustomRecipeV2(db)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: "Failed to load recipes: " + err.Error()})
-		return
+		return nil, fmt.Errorf("failed to load recipes: %w", err)
 	}
 
 	flows, err := dao.GetAllCraftFlows(db)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: "Failed to load flows: " + err.Error()})
-		return
+		return nil, fmt.Errorf("failed to load flows: %w", err)
 	}
 	flowMap := make(map[string]dao.CraftFlow)
 	for _, f := range flows {
@@ -42,15 +36,14 @@ func AnalyzeDependencies(c *gin.Context) {
 
 	atoms, err := dao.GetAllCraftAtoms(db)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: "Failed to load atoms: " + err.Error()})
-		return
+		return nil, fmt.Errorf("failed to load atoms: %w", err)
 	}
 	atomMap := make(map[string]dao.CraftAtom)
 	for _, a := range atoms {
 		atomMap[a.Name] = a
 	}
 
-	sysTemplates := craft.GetSysCraftTemplateDict()
+	sysTemplates := GetSysCraftTemplateDict()
 
 	// 2. Build Tree
 	var roots []*DependencyNode
@@ -81,10 +74,10 @@ func AnalyzeDependencies(c *gin.Context) {
 		roots = append(roots, root)
 	}
 
-	c.JSON(http.StatusOK, util.APIResponse[any]{Data: roots})
+	return roots, nil
 }
 
-func analyzeNode(name string, stack map[string]bool, flowMap map[string]dao.CraftFlow, atomMap map[string]dao.CraftAtom, sysTemplates map[string]craft.CraftTemplate, parentKey string) *DependencyNode {
+func analyzeNode(name string, stack map[string]bool, flowMap map[string]dao.CraftFlow, atomMap map[string]dao.CraftAtom, sysTemplates map[string]CraftTemplate, parentKey string) *DependencyNode {
 	node := &DependencyNode{
 		Name: name,
 		Key:  parentKey,
