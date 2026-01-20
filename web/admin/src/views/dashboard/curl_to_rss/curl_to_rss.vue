@@ -35,6 +35,9 @@
         <div v-show="currentStep === 1" class="step-content">
           <a-space direction="vertical" size="large" fill>
             <a-alert>{{ $t('curlToRss.step1.alert') }}</a-alert>
+            <a-alert v-if="fetchError" type="error" show-icon>
+              {{ fetchError }}
+            </a-alert>
 
             <a-form :model="fetchReq" layout="vertical">
               <a-row :gutter="16">
@@ -49,6 +52,7 @@
                       <a-button
                         type="primary"
                         status="success"
+                        :loading="parsingCurl"
                         @click="handleParseCurl"
                       >
                         <template #icon><icon-import /></template>
@@ -162,7 +166,10 @@
         </div>
 
         <!-- STEP 2: Parsing Rules -->
-        <div v-show="currentStep === 2" class="step-content h-full">
+        <div
+          v-show="currentStep === 2"
+          class="step-content h-full step-fixed-height"
+        >
           <a-row :gutter="16" class="h-full">
             <!-- Left: JSON View -->
             <a-col :span="12" class="h-full flex flex-col">
@@ -324,6 +331,16 @@
                       </div>
                     </a-collapse-item>
                   </a-collapse>
+                </div>
+                <!-- Empty State -->
+                <div v-else class="mt-8 text-center text-gray-400">
+                  <a-empty
+                    :description="$t('curlToRss.step2.previewPlaceholder')"
+                  >
+                    <template #extra>
+                      {{ $t('curlToRss.step2.previewPlaceholder.help') }}
+                    </template>
+                  </a-empty>
                 </div>
               </div>
 
@@ -497,7 +514,9 @@
   } from '@/api/json_rss';
   import { createCustomRecipe } from '@/api/custom_recipe';
   import { useI18n } from 'vue-i18n';
-  import _ from 'lodash';
+  import kebabCase from 'lodash/kebabCase';
+  import isPlainObject from 'lodash/isPlainObject';
+  import isArray from 'lodash/isArray';
 
   const router = useRouter();
   const { t } = useI18n();
@@ -506,10 +525,12 @@
   const currentStep = ref(1);
   const fetching = ref(false);
   const parsing = ref(false);
+  const parsingCurl = ref(false);
   const saving = ref(false);
 
   // Step 1 State
   const curlInput = ref('');
+  const fetchError = ref('');
   const fetchReq = reactive<JsonFetchReq>({
     method: 'GET',
     url: '',
@@ -551,11 +572,17 @@
 
   const jsonToTree = (data: any, rootPath = ''): TreeNodeData[] => {
     const nodes: TreeNodeData[] = [];
-    if (_.isPlainObject(data)) {
+    const getType = (val: any) => {
+      if (isArray(val)) return 'array';
+      if (isPlainObject(val)) return 'object';
+      return 'primitive';
+    };
+
+    if (isPlainObject(data)) {
       Object.entries(data).forEach(([key, value]) => {
         const currentPath = rootPath ? `${rootPath}.${key}` : `.${key}`;
-        const isObj = _.isPlainObject(value);
-        const isArr = _.isArray(value);
+        const isObj = isPlainObject(value);
+        const isArr = isArray(value);
         const isPrimitive = !isObj && !isArr;
 
         const node: TreeNodeData = {
@@ -563,7 +590,7 @@
           title: isPrimitive ? `${key}: ${value}` : key,
           isLeaf: isPrimitive,
           // store meta data if needed, e.g. type
-          data: { type: isArr ? 'array' : isObj ? 'object' : 'primitive' },
+          data: { type: getType(value) },
         };
 
         if (!isPrimitive) {
@@ -572,18 +599,18 @@
 
         nodes.push(node);
       });
-    } else if (_.isArray(data)) {
+    } else if (isArray(data)) {
       data.forEach((item: any, index: number) => {
         const currentPath = `${rootPath}[${index}]`;
-        const isObj = _.isPlainObject(item);
-        const isArr = _.isArray(item);
+        const isObj = isPlainObject(item);
+        const isArr = isArray(item);
         const isPrimitive = !isObj && !isArr;
 
         const node: TreeNodeData = {
           key: currentPath,
           title: `[${index}]`,
           isLeaf: isPrimitive,
-          data: { type: isArr ? 'array' : isObj ? 'object' : 'primitive' },
+          data: { type: getType(item) },
         };
 
         if (!isPrimitive) {
@@ -669,6 +696,15 @@
     }
   };
 
+  watch(
+    () => currentStep.value,
+    (val) => {
+      if (val === 4 && !recipeMeta.id && feedMeta.title) {
+        recipeMeta.id = kebabCase(feedMeta.title);
+      }
+    },
+  );
+
   // Step 1 Logic
   const addHeader = () => {
     if (newHeaderKey.value && newHeaderVal.value) {
@@ -687,6 +723,7 @@
       Message.warning(t('curlToRss.msg.enterCurl'));
       return;
     }
+    parsingCurl.value = true;
     try {
       const res = await parseCurl(curlInput.value);
       if (res.data) {
@@ -699,6 +736,8 @@
     } catch (err) {
       // Error handled by interceptor usually
       console.error(err);
+    } finally {
+      parsingCurl.value = false;
     }
   };
 
@@ -708,19 +747,55 @@
       return;
     }
     fetching.value = true;
+    fetchError.value = '';
+
     try {
       const res = await fetchJson(fetchReq);
-      jsonContent.value = res.data;
-      if (jsonContent.value) {
-        // Auto-fill link in meta if possible
-        feedMeta.link = fetchReq.url;
-        Message.success(t('curlToRss.msg.fetched'));
-        nextStep();
-      } else {
-        Message.warning(t('curlToRss.msg.emptyResponse'));
+      const { data } = res;
+
+      if (!data) {
+        const msg = t('curlToRss.msg.emptyResponse');
+        fetchError.value = msg;
+        Message.warning(msg);
+        return;
       }
-    } catch (err) {
+
+      // Robust Validation
+      let isValid = false;
+      if (typeof data === 'string') {
+        try {
+          JSON.parse(data);
+          isValid = true;
+        } catch (e) {
+          isValid = false;
+        }
+      } else if (typeof data === 'object') {
+        // If data is already an object, it is valid JSON structure
+        isValid = true;
+      }
+
+      if (!isValid) {
+        const msg = t('curlToRss.msg.invalidJson');
+        fetchError.value = msg;
+        Message.error(msg);
+        return;
+      }
+
+      // Assign to jsonContent
+      // jsonContent expects a string for the watcher to parse it again
+      if (typeof data === 'object') {
+        jsonContent.value = JSON.stringify(data, null, 2);
+      } else {
+        jsonContent.value = data;
+      }
+
+      // Auto-fill link in meta if possible
+      feedMeta.link = fetchReq.url;
+      Message.success(t('curlToRss.msg.fetched'));
+      nextStep();
+    } catch (err: any) {
       console.error(err);
+      fetchError.value = err.message || String(err);
     } finally {
       fetching.value = false;
     }
@@ -827,10 +902,14 @@
 
   .step-content {
     margin-top: 24px;
-    height: 600px;
+    min-height: 600px;
     /* Ensure content takes available space */
     display: flex;
     flex-direction: column;
+  }
+
+  .step-fixed-height {
+    height: 600px;
   }
 
   .header-row {

@@ -1,6 +1,6 @@
 # Change Log
 
-## [Unreleased] (since v2.1)
+## [v3.0.0] (since v2.1)
 
 ### ⚠️ 破坏性变更 (Breaking Changes)
 

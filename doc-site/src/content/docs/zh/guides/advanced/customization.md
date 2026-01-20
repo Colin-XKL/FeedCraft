@@ -44,6 +44,13 @@ sidebar:
 
 **Recipe** 将特定的 RSS 源 URL 与某个 原子工艺 (AtomCraft) 或组合工艺 (FlowCraft) 绑定。这允许你创建一个持久化的、经过定制的订阅源 URL。
 
+**管理食谱：**
+在后台 **自定义食谱 (Custom Recipes)** 页面，你可以管理所有已创建的食谱。
+
+- **创建 (Create)**：绑定新的 URL 和工艺。
+- **预览 (Preview)**：点击预览按钮，直接在内置的 Feed Viewer 中查看生成的效果。
+- **复制链接 (Copy Link)**：点击复制图标获取完整的订阅 URL。
+
 **示例：**
 
 - **输入 URL：** `https://news.ycombinator.com/rss`
@@ -59,12 +66,12 @@ sidebar:
 ### 支持的提供商
 
 - **LiteLLM / OpenAI Compatible**
-  - **API URL**: 提供商的基础 URL（例如 `https://api.openai.com/v1`）。
+  - **API URL**: 搜索服务的 API 端点（例如 `http://litellm-proxy:4000/v1/search`）。
   - **API Key**: 你的 API 密钥。
-  - **Tool Name**: 特定函数调用工具名称（如果需要，例如某些 Agent 的 `google_search`）。
+  - **Tool Name**: 特定函数调用工具名称（如果需要，例如某些 Agent 的 `google_search`）。工具名称将追加到 API URL 之后（例如 `.../v1/search/google_search`）。
 
 - **SearXNG**
-  - **API URL**: 你的 SearXNG 实例 URL（例如 `http://my-searxng.com`）。
+  - **API URL**: 你的 SearXNG 实例基础 URL（例如 `http://my-searxng.com`）。`/search` 路径会自动追加。
   - **Engines**: (可选) 逗号分隔的搜索引擎列表（例如 `google,bing`）。
 
 ## 高级配置

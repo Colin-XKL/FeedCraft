@@ -34,6 +34,9 @@ export default {
   'htmlToRss.step2.date': 'Date (Optional)',
   'htmlToRss.step2.description': 'Description (Optional)',
   'htmlToRss.step2.previewResults': 'Preview Results',
+  'htmlToRss.step2.previewPlaceholder': 'Preview results will appear here',
+  'htmlToRss.step2.previewPlaceholder.help':
+    'Configure selectors above and click "Run Preview"',
   'htmlToRss.step2.noTitle': '(No Title)',
   'htmlToRss.step2.runPreview': 'Run Preview',
   'htmlToRss.step2.nextStep': 'Next Step',

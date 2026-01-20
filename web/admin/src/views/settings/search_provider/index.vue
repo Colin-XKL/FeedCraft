@@ -27,7 +27,7 @@
           :label="$t('settings.searchProvider.apiUrl')"
           field="api_url"
           required
-          :tooltip="$t('settings.searchProvider.apiUrl.tooltip')"
+          :tooltip="apiUrlTooltip"
         >
           <a-input v-model="form.api_url" :placeholder="apiUrlPlaceholder" />
         </a-form-item>
@@ -39,7 +39,7 @@
         >
           <a-input-password
             v-model="form.api_key"
-            :placeholder="$t('settings.searchProvider.placeholder.apiKey')"
+            :placeholder="apiKeyPlaceholder"
           />
         </a-form-item>
 
@@ -70,9 +70,14 @@
         </a-form-item>
 
         <a-form-item>
-          <a-button type="primary" html-type="submit" :loading="saving">{{
-            $t('settings.searchProvider.save')
-          }}</a-button>
+          <a-space>
+            <a-button type="primary" html-type="submit" :loading="saving">{{
+              $t('settings.searchProvider.save')
+            }}</a-button>
+            <a-button :loading="checking" @click="handleCheckConnection">
+              {{ $t('settings.searchProvider.checkConnection') }}
+            </a-button>
+          </a-space>
         </a-form-item>
       </a-form>
     </a-card>
@@ -99,11 +104,27 @@
     },
   });
 
+  const hasApiKey = ref(false);
+  const checking = ref(false);
+
   const apiUrlPlaceholder = computed(() => {
     if (form.provider === 'searxng') {
       return 'http://localhost:8080';
     }
     return t('settings.searchProvider.placeholder.apiUrl');
+  });
+
+  const apiUrlTooltip = computed(() => {
+    if (form.provider === 'searxng') {
+      return t('settings.searchProvider.apiUrl.tooltip.searxng');
+    }
+    return t('settings.searchProvider.apiUrl.tooltip.litellm');
+  });
+  const apiKeyPlaceholder = computed(() => {
+    if (hasApiKey.value) {
+      return t('settings.searchProvider.placeholder.apiKeyConfigured');
+    }
+    return t('settings.searchProvider.placeholder.apiKey');
   });
 
   const saving = ref(false);
@@ -114,8 +135,9 @@
       const data = res.data?.data || {};
 
       form.api_url = data.api_url || '';
-      form.api_key = data.api_key || '';
+      form.api_key = '';
       form.provider = data.provider || 'litellm';
+      hasApiKey.value = data.has_api_key || false;
 
       if (data.litellm) {
         form.litellm.search_tool_name = data.litellm.search_tool_name || '';
@@ -147,6 +169,29 @@
       Message.error(t('settings.searchProvider.msg.failed'));
     } finally {
       saving.value = false;
+    }
+  };
+
+  const handleCheckConnection = async () => {
+    if (!form.api_url) {
+      Message.error(t('settings.searchProvider.msg.urlRequired'));
+      return;
+    }
+    checking.value = true;
+    try {
+      await axios.post('/api/admin/settings/search-provider/check', {
+        api_url: form.api_url,
+        api_key: form.api_key,
+        provider: form.provider,
+        litellm: form.litellm,
+        searxng: form.searxng,
+      });
+      Message.success(t('settings.searchProvider.msg.checkSuccess'));
+    } catch (err: any) {
+      const msg = err.response?.data?.msg || err.message;
+      Message.error(`${t('settings.searchProvider.msg.checkFailed')}: ${msg}`);
+    } finally {
+      checking.value = false;
     }
   };
 

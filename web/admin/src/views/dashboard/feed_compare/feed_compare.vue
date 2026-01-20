@@ -57,7 +57,7 @@
   const { t } = useI18n();
 
   const feedUrl = ref('');
-  const selectedCraft = ref<string[]>([]);
+  const selectedCraft = ref('');
   // const crafts = ref(['craft1', 'craft2', 'craft3']); // 这里需要从后端获取craft列表
   const originalFeedContent = ref<any>(null);
   const craftAppliedFeedContent = ref<any>(null);

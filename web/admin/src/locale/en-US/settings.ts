@@ -34,7 +34,11 @@ export default {
     "The internal provider logic to use. Supports 'litellm' and 'searxng'.",
   'settings.searchProvider.apiUrl': 'API URL',
   'settings.searchProvider.apiUrl.tooltip':
-    'The base URL of the search provider (e.g. http://litellm-proxy:4000 or http://searxng.local).',
+    'The base URL of the search provider.',
+  'settings.searchProvider.apiUrl.tooltip.litellm':
+    'The search endpoint of your LiteLLM proxy (e.g. http://litellm-proxy:4000/v1/search). The tool name will be appended if configured.',
+  'settings.searchProvider.apiUrl.tooltip.searxng':
+    'The base URL of your SearXNG instance (e.g. http://searxng.local). The /search path is automatically appended.',
   'settings.searchProvider.apiKey': 'API Key',
   'settings.searchProvider.apiKey.tooltip':
     'Optional API Key if the provider requires authentication.',
@@ -52,6 +56,11 @@ export default {
   'settings.searchProvider.placeholder.selectProvider': 'Select Provider',
   'settings.searchProvider.placeholder.apiUrl': 'http://litellm-proxy:4000',
   'settings.searchProvider.placeholder.apiKey': 'sk-...',
+  'settings.searchProvider.placeholder.apiKeyConfigured':
+    'Configured (leave empty to keep)',
   'settings.searchProvider.placeholder.toolName': 'google-search',
   'settings.searchProvider.placeholder.engines': 'google,bing',
+  'settings.searchProvider.checkConnection': 'Check Connection',
+  'settings.searchProvider.msg.checkSuccess': 'Connection successful',
+  'settings.searchProvider.msg.checkFailed': 'Connection failed',
 };

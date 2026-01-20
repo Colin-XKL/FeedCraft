@@ -4,9 +4,9 @@ import (
 	"FeedCraft/internal/config"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 
+	"github.com/itchyny/gojq"
 	"github.com/mmcdole/gofeed"
 )
 
@@ -27,86 +27,117 @@ func (p *JsonParser) Parse(data []byte) (*gofeed.Feed, error) {
 	feed := &gofeed.Feed{}
 
 	// Navigate to items array
-	// If ItemsIterator is empty or ".", use root
-	var itemsNode interface{}
-	if p.Config.ItemsIterator == "" || p.Config.ItemsIterator == "." {
-		itemsNode = rawData
-	} else {
-		itemsNode = traverse(rawData, p.Config.ItemsIterator)
-	}
+	var itemsArray []interface{}
 
-	itemsArray, ok := itemsNode.([]interface{})
-	if !ok {
-		// Try to provide hint about available keys
-		var keys []string
-		if m, ok := rawData.(map[string]interface{}); ok {
-			for k := range m {
-				keys = append(keys, k)
+	// If ItemsIterator is empty or ".", use root
+	if p.Config.ItemsIterator == "" || p.Config.ItemsIterator == "." {
+		if arr, ok := rawData.([]interface{}); ok {
+			itemsArray = arr
+		} else {
+			itemsArray = []interface{}{rawData}
+		}
+	} else {
+		query, err := gojq.Parse(p.Config.ItemsIterator)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse items_iterator '%s': %w", p.Config.ItemsIterator, err)
+		}
+		iter := query.Run(rawData)
+		for {
+			v, ok := iter.Next()
+			if !ok {
+				break
+			}
+			if err, ok := v.(error); ok {
+				return nil, fmt.Errorf("jq execution failed: %w", err)
+			}
+			if arr, ok := v.([]interface{}); ok {
+				itemsArray = append(itemsArray, arr...)
+			} else {
+				itemsArray = append(itemsArray, v)
 			}
 		}
-		return nil, fmt.Errorf("items_iterator '%s' did not resolve to an array. Available keys in root: %v", p.Config.ItemsIterator, keys)
+	}
+
+	// Compile field selectors
+	compile := func(s string) (*gojq.Query, error) {
+		if s == "" {
+			return nil, nil
+		}
+		return gojq.Parse(s)
+	}
+
+	titleQ, err := compile(p.Config.Title)
+	if err != nil {
+		return nil, fmt.Errorf("invalid title selector: %w", err)
+	}
+
+	linkQ, err := compile(p.Config.Link)
+	if err != nil {
+		return nil, fmt.Errorf("invalid link selector: %w", err)
+	}
+
+	dateQ, err := compile(p.Config.Date)
+	if err != nil {
+		return nil, fmt.Errorf("invalid date selector: %w", err)
+	}
+
+	descQ, err := compile(p.Config.Description)
+	if err != nil {
+		return nil, fmt.Errorf("invalid description selector: %w", err)
+	}
+
+	runQuery := func(q *gojq.Query, data interface{}) (interface{}, error) {
+		if q == nil {
+			return nil, nil
+		}
+		iter := q.Run(data)
+		v, ok := iter.Next()
+		if !ok {
+			return nil, nil
+		}
+		if err, ok := v.(error); ok {
+			return nil, err
+		}
+		return v, nil
 	}
 
 	for _, itemNode := range itemsArray {
 		item := &gofeed.Item{}
 
-		if p.Config.Title != "" {
-			if val := traverse(itemNode, p.Config.Title); val != nil {
-				item.Title = fmt.Sprintf("%v", val)
+		if val, err := runQuery(titleQ, itemNode); err != nil {
+			return nil, fmt.Errorf("failed to extract title: %w", err)
+		} else if val != nil {
+			item.Title = fmt.Sprintf("%v", val)
+		}
+
+		if val, err := runQuery(linkQ, itemNode); err != nil {
+			return nil, fmt.Errorf("failed to extract link: %w", err)
+		} else if val != nil {
+			item.Link = fmt.Sprintf("%v", val)
+		}
+
+		if val, err := runQuery(dateQ, itemNode); err != nil {
+			return nil, fmt.Errorf("failed to extract date: %w", err)
+		} else if val != nil {
+			dateStr := fmt.Sprintf("%v", val)
+			item.Published = dateStr
+			// Attempt to parse into PublishedParsed
+			if t, err := time.Parse(time.RFC3339, dateStr); err == nil {
+				item.PublishedParsed = &t
+			} else if t, err := time.Parse("2006-01-02", dateStr); err == nil {
+				item.PublishedParsed = &t
 			}
 		}
 
-		if p.Config.Link != "" {
-			if val := traverse(itemNode, p.Config.Link); val != nil {
-				item.Link = fmt.Sprintf("%v", val)
-			}
-		}
-
-		if p.Config.Date != "" {
-			if val := traverse(itemNode, p.Config.Date); val != nil {
-				dateStr := fmt.Sprintf("%v", val)
-				item.Published = dateStr
-				// Attempt to parse into PublishedParsed
-				if t, err := time.Parse(time.RFC3339, dateStr); err == nil {
-					item.PublishedParsed = &t
-				} else if t, err := time.Parse("2006-01-02", dateStr); err == nil {
-					item.PublishedParsed = &t
-				}
-			}
-		}
-
-		if p.Config.Description != "" {
-			if val := traverse(itemNode, p.Config.Description); val != nil {
-				item.Description = fmt.Sprintf("%v", val)
-				item.Content = item.Description
-			}
+		if val, err := runQuery(descQ, itemNode); err != nil {
+			return nil, fmt.Errorf("failed to extract description: %w", err)
+		} else if val != nil {
+			item.Description = fmt.Sprintf("%v", val)
+			item.Content = item.Description
 		}
 
 		feed.Items = append(feed.Items, item)
 	}
 
 	return feed, nil
-}
-
-// traverse walks the JSON object using dot notation "field.subfield"
-// Note: This is a basic implementation. It doesn't support array indexing in path (e.g. "items.0.title").
-func traverse(data interface{}, path string) interface{} {
-	if path == "" {
-		return data
-	}
-	parts := strings.Split(path, ".")
-	current := data
-
-	for _, part := range parts {
-		m, ok := current.(map[string]interface{})
-		if !ok {
-			return nil
-		}
-		val, exists := m[part]
-		if !exists {
-			return nil
-		}
-		current = val
-	}
-	return current
 }

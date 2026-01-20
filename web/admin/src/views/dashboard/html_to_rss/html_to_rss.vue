@@ -307,6 +307,16 @@
                     </a-collapse-item>
                   </a-collapse>
                 </div>
+                <!-- Empty State -->
+                <div v-else class="mt-8 text-center text-gray-400">
+                  <a-empty
+                    :description="$t('htmlToRss.step2.previewPlaceholder')"
+                  >
+                    <template #extra>
+                      {{ $t('htmlToRss.step2.previewPlaceholder.help') }}
+                    </template>
+                  </a-empty>
+                </div>
               </div>
 
               <!-- Actions Footer -->
@@ -475,9 +485,10 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive, nextTick } from 'vue';
+  import { ref, reactive, nextTick, watch } from 'vue';
   import axios from 'axios';
   import DOMPurify from 'dompurify';
+  import kebabCase from 'lodash/kebabCase';
   import { Message } from '@arco-design/web-vue';
   import {
     IconSelectAll,
@@ -552,6 +563,15 @@
       currentStep.value = step;
     }
   };
+
+  watch(
+    () => currentStep.value,
+    (val) => {
+      if (val === 4 && !recipeMeta.id && feedMeta.title) {
+        recipeMeta.id = kebabCase(feedMeta.title);
+      }
+    },
+  );
 
   const setTargetField = (field: string) => {
     currentTargetField.value = field;
