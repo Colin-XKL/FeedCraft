@@ -15,6 +15,7 @@ import localeHtmlToRss from './zh-CN/htmlToRss';
 import localeCurlToRss from './zh-CN/curlToRss';
 import localeSearchToRss from './zh-CN/searchToRss';
 import localeDependencyService from './zh-CN/dependencyService';
+import localeHealth from './zh-CN/health';
 
 export default {
   ...localeSettings,
@@ -33,4 +34,5 @@ export default {
   ...localeCurlToRss,
   ...localeSearchToRss,
   ...localeDependencyService,
+  ...localeHealth,
 };

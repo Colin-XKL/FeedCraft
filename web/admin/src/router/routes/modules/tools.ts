@@ -49,6 +49,15 @@ const TOOLS: AppRouteRecordRaw = {
         requiresAuth: true,
       },
     },
+    {
+      path: 'health',
+      name: 'SystemHealth',
+      component: () => import('@/views/dashboard/health/index.vue'),
+      meta: {
+        locale: 'menu.systemHealth',
+        requiresAuth: true,
+      },
+    },
   ],
 };
 
