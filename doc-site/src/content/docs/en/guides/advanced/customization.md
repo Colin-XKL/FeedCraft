@@ -74,6 +74,8 @@ Navigate to **Settings > Search Provider** in the admin dashboard.
   - **API URL**: The base URL of your SearXNG instance (e.g., `http://my-searxng.com`). The `/search` path is automatically appended.
   - **Engines**: (Optional) Comma-separated list of engines to use (e.g., `google,bing`).
 
+You can use the **Check Connection** button to verify if FeedCraft can successfully connect to the search provider with the provided credentials.
+
 ## Advanced Configuration
 
 ### Docker Environment Variables
