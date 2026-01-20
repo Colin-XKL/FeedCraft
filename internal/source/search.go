@@ -145,7 +145,7 @@ func (s *EnhancedSearchSource) Generate(ctx context.Context) (*gofeed.Feed, erro
 func expandQueryWithLLM(query string) ([]string, error) {
 	cacheKey := "search_expansion:" + query
 	jsonStr, err := util.CachedFunc(cacheKey, func() (string, error) {
-		prompt := fmt.Sprintf("Analyze the following search query and generate 3-5 distinct, optimized search queries to cover different aspects, languages (if implicit), and sub-topics. Original Query: %s. Return strictly a JSON array of strings, e.g., [\"query1\", \"query2\"]. Do not output any other text.", query)
+		prompt := fmt.Sprintf("Analyze the following search query and generate 3-5 distinct, optimized search queries to cover different aspects, languages (if implicit), and sub-topics. Original Query: %s. Return strictly a JSON array of strings, e.g., [\"query1\", \"query2\"]. Do not output any other text, markdown formatting, or code blocks. Just the raw JSON string.", query)
 		return adapter.SimpleLLMCall(adapter.UseDefaultModel, prompt)
 	})
 	if err != nil {
