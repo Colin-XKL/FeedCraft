@@ -67,12 +67,27 @@ sidebar:
 
 - **LiteLLM / OpenAI Compatible**
   - **API URL**: 搜索服务的 API 端点（例如 `http://litellm-proxy:4000/v1/search`）。
-  - **API Key**: 你的 API 密钥。
+  - **API Key**: 你的 API 密钥。(留空以保留现有密钥)
   - **Tool Name**: 特定函数调用工具名称（如果需要，例如某些 Agent 的 `google_search`）。工具名称将追加到 API URL 之后（例如 `.../v1/search/google_search`）。
 
 - **SearXNG**
   - **API URL**: 你的 SearXNG 实例基础 URL（例如 `http://my-searxng.com`）。`/search` 路径会自动追加。
   - **Engines**: (可选) 逗号分隔的搜索引擎列表（例如 `google,bing`）。
+
+## 依赖服务状态 (Dependency Services)
+
+你可以监控连接到 FeedCraft 的外部服务的健康状态。
+
+在管理后台导航至 **实用工具 (Tools) > 依赖服务状态 (Dependency Services)**。
+
+此页面显示以下服务的状态：
+- **SQLite**: 数据库文件。
+- **Redis**: Redis 缓存连接。
+- **Browserless**: 无头 Chrome 服务连接。
+- **LLM Service**: 配置的 LLM 提供商连接。
+- **Search Provider**: 搜索提供商连接。
+
+点击 **检查健康状态 (Check Health)** 按钮可以对所有服务进行主动连接测试。
 
 ## 高级配置
 
