@@ -233,7 +233,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, reactive } from 'vue';
+  import { ref, reactive, watch } from 'vue';
   import { useRouter } from 'vue-router';
   import { Message } from '@arco-design/web-vue';
   import { IconArrowRight, IconSave } from '@arco-design/web-vue/es/icon';
@@ -241,6 +241,7 @@
   import { previewSearch, ParsedItem, SearchFetchReq } from '@/api/json_rss';
   import { createCustomRecipe } from '@/api/custom_recipe';
   import { useI18n } from 'vue-i18n';
+  import kebabCase from 'lodash/kebabCase';
 
   const router = useRouter();
   const { t } = useI18n();
@@ -285,6 +286,15 @@
       currentStep.value = step;
     }
   };
+
+  watch(
+    () => currentStep.value,
+    (val) => {
+      if (val === 4 && !recipeMeta.id && feedMeta.title) {
+        recipeMeta.id = kebabCase(feedMeta.title);
+      }
+    },
+  );
 
   // Step 1 -> 2
   const handlePreview = async () => {
