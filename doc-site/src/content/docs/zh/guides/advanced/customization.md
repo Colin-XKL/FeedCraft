@@ -81,6 +81,7 @@ sidebar:
 在管理后台导航至 **实用工具 (Tools) > 依赖服务状态 (Dependency Services)**。
 
 此页面显示以下服务的状态：
+
 - **SQLite**: 数据库文件。
 - **Redis**: Redis 缓存连接。
 - **Browserless**: 无头 Chrome 服务连接。

@@ -81,6 +81,7 @@ You can monitor the health of external services connected to FeedCraft.
 Navigate to **Tools > Dependency Services** in the admin dashboard.
 
 This page displays the status of:
+
 - **SQLite**: The database file.
 - **Redis**: Connection to Redis cache.
 - **Browserless**: Connection to the headless Chrome service.
