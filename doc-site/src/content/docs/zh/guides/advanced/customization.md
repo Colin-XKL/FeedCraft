@@ -115,3 +115,17 @@ services:
 ```
 
 服务默认监听在 80 端口，你也可以在同一网络下的其他容器中，使用 `http://app.feed-craft/xxx` 这样来进行访问(比如RSS 阅读器中通过这种方式来走内网通信订阅)。
+
+## 依赖服务 (Dependency Services)
+
+**依赖服务** 仪表板 (`/dependencies`) 为你的系统提供全面的健康检查。
+
+导航至 **Dashboard > 依赖服务 (Dependency Services)**（或侧边栏中的插头图标）以查看以下组件的状态：
+
+- **SQLite**: 数据库连接和文件访问。
+- **Redis**: 缓存服务器的连接状态。
+- **Browserless**: 无头 Chrome 实例的连接性（`fulltext-plus` 功能需要）。
+- **LLM Service**: 与配置的 AI 提供商（OpenAI, Ollama 等）的连接和鉴权状态。
+- **Search Provider**: 与配置的搜索引擎（SearXNG, LiteLLM）的连接性。
+
+使用 **检查健康 (Check Health)** 按钮执行实时连接测试。这对于排查配置问题或验证外部服务是否可达非常有用。

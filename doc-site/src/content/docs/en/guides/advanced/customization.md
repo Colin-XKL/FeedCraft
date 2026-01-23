@@ -115,3 +115,17 @@ services:
 ```
 
 The service listens on port 80 by default. You can also access it from other containers in the same network using `http://app.feed-craft/xxx` (e.g., for internal communication with an RSS reader).
+
+## Dependency Services
+
+The **Dependency Services** dashboard (`/dependencies`) provides a comprehensive health check for your system.
+
+Navigate to **Dashboard > Dependency Services** (or the plug icon in the sidebar) to view the status of:
+
+- **SQLite**: Database connectivity and file access.
+- **Redis**: Connection status to the cache server.
+- **Browserless**: Connectivity to the headless Chrome instance (required for `fulltext-plus`).
+- **LLM Service**: Connectivity and authentication with your configured AI provider (OpenAI, Ollama, etc.).
+- **Search Provider**: Connectivity to your configured search engine (SearXNG, LiteLLM).
+
+Use the **Check Health** button to perform a real-time connectivity test. This is useful for troubleshooting configuration issues or verifying that your external services are reachable.
