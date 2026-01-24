@@ -74,6 +74,19 @@ sidebar:
   - **API URL**: 你的 SearXNG 实例基础 URL（例如 `http://my-searxng.com`）。`/search` 路径会自动追加。
   - **Engines**: (可选) 逗号分隔的搜索引擎列表（例如 `google,bing`）。
 
+## 依赖服务 (Dependency Services)
+
+**依赖服务** 仪表盘 (Dashboard > Dependency Services) 提供了所有连接的外部服务的健康检查概览。
+
+它监控以下服务的状态：
+-   **SQLite**: 数据库连接。
+-   **Redis**: 缓存服务连接及延迟。
+-   **Browserless**: 无头浏览器服务可用性（全文提取功能必须）。
+-   **LLM Service**: 与配置的 AI 提供商的连接。
+-   **Search Provider**: 与配置的搜索引擎的连接。
+
+如果“增强模式”或“全文提取”等功能出现故障，请使用此仪表盘排查连接问题。
+
 ## 高级配置
 
 ### Docker 环境变量

@@ -16,7 +16,8 @@ FeedCraft includes a **Search to RSS** tool that allows you to turn search queri
 ### Step 1: Search Query
 
 1.  Enter your **Search Query** (e.g., `latest AI news` or `SpaceX launches`).
-2.  Click **Preview Results** to fetch results.
+2.  **Enhanced Mode**: (Optional) Check this to use an LLM to generate multiple optimized search queries. This helps discover more relevant content that might be missed by a single keyword search.
+3.  Click **Preview Results** to fetch results.
 
 ### Step 2: Preview Results
 
