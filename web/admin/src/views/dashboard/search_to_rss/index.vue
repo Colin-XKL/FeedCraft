@@ -233,8 +233,9 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, reactive } from 'vue';
+  import { ref, reactive, watch } from 'vue';
   import { useRouter } from 'vue-router';
+  import kebabCase from 'lodash/kebabCase';
   import { Message } from '@arco-design/web-vue';
   import { IconArrowRight, IconSave } from '@arco-design/web-vue/es/icon';
   import XHeader from '@/components/header/x-header.vue';
@@ -286,6 +287,15 @@
     }
   };
 
+  watch(
+    () => currentStep.value,
+    (val) => {
+      if (val === 4 && !recipeMeta.id && feedMeta.title) {
+        recipeMeta.id = kebabCase(feedMeta.title);
+      }
+    }
+  );
+
   // Step 1 -> 2
   const handlePreview = async () => {
     if (!fetchReq.query) {
@@ -319,7 +329,7 @@
         query: fetchReq.query,
       });
       feedMeta.link = `https://google.com/search?q=${encodeURIComponent(
-        fetchReq.query,
+        fetchReq.query
       )}`; // Fallback link
 
       nextStep();
@@ -367,7 +377,7 @@
     } catch (err: any) {
       console.error(err);
       Message.error(
-        t('searchToRss.msg.saveFailed', { msg: err.message || err }),
+        t('searchToRss.msg.saveFailed', { msg: err.message || err })
       );
     } finally {
       saving.value = false;
