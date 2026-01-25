@@ -74,6 +74,19 @@ Navigate to **Settings > Search Provider** in the admin dashboard.
   - **API URL**: The base URL of your SearXNG instance (e.g., `http://my-searxng.com`). The `/search` path is automatically appended.
   - **Engines**: (Optional) Comma-separated list of engines to use (e.g., `google,bing`).
 
+## Service Dependency Monitoring
+
+FeedCraft relies on several external services (Redis, Browserless/Puppeteer) and internal components (SQLite). You can monitor their health status in the admin dashboard.
+
+1.  Navigate to **Settings > Dependency Services**.
+2.  The dashboard displays the status of:
+    - **Database**: SQLite connection.
+    - **Redis**: Cache service connection.
+    - **Browserless**: Headless browser service (required for `fulltext-plus`).
+    - **Search Provider**: Connectivity to the configured search API (if enabled).
+
+If a service is down, the dashboard will provide error details to help with troubleshooting.
+
 ## Advanced Configuration
 
 ### Docker Environment Variables

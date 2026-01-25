@@ -16,7 +16,8 @@ FeedCraft 包含一个 **搜索转 RSS (Search to RSS)** 工具，允许你将�
 ### 第一步：搜索查询 (Search Query)
 
 1.  输入你的 **搜索查询**（例如 `latest AI news` 或 `SpaceX launches`）。
-2.  点击 **预览结果 (Preview Results)** 获取结果。
+2.  **增强模式 (Enhanced Mode)**: (可选) 开启此选项以使用 LLM 生成多个优化后的查询词，以获得更广泛的覆盖。
+3.  点击 **预览结果 (Preview Results)** 获取结果。
 
 ### 第二步：预览结果 (Preview Results)
 

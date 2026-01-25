@@ -74,6 +74,19 @@ sidebar:
   - **API URL**: 你的 SearXNG 实例基础 URL（例如 `http://my-searxng.com`）。`/search` 路径会自动追加。
   - **Engines**: (可选) 逗号分隔的搜索引擎列表（例如 `google,bing`）。
 
+## 服务依赖监控 (Service Dependency Monitoring)
+
+FeedCraft 依赖多个外部服务 (Redis, Browserless/Puppeteer) 和内部组件 (SQLite)。你可以在管理后台监控它们的健康状态。
+
+1.  导航至 **Settings > Dependency Services**。
+2.  仪表板显示以下组件的状态：
+    - **Database**: SQLite 数据库连接。
+    - **Redis**: 缓存服务连接。
+    - **Browserless**: 无头浏览器服务 (用于 `fulltext-plus`)。
+    - **Search Provider**: 已配置的搜索 API 连接 (如果启用)。
+
+如果某个服务宕机，仪表板将提供错误详细信息以帮助排查问题。
+
 ## 高级配置
 
 ### Docker 环境变量
