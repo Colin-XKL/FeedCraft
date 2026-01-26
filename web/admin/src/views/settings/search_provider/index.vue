@@ -40,6 +40,7 @@
           <a-input-password
             v-model="form.api_key"
             :placeholder="apiKeyPlaceholder"
+            @input="apiKeyChanged = true"
           />
         </a-form-item>
 
@@ -106,6 +107,7 @@
 
   const hasApiKey = ref(false);
   const checking = ref(false);
+  const apiKeyChanged = ref(false);
 
   const apiUrlPlaceholder = computed(() => {
     if (form.provider === 'searxng') {
@@ -145,6 +147,7 @@
       if (data.searxng) {
         form.searxng.engines = data.searxng.engines || '';
       }
+      apiKeyChanged.value = false;
     } catch (err) {
       // ignore
     }
@@ -163,8 +166,10 @@
         provider: form.provider,
         litellm: form.litellm,
         searxng: form.searxng,
+        update_api_key: apiKeyChanged.value,
       });
       Message.success(t('settings.searchProvider.msg.saved'));
+      loadConfig();
     } catch (err) {
       Message.error(t('settings.searchProvider.msg.failed'));
     } finally {
@@ -185,6 +190,7 @@
         provider: form.provider,
         litellm: form.litellm,
         searxng: form.searxng,
+        update_api_key: apiKeyChanged.value,
       });
       Message.success(t('settings.searchProvider.msg.checkSuccess'));
     } catch (err: any) {
