@@ -24,8 +24,8 @@ func TestSaveSearchProviderConfig(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpDir)
 
-	os.Setenv("DB_SQLITE_PATH", tmpDir)
-	os.Setenv("FC_DB_SQLITE_PATH", tmpDir)
+	t.Setenv("DB_SQLITE_PATH", tmpDir)
+	t.Setenv("FC_DB_SQLITE_PATH", tmpDir)
 	db := util.GetDatabase()
 	if err := db.AutoMigrate(&dao.SystemSetting{}); err != nil {
 		t.Fatalf("Failed to migrate: %v", err)
