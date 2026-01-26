@@ -75,6 +75,21 @@ sidebar:
   - **Engines**: (可选) 逗号分隔的搜索引擎列表（例如 `google,bing`）。
 
 > **提示：** 在保存之前，你可以使用 **检查连接 (Check Connection)** 按钮来验证与提供商的连接。
+## 依赖服务 (Dependency Services)
+
+**依赖服务** 仪表盘 (Dashboard > Dependency Services) 提供了所有连接的外部服务的健康检查概览。
+
+它监控以下服务的状态：
+
+- **SQLite**: 数据库连接。
+- **Redis**: 缓存服务连接及延迟。
+- **Browserless**: 无头浏览器服务可用性（全文提取功能必须）。
+- **LLM Service**: 与配置的 AI 提供商的连接。
+- **Search Provider**: 与配置的搜索引擎的连接。
+
+如果“增强模式”或“全文提取”等功能出现故障，请使用此仪表盘排查连接问题。
+
+你可以使用 **检查连接 (Check Connection)** 按钮来验证 FeedCraft 是否可以成功连接到配置的搜索提供商。
 
 ## 高级配置
 

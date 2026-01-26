@@ -75,6 +75,21 @@ Navigate to **Settings > Search Provider** in the admin dashboard.
   - **Engines**: (Optional) Comma-separated list of engines to use (e.g., `google,bing`).
 
 > **Tip:** You can use the **Check Connection** button to verify connectivity with your provider before saving.
+## Dependency Services
+
+The **Dependency Services** dashboard (Dashboard > Dependency Services) provides a health check overview of all connected external services.
+
+It monitors the status of:
+
+- **SQLite**: Database connectivity.
+- **Redis**: Cache service connectivity and latency.
+- **Browserless**: Headless browser service availability (required for fulltext extraction).
+- **LLM Service**: Connectivity to the configured AI provider.
+- **Search Provider**: Connectivity to the configured search engine.
+
+Use this dashboard to troubleshoot connectivity issues if features like "Enhanced Mode" or "Fulltext Extraction" are failing.
+
+You can use the **Check Connection** button to verify if FeedCraft can successfully connect to the search provider with the provided credentials.
 
 ## Advanced Configuration
 
