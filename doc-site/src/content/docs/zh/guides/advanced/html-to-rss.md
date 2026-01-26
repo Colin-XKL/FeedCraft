@@ -18,12 +18,12 @@ HTML to RSS 工具允许你：
 
 ## 如何使用
 
-1.  在管理后台导航至 **Tools > HTML to RSS**。
+1.  在管理后台导航至 **Worktable > HTML to RSS**。
 
 ### 第一步：目标 URL (Target URL)
 
 1.  输入你想要抓取的网页完整 URL（例如博客列表或新闻网站）。
-2.  **增强模式 (Enhance Mode)**：如果网站需要 JavaScript 来加载内容（使用无头浏览器），请启用此选项。
+2.  **增强模式 (Enhanced Mode)**：如果网站需要 JavaScript 来加载内容（使用无头浏览器），请启用此选项。
 3.  点击 **抓取并下一步 (Fetch and Next)**。
 
 ### 第二步：提取规则 (Extract Rules)

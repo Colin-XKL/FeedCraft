@@ -16,7 +16,7 @@ The CURL to RSS tool helps you:
 
 ## How to use
 
-Navigate to **Tools > CURL to RSS** in the admin dashboard.
+Navigate to **Worktable > Curl to RSS** in the admin dashboard.
 
 ### Step 1: Request Configuration
 
