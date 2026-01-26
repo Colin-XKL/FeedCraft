@@ -88,6 +88,8 @@ It monitors the status of:
 
 Use this dashboard to troubleshoot connectivity issues if features like "Enhanced Mode" or "Fulltext Extraction" are failing.
 
+You can use the **Check Connection** button to verify if FeedCraft can successfully connect to the search provider with the provided credentials.
+
 ## Advanced Configuration
 
 ### Docker Environment Variables
