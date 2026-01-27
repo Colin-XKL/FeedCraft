@@ -19,11 +19,11 @@ Doc: [English](https://feed-craft-doc.vercel.app/en) | [简体中文](https://fe
 
 **FeedCraft** is a simple, powerful RSS feed processing tool.  
 It can serve as middleware to handle your RSS feeds; you can use it to extract the main text, perform intelligent translation, generate article summaries through AI, filter articles using natural language, and more.  
-It can also generate RSS for any site that does not support RSS, using AI to automatically search for topics you want to subscribe to and create RSS feeds.
+It includes a built-in visual RSS generator (HTML/Curl/Search to RSS) that can turn web pages, API responses, or search results into RSS feeds.
 
 **FeedCraft** 是一个简单、强大的 RSS 源处理工具.
 他可以作为一个中间件处理你的RSS源, 你可以用它来提取正文、智能翻译、通过AI生成文章摘要、通过自然语言筛选文章等.
-也可以为不支持RSS任意站点生成RSS、借助AI自动搜索你想要订阅的话题生成RSS
+它内置了可视化 RSS 生成器 (HTML/Curl/Search to RSS)，支持将网页、API (Curl) 或搜索结果转换为 RSS 订阅源。
 
 ## 核心特性
 
