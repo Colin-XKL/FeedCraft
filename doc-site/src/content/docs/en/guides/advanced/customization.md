@@ -75,7 +75,6 @@ Navigate to **Settings > Search Provider** in the admin dashboard.
   - **Engines**: (Optional) Comma-separated list of engines to use (e.g., `google,bing`).
 
 > **Tip:** You can use the **Check Connection** button to verify connectivity with your provider before saving.
-
 ## Dependency Services
 
 The **Dependency Services** dashboard (Dashboard > Dependency Services) provides a health check overview of all connected external services.

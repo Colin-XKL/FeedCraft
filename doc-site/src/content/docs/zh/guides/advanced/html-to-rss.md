@@ -18,7 +18,7 @@ HTML to RSS 工具允许你：
 
 ## 如何使用
 
-1.  在管理后台导航至 **Worktable > HTML to RSS**。
+1.  在管理后台导航至 **工作台 > HTML 转 RSS**。
 
 ### 第一步：目标 URL (Target URL)
 
