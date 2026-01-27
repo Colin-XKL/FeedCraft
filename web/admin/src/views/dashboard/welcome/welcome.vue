@@ -56,12 +56,17 @@
         <a-row :gutter="20">
           <a-col :span="16">
             <a-card title="快速开始" :bordered="false" hoverable>
-              <p class="py-2">
+              <div class="py-2 flex items-center gap-2">
                 地址:
-                <span class="bg-slate-200 rounded-md border-0 px-2 py-0.5"
+                <span
+                  class="bg-slate-200 rounded-md border-0 px-2 py-0.5 font-mono"
                   >/craft/{choose_craft_option}?input_url={input_rss_url}</span
                 >
-              </p>
+                <a-button size="mini" @click="copyUrl">
+                  <template #icon><icon-copy /></template>
+                  {{ t('urlGenerator.copyUrl') }}
+                </a-button>
+              </div>
               可使用的Craft Option:
               <div class="grid grid-cols-2 gap-2">
                 <div>
@@ -119,6 +124,22 @@
 
 <script lang="ts" setup>
   import logo from '@/assets/logo.png';
+  import { useI18n } from 'vue-i18n';
+  import { Message } from '@arco-design/web-vue';
+  import { IconCopy } from '@arco-design/web-vue/es/icon';
+
+  const { t } = useI18n();
+
+  const copyUrl = async () => {
+    const text = '/craft/{choose_craft_option}?input_url={input_rss_url}';
+    try {
+      await navigator.clipboard.writeText(text);
+      Message.success(t('urlGenerator.copied'));
+    } catch (err) {
+      console.error(err);
+      Message.error('Failed to copy');
+    }
+  };
 </script>
 
 <script lang="ts">
