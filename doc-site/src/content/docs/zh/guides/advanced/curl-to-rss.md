@@ -16,7 +16,7 @@ JSON RSS 生成器可以帮助你：
 
 ## 如何使用
 
-在管理后台导航至 **Tools > CURL to RSS**。
+在管理后台导航至 **工作台 > Curl 转 RSS**。
 
 ### 第一步：请求配置 (Request Configuration)
 

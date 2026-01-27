@@ -11,7 +11,7 @@ FeedCraft 包含一个 **搜索转 RSS (Search to RSS)** 工具，允许你将�
 
 ## 如何使用
 
-1.  在管理后台导航至 **Tools > Search to RSS**。
+1.  在管理后台导航至 **工作台 > 搜索 转 RSS**。
 
 ### 第一步：搜索查询 (Search Query)
 
