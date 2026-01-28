@@ -123,18 +123,24 @@
                   </div>
                   <div class="flex gap-2">
                     <a-input
+                      ref="newHeaderKeyRef"
                       v-model="newHeaderKey"
                       :placeholder="$t('curlToRss.placeholder.key')"
                       style="width: 30%"
+                      @press-enter="addHeader"
                     />
                     <a-input
                       v-model="newHeaderVal"
                       :placeholder="$t('curlToRss.placeholder.value')"
                       style="width: 60%"
+                      @press-enter="addHeader"
                     />
-                    <a-button @click="addHeader">{{
-                      $t('curlToRss.step1.add')
-                    }}</a-button>
+                    <a-button
+                      :disabled="!newHeaderKey || !newHeaderVal"
+                      @click="addHeader"
+                    >
+                      {{ $t('curlToRss.step1.add') }}
+                    </a-button>
                   </div>
                 </a-space>
               </a-form-item>
@@ -539,6 +545,7 @@
   });
   const newHeaderKey = ref('');
   const newHeaderVal = ref('');
+  const newHeaderKeyRef = ref<any>(null);
 
   // Step 2 State
   const jsonContent = ref('');
@@ -639,7 +646,7 @@
         console.error('Invalid JSON content:', e);
         treeData.value = [];
       }
-    },
+    }
   );
 
   const getRelativePath = (fullPath: string, listSel: string) => {
@@ -659,7 +666,7 @@
 
   const handleNodeSelect = (
     selectedKeys: (string | number)[],
-    { node }: { node: TreeNodeData },
+    { node }: { node: TreeNodeData }
   ) => {
     if (!activeField.value || !node.key) return;
 
@@ -702,7 +709,7 @@
       if (val === 4 && !recipeMeta.id && feedMeta.title) {
         recipeMeta.id = kebabCase(feedMeta.title);
       }
-    },
+    }
   );
 
   // Step 1 Logic
@@ -711,6 +718,7 @@
       fetchReq.headers[newHeaderKey.value] = newHeaderVal.value;
       newHeaderKey.value = '';
       newHeaderVal.value = '';
+      newHeaderKeyRef.value?.focus();
     }
   };
 
@@ -823,7 +831,7 @@
         Message.warning(t('curlToRss.msg.noItems'));
       } else {
         Message.success(
-          t('curlToRss.msg.parsedItems', { count: parsedItems.value.length }),
+          t('curlToRss.msg.parsedItems', { count: parsedItems.value.length })
         );
       }
     } catch (err) {
