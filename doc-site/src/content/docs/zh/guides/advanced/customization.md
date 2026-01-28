@@ -61,7 +61,7 @@ sidebar:
 
 要使用 **搜索转 RSS (Search to RSS)** 功能，你必须配置搜索提供商。
 
-在管理后台导航至 **设置 (Settings) > Search Provider**。
+在管理后台导航至 **设置 (Settings) > 搜索服务提供商 (Search Provider)**。
 
 ### 支持的提供商
 
@@ -78,7 +78,7 @@ sidebar:
 
 ## 依赖服务 (Dependency Services)
 
-**依赖服务** 仪表盘 (Dashboard > Dependency Services) 提供了所有连接的外部服务的健康检查概览。
+**依赖服务** 仪表盘 (设置 (Settings) > 依赖服务状态 (Dependency Services)) 提供了所有连接的外部服务的健康检查概览。
 
 它监控以下服务的状态：
 

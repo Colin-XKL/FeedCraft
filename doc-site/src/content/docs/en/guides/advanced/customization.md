@@ -78,7 +78,7 @@ Navigate to **Settings > Search Provider** in the admin dashboard.
 
 ## Dependency Services
 
-The **Dependency Services** dashboard (Dashboard > Dependency Services) provides a health check overview of all connected external services.
+The **Dependency Services** dashboard (Settings > Dependency Services) provides a health check overview of all connected external services.
 
 It monitors the status of:
 
