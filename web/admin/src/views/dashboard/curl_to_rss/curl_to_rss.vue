@@ -123,18 +123,24 @@
                   </div>
                   <div class="flex gap-2">
                     <a-input
+                      ref="newHeaderKeyRef"
                       v-model="newHeaderKey"
                       :placeholder="$t('curlToRss.placeholder.key')"
                       style="width: 30%"
+                      @press-enter="addHeader"
                     />
                     <a-input
                       v-model="newHeaderVal"
                       :placeholder="$t('curlToRss.placeholder.value')"
                       style="width: 60%"
+                      @press-enter="addHeader"
                     />
-                    <a-button @click="addHeader">{{
-                      $t('curlToRss.step1.add')
-                    }}</a-button>
+                    <a-button
+                      :disabled="!newHeaderKey || !newHeaderVal"
+                      @click="addHeader"
+                    >
+                      {{ $t('curlToRss.step1.add') }}
+                    </a-button>
                   </div>
                 </a-space>
               </a-form-item>
@@ -539,6 +545,7 @@
   });
   const newHeaderKey = ref('');
   const newHeaderVal = ref('');
+  const newHeaderKeyRef = ref<any>(null);
 
   // Step 2 State
   const jsonContent = ref('');
@@ -711,6 +718,7 @@
       fetchReq.headers[newHeaderKey.value] = newHeaderVal.value;
       newHeaderKey.value = '';
       newHeaderVal.value = '';
+      newHeaderKeyRef.value?.focus();
     }
   };
 
