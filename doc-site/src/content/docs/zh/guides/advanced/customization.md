@@ -78,7 +78,7 @@ sidebar:
 
 ## 依赖服务 (Dependency Services)
 
-**依赖服务** 仪表盘 (Dashboard > Dependency Services) 提供了所有连接的外部服务的健康检查概览。
+**依赖服务** 仪表盘 (**设置 (Settings) > 依赖服务状态 (Dependency Services)**) 提供了所有连接的外部服务的健康检查概览。
 
 它监控以下服务的状态：
 
