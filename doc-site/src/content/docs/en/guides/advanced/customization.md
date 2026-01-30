@@ -78,7 +78,7 @@ Navigate to **Settings > Search Provider** in the admin dashboard.
 
 ## Dependency Services
 
-The **Dependency Services** dashboard (Dashboard > Dependency Services) provides a health check overview of all connected external services.
+The **Dependency Services** dashboard (**Settings > Dependency Services**) provides a health check overview of all connected external services.
 
 It monitors the status of:
 
@@ -91,6 +91,26 @@ It monitors the status of:
 Use this dashboard to troubleshoot connectivity issues if features like "Enhanced Mode" or "Fulltext Extraction" are failing.
 
 You can use the **Check Connection** button to verify if FeedCraft can successfully connect to the search provider with the provided credentials.
+
+## Tools
+
+The **Tools** menu provides utilities to debug and visualize your feeds.
+
+### Craft Dependencies
+
+Navigate to **Tools > Craft Dependencies**. This page visualizes the dependency graph of all built-in AtomCrafts and FlowCrafts, showing how they relate to each other.
+
+### Feed Compare
+
+Navigate to **Tools > Feed Compare**. This tool allows you to compare an original RSS feed with a processed version (after applying a Recipe or Craft).
+
+- **Source URL**: The original feed URL.
+- **Craft/Flow**: Select the processing logic.
+- **Compare**: Visualizes the difference (e.g., items filtered out).
+
+### RSS Viewer
+
+Navigate to **Tools > RSS Viewer**. A simple utility to render any RSS feed in a readable format, useful for debugging raw XML outputs.
 
 ## Advanced Configuration
 
