@@ -37,7 +37,7 @@ You can define a FlowCraft named `digest-and-translate` containing the following
 
 #### Managing FlowCraft
 
-You can create and manage FlowCrafts on the **FlowCraft** page in the dashboard.
+Navigate to **Worktable > FlowCraft** to create and manage FlowCrafts.
 The editor allows you to add AtomCrafts and arrange their execution order. Use arrow buttons (⬆️/⬇️) to adjust the order, or the trash icon to remove them from the flow.
 
 ### Recipe
@@ -45,7 +45,7 @@ The editor allows you to add AtomCrafts and arrange their execution order. Use a
 **Recipe** binds a specific RSS source URL to an AtomCraft or FlowCraft. This allows you to create a persistent, customized feed URL.
 
 **Managing Recipes:**
-In the **Custom Recipes** dashboard, you can manage all your created recipes.
+Navigate to **Worktable > Custom Recipe** to manage all your created recipes.
 
 - **Create**: Bind a new URL and craft.
 - **Preview**: Click the preview button to verify the output directly in the built-in Feed Viewer.
@@ -78,7 +78,7 @@ Navigate to **Settings > Search Provider** in the admin dashboard.
 
 ## Dependency Services
 
-The **Dependency Services** dashboard (Dashboard > Dependency Services) provides a health check overview of all connected external services.
+The **Dependency Services** dashboard (Settings > Dependency Services) provides a health check overview of all connected external services.
 
 It monitors the status of:
 
