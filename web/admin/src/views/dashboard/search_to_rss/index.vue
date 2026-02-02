@@ -293,7 +293,7 @@
       if (val === 4 && !recipeMeta.id && feedMeta.title) {
         recipeMeta.id = kebabCase(feedMeta.title);
       }
-    }
+    },
   );
 
   // Step 1 -> 2
@@ -329,7 +329,7 @@
         query: fetchReq.query,
       });
       feedMeta.link = `https://google.com/search?q=${encodeURIComponent(
-        fetchReq.query
+        fetchReq.query,
       )}`; // Fallback link
 
       nextStep();
@@ -375,7 +375,7 @@
       router.push({ name: 'CustomRecipe' });
     } catch (err: any) {
       Message.error(
-        t('searchToRss.msg.saveFailed', { msg: err.message || err })
+        t('searchToRss.msg.saveFailed', { msg: err.message || err }),
       );
     } finally {
       saving.value = false;
