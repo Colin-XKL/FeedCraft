@@ -78,7 +78,7 @@ sidebar:
 
 ## 依赖服务 (Dependency Services)
 
-**依赖服务** 仪表盘 (Dashboard > Dependency Services) 提供了所有连接的外部服务的健康检查概览。
+**依赖服务** 仪表盘 (**设置 (Settings) > 依赖服务状态 (Dependency Services)**) 提供了所有连接的外部服务的健康检查概览。
 
 它监控以下服务的状态：
 
@@ -91,6 +91,40 @@ sidebar:
 如果“增强模式”或“全文提取”等功能出现故障，请使用此仪表盘排查连接问题。
 
 你可以使用 **检查连接 (Check Connection)** 按钮来验证 FeedCraft 是否可以成功连接到配置的搜索提供商。
+
+## 实用工具 (Tools)
+
+**实用工具 (Tools)** 菜单提供了多个用于调试和分析 Feed 的工具。
+
+### Craft 依赖检查 (Craft Dependencies)
+
+导航至 **实用工具 (Tools) > Craft 依赖检查 (Craft Dependencies)**。
+
+该工具可视化你配置的 Crafts (Recipe, Flow, Atom) 的内部依赖拓扑。它帮助你识别配置中缺失的组件或循环依赖。
+
+- **绿色节点**：健康组件。
+- **红色节点**：缺失组件。
+- **橙色节点**：检测到循环依赖。
+
+### Feed 对比 (Feed Compare)
+
+导航至 **实用工具 (Tools) > Feed 对比 (Feed Compare)**。
+
+该工具允许你比较原始 RSS 源与处理后的版本。
+
+1.  输入原始 RSS URL。
+2.  选择你要应用的 **AtomCraft** 或 **FlowCraft**。
+3.  点击 **对比 (Compare)** 按钮，并排查看内容、条目数量和结构的差异。
+
+### RSS 预览 (RSS Viewer)
+
+导航至 **实用工具 (Tools) > RSS 预览 (RSS Viewer)**。
+
+这是一个内置的 RSS 阅读器，用于调试。
+
+1.  输入任意 RSS URL (内部或外部)。
+2.  点击 **预览 (View)** 以渲染 Feed 条目。
+3.  你可以检查原始 XML 或查看渲染后的 HTML 内容。
 
 ## 高级配置
 

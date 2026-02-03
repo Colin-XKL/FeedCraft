@@ -78,7 +78,7 @@ Navigate to **Settings > Search Provider** in the admin dashboard.
 
 ## Dependency Services
 
-The **Dependency Services** dashboard (Dashboard > Dependency Services) provides a health check overview of all connected external services.
+The **Dependency Services** dashboard (**Settings > Dependency Services**) provides a health check overview of all connected external services.
 
 It monitors the status of:
 
@@ -91,6 +91,40 @@ It monitors the status of:
 Use this dashboard to troubleshoot connectivity issues if features like "Enhanced Mode" or "Fulltext Extraction" are failing.
 
 You can use the **Check Connection** button to verify if FeedCraft can successfully connect to the search provider with the provided credentials.
+
+## Tools
+
+The **Tools** menu provides several utilities for debugging and analyzing your feeds.
+
+### Craft Dependencies (System Health)
+
+Navigate to **Tools > Craft Dependencies**.
+
+This tool visualizes the internal dependency topology of your configured Crafts (Recipes, Flows, Atoms). It helps you identify missing components or circular dependencies in your configuration.
+
+- **Green Node**: Healthy component.
+- **Red Node**: Missing component.
+- **Orange Node**: Circular dependency detected.
+
+### Feed Compare
+
+Navigate to **Tools > Feed Compare**.
+
+This tool allows you to compare an original RSS feed with the processed version.
+
+1.  Enter the original RSS URL.
+2.  Select the **AtomCraft** or **FlowCraft** you want to apply.
+3.  Click **Compare** to see the difference in content, item count, and structure side-by-side.
+
+### RSS Viewer
+
+Navigate to **Tools > RSS Viewer**.
+
+This is a built-in RSS reader for debugging.
+
+1.  Enter any RSS URL (internal or external).
+2.  Click **View** to render the feed items.
+3.  You can inspect the raw XML or view the rendered HTML content.
 
 ## Advanced Configuration
 
