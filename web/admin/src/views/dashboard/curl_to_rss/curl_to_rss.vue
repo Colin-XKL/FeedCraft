@@ -652,7 +652,7 @@
         console.error('Invalid JSON content:', e);
         treeData.value = [];
       }
-    }
+    },
   );
 
   const getRelativePath = (fullPath: string, listSel: string) => {
@@ -672,7 +672,7 @@
 
   const handleNodeSelect = (
     selectedKeys: (string | number)[],
-    { node }: { node: TreeNodeData }
+    { node }: { node: TreeNodeData },
   ) => {
     if (!activeField.value || !node.key) return;
 
@@ -715,7 +715,7 @@
       if (val === 4 && !recipeMeta.id && feedMeta.title) {
         recipeMeta.id = kebabCase(feedMeta.title);
       }
-    }
+    },
   );
 
   // Step 1 Logic
@@ -839,7 +839,7 @@
         Message.warning(t('curlToRss.msg.noItems'));
       } else {
         Message.success(
-          t('curlToRss.msg.parsedItems', { count: parsedItems.value.length })
+          t('curlToRss.msg.parsedItems', { count: parsedItems.value.length }),
         );
       }
     } catch (err) {
