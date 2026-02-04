@@ -10,4 +10,7 @@ export default {
   'feedViewer.viewModeNormal': 'Normal',
   'feedViewer.viewModeRich': 'Rich Text',
   'feedViewer.message.unknownError': 'Unknown Error',
+  'feedViewer.copy': 'Copy',
+  'feedViewer.copied': 'Copied!',
+  'feedViewer.copyFailed': 'Copy Failed',
 };

@@ -1,12 +1,31 @@
 <template>
   <div>
     <h2>{{ props.feedData.title }}</h2>
-    <a-descriptions
-      style="margin-top: 20px"
-      :data="feedMetaList"
-      title="Feed 信息"
-      :column="1"
-    />
+    <a-descriptions style="margin-top: 20px" title="Feed 信息" :column="1">
+      <a-descriptions-item
+        v-for="item in feedMetaList"
+        :key="item.label"
+        :label="item.label"
+      >
+        <div v-if="isUrl(item.value)" class="flex items-center gap-2">
+          <a
+            :href="item.value"
+            target="_blank"
+            class="text-blue-600 hover:underline break-all"
+          >
+            {{ item.value }} <icon-link />
+          </a>
+          <a-tooltip :content="t('feedViewer.copy')">
+            <a-button size="mini" type="text" @click="copyValue(item.value)">
+              <template #icon><icon-copy /></template>
+            </a-button>
+          </a-tooltip>
+        </div>
+        <div v-else class="whitespace-pre-wrap break-all">
+          {{ formatValue(item.value) }}
+        </div>
+      </a-descriptions-item>
+    </a-descriptions>
     <div>总数: {{ feedData.items?.length }}</div>
     <div class="my-4">
       <a-radio-group v-model="viewMode" type="button">
@@ -61,8 +80,12 @@
   import dayjs from 'dayjs';
   import DOMPurify from 'dompurify';
   import { useI18n } from 'vue-i18n';
+  import { useClipboard } from '@vueuse/core';
+  import { IconCopy, IconLink } from '@arco-design/web-vue/es/icon';
+  import { Message } from '@arco-design/web-vue';
 
   const { t } = useI18n();
+  const { copy } = useClipboard();
 
   interface FeedViewerProp {
     feedData: Parser.Output<any>;
@@ -87,6 +110,32 @@
 
   const sanitizeContent = (content: string) => {
     return DOMPurify.sanitize(content);
+  };
+
+  const isUrl = (val: any) => {
+    if (typeof val !== 'string') return false;
+    // Simple check for http/https. Can be improved if needed.
+    return /^https?:\/\//.test(val);
+  };
+
+  const formatValue = (val: any) => {
+    if (typeof val === 'object' && val !== null) {
+      try {
+        return JSON.stringify(val, null, 2);
+      } catch (e) {
+        return String(val);
+      }
+    }
+    return String(val);
+  };
+
+  const copyValue = async (val: string) => {
+    try {
+      await copy(val);
+      Message.success(t('feedViewer.copied'));
+    } catch (e) {
+      Message.error(t('feedViewer.copyFailed'));
+    }
   };
 </script>
 

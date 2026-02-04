@@ -9,4 +9,7 @@ export default {
   'feedViewer.viewModeNormal': '普通',
   'feedViewer.viewModeRich': '富文本',
   'feedViewer.message.unknownError': '未知错误',
+  'feedViewer.copy': '复制',
+  'feedViewer.copied': '已复制!',
+  'feedViewer.copyFailed': '复制失败',
 };
