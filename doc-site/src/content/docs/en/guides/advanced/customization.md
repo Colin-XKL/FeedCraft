@@ -48,7 +48,7 @@ The editor allows you to add AtomCrafts and arrange their execution order. Use a
 In the **Custom Recipes** dashboard, you can manage all your created recipes.
 
 - **Create**: Bind a new URL and craft.
-- **Preview**: Click the preview button to verify the output directly in the built-in Feed Viewer.
+- **Preview**: Click the preview button to verify the output directly in the built-in Feed Viewer, where you can inspect items and copy their links.
 - **Copy Link**: Click the copy icon to get the full subscription URL.
 
 **Example:**
