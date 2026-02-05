@@ -25,6 +25,11 @@
             >
               <h3 class="font-bold cursor-pointer">{{ item.title }}</h3>
             </a>
+            <a-tooltip :content="t('customRecipe.copyLink')">
+              <a-button type="text" size="mini" @click="handleCopy(item.link)">
+                <template #icon><icon-copy /></template>
+              </a-button>
+            </a-tooltip>
             <p>{{ dayjs(item.isoDate).format('YYYY-MM-DD hh:mm:ss') }}</p>
           </a-space>
 
@@ -61,8 +66,22 @@
   import dayjs from 'dayjs';
   import DOMPurify from 'dompurify';
   import { useI18n } from 'vue-i18n';
+  import { IconCopy } from '@arco-design/web-vue/es/icon';
+  import { useClipboard } from '@vueuse/core';
+  import { Message } from '@arco-design/web-vue';
 
   const { t } = useI18n();
+  const { copy } = useClipboard();
+
+  const handleCopy = async (link?: string) => {
+    if (!link) return;
+    try {
+      await copy(link);
+      Message.success(t('customRecipe.copied'));
+    } catch (error) {
+      Message.error(t('customRecipe.copyFailed', { msg: error }));
+    }
+  };
 
   interface FeedViewerProp {
     feedData: Parser.Output<any>;
