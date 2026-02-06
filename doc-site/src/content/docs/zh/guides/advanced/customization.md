@@ -76,6 +76,13 @@ sidebar:
 
 > **提示：** 在保存之前，你可以使用 **检查连接 (Check Connection)** 按钮来验证与提供商的连接。
 
+## RSS 预览 (Feed Viewer)
+
+**RSS 预览** (工具 > RSS 预览) 是一个用于预览任意 RSS Feed 的工具。
+
+- **预览**: 输入 RSS URL 即可查看解析后的内容。
+- **粘贴**: 使用粘贴按钮（剪贴板图标）可快速插入剪贴板中的 URL。
+
 ## 依赖服务 (Dependency Services)
 
 **依赖服务** 仪表盘 (Dashboard > Dependency Services) 提供了所有连接的外部服务的健康检查概览。

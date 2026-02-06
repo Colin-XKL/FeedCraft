@@ -76,6 +76,13 @@ Navigate to **Settings > Search Provider** in the admin dashboard.
 
 > **Tip:** You can use the **Check Connection** button to verify connectivity with your provider before saving.
 
+## Feed Viewer
+
+The **Feed Viewer** (Tools > RSS Viewer) is a utility to preview any RSS feed.
+
+- **Preview**: Enter an RSS URL to see the parsed content.
+- **Paste**: Use the paste button (clipboard icon) to quickly insert a URL from your clipboard.
+
 ## Dependency Services
 
 The **Dependency Services** dashboard (Dashboard > Dependency Services) provides a health check overview of all connected external services.
