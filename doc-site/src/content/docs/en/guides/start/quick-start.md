@@ -27,7 +27,7 @@ Where:
 For convenience, you can use the **URL Generator** included in the web interface to build these URLs easily.
 
 - Access the standalone generator at: `/start.html`
-- Or use the "URL Generator" tool in the admin dashboard.
+- Or use the **Dashboard > Quick Start** (URL Generator) tool in the admin dashboard.
 
 **URL Parsing Mode**
 The URL Generator now supports a "Parsing Mode". You can paste an existing FeedCraft URL, and the tool will reverse-parse it to show the Craft used, the original source URL, and other parameters. This is very useful for debugging or understanding complex FeedCraft links.
