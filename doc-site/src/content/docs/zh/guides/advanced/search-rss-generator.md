@@ -36,7 +36,7 @@ FeedCraft 包含一个 **搜索转 RSS (Search to RSS)** 工具，允许你将�
 
 ### 第四步：保存配方 (Save Recipe)
 
-1.  **配方 ID (Recipe ID)**：为此配方选择一个唯一的标识符（例如 `search-ai-news`）。这将成为你订阅源 URL 的一部分。
+1.  **配方 ID (Recipe ID)**：为此配方选择一个唯一的标识符（例如 `search-ai-news`）。如果留空，将自动根据订阅源标题生成 (kebab-case)。这将成为你订阅源 URL 的一部分。
 2.  **内部描述 (Internal Description)**：关于此配方的备注。
 3.  点击 **确认并保存 (Confirm & Save)**。
 

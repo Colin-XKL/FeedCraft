@@ -26,9 +26,10 @@ JSON RSS 生成器可以帮助你：
 - **方法 (Method)**：选择 `GET` 或 `POST`。
 - **URL**：API 端点 URL。
 - **Headers**：添加任何必要的请求头（例如 `Authorization`, `Content-Type`）。
+  - 提示：你可以通过输入键和值然后按 `Enter` 快速添加请求头。
 - **请求体 (Request Body)**：对于 POST 请求，提供 JSON 请求体。
 
-点击 **抓取并下一步 (Fetch and Next)** 来获取数据。
+点击 **抓取并下一步 (Fetch and Next)** 来获取数据。（注意：按钮在输入有效请求前处于禁用状态）。
 
 ### 第二步：JQ 解析规则 (Parsing Rules)
 

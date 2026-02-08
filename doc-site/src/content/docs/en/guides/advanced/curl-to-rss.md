@@ -26,9 +26,10 @@ You need to define how to fetch the JSON data.
 - **Method**: Select `GET` or `POST`.
 - **URL**: The API endpoint URL.
 - **Headers**: Add any necessary headers (e.g., `Authorization`, `Content-Type`).
+  - Tip: You can quickly add headers by typing the key and value, then pressing `Enter`.
 - **Request Body**: For POST requests, provide the JSON body.
 
-Click **Fetch and Next** to retrieve the data.
+Click **Fetch and Next** to retrieve the data. (Note: The button is disabled until you enter a valid request).
 
 ### Step 2: Parsing Rules
 
