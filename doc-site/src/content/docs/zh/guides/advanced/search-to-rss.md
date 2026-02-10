@@ -5,7 +5,7 @@ sidebar:
   order: 4
   badge:
     text: beta
-    variant: caution
+    variant: note
 ---
 
 ## 前提条件
