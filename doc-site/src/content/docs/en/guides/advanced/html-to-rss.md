@@ -1,6 +1,12 @@
 ---
 title: HTML to RSS
 description: Turn any webpage into an RSS feed using the visual selector.
+sidebar:
+  order: 2
+  badge:
+    text: new
+    variant: success
+
 ---
 
 FeedCraft includes a visual **HTML to RSS** tool that allows you to generate selectors for creating RSS feeds from websites that don't provide them natively.

@@ -3,6 +3,9 @@ title: 从搜索结果生成RSS
 description: 使用 AI 提供商通过搜索查询生成 RSS 订阅源。
 sidebar:
   order: 4
+  badge:
+    text: beta
+    variant: caution
 ---
 
 ## 前提条件

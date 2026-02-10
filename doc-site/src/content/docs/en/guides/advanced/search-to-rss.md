@@ -1,6 +1,11 @@
 ---
 title: Search to RSS
 description: Generate RSS feeds from search queries using AI providers.
+sidebar:
+  order: 4
+  badge:
+    text: beta
+    variant: caution
 ---
 
 ## Prerequisites
