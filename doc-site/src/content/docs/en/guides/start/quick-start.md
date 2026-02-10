@@ -17,8 +17,10 @@ The URL format is:
 
 Where:
 
-- `{craft_atom}` is the name of the processing step you want to apply.
+- `{craft_atom}` is the name of the processing step you want to apply. You can find a full list of available atoms in the [System AtomCrafts](../../advanced/system-craft-atoms) guide.
 - `{input_rss_url}` is the original URL of the RSS feed you want to process.
+
+For a deeper understanding of how FeedCraft works, check out the [Core Concepts](../concepts) guide.
 
 **Note:** You may need to URL-encode the `{input_rss_url}` if your RSS reader does not handle it automatically.
 

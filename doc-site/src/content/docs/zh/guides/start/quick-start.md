@@ -1,5 +1,7 @@
 ---
 title: 快速开始
+sidebar:
+  order: 1
 ---
 
 ## 简介
@@ -15,8 +17,10 @@ URL 格式为：
 
 其中：
 
-- `{craft_atom}` 是你想要使用的处理步骤名称（原子工艺）。
+- `{craft_atom}` 是你想要使用的处理步骤名称（原子工艺）。你可以在 [系统内置 AtomCraft](../../advanced/system-craft-atoms) 指南中查阅完整列表。
 - `{input_rss_url}` 是原始的 RSS 订阅源 URL。
+
+为了更深入地了解 FeedCraft 的工作原理，请参阅[核心概念](../concepts)指南。
 
 **注意：** 如果你的 RSS 阅读器不会自动处理 URL 编码，你可能需要手动对 `{input_rss_url}` 进行 URL 编码。
 
