@@ -15,7 +15,7 @@ Craft all your feed in one place!
 ![Open Source Love](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Colin-XKL/FeedCraft)
 
-Doc: [English](https://feed-craft-doc.vercel.app/en) | [简体中文](https://feed-craft-doc.vercel.app/zh)
+Doc: [English](https://feed-craft-doc.vercel.app/en) | [简体中文](https://feed-craft-doc.vercel.app/zh) | [繁體中文](https://feed-craft-doc.vercel.app/zh-tw)
 
 **FeedCraft** is a simple, powerful RSS feed processing tool.  
 It can serve as middleware to handle your RSS feeds; you can use it to extract the main text, perform intelligent translation, generate article summaries through AI, filter articles using natural language, and more.  
