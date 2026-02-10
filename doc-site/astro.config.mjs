@@ -23,12 +23,17 @@ export default defineConfig({
           label: "简体中文",
           lang: "zh-CN",
         },
+        "zh-tw": {
+          label: "繁體中文",
+          lang: "zh-TW",
+        },
       },
       sidebar: [
         {
           label: "Quick Start",
           translations: {
             "zh-CN": "快速开始",
+            "zh-TW": "快速開始",
           },
           autogenerate: { directory: "guides/start" },
         },
@@ -36,6 +41,7 @@ export default defineConfig({
           label: "Advanced Customization",
           translations: {
             "zh-CN": "进阶自定义",
+            "zh-TW": "進階定制",
           },
           autogenerate: { directory: "guides/advanced" },
         },
