@@ -26,7 +26,7 @@ Where:
 
 For convenience, you can use the **URL Generator** included in the web interface to build these URLs easily.
 
-- Access the standalone generator at: `/start.html`
+- Access the standalone generator at: `/start.html` ([Public Instance Link](https://feed-craft.colinx.one/start.html))
 - Or use the "URL Generator" tool in the admin dashboard (**Dashboard > Quick Start**).
 
 **URL Parsing Mode**

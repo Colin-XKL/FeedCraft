@@ -24,7 +24,7 @@ URL 格式为：
 
 为了方便使用，你可以利用 Web 界面中内置的 **URL 生成器** 来轻松构建这些 URL。
 
-- 访问独立的生成器页面：`/start.html`
+- 访问独立的生成器页面：`/start.html` ([公共实例地址](https://feed-craft.colinx.one/start.html))
 - 或者在管理后台使用 "URL Generator" 工具 (位于 **仪表盘 (Dashboard) > 快速开始 (Quick Start)**)。
 
 **URL 解析模式**
