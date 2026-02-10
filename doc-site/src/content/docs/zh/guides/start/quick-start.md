@@ -41,7 +41,7 @@ URL 生成器现在支持“解析模式”。你可以粘贴一个现有的 Fee
 - **proxy**: 简易 RSS 代理，不作任何处理。
 - **limit**: 限制文章数量（默认最新 10 篇）。
 - **fulltext**: 提取文章全文。
-- **fulltext-plus**: 模拟浏览器渲染并提取全文（适用于重 JS 网站）。
+- **fulltext-plus**: 模拟浏览器渲染并提取全文（需要 Browserless，在最小化部署中不可用）。
 - **introduction**: 调用 AI 为文章生成导读，附加在开头。
 - **summary**: 调用 AI 总结文章主要内容。
 - **translate-title**: 调用 AI 翻译文章标题。
@@ -59,7 +59,7 @@ URL 生成器现在支持“解析模式”。你可以粘贴一个现有的 Fee
 
 ## 基础部署
 
-你可以使用 Docker Compose 部署自己的实例。
+你可以使用 Docker Compose 部署自己的实例。最小化安装也包含了 Redis 缓存服务。
 
 ### 最小化 `docker-compose.yml`
 
@@ -75,12 +75,21 @@ services:
     volumes:
       - ./feed-craft-db:/usr/local/feed-craft/db
     environment:
-      FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000
+      # FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000 # fulltext-plus 和增强模式必需
       FC_REDIS_URI: redis://service.redis:6379/
       FC_LLM_API_KEY: skxxxxxx
       FC_LLM_API_MODEL: gemini-pro
       FC_LLM_API_BASE: https://xxxxxx
+    depends_on:
+      - service.redis
+
+  service.redis:
+    image: redis:6-alpine
+    container_name: feedcraft_redis
+    restart: always
 ```
+
+**关于 Browserless 的说明：** 最小化部署不包含无头浏览器 (Browserless)。依赖此服务的特性（如 **fulltext-plus** 原子工艺和 HTML 转 RSS 中的**增强模式**）将无法运行。请参考[进阶自定义](../../advanced/customization/#外部服务)指南来启用这些功能。
 
 保存为 `docker-compose.yml` 并运行 `docker-compose up -d`。
 访问 `http://localhost:10088` 进入后台管理界面。
