@@ -16,6 +16,7 @@
   "type": "module",
   "dependencies": {
     "@astrojs/starlight": "^0.37.2",
+    "@catppuccin/starlight": "^1.1.1",
     "astro": "^5.16.8",
     "sharp": "^0.34.5",
     "typescript": "^5.9.3"

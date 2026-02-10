@@ -1,5 +1,6 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import starlightCatppuccin from '@catppuccin/starlight'
 
 // https://astro.build/config
 export default defineConfig({
@@ -7,6 +8,12 @@ export default defineConfig({
     starlight({
       title: "FeedCraft",
       defaultLocale: "en",
+      plugins: [
+        starlightCatppuccin({
+          dark: { flavor: "mocha", accent: "sapphire" },
+          light: { flavor: "latte", accent: "teal" },
+        }),
+      ],
       locales: {
         en: {
           label: "English",
