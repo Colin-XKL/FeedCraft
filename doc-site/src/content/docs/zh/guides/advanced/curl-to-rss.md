@@ -1,6 +1,8 @@
 ---
 title: 从CURL语句生成RSS
 description: 使用 jq 选择器将任意 JSON API 响应转换为 RSS 订阅源。
+sidebar:
+  order: 3
 ---
 
 FeedCraft 包含一个 **从CURL语句生成RSS (CURL to RSS)** 工具，允许你从 JSON API 获取数据并使用 `jq` 选择器将其转换为 RSS 订阅源。

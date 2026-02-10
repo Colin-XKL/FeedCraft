@@ -1,6 +1,8 @@
 ---
 title: Comparison & Philosophy
 description: Why FeedCraft? Comparing it with Huginn, n8n, Manus, and OpenClaw.
+sidebar:
+  order: 100
 ---
 
 When building your information diet, you might wonder how **FeedCraft** compares to other automation tools or the new wave of AI agents.

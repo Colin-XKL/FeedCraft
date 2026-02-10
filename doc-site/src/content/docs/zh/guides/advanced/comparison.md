@@ -1,6 +1,8 @@
 ---
 title: 理念对比
 description: 为什么选择 FeedCraft？与 Huginn, n8n, Manus, OpenClaw 的对比。
+sidebar:
+  order: 100
 ---
 
 在构建您的信息饮食（Information Diet）时，您可能会想知道 **FeedCraft** 与其他自动化工具或新一代 AI Agent 有何不同。
