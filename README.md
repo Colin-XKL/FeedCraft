@@ -27,10 +27,9 @@ It includes a built-in visual RSS generator (HTML/Curl/Search to RSS) that can t
 
 ## 核心特性
 
-- 开源可自部署, 与现用任何RSS阅读器协同使用
-- AI Power, 可以接入所有Open AI接口兼容的LLM对RSS进行处理, 可自定义prompt
+- 开源可自部署. 可以作为中间件与现有的任何RSS阅读器协同使用
+- AI Power, 可以接入Open AI接口兼容的LLM对RSS进行处理, 可自定义prompt
 - **HTML/Curl/Search to RSS**: 内置可视化 RSS 生成器，支持将网页、API (Curl) 或搜索结果转换为 RSS 订阅源
-- 支持保存规则批量应用到不同的RSS源
 - 支持**便携模式**(portable mode, 即用即走, 只需要在原RSS地址前面加个前缀即可), 和**高级模式**(dock mode,
   在后台页面自定义RSS地址和各类深度加工参数)
 
@@ -69,9 +68,7 @@ https://feed-craft.colinx.one
 那么只需要将订阅地址改成
 `https://feed-craft.colinx.one/craft/translate-title?input_url=https://feeds.feedburner.com/visualcapitalist` 即可.
 
-(部分RSS订阅软件不会自动进行字符转义, 你可能需要把 input_url 后面的内容进行手动转义,
-结果为
-`https://feed-craft.colinx.one/craft/translate-title?input_url=https%3A%2F%2Ffeeds.feedburner.com%2Fvisualcapitalist` )
+(部分RSS订阅软件不会自动进行字符转义, 你可以借助FeedCraft 后台的工具帮你自动进行转义)
 
 你可以使用下面几个 RSS 快速进行测试
 
