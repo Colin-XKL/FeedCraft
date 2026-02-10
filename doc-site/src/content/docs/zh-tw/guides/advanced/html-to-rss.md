@@ -6,7 +6,6 @@ sidebar:
   badge:
     text: new
     variant: success
-
 ---
 
 FeedCraft 內建了視覺化的 **從 HTML 網頁生成 RSS (HTML to RSS)** 工具，允許你生成選取器，以便為那些沒有提供 RSS 的網站建立訂閱源。
