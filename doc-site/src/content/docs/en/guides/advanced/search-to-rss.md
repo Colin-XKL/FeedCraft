@@ -1,6 +1,11 @@
 ---
 title: Search to RSS
 description: Generate RSS feeds from search queries using AI providers.
+sidebar:
+  order: 4
+  badge:
+    text: beta
+    variant: note
 ---
 
 ## Prerequisites
@@ -11,12 +16,13 @@ FeedCraft includes a **Search to RSS** tool that allows you to turn search queri
 
 ## How to use
 
-1.  Navigate to **Tools > Search to RSS** in the admin dashboard.
+1.  Navigate to **Worktable > Search to RSS** in the admin dashboard.
 
 ### Step 1: Search Query
 
 1.  Enter your **Search Query** (e.g., `latest AI news` or `SpaceX launches`).
-2.  Click **Preview Results** to fetch results.
+2.  **Enhanced Mode**: (Optional) Enable this to use AI (LLM) to generate multiple optimized search queries. This helps discover more relevant content by expanding your original query.
+3.  Click **Preview Results** to fetch results.
 
 ### Step 2: Preview Results
 

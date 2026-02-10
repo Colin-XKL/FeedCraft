@@ -12,7 +12,8 @@ import (
 )
 
 type SearchFetchReq struct {
-	Query string `json:"query"`
+	Query        string `json:"query"`
+	EnhancedMode bool   `json:"enhanced_mode"`
 }
 
 func SearchPreview(c *gin.Context) {
@@ -30,7 +31,8 @@ func SearchPreview(c *gin.Context) {
 	cfg := &config.SourceConfig{
 		Type: constant.SourceSearch,
 		SearchFetcher: &config.SearchFetcherConfig{
-			Query: req.Query,
+			Query:        req.Query,
+			EnhancedMode: req.EnhancedMode,
 		},
 	}
 

@@ -15,48 +15,6 @@ sidebar:
     - 密码：`adminadmin`
       _(请登录后立即修改密码)_
 
-## 核心概念
-
-### 原子工艺 (AtomCraft)
-
-**AtomCraft** 是最小的处理单元。除了内置的原子工艺（如 `translate-title`, `fulltext`），你可以基于模版创建自定义的原子工艺。
-
-**示例：自定义翻译 Prompt**
-你可以基于 `translate-content` 模版创建一个名为 `translate-to-french` 的新原子工艺，并在参数中填入自定义的 Prompt，指示 AI 将内容翻译成法语。
-
-### 组合工艺 (FlowCraft)
-
-**FlowCraft** 是多个 AtomCraft 的组合序列。这允许你将多个操作串联起来。
-
-**示例：全文 + 摘要 + 翻译**
-你可以定义一个名为 `digest-and-translate` 的组合工艺，包含以下步骤：
-
-1.  `fulltext` (提取正文)
-2.  `summary` (生成摘要)
-3.  `translate-content` (翻译内容)
-
-#### 管理组合工艺
-
-你可以在后台的 **FlowCraft** 页面创建和管理组合工艺。
-编辑器允许你添加原子工艺并安排它们的执行顺序。使用箭头按钮 (⬆️/⬇️) 调整顺序，或使用垃圾桶图标将其从流程中移除。
-
-### 食谱 (Recipe)
-
-**Recipe** 将特定的 RSS 源 URL 与某个 原子工艺 (AtomCraft) 或组合工艺 (FlowCraft) 绑定。这允许你创建一个持久化的、经过定制的订阅源 URL。
-
-**管理食谱：**
-在后台 **自定义食谱 (Custom Recipes)** 页面，你可以管理所有已创建的食谱。
-
-- **创建 (Create)**：绑定新的 URL 和工艺。
-- **预览 (Preview)**：点击预览按钮，直接在内置的 Feed Viewer 中查看生成的效果。
-- **复制链接 (Copy Link)**：点击复制图标获取完整的订阅 URL。
-
-**示例：**
-
-- **输入 URL：** `https://news.ycombinator.com/rss`
-- **处理器：** `digest-and-translate` (上面创建的工作流)
-- **结果：** 你会得到一个新的 FeedCraft URL，订阅它即可获得带全文、摘要和翻译的 Hacker News。
-
 ## 搜索提供商配置 (Search Provider)
 
 要使用 **搜索转 RSS (Search to RSS)** 功能，你必须配置搜索提供商。
@@ -67,12 +25,30 @@ sidebar:
 
 - **LiteLLM / OpenAI Compatible**
   - **API URL**: 搜索服务的 API 端点（例如 `http://litellm-proxy:4000/v1/search`）。
-  - **API Key**: 你的 API 密钥。
+  - **API Key**: 你的 API 密钥。（留空以保留现有密钥）
   - **Tool Name**: 特定函数调用工具名称（如果需要，例如某些 Agent 的 `google_search`）。工具名称将追加到 API URL 之后（例如 `.../v1/search/google_search`）。
 
 - **SearXNG**
   - **API URL**: 你的 SearXNG 实例基础 URL（例如 `http://my-searxng.com`）。`/search` 路径会自动追加。
   - **Engines**: (可选) 逗号分隔的搜索引擎列表（例如 `google,bing`）。
+
+> **提示：** 在保存之前，你可以使用 **检查连接 (Check Connection)** 按钮来验证与提供商的连接。
+
+## 依赖服务 (Dependency Services)
+
+**依赖服务** 仪表盘 (设置 (Settings) > 依赖服务状态 (Dependency Services)) 提供了所有连接的外部服务的健康检查概览。
+
+它监控以下服务的状态：
+
+- **SQLite**: 数据库连接。
+- **Redis**: 缓存服务连接及延迟。
+- **Browserless**: 无头浏览器服务可用性（全文提取功能必须）。
+- **LLM Service**: 与配置的 AI 提供商的连接。
+- **Search Provider**: 与配置的搜索引擎的连接。
+
+如果“增强模式”或“全文提取”等功能出现故障，请使用此仪表盘排查连接问题。
+
+你可以使用 **检查连接 (Check Connection)** 按钮来验证 FeedCraft 是否可以成功连接到配置的搜索提供商。
 
 ## 高级配置
 

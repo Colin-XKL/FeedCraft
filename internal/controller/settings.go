@@ -16,6 +16,11 @@ type SearchProviderConfigResponse struct {
 	HasAPIKey bool `json:"has_api_key"`
 }
 
+type SearchProviderConfigRequest struct {
+	config.SearchProviderConfig
+	UpdateAPIKey bool `json:"update_api_key"`
+}
+
 func GetSearchProviderConfig(c *gin.Context) {
 	db := util.GetDatabase()
 
@@ -36,8 +41,8 @@ func GetSearchProviderConfig(c *gin.Context) {
 }
 
 func SaveSearchProviderConfig(c *gin.Context) {
-	var cfg config.SearchProviderConfig
-	if err := c.ShouldBindJSON(&cfg); err != nil {
+	var req SearchProviderConfigRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
@@ -46,13 +51,16 @@ func SaveSearchProviderConfig(c *gin.Context) {
 
 	// Fetch existing config to handle empty APIKey
 	var existingCfg config.SearchProviderConfig
-	_ = dao.GetJsonSetting(db, constant.KeySearchProviderConfig, &existingCfg)
-
-	if cfg.APIKey == "" {
-		cfg.APIKey = existingCfg.APIKey
+	if err := dao.GetJsonSetting(db, constant.KeySearchProviderConfig, &existingCfg); err != nil {
+		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
+		return
 	}
 
-	if err := dao.SetJsonSetting(db, constant.KeySearchProviderConfig, cfg); err != nil {
+	if !req.UpdateAPIKey && req.APIKey == "" {
+		req.APIKey = existingCfg.APIKey
+	}
+
+	if err := dao.SetJsonSetting(db, constant.KeySearchProviderConfig, req.SearchProviderConfig); err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
@@ -61,21 +69,21 @@ func SaveSearchProviderConfig(c *gin.Context) {
 }
 
 func CheckSearchProviderConfig(c *gin.Context) {
-	var cfg config.SearchProviderConfig
-	if err := c.ShouldBindJSON(&cfg); err != nil {
+	var req SearchProviderConfigRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 
-	if cfg.APIKey == "" {
+	if !req.UpdateAPIKey && req.APIKey == "" {
 		db := util.GetDatabase()
 		var existingCfg config.SearchProviderConfig
 		if err := dao.GetJsonSetting(db, constant.KeySearchProviderConfig, &existingCfg); err == nil {
-			cfg.APIKey = existingCfg.APIKey
+			req.APIKey = existingCfg.APIKey
 		}
 	}
 
-	prv, err := provider.Get(cfg.Provider, &cfg)
+	prv, err := provider.Get(req.Provider, &req.SearchProviderConfig)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: "Failed to create provider: " + err.Error()})
 		return

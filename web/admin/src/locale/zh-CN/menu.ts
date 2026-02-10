@@ -40,4 +40,5 @@ export default {
   'menu.changePassword': '修改密码',
   'menu.settings': '设置',
   'menu.settings.searchProvider': '搜索服务提供商',
+  'menu.systemHealth': 'Craft 依赖检查',
 };

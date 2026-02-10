@@ -15,22 +15,21 @@ Craft all your feed in one place!
 ![Open Source Love](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Colin-XKL/FeedCraft)
 
-Doc: [English](https://feed-craft-doc.vercel.app/en) | [简体中文](https://feed-craft-doc.vercel.app/zh)
+Doc: [English](https://feed-craft-doc.vercel.app/en) | [简体中文](https://feed-craft-doc.vercel.app/zh) | [繁體中文](https://feed-craft-doc.vercel.app/zh-tw)
 
 **FeedCraft** is a simple, powerful RSS feed processing tool.  
 It can serve as middleware to handle your RSS feeds; you can use it to extract the main text, perform intelligent translation, generate article summaries through AI, filter articles using natural language, and more.  
-It can also generate RSS for any site that does not support RSS, using AI to automatically search for topics you want to subscribe to and create RSS feeds.
+It includes a built-in visual RSS generator (HTML/Curl/Search to RSS) that can turn web pages, API responses, or search results into RSS feeds.
 
 **FeedCraft** 是一个简单、强大的 RSS 源处理工具.
 他可以作为一个中间件处理你的RSS源, 你可以用它来提取正文、智能翻译、通过AI生成文章摘要、通过自然语言筛选文章等.
-也可以为不支持RSS任意站点生成RSS、借助AI自动搜索你想要订阅的话题生成RSS
+它内置了可视化 RSS 生成器 (HTML/Curl/Search to RSS)，支持将网页、API (Curl) 或搜索结果转换为 RSS 订阅源。
 
 ## 核心特性
 
-- 开源可自部署, 与现用任何RSS阅读器协同使用
-- AI Power, 可以接入所有Open AI接口兼容的LLM对RSS进行处理, 可自定义prompt
+- 开源可自部署. 可以作为中间件与现有的任何RSS阅读器协同使用
+- AI Power, 可以接入Open AI接口兼容的LLM对RSS进行处理, 可自定义prompt
 - **HTML/Curl/Search to RSS**: 内置可视化 RSS 生成器，支持将网页、API (Curl) 或搜索结果转换为 RSS 订阅源
-- 支持保存规则批量应用到不同的RSS源
 - 支持**便携模式**(portable mode, 即用即走, 只需要在原RSS地址前面加个前缀即可), 和**高级模式**(dock mode,
   在后台页面自定义RSS地址和各类深度加工参数)
 
@@ -69,9 +68,7 @@ https://feed-craft.colinx.one
 那么只需要将订阅地址改成
 `https://feed-craft.colinx.one/craft/translate-title?input_url=https://feeds.feedburner.com/visualcapitalist` 即可.
 
-(部分RSS订阅软件不会自动进行字符转义, 你可能需要把 input_url 后面的内容进行手动转义,
-结果为
-`https://feed-craft.colinx.one/craft/translate-title?input_url=https%3A%2F%2Ffeeds.feedburner.com%2Fvisualcapitalist` )
+(部分RSS订阅软件不会自动进行字符转义, 你可以借助FeedCraft 后台的工具帮你自动进行转义)
 
 你可以使用下面几个 RSS 快速进行测试
 

@@ -1,22 +1,28 @@
 ---
-title: 搜索转 RSS
+title: 从搜索结果生成RSS
 description: 使用 AI 提供商通过搜索查询生成 RSS 订阅源。
+sidebar:
+  order: 4
+  badge:
+    text: beta
+    variant: note
 ---
 
 ## 前提条件
 
-在使用搜索转 RSS 功能之前，您需要在管理员设置中配置搜索提供商。请参阅 [搜索提供商配置指南](/docs/zh/guides/advanced/customization) 获取设置说明。
+在使用搜索转 RSS 功能之前，您需要在管理员设置中配置搜索提供商。请参阅 [搜索提供商配置指南](/zh/guides/advanced/customization) 获取设置说明。
 
 FeedCraft 包含一个 **搜索转 RSS (Search to RSS)** 工具，允许你将搜索查询转换为 RSS 订阅源。这对于使用配置的搜索提供商（例如 SearXNG, Bing, Google）追踪新闻、话题或品牌提及非常有用。
 
 ## 如何使用
 
-1.  在管理后台导航至 **Tools > Search to RSS**。
+1.  在管理后台导航至 **工作台 > 搜索 转 RSS**。
 
 ### 第一步：搜索查询 (Search Query)
 
 1.  输入你的 **搜索查询**（例如 `latest AI news` 或 `SpaceX launches`）。
-2.  点击 **预览结果 (Preview Results)** 获取结果。
+2.  **Enhanced Mode**: (可选) 开启此选项以使用 AI (LLM) 生成多个优化的搜索查询。这通过扩展你的原始查询来帮助发现更多相关内容。
+3.  点击 **预览结果 (Preview Results)** 获取结果。
 
 ### 第二步：预览结果 (Preview Results)
 

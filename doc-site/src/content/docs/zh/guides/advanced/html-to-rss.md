@@ -1,6 +1,11 @@
 ---
 title: 从HTML网页生成RSS
 description: 使用可视化选择器将任意网页转换为 RSS 订阅源。
+sidebar:
+  order: 2
+  badge:
+    text: new
+    variant: success
 ---
 
 FeedCraft 内置了可视化的 **从HTML网页生成RSS (HTML to RSS)** 工具，允许你生成选择器，以便为那些没有提供 RSS 的网站创建订阅源。
@@ -18,12 +23,12 @@ HTML to RSS 工具允许你：
 
 ## 如何使用
 
-1.  在管理后台导航至 **Tools > HTML to RSS**。
+1.  在管理后台导航至 **工作台 > HTML 转 RSS**。
 
 ### 第一步：目标 URL (Target URL)
 
 1.  输入你想要抓取的网页完整 URL（例如博客列表或新闻网站）。
-2.  **增强模式 (Enhance Mode)**：如果网站需要 JavaScript 来加载内容（使用无头浏览器），请启用此选项。
+2.  **增强模式 (Enhanced Mode)**：如果网站需要 JavaScript 来加载内容（使用无头浏览器），请启用此选项。
 3.  点击 **抓取并下一步 (Fetch and Next)**。
 
 ### 第二步：提取规则 (Extract Rules)

@@ -13,6 +13,9 @@ export default {
   'searchToRss.step1.label': 'Search Query',
   'searchToRss.step1.help': 'Enter the keywords or question you want to track.',
   'searchToRss.step1.placeholder': "e.g. 'latest AI news' or 'SpaceX launches'",
+  'searchToRss.step1.enhancedMode': 'Enhanced Mode (LLM Powered)',
+  'searchToRss.step1.enhancedMode.desc':
+    'Uses AI to generate multiple optimized queries for better coverage.',
   'searchToRss.step1.button': 'Preview Results',
   'searchToRss.step2.alert':
     'Found {count} items. Review them below before proceeding.',

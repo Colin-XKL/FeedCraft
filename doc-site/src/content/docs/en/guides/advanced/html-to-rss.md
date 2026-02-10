@@ -1,6 +1,11 @@
 ---
 title: HTML to RSS
 description: Turn any webpage into an RSS feed using the visual selector.
+sidebar:
+  order: 2
+  badge:
+    text: new
+    variant: success
 ---
 
 FeedCraft includes a visual **HTML to RSS** tool that allows you to generate selectors for creating RSS feeds from websites that don't provide them natively.
@@ -18,12 +23,12 @@ The HTML to RSS tool allows you to:
 
 ## How to use
 
-1.  Navigate to **Tools > HTML to RSS** in the admin dashboard.
+1.  Navigate to **Worktable > HTML to RSS** in the admin dashboard.
 
 ### Step 1: Target URL
 
 1.  Enter the full URL of the webpage you want to scrape (e.g., a blog list or news site).
-2.  **Enhance Mode**: Enable this if the site requires JavaScript to load content (uses headless browser).
+2.  **Enhanced Mode**: Enable this if the site requires JavaScript to load content (uses headless browser).
 3.  Click **Fetch and Next**.
 
 ### Step 2: Extract Rules

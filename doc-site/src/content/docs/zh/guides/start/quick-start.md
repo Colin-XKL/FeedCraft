@@ -1,5 +1,7 @@
 ---
 title: 快速开始
+sidebar:
+  order: 1
 ---
 
 ## 简介
@@ -15,8 +17,10 @@ URL 格式为：
 
 其中：
 
-- `{craft_atom}` 是你想要使用的处理步骤名称（原子工艺）。
+- `{craft_atom}` 是你想要使用的处理步骤名称（原子工艺）。你可以在 [系统内置 AtomCraft](../../advanced/system-craft-atoms) 指南中查阅完整列表。
 - `{input_rss_url}` 是原始的 RSS 订阅源 URL。
+
+为了更深入地了解 FeedCraft 的工作原理，请参阅[核心概念](../concepts)指南。
 
 **注意：** 如果你的 RSS 阅读器不会自动处理 URL 编码，你可能需要手动对 `{input_rss_url}` 进行 URL 编码。
 
@@ -24,8 +28,8 @@ URL 格式为：
 
 为了方便使用，你可以利用 Web 界面中内置的 **URL 生成器** 来轻松构建这些 URL。
 
-- 访问独立的生成器页面：`/start.html`
-- 或者在管理后台使用 "URL Generator" 工具。
+- 访问独立的生成器页面：`/start.html` ([公共实例地址](https://feed-craft.colinx.one/start.html))
+- 或者在管理后台使用 "URL Generator" 工具 (位于 **仪表盘 (Dashboard) > 快速开始 (Quick Start)**)。
 
 **URL 解析模式**
 URL 生成器现在支持“解析模式”。你可以粘贴一个现有的 FeedCraft URL，工具会反向解析出它使用的工艺（Craft）、原始来源 URL 以及其他参数。这对于调试或理解复杂的 FeedCraft 链接非常有用。
@@ -37,7 +41,7 @@ URL 生成器现在支持“解析模式”。你可以粘贴一个现有的 Fee
 - **proxy**: 简易 RSS 代理，不作任何处理。
 - **limit**: 限制文章数量（默认最新 10 篇）。
 - **fulltext**: 提取文章全文。
-- **fulltext-plus**: 模拟浏览器渲染并提取全文（适用于重 JS 网站）。
+- **fulltext-plus**: 模拟浏览器渲染并提取全文（需要 Browserless，在最小化部署中不可用）。
 - **introduction**: 调用 AI 为文章生成导读，附加在开头。
 - **summary**: 调用 AI 总结文章主要内容。
 - **translate-title**: 调用 AI 翻译文章标题。
@@ -55,7 +59,7 @@ URL 生成器现在支持“解析模式”。你可以粘贴一个现有的 Fee
 
 ## 基础部署
 
-你可以使用 Docker Compose 部署自己的实例。
+你可以使用 Docker Compose 部署自己的实例。最小化安装也包含了 Redis 缓存服务。
 
 ### 最小化 `docker-compose.yml`
 
@@ -71,12 +75,21 @@ services:
     volumes:
       - ./feed-craft-db:/usr/local/feed-craft/db
     environment:
-      FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000
+      # FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000 # fulltext-plus 和增强模式必需
       FC_REDIS_URI: redis://service.redis:6379/
       FC_LLM_API_KEY: skxxxxxx
       FC_LLM_API_MODEL: gemini-pro
       FC_LLM_API_BASE: https://xxxxxx
+    depends_on:
+      - service.redis
+
+  service.redis:
+    image: redis:6-alpine
+    container_name: feedcraft_redis
+    restart: always
 ```
+
+**关于 Browserless 的说明：** 最小化部署不包含无头浏览器 (Browserless)。依赖此服务的特性（如 **fulltext-plus** 原子工艺和 HTML 转 RSS 中的**增强模式**）将无法运行。请参考[进阶自定义](../../advanced/customization/#外部服务)指南来启用这些功能。
 
 保存为 `docker-compose.yml` 并运行 `docker-compose up -d`。
 访问 `http://localhost:10088` 进入后台管理界面。

@@ -17,8 +17,10 @@ The URL format is:
 
 Where:
 
-- `{craft_atom}` is the name of the processing step you want to apply.
+- `{craft_atom}` is the name of the processing step you want to apply. You can find a full list of available atoms in the [System AtomCrafts](../../advanced/system-craft-atoms) guide.
 - `{input_rss_url}` is the original URL of the RSS feed you want to process.
+
+For a deeper understanding of how FeedCraft works, check out the [Core Concepts](../concepts) guide.
 
 **Note:** You may need to URL-encode the `{input_rss_url}` if your RSS reader does not handle it automatically.
 
@@ -26,8 +28,8 @@ Where:
 
 For convenience, you can use the **URL Generator** included in the web interface to build these URLs easily.
 
-- Access the standalone generator at: `/start.html`
-- Or use the "URL Generator" tool in the admin dashboard.
+- Access the standalone generator at: `/start.html` ([Public Instance Link](https://feed-craft.colinx.one/start.html))
+- Or use the "URL Generator" tool in the admin dashboard (**Dashboard > Quick Start**).
 
 **URL Parsing Mode**
 The URL Generator now supports a "Parsing Mode". You can paste an existing FeedCraft URL, and the tool will reverse-parse it to show the Craft used, the original source URL, and other parameters. This is very useful for debugging or understanding complex FeedCraft links.
@@ -39,7 +41,7 @@ Here are some basic AtomCrafts you can use immediately:
 - **proxy**: Simple RSS proxy, no processing.
 - **limit**: Limits the number of articles (default latest 10).
 - **fulltext**: Extracts full text from the article link.
-- **fulltext-plus**: Emulates a browser to render and extract full text (useful for JS-heavy sites).
+- **fulltext-plus**: Emulates a browser to render and extract full text (requires Browserless, not available in minimal deployment).
 - **introduction**: Uses AI to generate a brief introduction at the beginning of the article.
 - **summary**: Uses AI to summarize the main content of the article.
 - **translate-title**: Uses AI to translate the article title.
@@ -57,7 +59,7 @@ Here are some basic AtomCrafts you can use immediately:
 
 ## Basic Deployment
 
-You can deploy your own instance using Docker Compose.
+You can deploy your own instance using Docker Compose. The minimal setup includes the application and a Redis cache.
 
 ### minimal `docker-compose.yml`
 
@@ -73,12 +75,21 @@ services:
     volumes:
       - ./feed-craft-db:/usr/local/feed-craft/db
     environment:
-      FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000
+      # FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000 # Required for fulltext-plus and Enhanced Mode
       FC_REDIS_URI: redis://service.redis:6379/
       FC_LLM_API_KEY: skxxxxxx
       FC_LLM_API_MODEL: gemini-pro
       FC_LLM_API_BASE: https://xxxxxx
+    depends_on:
+      - service.redis
+
+  service.redis:
+    image: redis:6-alpine
+    container_name: feedcraft_redis
+    restart: always
 ```
+
+**Note on Browserless:** The minimal deployment does not include a headless browser (Browserless). Features that rely on it, such as the **fulltext-plus** AtomCraft and **Enhanced Mode** in HTML-to-RSS, will not function. Refer to the [Advanced Customization](../../advanced/customization/#external-services) guide to enable these features.
 
 Save this as `docker-compose.yml` and run `docker-compose up -d`.
 Visit `http://localhost:10088` to access the dashboard.
