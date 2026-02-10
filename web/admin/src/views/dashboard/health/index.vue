@@ -66,6 +66,7 @@
 <script lang="ts" setup>
   import { ref } from 'vue';
   import { useI18n } from 'vue-i18n';
+  import { Message } from '@arco-design/web-vue';
   import { fetchDependencyHealth, DependencyNode } from '@/api/health';
   import XHeader from '@/components/header/x-header.vue';
 
@@ -110,8 +111,10 @@
       const res = await fetchDependencyHealth();
       treeData.value = res.data;
       missingCount.value = countMissing(res.data);
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      treeData.value = [];
+      missingCount.value = 0;
+      Message.error(err.message || t('health.fetchError'));
     } finally {
       loading.value = false;
     }

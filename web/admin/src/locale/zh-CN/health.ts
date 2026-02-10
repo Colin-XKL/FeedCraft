@@ -5,4 +5,5 @@ export default {
   'health.allHealthy': '所有 Craft 依赖正常',
   'health.missing': '缺失',
   'health.noData': '暂无分析数据，请点击分析按钮开始。',
+  'health.fetchError': '获取依赖健康状态失败',
 };
