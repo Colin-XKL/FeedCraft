@@ -4,6 +4,7 @@ import starlightCatppuccin from '@catppuccin/starlight'
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://feed-craft-doc.vercel.app/',
   integrations: [
     starlight({
       title: "FeedCraft",

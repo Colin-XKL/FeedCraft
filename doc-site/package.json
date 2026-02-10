@@ -15,9 +15,9 @@
   "license": "GPL-3.0-only",
   "type": "module",
   "dependencies": {
-    "@astrojs/starlight": "^0.37.2",
+    "@astrojs/starlight": "^0.37.6",
     "@catppuccin/starlight": "^1.1.1",
-    "astro": "^5.16.8",
+    "astro": "^5.17.1",
     "sharp": "^0.34.5",
     "typescript": "^5.9.3"
   },
