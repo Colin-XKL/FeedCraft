@@ -109,8 +109,9 @@
     loading.value = true;
     try {
       const res = await fetchDependencyHealth();
-      treeData.value = res.data;
-      missingCount.value = countMissing(res.data);
+      const data = res.data ?? [];
+      treeData.value = data;
+      missingCount.value = countMissing(data);
     } catch (err: any) {
       treeData.value = [];
       missingCount.value = 0;
