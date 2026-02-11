@@ -50,6 +50,25 @@ Use this dashboard to troubleshoot connectivity issues if features like "Enhance
 
 You can use the **Check Connection** button to verify if FeedCraft can successfully connect to the search provider with the provided credentials.
 
+## Utility Tools
+
+FeedCraft includes several utility tools in the admin dashboard to help you manage and debug your feeds.
+
+### RSS Viewer
+
+The **RSS Viewer** (Tools > RSS Viewer) allows you to preview and validate any RSS feed.
+
+- **Preview**: Enter a feed URL to render its content in a user-friendly format.
+- **Copy Link**: Each item in the preview list includes a **Copy Link** button for quick access to the original article URL.
+- **View Modes**: Switch between "Normal" (summary) and "Rich" (full content) views.
+
+### Feed Compare
+
+The **Feed Compare** tool (Tools > Feed Compare) helps you visualize the changes applied by a Craft (recipe) to an original feed.
+
+- **Comparison**: Input an original feed URL and select a Craft to see a side-by-side comparison of the original content versus the processed output.
+- **Debugging**: Useful for verifying that your transformation rules (e.g., content extraction, translation) are working as expected.
+
 ## Advanced Configuration
 
 ### Docker Environment Variables
