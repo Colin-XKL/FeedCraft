@@ -53,6 +53,7 @@
                         type="primary"
                         status="success"
                         :loading="parsingCurl"
+                        :disabled="!curlInput"
                         @click="handleParseCurl"
                       >
                         <template #icon><icon-import /></template>
@@ -123,18 +124,23 @@
                   </div>
                   <div class="flex gap-2">
                     <a-input
+                      ref="newHeaderKeyInput"
                       v-model="newHeaderKey"
                       :placeholder="$t('curlToRss.placeholder.key')"
                       style="width: 30%"
+                      @press-enter="focusHeaderVal"
                     />
                     <a-input
+                      ref="newHeaderValInput"
                       v-model="newHeaderVal"
                       :placeholder="$t('curlToRss.placeholder.value')"
                       style="width: 60%"
+                      @press-enter="addHeader"
                     />
-                    <a-button @click="addHeader">{{
-                      $t('curlToRss.step1.add')
-                    }}</a-button>
+                    <a-button type="outline" @click="addHeader">
+                      <template #icon><icon-plus /></template>
+                      {{ $t('curlToRss.step1.add') }}
+                    </a-button>
                   </div>
                 </a-space>
               </a-form-item>
@@ -494,7 +500,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, reactive, watch } from 'vue';
+  import { ref, reactive, watch, nextTick } from 'vue';
   import { useRouter } from 'vue-router';
   import { Message, Tree, TreeNodeData } from '@arco-design/web-vue';
   import {
@@ -503,6 +509,7 @@
     IconArrowRight,
     IconSave,
     IconEdit,
+    IconPlus,
   } from '@arco-design/web-vue/es/icon';
   import XHeader from '@/components/header/x-header.vue';
   import {
@@ -539,6 +546,12 @@
   });
   const newHeaderKey = ref('');
   const newHeaderVal = ref('');
+  const newHeaderKeyInput = ref<any>(null);
+  const newHeaderValInput = ref<any>(null);
+
+  const focusHeaderVal = () => {
+    newHeaderValInput.value?.focus?.();
+  };
 
   // Step 2 State
   const jsonContent = ref('');
@@ -711,6 +724,9 @@
       fetchReq.headers[newHeaderKey.value] = newHeaderVal.value;
       newHeaderKey.value = '';
       newHeaderVal.value = '';
+      nextTick(() => {
+        newHeaderKeyInput.value?.focus?.();
+      });
     }
   };
 
