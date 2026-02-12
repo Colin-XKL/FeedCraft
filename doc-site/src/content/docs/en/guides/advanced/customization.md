@@ -50,6 +50,8 @@ Use this dashboard to troubleshoot connectivity issues if features like "Enhance
 
 You can use the **Check Connection** button to verify if FeedCraft can successfully connect to the search provider with the provided credentials.
 
+> **Note:** For monitoring internal Craft dependencies (Recipes, Flows, Atoms), use the [Craft Dependencies](/en/guides/advanced/tools#craft-dependencies) tool.
+
 ## Advanced Configuration
 
 ### Docker Environment Variables
