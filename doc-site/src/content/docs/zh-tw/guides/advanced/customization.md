@@ -50,6 +50,8 @@ sidebar:
 
 你可以使用 **檢查連線 (Check Connection)** 按鈕來驗證 FeedCraft 是否可以成功連線到配置的搜尋供應商。
 
+> **注意：** 如需監控內部 Craft 依賴關係（Recipes, Flows, Atoms），請使用 [Craft 依賴檢查](/zh-tw/guides/advanced/tools) 工具。
+
 ## 進階配置
 
 ### Docker 環境變數
