@@ -14,8 +14,14 @@
           type="text"
           :placeholder="t('feedViewer.placeholder')"
           allow-clear
-          @keyup.enter="fetchFeed"
-        />
+          @press-enter="fetchFeed"
+        >
+          <template #append>
+            <a-button @click="handlePaste">
+              <template #icon><icon-paste /></template>
+            </a-button>
+          </template>
+        </a-input>
         <a-button
           :loading="isLoading"
           :disabled="!feedUrl"
@@ -41,6 +47,7 @@
   import { computed, ref, onMounted } from 'vue';
   import Parser from 'rss-parser';
   import { Message } from '@arco-design/web-vue';
+  import { IconPaste } from '@arco-design/web-vue/es/icon';
   import FeedViewContainer from '@/views/dashboard/feed_viewer/feed_view_container.vue';
   import XHeader from '@/components/header/x-header.vue';
   import { useI18n } from 'vue-i18n';
@@ -53,6 +60,17 @@
   const feedContent = ref<any>(null);
   const isLoading = ref(false);
   const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
+
+  async function handlePaste() {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        feedUrl.value = text;
+      }
+    } catch (error) {
+      Message.warning('Failed to read clipboard');
+    }
+  }
 
   async function fetchFeed() {
     if (!feedUrl.value) return;
