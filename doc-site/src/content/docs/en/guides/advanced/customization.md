@@ -91,3 +91,31 @@ services:
 ```
 
 The service listens on port 80 by default. You can also access it from other containers in the same network using `http://app.feed-craft/xxx` (e.g., for internal communication with an RSS reader).
+
+## Troubleshooting & Tools
+
+FeedCraft provides several built-in tools to help you debug and verify your feeds.
+
+### Feed Viewer (RSS Viewer)
+
+Located at **Tools > RSS Viewer**, this tool allows you to:
+
+- Preview any RSS feed directly within the admin dashboard.
+- Verify if a feed is accessible from the FeedCraft server (useful for debugging network issues).
+- Check how the feed is parsed by the system.
+
+### Feed Compare
+
+Located at **Tools > Feed Compare**, this tool helps you visualize the effect of AtomCrafts.
+
+- Enter an original feed URL.
+- Select a specific AtomCraft (e.g., `translate-title` or `summary`).
+- View a side-by-side comparison of the original items versus the processed items.
+- This is excellent for testing new prompts or filtering logic before creating a permanent recipe.
+
+### System Health (Craft Dependencies)
+
+Located at **Tools > Craft Dependencies**, this visualization tool maps out the internal relationships between your Recipes, FlowCrafts, and AtomCrafts.
+
+- **Purpose:** To detect broken references (e.g., a Recipe using a deleted FlowCraft) or circular dependencies.
+- **Red Nodes:** Indicate missing components that need to be fixed.

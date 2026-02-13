@@ -91,3 +91,31 @@ services:
 ```
 
 服務預設監聽在 80 埠，你也可以在同一網絡下的其他容器中，使用 `http://app.feed-craft/xxx` 這樣來進行訪問(比如 RSS 閱讀器中透過這種方式來走內網通訊訂閱)。
+
+## 故障排除與工具
+
+FeedCraft 提供了幾個內建工具來幫助你除錯和驗證 RSS 來源。
+
+### RSS 預覽 (Feed Viewer)
+
+位於 **實用工具 (Tools) > RSS 預覽 (RSS Viewer)**，此工具允許你：
+
+- 直接在管理後台預覽任何 RSS 來源。
+- 驗證 FeedCraft 伺服器是否可以存取該來源（用於除錯網路問題）。
+- 檢查系統如何解析該來源的內容。
+
+### Feed 對比 (Feed Compare)
+
+位於 **實用工具 (Tools) > Feed 對比 (Feed Compare)**，此工具幫助你視覺化 AtomCraft 的效果。
+
+- 輸入原始 RSS 來源地址。
+- 選擇特定的 AtomCraft（例如 `translate-title` 或 `summary`）。
+- 查看原始文章與處理後文章的並排對比。
+- 這非常適合在建立永久 Recipe 之前測試新的 Prompt 或過濾邏輯。
+
+### Craft 依賴檢查 (System Health)
+
+位於 **實用工具 (Tools) > Craft 依賴檢查 (System Health)**，此視覺化工具映射出你的 Recipe、FlowCraft 和 AtomCraft 之間的內部關係。
+
+- **目的：** 檢測損壞的引用（例如，Recipe 引用了已刪除的 FlowCraft）或循環依賴。
+- **紅色節點：** 表示需要修復的缺失組件。
