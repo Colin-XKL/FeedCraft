@@ -91,3 +91,21 @@ services:
 ```
 
 服务默认监听在 80 端口，你也可以在同一网络下的其他容器中，使用 `http://app.feed-craft/xxx` 这样来进行访问(比如RSS 阅读器中通过这种方式来走内网通信订阅)。
+
+## 工具与实用程序 (Tools & Utilities)
+
+FeedCraft 包含几个内置工具，帮助你调试和管理 Feed。
+
+### RSS 预览 (RSS Viewer)
+
+位于 **工具 (Tools) > RSS 预览 (RSS Viewer)**，此工具允许你预览任何 RSS Feed 的内容。你可以粘贴 RSS URL 来查看 FeedCraft 如何解析条目，这对于在处理之前验证 Feed 有效性非常有用。
+
+### Feed 对比 (Feed Compare)
+
+位于 **工具 (Tools) > Feed 对比 (Feed Compare)**，此工具允许你将原始 RSS Feed 与处理后的版本进行比较。通过选择转换工作流 (AtomCraft 或 FlowCraft)，你可以直观地看到内容是如何被修改的（例如：过滤的文章、添加的摘要）。
+
+### Craft 依赖检查 (Craft Dependencies)
+
+位于 **工具 (Tools) > Craft 依赖检查 (Craft Dependencies)**，**系统健康 (System Health)** 仪表盘可视化了 FeedCraft 实例的内部依赖关系图。它展示了 Recipe、FlowCraft 和 AtomCraft 之间的关系，并高亮显示任何缺失的组件或断裂的引用。
+
+> **注意：** 这与 **依赖服务 (Dependency Services)** 仪表盘不同，后者监控 Redis 或 Browserless 等外部基础设施。

@@ -91,3 +91,21 @@ services:
 ```
 
 The service listens on port 80 by default. You can also access it from other containers in the same network using `http://app.feed-craft/xxx` (e.g., for internal communication with an RSS reader).
+
+## Tools & Utilities
+
+FeedCraft includes several built-in tools to help you debug and manage your feeds.
+
+### RSS Viewer
+
+Located at **Tools > RSS Viewer**, this tool allows you to preview the content of any RSS feed. You can paste an RSS URL to see how FeedCraft parses the items, which is useful for verifying feed validity before processing.
+
+### Feed Compare
+
+Located at **Tools > Feed Compare**, this tool lets you compare an original RSS feed against a processed version. By selecting a transformation workflow (AtomCraft or FlowCraft), you can visualize exactly how the content is modified (e.g., filtered articles, added summaries).
+
+### Craft Dependencies
+
+Located at **Tools > Craft Dependencies**, the **System Health** dashboard visualizes the internal dependency graph of your FeedCraft instance. It shows the relationships between Recipes, FlowCrafts, and AtomCrafts, and highlights any missing components or broken references.
+
+> **Note:** This is different from the **Dependency Services** dashboard, which monitors external infrastructure like Redis or Browserless.
