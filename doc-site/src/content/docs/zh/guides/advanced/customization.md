@@ -59,6 +59,7 @@ FeedCraft 包含多个内置工具，帮助你调试和监控实例。
 **依赖检查** 仪表盘 (工具 (Tools) > 依赖检查 (Craft Dependencies)) 可视化展示了你的 Recipe 内部结构。
 
 它可以帮助你识别：
+
 - **缺失的 Atom/Flow**: 如果某个 Recipe 引用了已不存在的 FlowCraft。
 - **循环依赖**: 如果处理逻辑中存在死循环。
 

@@ -59,6 +59,7 @@ You can use the **Check Connection** button to verify if FeedCraft can successfu
 The **Craft Dependencies** dashboard (Tools > Craft Dependencies) visualizes the internal structure of your recipes.
 
 It helps you identify:
+
 - **Missing Atoms/Flows**: If a recipe references a FlowCraft that no longer exists.
 - **Cyclic Dependencies**: If there are any loops in your processing logic.
 
