@@ -29,7 +29,7 @@
   "dependencies": {
     "@arco-design/web-vue": "^2.57.0",
     "@vueuse/core": "^9.3.0",
-    "axios": "^0.30.2",
+    "axios": "^1.13.5",
     "dayjs": "^1.11.5",
     "dompurify": "^3.3.0",
     "echarts": "^5.5.1",
