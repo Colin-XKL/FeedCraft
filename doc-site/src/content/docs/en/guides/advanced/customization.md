@@ -34,9 +34,13 @@ Navigate to **Settings > Search Provider** in the admin dashboard.
 
 > **Tip:** You can use the **Check Connection** button to verify connectivity with your provider before saving.
 
-## Dependency Services
+## Troubleshooting & Tools
 
-The **Dependency Services** dashboard (Settings > Dependency Services) provides a health check overview of all connected external services.
+FeedCraft provides several tools to help you debug issues and verify your setup.
+
+### Dependency Services
+
+The **Dependency Services** dashboard (**Settings > Dependency Services**) provides a health check overview of all connected external services.
 
 It monitors the status of:
 
@@ -49,6 +53,28 @@ It monitors the status of:
 Use this dashboard to troubleshoot connectivity issues if features like "Enhanced Mode" or "Fulltext Extraction" are failing.
 
 You can use the **Check Connection** button to verify if FeedCraft can successfully connect to the search provider with the provided credentials.
+
+### Craft Dependencies
+
+The **Craft Dependencies** tool (**Tools > Craft Dependencies**) visualizes the internal dependencies between your Recipes, FlowCrafts, and AtomCrafts.
+
+It displays a dependency tree and alerts you if any component refers to a missing Flow or Atom. This is useful for debugging why a specific Recipe might not be working as expected.
+
+### Feed Compare
+
+The **Feed Compare** tool (**Tools > Feed Compare**) allows you to compare an original RSS feed with a processed version side-by-side.
+
+1. Enter the source RSS URL.
+2. Select a FlowCraft or AtomCraft to apply.
+3. Click **Compare** to see the difference in content, ensuring your filters or modifications are working correctly.
+
+### RSS Viewer
+
+The **RSS Viewer** (**Tools > RSS Viewer**) is a simple utility to preview the contents of any RSS feed as parsed by FeedCraft. It helps verify if a URL is a valid RSS source.
+
+### URL Generator
+
+Located at **Dashboard > Quick Start**, this tool helps you generate portable FeedCraft URLs. It also supports a "Parsing Mode" to reverse-engineer existing FeedCraft links.
 
 ## Advanced Configuration
 

@@ -34,9 +34,13 @@ sidebar:
 
 > **提示：** 在保存之前，你可以使用 **检查连接 (Check Connection)** 按钮来验证与提供商的连接。
 
-## 依赖服务 (Dependency Services)
+## 调试工具 (Troubleshooting & Tools)
 
-**依赖服务** 仪表盘 (设置 (Settings) > 依赖服务状态 (Dependency Services)) 提供了所有连接的外部服务的健康检查概览。
+FeedCraft 提供了几个工具来帮助你调试问题和验证设置。
+
+### 依赖服务状态 (Dependency Services)
+
+**依赖服务** 仪表盘 (**设置 (Settings) > 依赖服务状态 (Dependency Services)**) 提供了所有连接的外部服务的健康检查概览。
 
 它监控以下服务的状态：
 
@@ -49,6 +53,28 @@ sidebar:
 如果“增强模式”或“全文提取”等功能出现故障，请使用此仪表盘排查连接问题。
 
 你可以使用 **检查连接 (Check Connection)** 按钮来验证 FeedCraft 是否可以成功连接到配置的搜索提供商。
+
+### Craft 依赖检查 (Craft Dependencies)
+
+**Craft 依赖检查** 工具 (**实用工具 (Tools) > Craft 依赖检查 (Craft Dependencies)**) 可视化了你的 Recipes, FlowCrafts 和 AtomCrafts 之间的内部依赖关系。
+
+它会显示依赖树，并警告你如果任何组件引用了缺失的 Flow 或 Atom。这对于调试某个 Recipe 为何无法正常工作非常有用。
+
+### Feed 对比 (Feed Compare)
+
+**Feed 对比** 工具 (**实用工具 (Tools) > Feed 对比 (Feed Compare)**) 允许你并排比较原始 RSS 源与处理后的版本。
+
+1. 输入源 RSS URL。
+2. 选择要应用的 FlowCraft 或 AtomCraft。
+3. 点击 **比较 (Compare)** 查看内容差异，确保你的过滤或修改规则按预期工作。
+
+### RSS 预览 (RSS Viewer)
+
+**RSS 预览** (**实用工具 (Tools) > RSS 预览 (RSS Viewer)**) 是一个简单的实用工具，用于预览 FeedCraft 解析后的任何 RSS 源的内容。它有助于验证 URL 是否为有效的 RSS 源。
+
+### 快速开始 (URL Generator)
+
+位于 **仪表盘 (Dashboard) > 快速开始 (Quick Start)**，此工具帮助你生成便携式 FeedCraft URL。它还支持“解析模式”来反向解析现有的 FeedCraft 链接。
 
 ## 高级配置
 
