@@ -50,6 +50,41 @@ Use this dashboard to troubleshoot connectivity issues if features like "Enhance
 
 You can use the **Check Connection** button to verify if FeedCraft can successfully connect to the search provider with the provided credentials.
 
+## Troubleshooting & Tools
+
+FeedCraft provides several built-in tools to help you debug and analyze your feeds. These can be accessed from the **Tools** menu.
+
+### Feed Compare
+
+The **Feed Compare** tool allows you to visualize the difference between an original RSS feed and the processed result after applying an AtomCraft or FlowCraft.
+
+- **How to use:**
+  1.  Enter the source RSS URL.
+  2.  Select the Craft you want to test.
+  3.  Click **Compare**.
+- **Output:** The tool displays a side-by-side comparison of the feed items, highlighting changes in title, content, and other fields.
+
+### RSS Viewer
+
+The **RSS Viewer** is a simple tool to preview the content of any RSS feed directly within the admin dashboard.
+
+- **How to use:** Enter the RSS URL and click **View**.
+- **Use case:** Verify if a feed is accessible and correctly formatted before adding it to your reader.
+
+### Craft Dependencies
+
+The **Craft Dependencies** (System Health) dashboard visualizes the internal topology of your FeedCraft instance.
+
+- **Purpose:** It shows how different components (AtomCrafts, FlowCrafts, Recipes) rely on each other.
+- **Use case:** Use this to understand the impact of modifying a specific AtomCraft or to debug circular dependencies.
+
+### Debug Tools
+
+For advanced debugging, the following tools are available:
+
+- **LLM Debug:** Test your LLM configuration and prompts directly.
+- **Ad Check Debug:** Test the "ignore-advertorial" logic against specific content to see why an item might be flagged as an ad.
+
 ## Advanced Configuration
 
 ### Docker Environment Variables

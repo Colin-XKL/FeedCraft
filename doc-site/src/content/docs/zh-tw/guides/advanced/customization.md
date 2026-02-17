@@ -50,6 +50,41 @@ sidebar:
 
 你可以使用 **檢查連線 (Check Connection)** 按鈕來驗證 FeedCraft 是否可以成功連線到配置的搜尋供應商。
 
+## 故障排除與工具
+
+FeedCraft 提供了幾個內建工具來幫助你除錯和分析你的 RSS 源。這些工具可以從 **工具 (Tools)** 選單訪問。
+
+### Feed Compare (RSS源比較工具)
+
+**Feed Compare** 工具允許你視覺化對比原始 RSS 源和應用 AtomCraft 或 FlowCraft 後的處理結果。
+
+- **如何使用:**
+  1.  輸入原始 RSS URL。
+  2.  選擇你想要測試的 Craft。
+  3.  點擊 **Compare**。
+- **輸出:** 該工具會並排顯示 Feed 條目的對比，突顯顯示標題、內容和其他欄位的變化。
+
+### RSS Viewer (RSS 預覽)
+
+**RSS Viewer** 是一個簡單的工具，用於直接在管理後台預覽任何 RSS 源的內容。
+
+- **如何使用:** 輸入 RSS URL 並點擊 **View**。
+- **使用場景:** 在將 Feed 添加到閱讀器之前，驗證其是否可訪問且格式正確。
+
+### Craft Dependencies (Craft 依賴檢查)
+
+**Craft Dependencies** (系統健康) 儀表板視覺化顯示了 FeedCraft 實例的內部拓撲結構。
+
+- **目的:** 它展示了不同組件（AtomCrafts, FlowCrafts, Recipes）之間是如何相互依賴的。
+- **使用場景:** 使用此工具了解修改特定 AtomCraft 的影響，或除錯循環依賴。
+
+### Debug Tools (除錯工具)
+
+對於進階除錯，可使用以下工具：
+
+- **LLM Debug:** 直接測試你的 LLM 配置和 Prompt。
+- **Ad Check Debug:** 針對特定內容測試 "ignore-advertorial" 邏輯，查看條目為何被標記為廣告。
+
 ## 進階配置
 
 ### Docker 環境變數
