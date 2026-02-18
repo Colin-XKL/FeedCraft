@@ -91,3 +91,7 @@ services:
 ```
 
 服务默认监听在 80 端口，你也可以在同一网络下的其他容器中，使用 `http://app.feed-craft/xxx` 这样来进行访问(比如RSS 阅读器中通过这种方式来走内网通信订阅)。
+
+## 另请参阅
+
+- [故障排除与工具](/zh/guides/advanced/tools): 了解内置的故障排除工具，如 RSS 预览和 Feed 对比。

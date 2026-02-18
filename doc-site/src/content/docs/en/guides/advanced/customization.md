@@ -91,3 +91,7 @@ services:
 ```
 
 The service listens on port 80 by default. You can also access it from other containers in the same network using `http://app.feed-craft/xxx` (e.g., for internal communication with an RSS reader).
+
+## See Also
+
+- [Troubleshooting & Tools](/en/guides/advanced/tools): Learn about built-in tools like Feed Viewer and Feed Compare.

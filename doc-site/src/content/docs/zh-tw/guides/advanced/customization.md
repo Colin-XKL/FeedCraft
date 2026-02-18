@@ -91,3 +91,7 @@ services:
 ```
 
 服務預設監聽在 80 埠，你也可以在同一網絡下的其他容器中，使用 `http://app.feed-craft/xxx` 這樣來進行訪問(比如 RSS 閱讀器中透過這種方式來走內網通訊訂閱)。
+
+## 另請參閱
+
+- [故障排除與工具](/zh-tw/guides/advanced/tools): 了解內置的故障排除工具，如 RSS 預覽和 Feed 對比。
