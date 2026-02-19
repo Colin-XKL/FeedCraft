@@ -190,17 +190,9 @@
                   :label="$t('searchToRss.step4.recipeId')"
                   required
                   field="id"
-                  :rules="[
-                    {
-                      required: true,
-                      message: $t('searchToRss.step4.recipeId.help'),
-                    },
-                    {
-                      match: /^[a-z0-9-]+$/,
-                      message:
-                        'Only lowercase letters, numbers and hyphens allowed',
-                    },
-                  ]"
+                  :rules="
+                    getRecipeIdRules($t('searchToRss.step4.recipeId.help'))
+                  "
                   :help="$t('searchToRss.step4.recipeId.help')"
                 >
                   <a-input
@@ -270,7 +262,7 @@
   import { previewSearch, ParsedItem, SearchFetchReq } from '@/api/json_rss';
   import { createCustomRecipe } from '@/api/custom_recipe';
   import { useI18n } from 'vue-i18n';
-  import generateRecipeId from '@/utils/slug';
+  import generateRecipeId, { getRecipeIdRules } from '@/utils/slug';
 
   const router = useRouter();
   const { t } = useI18n();
@@ -322,7 +314,7 @@
       if (val === 4 && !recipeMeta.id && feedMeta.title) {
         recipeMeta.id = generateRecipeId(feedMeta.title);
       }
-    },
+    }
   );
 
   // Step 1 -> 2
@@ -358,7 +350,7 @@
         query: fetchReq.query,
       });
       feedMeta.link = `https://google.com/search?q=${encodeURIComponent(
-        fetchReq.query,
+        fetchReq.query
       )}`; // Fallback link
 
       nextStep();
@@ -406,7 +398,7 @@
     } catch (err: any) {
       console.error(err);
       Message.error(
-        t('searchToRss.msg.saveFailed', { msg: err.message || err }),
+        t('searchToRss.msg.saveFailed', { msg: err.message || err })
       );
     } finally {
       saving.value = false;

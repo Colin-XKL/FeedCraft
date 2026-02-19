@@ -442,17 +442,9 @@
                   :label="$t('htmlToRss.step4.recipeId')"
                   required
                   field="id"
-                  :rules="[
-                    {
-                      required: true,
-                      message: $t('htmlToRss.step4.recipeId.required'),
-                    },
-                    {
-                      match: /^[a-z0-9-]+$/,
-                      message:
-                        'Only lowercase letters, numbers and hyphens allowed',
-                    },
-                  ]"
+                  :rules="
+                    getRecipeIdRules($t('htmlToRss.step4.recipeId.required'))
+                  "
                   :help="$t('htmlToRss.step4.recipeId.help')"
                 >
                   <a-input
@@ -524,7 +516,7 @@
   import { createCustomRecipe } from '@/api/custom_recipe';
   import { useRouter } from 'vue-router';
   import { useI18n } from 'vue-i18n';
-  import generateRecipeId from '@/utils/slug';
+  import generateRecipeId, { getRecipeIdRules } from '@/utils/slug';
 
   // Import extracted utils and components
   import { getCssSelector, IGNORED_CLASSES } from './utils/selector';
@@ -596,7 +588,7 @@
       if (val === 4 && !recipeMeta.id && feedMeta.title) {
         recipeMeta.id = generateRecipeId(feedMeta.title);
       }
-    },
+    }
   );
 
   const setTargetField = (field: string) => {
@@ -703,7 +695,7 @@
           return;
         }
         Message.success(
-          t('htmlToRss.msg.extracted', { count: parsedItems.value.length }),
+          t('htmlToRss.msg.extracted', { count: parsedItems.value.length })
         );
         // Do not auto-advance. Let user check preview first.
         nextTick(() => {
@@ -789,7 +781,7 @@
     const fullSelector = getCssSelector(
       target,
       doc || undefined,
-      isItemSelector,
+      isItemSelector
     );
 
     if (!doc) return;
@@ -801,11 +793,11 @@
         Message.success(
           t('htmlToRss.msg.matchedItems', {
             count: matches.length,
-          }),
+          })
         );
       } catch {
         Message.success(
-          t('htmlToRss.msg.setItemSelector', { selector: fullSelector }),
+          t('htmlToRss.msg.setItemSelector', { selector: fullSelector })
         );
       }
       currentTargetField.value = 'title_selector';
@@ -841,7 +833,7 @@
             let selector = curr.tagName.toLowerCase();
             if (curr.classList.length > 0) {
               const validClasses = Array.from(curr.classList).filter(
-                (c) => !IGNORED_CLASSES.includes(c),
+                (c) => !IGNORED_CLASSES.includes(c)
               );
               if (validClasses.length > 0)
                 selector += `.${CSS.escape(validClasses[0])}`;
@@ -852,7 +844,7 @@
 
           config[currentTargetField.value] = relPath.join(' ');
           Message.success(
-            t('htmlToRss.msg.setRelativePath', { path: relPath.join(' ') }),
+            t('htmlToRss.msg.setRelativePath', { path: relPath.join(' ') })
           );
         }
       } else {

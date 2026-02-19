@@ -1,4 +1,5 @@
 import limax from 'limax';
+import { FieldRule } from '@arco-design/web-vue';
 
 /**
  * Generates a recipe ID from a given text string.
@@ -26,4 +27,24 @@ export default function generateRecipeId(text: string): string {
     .replace(/[^a-z0-9-]/g, '-') // Replace any remaining invalid chars with hyphen
     .replace(/-+/g, '-') // Collapse multiple hyphens
     .replace(/^-+|-+$/g, ''); // Trim leading/trailing hyphens
+}
+
+/**
+ * Shared validation rules for recipe ID fields.
+ * Enforces requirement and strict [a-z0-9-] pattern.
+ *
+ * @param requiredMessage - Localized error message for empty input
+ * @returns Array of FieldRule objects
+ */
+export function getRecipeIdRules(requiredMessage: string): FieldRule[] {
+  return [
+    {
+      required: true,
+      message: requiredMessage,
+    },
+    {
+      match: /^[a-z0-9-]+$/,
+      message: 'Only lowercase letters, numbers and hyphens allowed',
+    },
+  ];
 }

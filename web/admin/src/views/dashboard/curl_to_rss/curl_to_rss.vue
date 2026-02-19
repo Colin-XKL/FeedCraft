@@ -453,17 +453,9 @@
                   :label="$t('curlToRss.step4.recipeId')"
                   required
                   field="id"
-                  :rules="[
-                    {
-                      required: true,
-                      message: $t('curlToRss.step4.recipeId.required'),
-                    },
-                    {
-                      match: /^[a-z0-9-]+$/,
-                      message:
-                        'Only lowercase letters, numbers and hyphens allowed',
-                    },
-                  ]"
+                  :rules="
+                    getRecipeIdRules($t('curlToRss.step4.recipeId.required'))
+                  "
                   :help="$t('curlToRss.step4.recipeId.help')"
                 >
                   <a-input
@@ -542,7 +534,7 @@
   import { useI18n } from 'vue-i18n';
   import isPlainObject from 'lodash/isPlainObject';
   import isArray from 'lodash/isArray';
-  import generateRecipeId from '@/utils/slug';
+  import generateRecipeId, { getRecipeIdRules } from '@/utils/slug';
 
   const router = useRouter();
   const { t } = useI18n();
@@ -665,7 +657,7 @@
         console.error('Invalid JSON content:', e);
         treeData.value = [];
       }
-    },
+    }
   );
 
   const getRelativePath = (fullPath: string, listSel: string) => {
@@ -685,7 +677,7 @@
 
   const handleNodeSelect = (
     selectedKeys: (string | number)[],
-    { node }: { node: TreeNodeData },
+    { node }: { node: TreeNodeData }
   ) => {
     if (!activeField.value || !node.key) return;
 
@@ -728,7 +720,7 @@
       if (val === 4 && !recipeMeta.id && feedMeta.title) {
         recipeMeta.id = generateRecipeId(feedMeta.title);
       }
-    },
+    }
   );
 
   // Step 1 Logic
@@ -849,7 +841,7 @@
         Message.warning(t('curlToRss.msg.noItems'));
       } else {
         Message.success(
-          t('curlToRss.msg.parsedItems', { count: parsedItems.value.length }),
+          t('curlToRss.msg.parsedItems', { count: parsedItems.value.length })
         );
       }
     } catch (err) {
