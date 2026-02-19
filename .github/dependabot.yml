@@ -9,18 +9,18 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
-    branch: "dev"
+    target-branch: "dev"
 
   # Maintain dependencies for npm
   - package-ecosystem: "npm"
     directory: "/web/admin"
     schedule:
       interval: "weekly"
-    branch: "dev"
+    target-branch: "dev"
 
   # Maintain dependencies for golang
   - package-ecosystem: "gomod"
     directory: "/"
     schedule:
       interval: "weekly"
-    branch: "dev"
+    target-branch: "dev"
