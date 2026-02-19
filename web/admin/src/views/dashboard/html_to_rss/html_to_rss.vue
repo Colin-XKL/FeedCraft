@@ -441,12 +441,29 @@
                 <a-form-item
                   :label="$t('htmlToRss.step4.recipeId')"
                   required
+                  field="id"
+                  :rules="
+                    getRecipeIdRules($t('htmlToRss.step4.recipeId.required'))
+                  "
                   :help="$t('htmlToRss.step4.recipeId.help')"
                 >
                   <a-input
                     v-model="recipeMeta.id"
                     :placeholder="$t('htmlToRss.step4.recipeId.placeholder')"
-                  />
+                    allow-clear
+                  >
+                    <template #append>
+                      <a-tooltip content="Generate ID from Title">
+                        <a-button
+                          @click="
+                            recipeMeta.id = generateRecipeId(feedMeta.title)
+                          "
+                        >
+                          <template #icon><icon-refresh /></template>
+                        </a-button>
+                      </a-tooltip>
+                    </template>
+                  </a-input>
                 </a-form-item>
                 <a-form-item :label="$t('htmlToRss.step4.internalDesc')">
                   <a-textarea
@@ -488,17 +505,18 @@
   import { ref, reactive, nextTick, watch } from 'vue';
   import axios from 'axios';
   import DOMPurify from 'dompurify';
-  import kebabCase from 'lodash/kebabCase';
   import { Message } from '@arco-design/web-vue';
   import {
     IconSelectAll,
     IconArrowRight,
     IconSave,
+    IconRefresh,
   } from '@arco-design/web-vue/es/icon';
   import XHeader from '@/components/header/x-header.vue';
   import { createCustomRecipe } from '@/api/custom_recipe';
   import { useRouter } from 'vue-router';
   import { useI18n } from 'vue-i18n';
+  import generateRecipeId, { getRecipeIdRules } from '@/utils/slug';
 
   // Import extracted utils and components
   import { getCssSelector, IGNORED_CLASSES } from './utils/selector';
@@ -568,7 +586,7 @@
     () => currentStep.value,
     (val) => {
       if (val === 4 && !recipeMeta.id && feedMeta.title) {
-        recipeMeta.id = kebabCase(feedMeta.title);
+        recipeMeta.id = generateRecipeId(feedMeta.title);
       }
     },
   );
