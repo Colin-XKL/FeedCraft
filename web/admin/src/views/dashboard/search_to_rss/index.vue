@@ -189,12 +189,37 @@
                 <a-form-item
                   :label="$t('searchToRss.step4.recipeId')"
                   required
+                  field="id"
+                  :rules="[
+                    {
+                      required: true,
+                      message: $t('searchToRss.step4.recipeId.help'),
+                    },
+                    {
+                      match: /^[a-z0-9-]+$/,
+                      message:
+                        'Only lowercase letters, numbers and hyphens allowed',
+                    },
+                  ]"
                   :help="$t('searchToRss.step4.recipeId.help')"
                 >
                   <a-input
                     v-model="recipeMeta.id"
                     :placeholder="$t('searchToRss.placeholder.recipeId')"
-                  />
+                    allow-clear
+                  >
+                    <template #append>
+                      <a-tooltip content="Generate ID from Title">
+                        <a-button
+                          @click="
+                            recipeMeta.id = generateRecipeId(feedMeta.title)
+                          "
+                        >
+                          <template #icon><icon-refresh /></template>
+                        </a-button>
+                      </a-tooltip>
+                    </template>
+                  </a-input>
                 </a-form-item>
                 <a-form-item
                   :label="$t('searchToRss.step4.internalDescription')"
@@ -233,14 +258,19 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, reactive } from 'vue';
+  import { ref, reactive, watch } from 'vue';
   import { useRouter } from 'vue-router';
   import { Message } from '@arco-design/web-vue';
-  import { IconArrowRight, IconSave } from '@arco-design/web-vue/es/icon';
+  import {
+    IconArrowRight,
+    IconSave,
+    IconRefresh,
+  } from '@arco-design/web-vue/es/icon';
   import XHeader from '@/components/header/x-header.vue';
   import { previewSearch, ParsedItem, SearchFetchReq } from '@/api/json_rss';
   import { createCustomRecipe } from '@/api/custom_recipe';
   import { useI18n } from 'vue-i18n';
+  import generateRecipeId from '@/utils/slug';
 
   const router = useRouter();
   const { t } = useI18n();
@@ -286,6 +316,15 @@
     }
   };
 
+  watch(
+    () => currentStep.value,
+    (val) => {
+      if (val === 4 && !recipeMeta.id && feedMeta.title) {
+        recipeMeta.id = generateRecipeId(feedMeta.title);
+      }
+    }
+  );
+
   // Step 1 -> 2
   const handlePreview = async () => {
     if (!fetchReq.query) {
@@ -319,7 +358,7 @@
         query: fetchReq.query,
       });
       feedMeta.link = `https://google.com/search?q=${encodeURIComponent(
-        fetchReq.query,
+        fetchReq.query
       )}`; // Fallback link
 
       nextStep();
@@ -367,7 +406,7 @@
     } catch (err: any) {
       console.error(err);
       Message.error(
-        t('searchToRss.msg.saveFailed', { msg: err.message || err }),
+        t('searchToRss.msg.saveFailed', { msg: err.message || err })
       );
     } finally {
       saving.value = false;

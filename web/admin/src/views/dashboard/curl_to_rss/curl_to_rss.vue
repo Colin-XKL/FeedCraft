@@ -452,12 +452,37 @@
                 <a-form-item
                   :label="$t('curlToRss.step4.recipeId')"
                   required
+                  field="id"
+                  :rules="[
+                    {
+                      required: true,
+                      message: $t('curlToRss.step4.recipeId.required'),
+                    },
+                    {
+                      match: /^[a-z0-9-]+$/,
+                      message:
+                        'Only lowercase letters, numbers and hyphens allowed',
+                    },
+                  ]"
                   :help="$t('curlToRss.step4.recipeId.help')"
                 >
                   <a-input
                     v-model="recipeMeta.id"
                     :placeholder="$t('curlToRss.placeholder.recipeId')"
-                  />
+                    allow-clear
+                  >
+                    <template #append>
+                      <a-tooltip content="Generate ID from Title">
+                        <a-button
+                          @click="
+                            recipeMeta.id = generateRecipeId(feedMeta.title)
+                          "
+                        >
+                          <template #icon><icon-refresh /></template>
+                        </a-button>
+                      </a-tooltip>
+                    </template>
+                  </a-input>
                 </a-form-item>
                 <a-form-item :label="$t('curlToRss.step4.internalDescription')">
                   <a-textarea
@@ -496,13 +521,14 @@
 <script setup lang="ts">
   import { ref, reactive, watch } from 'vue';
   import { useRouter } from 'vue-router';
-  import { Message, Tree, TreeNodeData } from '@arco-design/web-vue';
+  import { Message, TreeNodeData } from '@arco-design/web-vue';
   import {
     IconImport,
     IconDelete,
     IconArrowRight,
     IconSave,
     IconEdit,
+    IconRefresh,
   } from '@arco-design/web-vue/es/icon';
   import XHeader from '@/components/header/x-header.vue';
   import {
@@ -514,9 +540,9 @@
   } from '@/api/json_rss';
   import { createCustomRecipe } from '@/api/custom_recipe';
   import { useI18n } from 'vue-i18n';
-  import kebabCase from 'lodash/kebabCase';
   import isPlainObject from 'lodash/isPlainObject';
   import isArray from 'lodash/isArray';
+  import generateRecipeId from '@/utils/slug';
 
   const router = useRouter();
   const { t } = useI18n();
@@ -639,7 +665,7 @@
         console.error('Invalid JSON content:', e);
         treeData.value = [];
       }
-    },
+    }
   );
 
   const getRelativePath = (fullPath: string, listSel: string) => {
@@ -659,7 +685,7 @@
 
   const handleNodeSelect = (
     selectedKeys: (string | number)[],
-    { node }: { node: TreeNodeData },
+    { node }: { node: TreeNodeData }
   ) => {
     if (!activeField.value || !node.key) return;
 
@@ -700,9 +726,9 @@
     () => currentStep.value,
     (val) => {
       if (val === 4 && !recipeMeta.id && feedMeta.title) {
-        recipeMeta.id = kebabCase(feedMeta.title);
+        recipeMeta.id = generateRecipeId(feedMeta.title);
       }
-    },
+    }
   );
 
   // Step 1 Logic
@@ -823,7 +849,7 @@
         Message.warning(t('curlToRss.msg.noItems'));
       } else {
         Message.success(
-          t('curlToRss.msg.parsedItems', { count: parsedItems.value.length }),
+          t('curlToRss.msg.parsedItems', { count: parsedItems.value.length })
         );
       }
     } catch (err) {
