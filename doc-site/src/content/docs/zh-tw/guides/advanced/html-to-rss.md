@@ -61,7 +61,7 @@ HTML to RSS 工具允許你：
 
 審查你的配置並將其保存為永久配方。
 
-- **配方唯一 ID (Recipe Unique ID)**：此訂閱源配置的唯一識別碼（例如 `tech-blog-feed`）。如果留空，將自動根據訂閱源標題生成。
+- **配方唯一 ID (Recipe Unique ID)**：此訂閱源配置的唯一識別碼（例如 `tech-blog-feed`）。如果留空，它將根據 Feed 標題自動生成，支援智能音譯（如將中文轉換為拼音）。您也可以點擊輸入框內的 **重新整理** 圖標手動重新生成。
 - **內部描述 (Internal Description)**：關於此配方的備註。
 
 點擊 **確認並保存 (Confirm and Save)**。工具將自動建立一個包含你的配置的新自定義配方，你可以在 **自定義配方 (Custom Recipes)** 儀表板中管理它。
