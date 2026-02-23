@@ -8,6 +8,7 @@ require (
 	github.com/JohannesKaufmann/html-to-markdown/v2 v2.4.0
 	github.com/PuerkitoBio/goquery v1.9.1
 	github.com/abadojack/whatlanggo v1.0.1
+	github.com/alicebob/miniredis/v2 v2.36.1
 	github.com/getsentry/sentry-go v0.36.1
 	github.com/getsentry/sentry-go/gin v0.34.0
 	github.com/gin-contrib/cors v1.7.5
@@ -15,7 +16,7 @@ require (
 	github.com/glebarez/sqlite v1.11.0
 	github.com/go-resty/resty/v2 v2.16.5
 	github.com/go-shiori/go-readability v0.0.0-20240204090920-819593fddc6b
-	github.com/golang-jwt/jwt/v5 v5.2.2
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/gomarkdown/markdown v0.0.0-20240626202925-2eda941fd024
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/feeds v1.2.0
@@ -35,7 +36,6 @@ require (
 
 require (
 	github.com/JohannesKaufmann/dom v0.2.0 // indirect
-	github.com/alicebob/miniredis/v2 v2.36.1 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/bytedance/sonic v1.13.2 // indirect
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
