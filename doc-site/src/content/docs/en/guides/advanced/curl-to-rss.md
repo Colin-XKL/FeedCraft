@@ -63,7 +63,7 @@ Configure the RSS feed details:
 
 Review your configuration and save it as a permanent recipe.
 
-- **Recipe Unique ID**: A unique identifier for this feed configuration (e.g., `my-custom-api-feed`). If left empty, it will be automatically generated from the feed title.
+- **Recipe Unique ID**: A unique identifier for this feed configuration (e.g., `my-custom-api-feed`). It is automatically pre-filled from the feed title, and you can click the **Refresh** icon to regenerate it.
 - **Internal Description**: Notes for yourself about this recipe.
 
 Click **Confirm and Save**. The tool will automatically create a new Custom Recipe with your configuration, which you can manage in the **Custom Recipes** dashboard.
