@@ -62,9 +62,9 @@ The tool attempts to auto-extract metadata from the page.
 Review your configuration and save it as a permanent recipe.
 
 - **Recipe Unique ID**: A unique identifier for this feed configuration (e.g., `tech-blog-feed`).
-    - **Auto-Fill**: This field is automatically populated from the feed title.
-    - **Format**: Only lowercase letters, numbers, and hyphens (`[a-z0-9-]`) are allowed.
-    - **Refresh**: You can manually regenerate the ID from the title using the refresh button.
+  - **Auto-Fill**: This field is automatically populated from the feed title.
+  - **Format**: Only lowercase letters, numbers, and hyphens (`[a-z0-9-]`) are allowed.
+  - **Refresh**: You can manually regenerate the ID from the title using the refresh button.
 - **Internal Description**: Notes for yourself about this recipe.
 
 Click **Confirm and Save**. The tool will automatically create a new Custom Recipe with your configuration, which you can manage in the **Custom Recipes** dashboard.
