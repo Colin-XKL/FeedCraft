@@ -41,7 +41,10 @@ Customize how this feed appears in your RSS reader:
 
 ### Step 4: Save Recipe
 
-1.  **Recipe ID**: Choose a unique identifier for this recipe (e.g., `search-ai-news`). This will be part of your feed URL.
+1.  **Recipe Unique ID**: Choose a unique identifier for this recipe (e.g., `search-ai-news`).
+    - **Auto-fill**: Automatically generated from the feed title using transliteration.
+    - **Format**: Strictly enforces lowercase letters, numbers, and hyphens (`[a-z0-9-]`).
+    - **Refresh**: Use the refresh button to regenerate the ID if you change the title.
 2.  **Internal Description**: Notes for yourself about this recipe.
 3.  Click **Confirm & Save**.
 
