@@ -1,10 +1,10 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
-import starlightCatppuccin from '@catppuccin/starlight'
+import starlightCatppuccin from "@catppuccin/starlight";
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://feed-craft-doc.vercel.app/',
+  site: "https://feed-craft-doc.vercel.app/",
   integrations: [
     starlight({
       title: "FeedCraft",

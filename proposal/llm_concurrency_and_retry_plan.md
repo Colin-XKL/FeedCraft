@@ -18,6 +18,7 @@
 针对上述痛点，本方案采取**“双漏斗”设计策略**。虽然两者都需要限流，但由于场景特性的巨大差异，必须采用不同的底层模型：
 
 ### 2.1 典型场景一：LLM API 调用 (全局固定限流 + 优先级队列)
+
 - **场景特点**：
   - 目标单一：绝大多数情况下，所有请求都打向同一个或固定的几个 LLM 代理网关端点。
   - 失败成本高且需重试：由于网络抖动和后端限流，失败率相对较高，需要引入重试退避机制。
@@ -27,6 +28,7 @@
   - 采用普通队列 (`normalQueue`) 和高优队列 (`urgentQueue`) 双通道设计。当请求因失败而触发 `retry-go` 退避休眠后，将其唤醒投入高优队列，Worker 一旦空闲即可“插队”接手，确保旧请求能尽早闭环释放连接。
 
 ### 2.2 典型场景二：Fulltext 网页抓取 (按域名动态限流 + 信号量)
+
 - **场景特点**：
   - 目标发散：目标域名可能有成千上万个 (`a.com`, `b.com`...)。
   - 互不干扰：对 `a.com` 的高并发限制，绝对不能阻塞对 `b.com` 的正常抓取。
@@ -37,6 +39,7 @@
   - **绝妙之处**：信号量仅消耗微小内存且无后台驻留。同时，由于 `sem.Acquire` 支持传递 `Context`，一旦前端取消了对 FeedCraft 的访问，所有排队等待配额的抓取请求会瞬间 `Canceled` 退出，绝不白白浪费服务器流量。
 
 ### 2.3 优雅的第三方库集成
+
 - 避免重复造轮子，引入三个流行库支撑上述架构：
   - **`github.com/sourcegraph/conc`**：在上层业务逻辑 (`craft`) 负责“尽情发散并发”，替换冗长的 `sync.WaitGroup`。
   - **`github.com/avast/retry-go/v4`**：负责优雅重试与指数退避，与 `PriorityDispatcher` 完美结合。
@@ -47,7 +50,9 @@
 ## 3. 详细实施计划 (Plan V6)
 
 ### 3.1 引入第三方依赖
+
 执行以下命令安装依赖：
+
 ```bash
 go get github.com/sourcegraph/conc
 go get github.com/avast/retry-go/v4
@@ -55,6 +60,7 @@ go get golang.org/x/sync/semaphore
 ```
 
 ### 3.2 核心基建 1：实现 `PriorityDispatcher` (服务于 LLM)
+
 - **路径**: `internal/util/priority_dispatcher.go`
 - **实现细节**:
   - 定义泛型结构体 `PriorityDispatcher[R any]`。
@@ -62,24 +68,28 @@ go get golang.org/x/sync/semaphore
   - 提供带 `urgent bool` 参数的 `Execute` 方法供外部阻塞式调用。
 
 ### 3.3 核心基建 2：实现 `KeyedLimiter` (服务于网页抓取)
+
 - **路径**: `internal/util/keyed_limiter.go`
 - **实现细节**:
   - 封装基于 `sync.Map` 和 `semaphore.Weighted` 的动态限流器。
   - 提供 `Acquire(ctx context.Context, key string) (release func(), err error)` 方法。
 
 ### 3.4 LLM 客户端连接复用与重试组装
+
 - **路径**: `internal/adapter/common_llm.go`
 - **实现细节**:
   - 增加 `llmClientCache sync.Map` 缓存已初始化的客户端，复用 TCP 握手。
   - 在 `SimpleLLMCall` 中，利用 `retry.DoWithData` 包裹执行逻辑，根据尝试次数决定优先级，向 `PriorityDispatcher` 提交任务。
 
 ### 3.5 Fulltext 抓取并发限制
+
 - **路径**: (假定爬取核心点在 `internal/craft/fulltext.go` 或独立的 extractor 中)
 - **实现细节**:
   - 初始化全局 `domainLimiter`，读取配置如 `FC_DOMAIN_MAX_CONCURRENCY` (默认例如 3)。
   - 在发起 HTTP 真实抓取动作前，解析 `URL` 提取 `Host`，通过 `domainLimiter.Acquire` 拿锁，成功结束后释放。
 
 ### 3.6 Craft 处理全面并发化
+
 - **路径**: `internal/craft/option.go`, `internal/craft/advertorial.go`, `internal/craft/llm_filter.go`
 - **实现细节**:
   - 使用 `conc/iter.MapErr` 替换原有的串行 `for` 循环处理。
