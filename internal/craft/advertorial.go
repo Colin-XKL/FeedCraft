@@ -6,6 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/feeds"
 	"github.com/samber/lo"
+	"github.com/samber/lo/parallel"
+
 	"net/http"
 	"time"
 )
@@ -51,20 +53,24 @@ func GetIgnoreAdvertorialCraftOptions(prompt string) []CraftOption {
 func OptionIgnoreAdvertorial(prompt string) CraftOption {
 	return func(feed *feeds.Feed, payload ExtraPayload) error {
 		items := feed.Items
-		filtered := lo.Filter(items, func(item *feeds.Item, index int) bool {
-			// 如果 content 为空，尝试使用 description
-			content := item.Content
+		if len(items) == 0 {
+			return nil
+		}
+
+		// 1. 并发请求 LLM 进行判断
+		isAdvertorial := parallel.Map(items, func(itm *feeds.Item, _ int) bool {
+			content := itm.Content
 			if len(content) == 0 {
-				content = item.Description
+				content = itm.Description
 			}
-			// 如果判断为真（是广告），则过滤掉（返回false表示保留？lo.Filter是保留符合条件的）
-			// CheckIfAdvertorial 返回 true 表示是广告
-			// lo.Filter keep elements that return true.
-			// So we want to keep elements that are NOT advertorials.
-			// Return !CheckIfAdvertorial
-			return !CheckIfAdvertorial(content, prompt)
+			return CheckIfAdvertorial(content, prompt)
 		})
-		feed.Items = filtered
+
+		// 2. 同步过滤
+		feed.Items = lo.Filter(items, func(_ *feeds.Item, index int) bool {
+			return !isAdvertorial[index]
+		})
+
 		return nil
 	}
 }
