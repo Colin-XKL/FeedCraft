@@ -7,8 +7,10 @@ import (
 	"log"
 	"math/rand"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/avast/retry-go/v4"
 	"github.com/sirupsen/logrus"
 	"github.com/tmc/langchaingo/llms"
 	"github.com/tmc/langchaingo/llms/ollama"
@@ -23,6 +25,33 @@ Handle LLM calling and processing, support OpenAI and all compatible services.
 const UseDefaultModel = ""
 
 var llmCallTimeout = 10 * time.Minute
+var (
+	// llmClients acts as a lazy-loaded singleton registry, NOT a traditional acquire/release connection pool.
+	// It maps configuration keys to a single llms.Model instance.
+	// We reuse these instances so the underlying http.Transport can naturally maintain TCP Keep-Alive connections.
+	llmClients sync.Map
+
+	// llmDispatcher is a global priority queue that limits the maximum concurrent requests sent to LLM APIs.
+	// This prevents rate-limit errors (429) while allowing retried requests to jump the queue.
+	llmDispatcher *util.PriorityDispatcher[string]
+	llmDispOnce   sync.Once
+)
+
+func getLLMDispatcher() *util.PriorityDispatcher[string] {
+	llmDispOnce.Do(func() {
+		envClient := util.GetEnvClient()
+		if envClient == nil {
+			log.Fatalf("get env client error.")
+		}
+		concurrency := envClient.GetInt("LLM_MAX_CONCURRENCY")
+		if concurrency <= 0 {
+			concurrency = 5
+		}
+		llmDispatcher = util.NewPriorityDispatcher[string](concurrency)
+		logrus.Infof("LLM Global Priority Dispatcher initialized with max concurrency: %d", concurrency)
+	})
+	return llmDispatcher
+}
 
 func SimpleLLMCall(model string, promptInput string) (string, error) {
 	envClient := util.GetEnvClient()
@@ -87,49 +116,78 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 			continue
 		}
 
+		cacheKey := fmt.Sprintf("%s|%s|%s|%s", llmApiType, llmApiBase, llmApiKey, currentModel)
 		var llm llms.Model
-		var err error
 
-		if llmApiType == "ollama" {
-			llm, err = ollama.New(
-				ollama.WithServerURL(llmApiBase),
-				ollama.WithModel(currentModel),
-			)
+		if cached, ok := llmClients.Load(cacheKey); ok {
+			llm = cached.(llms.Model)
 		} else {
-			opts := []openai.Option{
-				openai.WithToken(llmApiKey),
-				openai.WithModel(currentModel),
+			var err error
+			if llmApiType == "ollama" {
+				llm, err = ollama.New(
+					ollama.WithServerURL(llmApiBase),
+					ollama.WithModel(currentModel),
+				)
+			} else {
+				opts := []openai.Option{
+					openai.WithToken(llmApiKey),
+					openai.WithModel(currentModel),
+				}
+				if llmApiBase != "" {
+					opts = append(opts, openai.WithBaseURL(llmApiBase))
+				}
+				llm, err = openai.New(opts...)
 			}
-			if llmApiBase != "" {
-				opts = append(opts, openai.WithBaseURL(llmApiBase))
+
+			if err != nil {
+				lastErr = err
+				logrus.Warnf("Failed to initialize LLM client for model %s: %v", currentModel, err)
+				continue
 			}
-			llm, err = openai.New(opts...)
+			llmClients.Store(cacheKey, llm)
 		}
 
-		if err != nil {
-			lastErr = err
-			logrus.Warnf("Failed to initialize LLM client for model %s: %v", currentModel, err)
-			continue
-		}
+		dispatcher := getLLMDispatcher()
 
-		ctx, cancel := context.WithTimeout(context.Background(), llmCallTimeout)
+		// try to execute
+		isUrgent := false // Will be set to true on retry
 
-		content := []llms.MessageContent{
-			llms.TextParts(llms.ChatMessageTypeHuman, promptInput),
-		}
+		result, err := retry.DoWithData(
+			func() (string, error) {
+				return dispatcher.Execute(isUrgent, func() (string, error) {
+					ctx, cancel := context.WithTimeout(context.Background(), llmCallTimeout)
+					defer cancel()
 
-		resp, err := llm.GenerateContent(ctx, content)
-		cancel()
+					content := []llms.MessageContent{
+						llms.TextParts(llms.ChatMessageTypeHuman, promptInput),
+					}
+
+					resp, err := llm.GenerateContent(ctx, content)
+					if err != nil {
+						return "", err
+					}
+					if len(resp.Choices) > 0 {
+						return resp.Choices[0].Content, nil
+					}
+					return "", fmt.Errorf("empty llm call response")
+				})
+			},
+			retry.Attempts(3),
+			retry.DelayType(retry.BackOffDelay),
+			retry.Delay(2*time.Second),
+			retry.MaxDelay(10*time.Second),
+			retry.OnRetry(func(n uint, err error) {
+				isUrgent = true // Elevate priority on retry
+				logrus.Warnf("Retrying LLM call (attempt %d) with model %s, err: %v", n+1, currentModel, err)
+			}),
+		)
 
 		if err == nil {
-			if len(resp.Choices) > 0 {
-				return resp.Choices[0].Content, nil
-			}
-			err = fmt.Errorf("no choices in response")
+			return result, nil
 		}
 
 		lastErr = err
-		logrus.Warnf("LLM call failed with model %s: %v", currentModel, err)
+		logrus.Warnf("LLM call failed with model %s after retries: %v", currentModel, err)
 	}
 
 	return "", fmt.Errorf("all models failed, last error: %v", lastErr)
