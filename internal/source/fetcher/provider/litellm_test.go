@@ -16,7 +16,7 @@ func TestLiteLLMProvider_Fetch(t *testing.T) {
 		assert.Equal(t, "/", r.URL.Path)
 		assert.Equal(t, "POST", r.Method)
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(mockResponse))
+		_, _ = w.Write([]byte(mockResponse))
 	}))
 	defer ts.Close()
 

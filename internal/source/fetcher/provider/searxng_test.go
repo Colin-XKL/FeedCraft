@@ -18,7 +18,7 @@ func TestSearXNGProvider_Fetch(t *testing.T) {
 		assert.Equal(t, "test", r.URL.Query().Get("q"))
 		assert.Equal(t, "json", r.URL.Query().Get("format"))
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(mockResponse))
+		_, _ = w.Write([]byte(mockResponse))
 	}))
 	defer ts.Close()
 
