@@ -67,6 +67,7 @@ go get golang.org/x/sync/semaphore
   - **优先级支持**: 提供 `normalQueue` 和 `urgentQueue`，允许重试任务插队。
   - **Context 感知**: `Execute` 方法接受 `context.Context`，支持入队等待和结果等待阶段的撤销。
   - **兜底超时控制**: 引入 `MaxTaskDuration` 全局硬限时。即使调用方未设置超时，调度器也会在指定时间后取消 Context，防止 Worker 因“僵尸任务”永久挂起。
+  - **Panic 自动恢复**: Worker 内部集成 `recover()` 机制。若任务函数发生 Panic，Worker 会捕获异常、将错误返回给调用方并保持自身可用，确保单个任务的崩溃不会拖垮整个并发池。
   - **任务闭环**: 任务函数 `fn` 强制要求接收并响应透传的 `Context`，确保全链路超时行为一致。
 
 

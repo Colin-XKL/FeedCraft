@@ -2,84 +2,130 @@ package util
 
 import (
 	"context"
+	"errors"
+	"strings"
 	"testing"
 	"time"
 )
 
-func TestPriorityDispatcher_Timeout(t *testing.T) {
-	// Create a dispatcher with 1 worker
-	d := NewPriorityDispatcher[string](1)
+func TestPriorityDispatcher_PanicRecovery(t *testing.T) {
+	// 1 worker to ensure we test if it survives the panic
+	dispatcher := NewPriorityDispatcher[string](1)
 
-	// Submit a task that blocks forever
-	// We use a context that never expires for the first task to keep the worker busy
-	go func() {
-		_, _ = d.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
-			select {} // Block forever
-		})
-	}()
-
-	// Wait a bit to ensure the worker is picked up the task
-	time.Sleep(100 * time.Millisecond)
-
-	// Now try to submit another task with a timeout context
-	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
-	defer cancel()
-
-	start := time.Now()
-	_, err := d.Execute(ctx, false, func(ctx context.Context) (string, error) {
-		return "ok", nil
+	// Task 1: Trigger a panic
+	t.Log("Starting panicking task...")
+	_, err := dispatcher.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
+		panic("boom")
 	})
-	duration := time.Since(start)
 
 	if err == nil {
-		t.Fatal("Task should have failed with timeout")
+		t.Fatal("expected error from panicked task, got nil")
 	}
-	if err != context.DeadlineExceeded {
-		t.Fatalf("Expected DeadlineExceeded, got %v", err)
+	if !strings.Contains(err.Error(), "task panicked: boom") {
+		t.Errorf("expected error message to contain 'task panicked: boom', got: %v", err)
 	}
 
-	// Ensure it didn't take too long
-	if duration > 500*time.Millisecond {
-		t.Fatalf("Timeout took too long: %v", duration)
+	// Task 2: Check if worker is still alive and can process new tasks
+	t.Log("Starting recovery verification task...")
+	val, err := dispatcher.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
+		return "alive", nil
+	})
+
+	if err != nil {
+		t.Fatalf("worker died after panic: %v", err)
 	}
-	t.Logf("Task correctly timed out after %v", duration)
+	if val != "alive" {
+		t.Errorf("expected 'alive', got: %s", val)
+	}
 }
 
-func TestPriorityDispatcher_TaskRespectsContext(t *testing.T) {
-	d := NewPriorityDispatcher[string](1)
+func TestPriorityDispatcher_Timeout(t *testing.T) {
+	dispatcher := NewPriorityDispatcher[string](1)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 
-	_, err := d.Execute(ctx, false, func(ctx context.Context) (string, error) {
-		select {
-		case <-ctx.Done():
-			return "", ctx.Err()
-		case <-time.After(500 * time.Millisecond):
-			return "too late", nil
-		}
+	_, err := dispatcher.Execute(ctx, false, func(ctx context.Context) (string, error) {
+		time.Sleep(200 * time.Millisecond)
+		return "done", nil
 	})
 
-	if err != context.DeadlineExceeded {
-		t.Fatalf("Expected DeadlineExceeded, got %v", err)
+	if !errors.Is(err, context.DeadlineExceeded) {
+		t.Errorf("expected DeadlineExceeded, got: %v", err)
 	}
 }
 
 func TestPriorityDispatcher_MaxTaskDuration(t *testing.T) {
-	d := NewPriorityDispatcher[string](1)
-	d.MaxTaskDuration = 100 * time.Millisecond
+	dispatcher := NewPriorityDispatcher[string](1)
+	dispatcher.MaxTaskDuration = 50 * time.Millisecond
 
-	// Even if we use context.Background(), the dispatcher should time out the task
-	_, err := d.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
-		select {
-		case <-ctx.Done():
-			return "", ctx.Err()
-		case <-time.After(1 * time.Second):
-			return "too late", nil
-		}
+	start := time.Now()
+	_, err := dispatcher.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
+		<-ctx.Done() // Wait for dispatcher to cancel
+		return "", ctx.Err()
 	})
 
-	if err != context.DeadlineExceeded {
-		t.Fatalf("Expected DeadlineExceeded from dispatcher, got %v", err)
+	duration := time.Since(start)
+	if duration > 100*time.Millisecond {
+		t.Errorf("task took too long: %v", duration)
+	}
+	if err == nil || !strings.Contains(err.Error(), "context deadline exceeded") {
+		t.Errorf("expected timeout error from MaxTaskDuration, got: %v", err)
+	}
+}
+
+func TestPriorityDispatcher_Priority(t *testing.T) {
+	// 1 worker, so tasks run sequentially
+	dispatcher := NewPriorityDispatcher[string](1)
+
+	// Block the worker with a long task
+	blockChan := make(chan struct{})
+	go func() {
+		dispatcher.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
+			<-blockChan
+			return "unblocked", nil
+		})
+	}()
+
+	// Wait a bit to ensure the blocking task is picked up
+	time.Sleep(50 * time.Millisecond)
+
+	// Enqueue 2 normal tasks
+	order := make(chan string, 3)
+	go func() {
+		dispatcher.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
+			order <- "normal 1"
+			return "", nil
+		})
+	}()
+	go func() {
+		dispatcher.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
+			order <- "normal 2"
+			return "", nil
+		})
+	}()
+
+	// Wait to ensure normal tasks are in queue
+	time.Sleep(50 * time.Millisecond)
+
+	// Enqueue 1 urgent task
+	go func() {
+		dispatcher.Execute(context.Background(), true, func(ctx context.Context) (string, error) {
+			order <- "urgent"
+			return "", nil
+		})
+	}()
+
+	// Unblock the worker
+	close(blockChan)
+
+	// The first task out should be "urgent" even though it was enqueued last
+	select {
+	case first := <-order:
+		if first != "urgent" {
+			t.Errorf("expected urgent task to be first after unblocking, got: %s", first)
+		}
+	case <-time.After(1 * time.Second):
+		t.Fatal("timeout waiting for tasks")
 	}
 }

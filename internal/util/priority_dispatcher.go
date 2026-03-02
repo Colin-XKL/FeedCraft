@@ -2,6 +2,7 @@ package util
 
 import (
 	"context"
+	"fmt"
 	"time"
 )
 
@@ -39,7 +40,7 @@ func NewPriorityDispatcher[R any](maxConcurrency int) *PriorityDispatcher[R] {
 	}
 
 	// Start fixed number of workers
-	for i := 0; i < maxConcurrency; i++ {
+	for range maxConcurrency {
 		go d.worker()
 	}
 
@@ -77,6 +78,19 @@ func (d *PriorityDispatcher[R]) worker() {
 }
 
 func (d *PriorityDispatcher[R]) executeTask(task taskWrapper[R]) {
+	// Panic protection: ensure worker doesn't die and caller gets an error
+	defer func() {
+		if r := recover(); r != nil {
+			var zero R
+			// Send the panic as an error to the result channel
+			// We use fmt.Errorf for simplicity, but could include stack trace if needed
+			task.resultChan <- taskResult[R]{
+				val: zero,
+				err: fmt.Errorf("task panicked: %v", r),
+			}
+		}
+	}()
+
 	ctx := task.ctx
 	if d.MaxTaskDuration > 0 {
 		var cancel context.CancelFunc
