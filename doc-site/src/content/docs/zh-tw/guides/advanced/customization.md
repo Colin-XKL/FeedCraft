@@ -63,6 +63,7 @@ sidebar:
 - **FC_LLM_API_KEY**: OpenAI 或相容服務（如 DeepSeek, Gemini 等）的 API Key。
 - **FC_LLM_API_MODEL**: 預設使用的模型（如 `gemini-pro`, `gpt-3.5-turbo`）。**支援多個模型：** 你可以提供一個逗號分隔的模型列表（例如 `gpt-3.5-turbo,gpt-4`）。FeedCraft 會為每個請求隨機選擇一個模型，如果調用失敗，會自動重試列表中的其他模型。
 - **FC_LLM_API_BASE**: API 介面地址。如果是相容 OpenAI 的 API，通常以 `/v1` 結尾。
+- **FC_LLM_MAX_CONCURRENCY**: (可選) 限制發送至 LLM API 的最大並發請求數 (預設為 5)。可用於防止由於請求過快導致的限流報錯。
 - **FC_LLM_API_TYPE**: (可選) `openai` (預設) 或 `ollama`.
 
 ### 外部服務
