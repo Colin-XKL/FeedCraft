@@ -20,6 +20,10 @@ type taskResult[R any] struct {
 
 // NewPriorityDispatcher creates and starts a new PriorityDispatcher with the given number of workers.
 func NewPriorityDispatcher[R any](maxConcurrency int) *PriorityDispatcher[R] {
+	if maxConcurrency <= 0 {
+		maxConcurrency = 1
+	}
+
 	d := &PriorityDispatcher[R]{
 		normalQueue: make(chan taskWrapper[R], 1000), // Buffer for pending tasks
 		urgentQueue: make(chan taskWrapper[R], 1000),
