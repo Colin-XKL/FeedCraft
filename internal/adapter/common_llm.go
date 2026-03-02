@@ -154,10 +154,10 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 
 		result, err := retry.DoWithData(
 			func() (string, error) {
-				return dispatcher.Execute(isUrgent, func() (string, error) {
-					ctx, cancel := context.WithTimeout(context.Background(), llmCallTimeout)
-					defer cancel()
+				ctx, cancel := context.WithTimeout(context.Background(), llmCallTimeout)
+				defer cancel()
 
+				return dispatcher.ExecuteWithContext(ctx, isUrgent, func() (string, error) {
 					content := []llms.MessageContent{
 						llms.TextParts(llms.ChatMessageTypeHuman, promptInput),
 					}

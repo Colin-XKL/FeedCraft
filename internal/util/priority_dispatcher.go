@@ -1,5 +1,10 @@
 package util
 
+import (
+	"context"
+	"time"
+)
+
 // PriorityDispatcher is a generic worker pool that limits concurrency and supports prioritizing urgent tasks.
 // It acts as a global funnel: no matter how many tasks are submitted concurrently,
 // only a fixed number of workers will execute them, protecting downstream services from being overwhelmed.
@@ -68,21 +73,45 @@ func (d *PriorityDispatcher[R]) executeTask(task taskWrapper[R]) {
 	task.resultChan <- taskResult[R]{val: val, err: err}
 }
 
-// Execute submits a task and blocks until it completes.
+// Execute submits a task and blocks until it completes with a default 10-minute timeout limit.
 // If urgent is true, the task is sent to the urgentQueue and will be executed before normal tasks.
 func (d *PriorityDispatcher[R]) Execute(urgent bool, fn func() (R, error)) (R, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	defer cancel()
+	return d.ExecuteWithContext(ctx, urgent, fn)
+}
+
+// ExecuteWithContext submits a task and blocks until it completes or the context is canceled.
+func (d *PriorityDispatcher[R]) ExecuteWithContext(ctx context.Context, urgent bool, fn func() (R, error)) (R, error) {
 	resultChan := make(chan taskResult[R], 1)
 	task := taskWrapper[R]{
 		fn:         fn,
 		resultChan: resultChan,
 	}
 
+	// 1. Enqueue task or abort if ctx is canceled
 	if urgent {
-		d.urgentQueue <- task
+		select {
+		case <-ctx.Done():
+			var empty R
+			return empty, ctx.Err()
+		case d.urgentQueue <- task:
+		}
 	} else {
-		d.normalQueue <- task
+		select {
+		case <-ctx.Done():
+			var empty R
+			return empty, ctx.Err()
+		case d.normalQueue <- task:
+		}
 	}
 
-	res := <-resultChan
-	return res.val, res.err
+	// 2. Wait for result or abort if ctx is canceled
+	select {
+	case <-ctx.Done():
+		var empty R
+		return empty, ctx.Err()
+	case res := <-resultChan:
+		return res.val, res.err
+	}
 }
