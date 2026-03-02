@@ -48,6 +48,9 @@ func getLLMDispatcher() *util.PriorityDispatcher[string] {
 			concurrency = 5
 		}
 		llmDispatcher = util.NewPriorityDispatcher[string](concurrency)
+		// Fallback timeout to prevent tasks from sticking forever
+		// llmCallTimeout is 10 min, we set fallback to 11 min
+		llmDispatcher.MaxTaskDuration = llmCallTimeout + time.Minute
 		logrus.Infof("LLM Global Priority Dispatcher initialized with max concurrency: %d", concurrency)
 	})
 	return llmDispatcher
@@ -154,8 +157,8 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 
 		result, err := retry.DoWithData(
 			func() (string, error) {
-				return dispatcher.Execute(isUrgent, func() (string, error) {
-					ctx, cancel := context.WithTimeout(context.Background(), llmCallTimeout)
+				return dispatcher.Execute(context.Background(), isUrgent, func(ctx context.Context) (string, error) {
+					ctx, cancel := context.WithTimeout(ctx, llmCallTimeout)
 					defer cancel()
 
 					content := []llms.MessageContent{

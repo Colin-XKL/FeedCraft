@@ -63,9 +63,12 @@ go get golang.org/x/sync/semaphore
 
 - **路径**: `internal/util/priority_dispatcher.go`
 - **实现细节**:
-  - 定义泛型结构体 `PriorityDispatcher[R any]`。
-  - 启动固定数量的 Worker，读取 `FC_LLM_MAX_CONCURRENCY`。
-  - 提供带 `urgent bool` 参数的 `Execute` 方法供外部阻塞式调用。
+  - **并发控制**: 启动固定数量的 Worker 协程，严格限制下游压力。
+  - **优先级支持**: 提供 `normalQueue` 和 `urgentQueue`，允许重试任务插队。
+  - **Context 感知**: `Execute` 方法接受 `context.Context`，支持入队等待和结果等待阶段的撤销。
+  - **兜底超时控制**: 引入 `MaxTaskDuration` 全局硬限时。即使调用方未设置超时，调度器也会在指定时间后取消 Context，防止 Worker 因“僵尸任务”永久挂起。
+  - **任务闭环**: 任务函数 `fn` 强制要求接收并响应透传的 `Context`，确保全链路超时行为一致。
+
 
 ### 3.3 核心基建 2：实现 `KeyedLimiter` (服务于网页抓取)
 
