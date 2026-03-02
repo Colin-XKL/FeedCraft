@@ -69,7 +69,6 @@ go get golang.org/x/sync/semaphore
   - **Panic 自动恢复**: Worker 内部集成 `recover()` 机制。若任务函数发生 Panic，Worker 会捕获异常、将错误返回给调用方并保持自身可用，确保单个任务的崩溃不会拖垮整个并发池。
   - **任务闭环**: 任务函数 `fn` 强制要求接收并响应透传的 `Context`，确保全链路超时行为一致。
 
-
 ### 3.3 核心基建 2：实现 `KeyedLimiter` (服务于网页抓取)
 
 - **路径**: `internal/util/keyed_limiter.go`
