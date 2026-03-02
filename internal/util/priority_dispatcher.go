@@ -1,5 +1,9 @@
 package util
 
+import (
+	"fmt"
+)
+
 // PriorityDispatcher is a generic worker pool that limits concurrency and supports prioritizing urgent tasks.
 // It acts as a global funnel: no matter how many tasks are submitted concurrently,
 // only a fixed number of workers will execute them, protecting downstream services from being overwhelmed.
@@ -64,8 +68,17 @@ func (d *PriorityDispatcher[R]) worker() {
 }
 
 func (d *PriorityDispatcher[R]) executeTask(task taskWrapper[R]) {
-	val, err := task.fn()
-	task.resultChan <- taskResult[R]{val: val, err: err}
+	var val R
+	var err error
+
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("panic: %v", r)
+		}
+		task.resultChan <- taskResult[R]{val: val, err: err}
+	}()
+
+	val, err = task.fn()
 }
 
 // Execute submits a task and blocks until it completes.
