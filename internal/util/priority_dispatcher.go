@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+const defaultExecuteTimeout = 10 * time.Minute
+
 // PriorityDispatcher is a generic worker pool that limits concurrency and supports prioritizing urgent tasks.
 // It acts as a global funnel: no matter how many tasks are submitted concurrently,
 // only a fixed number of workers will execute them, protecting downstream services from being overwhelmed.
@@ -76,7 +78,7 @@ func (d *PriorityDispatcher[R]) executeTask(task taskWrapper[R]) {
 // Execute submits a task and blocks until it completes with a default 10-minute timeout limit.
 // If urgent is true, the task is sent to the urgentQueue and will be executed before normal tasks.
 func (d *PriorityDispatcher[R]) Execute(urgent bool, fn func() (R, error)) (R, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), defaultExecuteTimeout)
 	defer cancel()
 	return d.ExecuteWithContext(ctx, urgent, fn)
 }
