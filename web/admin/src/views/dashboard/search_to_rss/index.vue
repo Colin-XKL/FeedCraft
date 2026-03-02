@@ -189,29 +189,12 @@
                 <a-form-item
                   :label="$t('searchToRss.step4.recipeId')"
                   required
-                  field="id"
-                  :rules="
-                    getRecipeIdRules($t('searchToRss.step4.recipeId.help'))
-                  "
                   :help="$t('searchToRss.step4.recipeId.help')"
                 >
                   <a-input
                     v-model="recipeMeta.id"
                     :placeholder="$t('searchToRss.placeholder.recipeId')"
-                    allow-clear
-                  >
-                    <template #append>
-                      <a-tooltip content="Generate ID from Title">
-                        <a-button
-                          @click="
-                            recipeMeta.id = generateRecipeId(feedMeta.title)
-                          "
-                        >
-                          <template #icon><icon-refresh /></template>
-                        </a-button>
-                      </a-tooltip>
-                    </template>
-                  </a-input>
+                  />
                 </a-form-item>
                 <a-form-item
                   :label="$t('searchToRss.step4.internalDescription')"
@@ -250,19 +233,14 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, reactive, watch } from 'vue';
+  import { ref, reactive } from 'vue';
   import { useRouter } from 'vue-router';
   import { Message } from '@arco-design/web-vue';
-  import {
-    IconArrowRight,
-    IconSave,
-    IconRefresh,
-  } from '@arco-design/web-vue/es/icon';
+  import { IconArrowRight, IconSave } from '@arco-design/web-vue/es/icon';
   import XHeader from '@/components/header/x-header.vue';
   import { previewSearch, ParsedItem, SearchFetchReq } from '@/api/json_rss';
   import { createCustomRecipe } from '@/api/custom_recipe';
   import { useI18n } from 'vue-i18n';
-  import generateRecipeId, { getRecipeIdRules } from '@/utils/slug';
 
   const router = useRouter();
   const { t } = useI18n();
@@ -307,15 +285,6 @@
       currentStep.value = step;
     }
   };
-
-  watch(
-    () => currentStep.value,
-    (val) => {
-      if (val === 4 && !recipeMeta.id && feedMeta.title) {
-        recipeMeta.id = generateRecipeId(feedMeta.title);
-      }
-    },
-  );
 
   // Step 1 -> 2
   const handlePreview = async () => {
