@@ -22,7 +22,9 @@ func TestSaveSearchProviderConfig(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Failed to create temp dir: %v", err)
 	}
-	defer os.RemoveAll(tmpDir)
+	defer func() {
+		_ = os.RemoveAll(tmpDir)
+	}()
 
 	t.Setenv("DB_SQLITE_PATH", tmpDir)
 	t.Setenv("FC_DB_SQLITE_PATH", tmpDir)
@@ -82,7 +84,7 @@ func TestSaveSearchProviderConfig(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Errorf("Expected 200, got %d", w.Code)
 	}
-	dao.GetJsonSetting(db, constant.KeySearchProviderConfig, &savedCfg)
+	_ = dao.GetJsonSetting(db, constant.KeySearchProviderConfig, &savedCfg)
 	if savedCfg.APIKey != "initial-key" {
 		t.Errorf("Expected key to persist (initial-key), got %s", savedCfg.APIKey)
 	}
@@ -100,7 +102,7 @@ func TestSaveSearchProviderConfig(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Errorf("Expected 200, got %d", w.Code)
 	}
-	dao.GetJsonSetting(db, constant.KeySearchProviderConfig, &savedCfg)
+	_ = dao.GetJsonSetting(db, constant.KeySearchProviderConfig, &savedCfg)
 	if savedCfg.APIKey != "" {
 		t.Errorf("Expected key to be cleared, got %s", savedCfg.APIKey)
 	}
@@ -118,7 +120,7 @@ func TestSaveSearchProviderConfig(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Errorf("Expected 200, got %d", w.Code)
 	}
-	dao.GetJsonSetting(db, constant.KeySearchProviderConfig, &savedCfg)
+	_ = dao.GetJsonSetting(db, constant.KeySearchProviderConfig, &savedCfg)
 	if savedCfg.APIKey != "new-key" {
 		t.Errorf("Expected new-key, got %s", savedCfg.APIKey)
 	}
@@ -136,7 +138,7 @@ func TestSaveSearchProviderConfig(t *testing.T) {
 	if w.Code != http.StatusOK {
 		t.Errorf("Expected 200, got %d", w.Code)
 	}
-	dao.GetJsonSetting(db, constant.KeySearchProviderConfig, &savedCfg)
+	_ = dao.GetJsonSetting(db, constant.KeySearchProviderConfig, &savedCfg)
 	if savedCfg.APIKey != "newer-key" {
 		t.Errorf("Expected newer-key, got %s", savedCfg.APIKey)
 	}

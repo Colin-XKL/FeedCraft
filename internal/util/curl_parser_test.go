@@ -152,9 +152,9 @@ func TestParseCurlCommand(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Invalid Command",
-			cmd:  `wget https://example.com`,
-			want: nil,
+			name:    "Invalid Command",
+			cmd:     `wget https://example.com`,
+			want:    nil,
 			wantErr: true,
 		},
 	}

@@ -3,6 +3,7 @@ package craft
 import (
 	"github.com/gorilla/feeds"
 	"github.com/samber/lo"
+	"github.com/samber/lo/parallel"
 )
 
 // llm-filter generic implementation
@@ -32,22 +33,28 @@ func GetLLMFilterGenericOptions(condition string) []CraftOption {
 func OptionLLMFilterGeneric(condition string) CraftOption {
 	return func(feed *feeds.Feed, payload ExtraPayload) error {
 		items := feed.Items
-		filtered := lo.Filter(items, func(item *feeds.Item, index int) bool {
-			content := item.Content
+		if len(items) == 0 {
+			return nil
+		}
+
+		// 1. 并发请求 LLM 判断
+		matches := parallel.Map(items, func(itm *feeds.Item, _ int) bool {
+			content := itm.Content
 			if len(content) == 0 {
-				content = item.Description
+				content = itm.Description
 			}
-			// We use the generic prompt wrapper which asks LLM to return true if it matches the condition
 			match, err := CheckConditionWithGenericPrompt(content, condition)
 			if err != nil {
-				// On error, we keep the item (fail open)
-				return true
+				return false
 			}
-			// If matches condition (true), we want to EXCLUDE it.
-			// So return false to Filter.
-			return !match
+			return match
 		})
-		feed.Items = filtered
+
+		// 2. 同步过滤
+		feed.Items = lo.Filter(items, func(_ *feeds.Item, index int) bool {
+			return !matches[index]
+		})
+
 		return nil
 	}
 }
