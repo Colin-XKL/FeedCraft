@@ -20,8 +20,8 @@ type taskResult[R any] struct {
 
 // NewPriorityDispatcher creates and starts a new PriorityDispatcher with the given number of workers.
 func NewPriorityDispatcher[R any](maxConcurrency int) *PriorityDispatcher[R] {
-	if maxConcurrency <= 0 {
-		maxConcurrency = 1
+if maxConcurrency <= 0 {
+		panic("priority dispatcher: maxConcurrency must be positive")
 	}
 
 	d := &PriorityDispatcher[R]{
