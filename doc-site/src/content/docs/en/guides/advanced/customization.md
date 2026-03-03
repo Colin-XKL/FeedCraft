@@ -64,6 +64,7 @@ You can configure FeedCraft using environment variables in `docker-compose.yml`.
 - **FC_LLM_API_MODEL**: Default model to use (e.g., `gemini-pro`, `gpt-3.5-turbo`). **Multiple Models Support:** You can provide a comma-separated list of models (e.g., `gpt-3.5-turbo,gpt-4`). FeedCraft will randomly select a model for each request and automatically retry with others if a call fails.
 - **FC_LLM_API_BASE**: API endpoint address. For OpenAI-compatible APIs, usually ends with `/v1`.
 - **FC_LLM_API_TYPE**: (Optional) `openai` (default) or `ollama`.
+- **FC_LLM_MAX_CONCURRENCY**: (Optional) Maximum number of concurrent LLM API requests. Defaults to `5`.
 
 ### External Services
 
