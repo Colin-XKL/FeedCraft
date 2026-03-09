@@ -27,16 +27,15 @@
   - 内部预启动固定数量的 Worker 协程（如 5 个），这天然实现了**全局绝对最大并发限制**。
   - 采用普通队列 (`normalQueue`) 和高优队列 (`urgentQueue`) 双通道设计。当请求因失败而触发 `retry-go` 退避休眠后，将其唤醒投入高优队列，Worker 一旦空闲即可“插队”接手，确保旧请求能尽早闭环释放连接。
 
-### 2.2 典型场景二：Fulltext 网页抓取 (按域名动态限流 + 信号量)
+### 2.2 典型场景二：Fulltext 网页抓取 (哈希分片限流 + 信号量)
 
 - **场景特点**：
   - 目标发散：目标域名可能有成千上万个 (`a.com`, `b.com`...)。
-  - 互不干扰：对 `a.com` 的高并发限制，绝对不能阻塞对 `b.com` 的正常抓取。
-  - 禁用 Worker 模型：如果我们为每个域名启动后台 Worker，会导致严重的 Goroutine 泄露。
-- **解决方案**：引入 `KeyedLimiter` 模块 (基于官方 `golang.org/x/sync/semaphore`)。
-  - 根据 `url.Host` 提取目标域名作为 Key。
-  - 使用 `sync.Map` 懒加载维护按域名的独立信号量。
-  - **绝妙之处**：信号量仅消耗微小内存且无后台驻留。同时，由于 `sem.Acquire` 支持传递 `Context`，一旦前端取消了对 FeedCraft 的访问，所有排队等待配额的抓取请求会瞬间 `Canceled` 退出，绝不白白浪费服务器流量。
+  - 容忍冲突：对抓取场景而言，极低概率的哈希碰撞（导致两个不同域名共享一个限流额度）是可以接受的。
+- **解决方案**：引入基于 **固定大小哈希桶 (Fixed-size Hash Buckets)** 的 `KeyedLimiter`。
+  - **内存恒定**：预分配 256 个信号量桶。无论输入多少个域名，内存占用始终保持在 ~100 KB 水平。
+  - **OOM 免疫**：不使用无限制增长的 Map，通过 FNV-1a 哈希算法将域名映射到固定位置，天然防御了针对内存的攻击。
+  - **无泄露设计**：信号量池在启动时初始化，运行期间无动态分配和 GC 压力。
 
 ### 2.3 优雅的第三方库集成
 
@@ -63,9 +62,12 @@ go get golang.org/x/sync/semaphore
 
 - **路径**: `internal/util/priority_dispatcher.go`
 - **实现细节**:
-  - 定义泛型结构体 `PriorityDispatcher[R any]`。
-  - 启动固定数量的 Worker，读取 `FC_LLM_MAX_CONCURRENCY`。
-  - 提供带 `urgent bool` 参数的 `Execute` 方法供外部阻塞式调用。
+  - **并发控制**: 启动固定数量的 Worker 协程，严格限制下游压力。
+  - **优先级支持**: 提供 `normalQueue` 和 `urgentQueue`，允许重试任务插队。
+  - **Context 感知**: `Execute` 方法接受 `context.Context`，支持入队等待和结果等待阶段的撤销。
+  - **兜底超时控制**: 引入 `MaxTaskDuration` 全局硬限时。即使调用方未设置超时，调度器也会在指定时间后取消 Context，防止 Worker 因“僵尸任务”永久挂起。
+  - **Panic 自动恢复**: Worker 内部集成 `recover()` 机制。若任务函数发生 Panic，Worker 会捕获异常、将错误返回给调用方并保持自身可用，确保单个任务的崩溃不会拖垮整个并发池。
+  - **任务闭环**: 任务函数 `fn` 强制要求接收并响应透传的 `Context`，确保全链路超时行为一致。
 
 ### 3.3 核心基建 2：实现 `KeyedLimiter` (服务于网页抓取)
 
