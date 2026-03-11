@@ -98,6 +98,10 @@ func TestPriorityDispatcher_Priority(t *testing.T) {
 			return "", nil
 		})
 	}()
+
+	// Wait to ensure normal task is in queue first
+	time.Sleep(50 * time.Millisecond)
+
 	go func() {
 		dispatcher.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
 			order <- "normal 2"
@@ -115,6 +119,9 @@ func TestPriorityDispatcher_Priority(t *testing.T) {
 			return "", nil
 		})
 	}()
+
+	// Wait a tiny bit to make sure urgent task is placed in urgent queue
+	time.Sleep(50 * time.Millisecond)
 
 	// Unblock the worker
 	close(blockChan)
