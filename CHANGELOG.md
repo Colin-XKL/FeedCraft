@@ -1,5 +1,52 @@
 # Change Log
 
+## [v3.1.0] (since v3.0.0)
+
+### ✨ 新特性 (Features & Refactors)
+
+- **调度与并发 (Dispatcher & Concurrency)**:
+  - `priority dispatcher`: 增加 context & timeout 支持 (MaxTaskDuration)，并为 worker 增加 panic recovery。
+  - `keyed_limiter`: 使用 hash bucket limiter 重构。
+  - 增加 LLM 并发控制逻辑 (concurrency control logic)。
+  - 提取并复用 fulltext crafts 中的 domain rate limiting logic。
+- **搜索与 RSS (Search & RSS)**:
+  - Search-to-RSS: 增加 enhanced mode。
+  - RSS wizards: 使用 `limax` 自动生成 recipe ID。
+  - 增加针对 craft 和 rss parser 的性能测试。
+- **系统与用户体验**:
+  - 增加 System Health Check 页面。
+  - 确保 `treeData` 和 `countMissing` 始终在有效的数组上工作。
+  - 改进错误提示用户体验 (better error ux)。
+  - 增加 `AGENTS.md`。
+  - 启用站点地图 (sitemap)。
+
+### 🐛 问题修复 (Bug Fixes)
+
+- 修复 `priority dispatcher` 中的潜在死锁问题。
+- 修复 search provider configs 中的 jq expressions 错误。
+- 允许清除 search provider API key。
+- settings: 修复读取现有 search provider config 时的错误处理。
+- 修复 search provider active check 并增加 timeout。
+- monitor: 修复并暴露 search provider check 中的 db errors。
+
+### 📝 文档与杂项 (Documentation & Chores)
+
+- **文档 (Docs)**:
+  - 增加系统工具的文档 (viewer, compare, health)。
+  - 更新 RSS wizard guides，添加关于 auto-generated recipe IDs 的说明。
+  - 增加比较 FeedCraft 与其他工具的文档。
+  - 增加繁体中文文档 (zh-tw doc)。
+  - 更新 README，同步功能和特性。
+  - 更新 minimal docker compose example, theme 和 badge。
+  - 重命名 search-to-rss 文档，同步 customization guide 和 Worktable features 的菜单路径及术语。
+  - 更新 search provider settings 关于 connection check 的文档。
+  - 更新 search-to-rss 和 dependency services 的文档以反映最近的更改。
+  - 更新 wizard guides 和 atom reference。
+  - 更新 Curl/HTML to RSS guides 适应 wizard workflow。
+- **杂项 (Chores)**:
+  - 更新 `dependabot.yml` 文件的配置。
+  - 代码样式更新与自动格式化 (style update & auto-format)。
+
 ## [v3.0.0] (since v2.1)
 
 ### ⚠️ 破坏性变更 (Breaking Changes)
