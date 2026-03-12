@@ -98,6 +98,7 @@ func TestPriorityDispatcher_Priority(t *testing.T) {
 			return "", nil
 		})
 	}()
+	time.Sleep(50 * time.Millisecond)
 	go func() {
 		dispatcher.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
 			order <- "normal 2"
@@ -116,6 +117,7 @@ func TestPriorityDispatcher_Priority(t *testing.T) {
 		})
 	}()
 
+	time.Sleep(50 * time.Millisecond)
 	// Unblock the worker
 	close(blockChan)
 
