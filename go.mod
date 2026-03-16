@@ -8,6 +8,7 @@ require (
 	github.com/JohannesKaufmann/html-to-markdown/v2 v2.4.0
 	github.com/PuerkitoBio/goquery v1.9.1
 	github.com/abadojack/whatlanggo v1.0.1
+	github.com/alicebob/miniredis/v2 v2.36.1
 	github.com/getsentry/sentry-go v0.36.1
 	github.com/getsentry/sentry-go/gin v0.34.0
 	github.com/gin-contrib/cors v1.7.5
@@ -30,12 +31,11 @@ require (
 	github.com/tmc/langchaingo v0.1.14
 	go.uber.org/automaxprocs v1.6.0
 	golang.org/x/text v0.31.0
-	gorm.io/gorm v1.31.0
+	gorm.io/gorm v1.31.1
 )
 
 require (
 	github.com/JohannesKaufmann/dom v0.2.0 // indirect
-	github.com/alicebob/miniredis/v2 v2.36.1 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/bytedance/sonic v1.13.2 // indirect
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
