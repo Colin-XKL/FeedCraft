@@ -64,6 +64,8 @@ sidebar:
 - **FC_LLM_API_MODEL**: 默认使用的模型（如 `gemini-pro`, `gpt-3.5-turbo`）。**支持多个模型：** 你可以提供一个逗号分隔的模型列表（例如 `gpt-3.5-turbo,gpt-4`）。FeedCraft 会为每个请求随机选择一个模型，如果调用失败，会自动重试列表中的其他模型。
 - **FC_LLM_API_BASE**: API 接口地址。如果是兼容 OpenAI 的 API，通常以 `/v1` 结尾。
 - **FC_LLM_API_TYPE**: (可选) `openai` (默认) 或 `ollama`.
+- **FC_LLM_MAX_CONCURRENCY**: 控制 LLM API 的最大并发请求数（默认值：5）。有助于防止触发服务商的并发速率限制。
+- **FC_DOMAIN_MAX_CONCURRENCY**: 控制全文抓取期间对单一目标域名的最大并发 HTTP 请求数（默认值：3）。防止被目标网站 IP 封禁或返回 429 错误。
 
 ### 外部服务
 
