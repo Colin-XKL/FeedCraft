@@ -8,6 +8,7 @@ require (
 	github.com/JohannesKaufmann/html-to-markdown/v2 v2.4.0
 	github.com/PuerkitoBio/goquery v1.9.1
 	github.com/abadojack/whatlanggo v1.0.1
+	github.com/alicebob/miniredis/v2 v2.36.1
 	github.com/getsentry/sentry-go v0.36.1
 	github.com/getsentry/sentry-go/gin v0.34.0
 	github.com/gin-contrib/cors v1.7.5
@@ -23,7 +24,7 @@ require (
 	github.com/mmcdole/gofeed v1.3.0
 	github.com/redis/go-redis/v9 v9.7.3
 	github.com/samber/lo v1.47.0
-	github.com/sirupsen/logrus v1.9.3
+	github.com/sirupsen/logrus v1.9.4
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
@@ -35,7 +36,6 @@ require (
 
 require (
 	github.com/JohannesKaufmann/dom v0.2.0 // indirect
-	github.com/alicebob/miniredis/v2 v2.36.1 // indirect
 	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/bytedance/sonic v1.13.2 // indirect
 	github.com/bytedance/sonic/loader v0.2.4 // indirect
