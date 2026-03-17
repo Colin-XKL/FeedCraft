@@ -116,6 +116,9 @@ func TestPriorityDispatcher_Priority(t *testing.T) {
 		})
 	}()
 
+	// Wait to ensure urgent task is in queue before unblocking worker
+	time.Sleep(50 * time.Millisecond)
+
 	// Unblock the worker
 	close(blockChan)
 
