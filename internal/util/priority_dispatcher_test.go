@@ -117,6 +117,7 @@ func TestPriorityDispatcher_Priority(t *testing.T) {
 	}()
 
 	// Unblock the worker
+	time.Sleep(50 * time.Millisecond)
 	close(blockChan)
 
 	// The first task out should be "urgent" even though it was enqueued last
