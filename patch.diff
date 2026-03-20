@@ -1,0 +1,26 @@
+<<<<<<< SEARCH
+	// Enqueue 1 urgent task
+	go func() {
+		dispatcher.Execute(context.Background(), true, func(ctx context.Context) (string, error) {
+			order <- "urgent"
+			return "", nil
+		})
+	}()
+
+	// Unblock the worker
+	close(blockChan)
+=======
+	// Enqueue 1 urgent task
+	go func() {
+		dispatcher.Execute(context.Background(), true, func(ctx context.Context) (string, error) {
+			order <- "urgent"
+			return "", nil
+		})
+	}()
+
+	// Wait to ensure urgent task is in queue
+	time.Sleep(50 * time.Millisecond)
+
+	// Unblock the worker
+	close(blockChan)
+>>>>>>> REPLACE
