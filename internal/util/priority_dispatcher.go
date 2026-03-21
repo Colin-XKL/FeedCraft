@@ -40,7 +40,7 @@ func NewPriorityDispatcher[R any](maxConcurrency int) *PriorityDispatcher[R] {
 	}
 
 	// Start fixed number of workers
-	for range maxConcurrency {
+	for i := 0; i < maxConcurrency; i++ {
 		go d.worker()
 	}
 
