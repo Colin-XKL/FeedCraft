@@ -36,6 +36,9 @@ importers:
       js-md5:
         specifier: ^0.8.3
         version: 0.8.3
+      limax:
+        specifier: ^4.2.2
+        version: 4.2.2
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
@@ -2609,6 +2612,13 @@ packages:
       }
     hasBin: true
 
+  hepburn@1.2.2:
+    resolution:
+      {
+        integrity: sha512-DeykBc4XmfAWsnN+Y1Svi9uaQnnz21Q/ARuGWvIBxP1iUFeMIWL41DfVkgTh7tU23LFIbmIBO2Bk17BTPu0kVA==,
+      }
+    engines: { node: '>=4' }
+
   html-tags@3.3.1:
     resolution:
       {
@@ -3001,6 +3011,13 @@ packages:
     resolution:
       {
         integrity: sha512-O18pf7nyvHTckunPWCV1XUNXU1piu01y2b7ATJ0ppkUkk8ocqVWBrYjJBCwHDjD/ZWcfyrA0P4gKhzWGi5EINQ==,
+      }
+    engines: { node: '>=14' }
+
+  limax@4.2.2:
+    resolution:
+      {
+        integrity: sha512-HhCTNSqrNHj2hZzFn2gNbdOukxSbsw7nSZ9cmn1TpvjvHvE1TuT523fgMpLTwzRdoNMujdyTeSNcs6TwiFa5aQ==,
       }
     engines: { node: '>=14' }
 
@@ -3546,6 +3563,12 @@ packages:
       typescript:
         optional: true
 
+  pinyin-pro@3.28.0:
+    resolution:
+      {
+        integrity: sha512-mMRty6RisoyYNphJrTo3pnvp3w8OMZBrXm9YSWkxhAfxKj1KZk2y8T2PDIZlDDRsvZ0No+Hz6FI4sZpA6Ey25g==,
+      }
+
   pirates@4.0.6:
     resolution:
       {
@@ -3974,6 +3997,13 @@ packages:
         integrity: sha512-l3BikUxvPOcn5E74dZiq5BGsTb5yEwhaTSzccU6t4sDOH8NWJCstKO5QT2CvtFoK6F0saL7p9xHAqHOlCPJygA==,
       }
     engines: { node: '>= 8' }
+
+  speakingurl@14.0.1:
+    resolution:
+      {
+        integrity: sha512-1POYv7uv2gXoyGFpBCmpDVSNV74IfsWlDW216UPjbWufNf+bSU6GdbDsxdcxtfwb4xlI3yxzOTKClUosxARYrQ==,
+      }
+    engines: { node: '>=0.10.0' }
 
   split-on-first@3.0.0:
     resolution:
@@ -6253,6 +6283,8 @@ snapshots:
 
   he@1.2.0: {}
 
+  hepburn@1.2.2: {}
+
   html-tags@3.3.1: {}
 
   htmlparser2@8.0.2:
@@ -6449,6 +6481,12 @@ snapshots:
   lilconfig@2.1.0: {}
 
   lilconfig@3.1.1: {}
+
+  limax@4.2.2:
+    dependencies:
+      hepburn: 1.2.2
+      pinyin-pro: 3.28.0
+      speakingurl: 14.0.1
 
   lines-and-columns@1.2.4: {}
 
@@ -6733,6 +6771,8 @@ snapshots:
     transitivePeerDependencies:
       - '@vue/composition-api'
 
+  pinyin-pro@3.28.0: {}
+
   pirates@4.0.6: {}
 
   portfinder@1.0.32:
@@ -6964,6 +7004,8 @@ snapshots:
   source-map@0.6.1: {}
 
   source-map@0.7.4: {}
+
+  speakingurl@14.0.1: {}
 
   split-on-first@3.0.0: {}
 

@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"github.com/gorilla/feeds"
 	"github.com/mmcdole/gofeed"
+	"github.com/samber/lo"
+	"github.com/samber/lo/parallel"
 	"github.com/sirupsen/logrus"
+
 	"strings"
 )
 
@@ -88,23 +91,22 @@ type FeedItemProcessor func(feedItem *feeds.Item, payload ExtraPayload) error //
 // OptionTransformFeedItem 通用的feed item 处理
 func OptionTransformFeedItem(processor FeedItemProcessor) CraftOption {
 	return func(feed *feeds.Feed, payload ExtraPayload) error {
-		successCount := 0
-		var lastErr error
-
-		for _, itemPointer := range feed.Items {
-			err := processor(itemPointer, payload)
-			if err != nil {
-				// 记录错误但不中断，除非全部失败
-				logrus.Warnf("failed to process item [%s], err: %v", itemPointer.Title, err)
-				lastErr = err
-			} else {
-				successCount++
-			}
+		if len(feed.Items) == 0 {
+			return nil
 		}
 
-		if len(feed.Items) > 0 && successCount == 0 {
-			// 如果有文章且全部失败，则视为整体失败
-			return fmt.Errorf("all items failed to process. last error: %v", lastErr)
+		// 1. 并发执行并将结果映射为错误切片
+		errs := parallel.Map(feed.Items, func(item *feeds.Item, _ int) error {
+			err := processor(item, payload)
+			if err != nil {
+				logrus.Warnf("failed to process item [%s], err: %v", item.Title, err)
+			}
+			return err
+		})
+
+		// 2. 检查是否全部失败
+		if lo.EveryBy(errs, func(err error) bool { return err != nil }) {
+			return fmt.Errorf("all items failed to process. last error: %v", lo.LastOrEmpty(errs))
 		}
 
 		return nil

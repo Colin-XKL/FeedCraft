@@ -2,6 +2,8 @@ package craft
 
 import (
 	"FeedCraft/internal/util"
+	"context"
+	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -13,14 +15,29 @@ import (
 )
 
 func getRenderedHTML2(websiteUrl string, options util.BrowserlessOptions) (string, error) {
-	content, err := util.GetBrowserlessContent(websiteUrl, options)
-	if err != nil {
-		return "", err
-	}
-
 	parseUrl, err := url.Parse(websiteUrl)
 	if err != nil {
 		logrus.Errorf("parse url failed: %v", err)
+		return "", err
+	}
+	host := parseUrl.Hostname()
+	if host == "" {
+		return "", fmt.Errorf("empty hostname in URL: %s", websiteUrl)
+	}
+
+	// Acquire concurrency permit for this domain
+	ctx, cancel := context.WithTimeout(context.Background(), options.Timeout+10*time.Second)
+	defer cancel()
+
+	release, err := domainLimiter.Acquire(ctx, host)
+	if err != nil {
+		logrus.Warnf("Failed to acquire permit for domain %s: %v", host, err)
+		return "", err
+	}
+	defer release()
+
+	content, err := util.GetBrowserlessContent(websiteUrl, options)
+	if err != nil {
 		return "", err
 	}
 

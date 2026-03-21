@@ -20,7 +20,7 @@ func generateDummyRSS(itemCount int) []byte {
 `)
 
 	for i := 0; i < itemCount; i++ {
-		sb.WriteString(fmt.Sprintf(`
+		fmt.Fprintf(&sb, `
  <item>
   <title>Example entry %d</title>
   <description>Here is some text containing an interesting description %d.</description>
@@ -28,7 +28,7 @@ func generateDummyRSS(itemCount int) []byte {
   <guid isPermaLink="false">%d</guid>
   <pubDate>Sun, 06 Sep 2009 16:20:00 +0000</pubDate>
  </item>
-`, i, i, i, i))
+`, i, i, i, i)
 	}
 
 	sb.WriteString(`

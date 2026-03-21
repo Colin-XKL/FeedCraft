@@ -74,10 +74,10 @@ func (p *SearXNGProvider) Fetch(ctx context.Context, query string) ([]byte, erro
 
 func (p *SearXNGProvider) GetDefaultParserConfig() *config.JsonParserConfig {
 	return &config.JsonParserConfig{
-		ItemsIterator: "results",
-		Title:         "title",
-		Link:          "url",
-		Description:   "content",
-		Date:          "publishedDate",
+		ItemsIterator: ".results",
+		Title:         ".title",
+		Link:          ".url",
+		Description:   ".content",
+		Date:          ".publishedDate",
 	}
 }

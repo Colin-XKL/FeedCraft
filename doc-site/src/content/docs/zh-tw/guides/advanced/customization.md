@@ -50,6 +50,8 @@ sidebar:
 
 你可以使用 **檢查連線 (Check Connection)** 按鈕來驗證 FeedCraft 是否可以成功連線到配置的搜尋供應商。
 
+> **注意：** 如需監控內部 Craft 依賴關係（Recipes, Flows, Atoms），請使用 [Craft 依賴檢查](/zh-tw/guides/advanced/tools) 工具。
+
 ## 進階配置
 
 ### Docker 環境變數
@@ -62,6 +64,7 @@ sidebar:
 - **FC_LLM_API_MODEL**: 預設使用的模型（如 `gemini-pro`, `gpt-3.5-turbo`）。**支援多個模型：** 你可以提供一個逗號分隔的模型列表（例如 `gpt-3.5-turbo,gpt-4`）。FeedCraft 會為每個請求隨機選擇一個模型，如果調用失敗，會自動重試列表中的其他模型。
 - **FC_LLM_API_BASE**: API 介面地址。如果是相容 OpenAI 的 API，通常以 `/v1` 結尾。
 - **FC_LLM_API_TYPE**: (可選) `openai` (預設) 或 `ollama`.
+- **FC_LLM_MAX_CONCURRENCY**: LLM 請求的最大併發數（預設：5）。用於防止觸發速率限制（429）錯誤，同時確保重試請求優先處理。
 
 ### 外部服務
 

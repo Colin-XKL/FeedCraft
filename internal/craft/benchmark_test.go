@@ -40,9 +40,9 @@ func BenchmarkProcessFeed_TranslateTitle_Cached(b *testing.B) {
 	cacheKey := getCraftCacheKey("translate title", md5Hash)
 
 	// Set in Miniredis
-	s.Set(cacheKey, "你好世界")
-    // Set TTL just in case (CachedFunc sets it)
-    s.SetTTL(cacheKey, time.Hour)
+	_ = s.Set(cacheKey, "你好世界")
+	// Set TTL just in case (CachedFunc sets it)
+	s.SetTTL(cacheKey, time.Hour)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
