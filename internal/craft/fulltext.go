@@ -3,6 +3,7 @@ package craft
 import (
 	"FeedCraft/internal/util"
 	"context"
+	"fmt"
 	"github.com/go-shiori/go-readability"
 	"github.com/gorilla/feeds"
 	"github.com/sirupsen/logrus"
@@ -39,15 +40,19 @@ func ExecuteWithDomainLimit(targetURL string, timeout time.Duration, action Extr
 	if err != nil {
 		return "", err
 	}
+	host := parsed.Hostname()
+	if host == "" {
+		return "", fmt.Errorf("empty hostname in URL: %s", targetURL)
+	}
 
 	// 统一处理超时控制，额外预留 10 秒给可能发生的排队等待
 	ctx, cancel := context.WithTimeout(context.Background(), timeout+10*time.Second)
 	defer cancel()
 
 	// 尝试获取该域名的并发许可证
-	release, err := domainLimiter.Acquire(ctx, parsed.Host)
+	release, err := domainLimiter.Acquire(ctx, host)
 	if err != nil {
-		logrus.Warnf("Failed to acquire permit for domain %s: %v", parsed.Host, err)
+		logrus.Warnf("Failed to acquire permit for domain %s: %v", host, err)
 		return "", err
 	}
 	defer release() // 无论 action 是否 panic/error，确保必定释放

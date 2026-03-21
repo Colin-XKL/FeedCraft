@@ -1,15 +1,25 @@
 package util
 
+import (
+	"context"
+	"fmt"
+	"time"
+)
+
 // PriorityDispatcher is a generic worker pool that limits concurrency and supports prioritizing urgent tasks.
 // It acts as a global funnel: no matter how many tasks are submitted concurrently,
 // only a fixed number of workers will execute them, protecting downstream services from being overwhelmed.
 type PriorityDispatcher[R any] struct {
 	normalQueue chan taskWrapper[R]
 	urgentQueue chan taskWrapper[R]
+	// MaxTaskDuration is an optional fallback timeout for each task.
+	// If a task takes longer than this, it will be cancelled.
+	MaxTaskDuration time.Duration
 }
 
 type taskWrapper[R any] struct {
-	fn         func() (R, error)
+	ctx        context.Context
+	fn         func(ctx context.Context) (R, error)
 	resultChan chan taskResult[R]
 }
 
@@ -20,7 +30,7 @@ type taskResult[R any] struct {
 
 // NewPriorityDispatcher creates and starts a new PriorityDispatcher with the given number of workers.
 func NewPriorityDispatcher[R any](maxConcurrency int) *PriorityDispatcher[R] {
-if maxConcurrency <= 0 {
+	if maxConcurrency <= 0 {
 		panic("priority dispatcher: maxConcurrency must be positive")
 	}
 
@@ -42,7 +52,7 @@ func (d *PriorityDispatcher[R]) worker() {
 		// ==========================================
 		// 优先级调度的核心逻辑 (双层 select 模式)
 		// ==========================================
-		// 为什么需要两层 select？
+		// 为什么 need 两层 select？
 		// 因为在 Go 中如果一层 select 同时有多个 case 就绪，它是随机选择的。
 		// 为了实现严格的优先级(重试必须插队)，必须使用两层配合 default 分支。
 
@@ -68,25 +78,66 @@ func (d *PriorityDispatcher[R]) worker() {
 }
 
 func (d *PriorityDispatcher[R]) executeTask(task taskWrapper[R]) {
-	val, err := task.fn()
+	// Panic protection: ensure worker doesn't die and caller gets an error
+	defer func() {
+		if r := recover(); r != nil {
+			var zero R
+			// Send the panic as an error to the result channel
+			// We use fmt.Errorf for simplicity, but could include stack trace if needed
+			task.resultChan <- taskResult[R]{
+				val: zero,
+				err: fmt.Errorf("task panicked: %v", r),
+			}
+		}
+	}()
+
+	ctx := task.ctx
+	if d.MaxTaskDuration > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, d.MaxTaskDuration)
+		defer cancel()
+	}
+
+	// Execute the task with the (possibly timed out) context.
+	val, err := task.fn(ctx)
 	task.resultChan <- taskResult[R]{val: val, err: err}
 }
 
-// Execute submits a task and blocks until it completes.
+// Execute submits a task and blocks until it completes or the context is cancelled.
 // If urgent is true, the task is sent to the urgentQueue and will be executed before normal tasks.
-func (d *PriorityDispatcher[R]) Execute(urgent bool, fn func() (R, error)) (R, error) {
+func (d *PriorityDispatcher[R]) Execute(ctx context.Context, urgent bool, fn func(ctx context.Context) (R, error)) (R, error) {
 	resultChan := make(chan taskResult[R], 1)
 	task := taskWrapper[R]{
+		ctx:        ctx,
 		fn:         fn,
 		resultChan: resultChan,
 	}
 
+	var queue chan taskWrapper[R]
 	if urgent {
-		d.urgentQueue <- task
+		queue = d.urgentQueue
 	} else {
-		d.normalQueue <- task
+		queue = d.normalQueue
 	}
 
-	res := <-resultChan
-	return res.val, res.err
+	// Step 1: Enqueue the task, but respect context cancellation while waiting for queue space.
+	select {
+	case queue <- task:
+		// Task successfully enqueued
+	case <-ctx.Done():
+		var zero R
+		return zero, ctx.Err()
+	}
+
+	// Step 2: Wait for the result, but respect context cancellation.
+	// Note: Even if we return early due to context cancellation, the worker will still eventually
+	// pick up the task and run it (and send the result to resultChan).
+	// Because resultChan is buffered (size 1), the worker won't block when sending to it.
+	select {
+	case res := <-resultChan:
+		return res.val, res.err
+	case <-ctx.Done():
+		var zero R
+		return zero, ctx.Err()
+	}
 }
