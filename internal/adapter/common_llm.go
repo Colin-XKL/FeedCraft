@@ -35,6 +35,8 @@ var (
 	// This prevents rate-limit errors (429) while allowing retried requests to jump the queue.
 	llmDispatcher *util.PriorityDispatcher[string]
 	llmDispOnce   sync.Once
+
+	clientCreationMutex sync.Mutex
 )
 
 func getLLMDispatcher() *util.PriorityDispatcher[string] {
@@ -54,6 +56,43 @@ func getLLMDispatcher() *util.PriorityDispatcher[string] {
 		logrus.Infof("LLM Global Priority Dispatcher initialized with max concurrency: %d", concurrency)
 	})
 	return llmDispatcher
+}
+
+func getOrCreateLLMClient(cacheKey, llmApiType, llmApiBase, llmApiKey, currentModel string) (llms.Model, error) {
+	if cached, ok := llmClients.Load(cacheKey); ok {
+		return cached.(llms.Model), nil
+	}
+
+	clientCreationMutex.Lock()
+	defer clientCreationMutex.Unlock()
+
+	if cached, ok := llmClients.Load(cacheKey); ok {
+		return cached.(llms.Model), nil
+	}
+
+	var llm llms.Model
+	var err error
+	if llmApiType == "ollama" {
+		llm, err = ollama.New(
+			ollama.WithServerURL(llmApiBase),
+			ollama.WithModel(currentModel),
+		)
+	} else {
+		opts := []openai.Option{
+			openai.WithToken(llmApiKey),
+			openai.WithModel(currentModel),
+		}
+		if llmApiBase != "" {
+			opts = append(opts, openai.WithBaseURL(llmApiBase))
+		}
+		llm, err = openai.New(opts...)
+	}
+
+	if err == nil {
+		llmClients.Store(cacheKey, llm)
+	}
+
+	return llm, err
 }
 
 func SimpleLLMCall(model string, promptInput string) (string, error) {
@@ -120,34 +159,12 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 		}
 
 		cacheKey := fmt.Sprintf("%s|%s|%s|%s", llmApiType, llmApiBase, llmApiKey, currentModel)
-		var llm llms.Model
 
-		if cached, ok := llmClients.Load(cacheKey); ok {
-			llm = cached.(llms.Model)
-		} else {
-			var err error
-			if llmApiType == "ollama" {
-				llm, err = ollama.New(
-					ollama.WithServerURL(llmApiBase),
-					ollama.WithModel(currentModel),
-				)
-			} else {
-				opts := []openai.Option{
-					openai.WithToken(llmApiKey),
-					openai.WithModel(currentModel),
-				}
-				if llmApiBase != "" {
-					opts = append(opts, openai.WithBaseURL(llmApiBase))
-				}
-				llm, err = openai.New(opts...)
-			}
-
-			if err != nil {
-				lastErr = err
-				logrus.Warnf("Failed to initialize LLM client for model %s: %v", currentModel, err)
-				continue
-			}
-			llmClients.Store(cacheKey, llm)
+		llm, err := getOrCreateLLMClient(cacheKey, llmApiType, llmApiBase, llmApiKey, currentModel)
+		if err != nil {
+			lastErr = err
+			logrus.Warnf("Failed to initialize LLM client for model %s: %v", currentModel, err)
+			continue
 		}
 
 		dispatcher := getLLMDispatcher()
