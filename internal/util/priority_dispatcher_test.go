@@ -116,6 +116,8 @@ func TestPriorityDispatcher_Priority(t *testing.T) {
 		})
 	}()
 
+	time.Sleep(50 * time.Millisecond)
+
 	// Unblock the worker
 	close(blockChan)
 
