@@ -80,41 +80,64 @@ func TestPriorityDispatcher_Priority(t *testing.T) {
 
 	// Block the worker with a long task
 	blockChan := make(chan struct{})
+	workerStarted := make(chan struct{})
+	errChan := make(chan error, 4)
+
 	go func() {
-		dispatcher.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
+		_, err := dispatcher.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
+			close(workerStarted)
 			<-blockChan
 			return "unblocked", nil
 		})
+		if err != nil {
+			errChan <- err
+		}
 	}()
 
-	// Wait a bit to ensure the blocking task is picked up
-	time.Sleep(50 * time.Millisecond)
+	// Wait to ensure the blocking task is picked up
+	<-workerStarted
 
 	// Enqueue 2 normal tasks
 	order := make(chan string, 3)
 	go func() {
-		dispatcher.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
+		_, err := dispatcher.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
 			order <- "normal 1"
 			return "", nil
 		})
+		if err != nil {
+			errChan <- err
+		}
 	}()
 	go func() {
-		dispatcher.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
+		_, err := dispatcher.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
 			order <- "normal 2"
 			return "", nil
 		})
+		if err != nil {
+			errChan <- err
+		}
 	}()
 
 	// Wait to ensure normal tasks are in queue
-	time.Sleep(50 * time.Millisecond)
+	for len(dispatcher.normalQueue) < 2 {
+		time.Sleep(1 * time.Millisecond)
+	}
 
 	// Enqueue 1 urgent task
 	go func() {
-		dispatcher.Execute(context.Background(), true, func(ctx context.Context) (string, error) {
+		_, err := dispatcher.Execute(context.Background(), true, func(ctx context.Context) (string, error) {
 			order <- "urgent"
 			return "", nil
 		})
+		if err != nil {
+			errChan <- err
+		}
 	}()
+
+	// Wait to ensure urgent task is in queue
+	for len(dispatcher.urgentQueue) < 1 {
+		time.Sleep(1 * time.Millisecond)
+	}
 
 	// Unblock the worker
 	close(blockChan)
@@ -125,7 +148,20 @@ func TestPriorityDispatcher_Priority(t *testing.T) {
 		if first != "urgent" {
 			t.Errorf("expected urgent task to be first after unblocking, got: %s", first)
 		}
+	case err := <-errChan:
+		t.Fatalf("unexpected execute error: %v", err)
 	case <-time.After(1 * time.Second):
-		t.Fatal("timeout waiting for tasks")
+		t.Fatal("timeout waiting for urgent task")
+	}
+
+	// Wait for the remaining normal tasks
+	for i := 0; i < 2; i++ {
+		select {
+		case <-order:
+		case err := <-errChan:
+			t.Fatalf("unexpected execute error: %v", err)
+		case <-time.After(1 * time.Second):
+			t.Fatal("timeout waiting for normal tasks")
+		}
 	}
 }
