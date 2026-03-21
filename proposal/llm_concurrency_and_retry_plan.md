@@ -73,7 +73,7 @@ go get golang.org/x/sync/semaphore
 
 - **路径**: `internal/util/keyed_limiter.go`
 - **实现细节**:
-  - 封装基于 `sync.Map` 和 `semaphore.Weighted` 的动态限流器。
+  - 封装基于固定大小哈希桶 (fixed-size hash-bucket) 和 `semaphore.Weighted` 的限流器，而不使用动态的 `sync.Map`，从而保证 OOM 安全。
   - 提供 `Acquire(ctx context.Context, key string) (release func(), err error)` 方法。
 
 ### 3.4 LLM 客户端连接复用与重试组装
@@ -85,9 +85,9 @@ go get golang.org/x/sync/semaphore
 
 ### 3.5 Fulltext 抓取并发限制
 
-- **路径**: (假定爬取核心点在 `internal/craft/fulltext.go` 或独立的 extractor 中)
+- **路径**: `internal/craft/fulltext.go`
 - **实现细节**:
-  - 初始化全局 `domainLimiter`，读取配置如 `FC_DOMAIN_MAX_CONCURRENCY` (默认例如 3)。
+  - 初始化全局 `domainLimiter`，读取配置 `DOMAIN_MAX_CONCURRENCY` (默认例如 3)。
   - 在发起 HTTP 真实抓取动作前，解析 `URL` 提取 `Host`，通过 `domainLimiter.Acquire` 拿锁，成功结束后释放。
 
 ### 3.6 Craft 处理全面并发化
