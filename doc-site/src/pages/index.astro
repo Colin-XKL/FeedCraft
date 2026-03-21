@@ -1,16 +1,42 @@
 ---
+
 ---
-<!DOCTYPE html>
+
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0;url=/en/">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="refresh" content="0;url=/en/" />
     <script is:inline>
-        window.location.href = "/en/";
+      window.location.href = "/en/";
     </script>
     <title>Redirecting...</title>
-</head>
-<body>
+  </head>
+  <body>
     <p>Redirecting to <a href="/en/">/en/</a>...</p>
-</body>
+  </body>
+  <script>
+    function fallbackJSloader(url, loadedEvent) {
+      console.log("Error loading asset, using fallback url");
+      console.log("load asset from", url);
+
+      let script = document.createElement("script");
+      script.type = "text/javascript";
+      script.src = url;
+      script.async = true;
+      if (loadedEvent) script.setAttribute("onload", `${loadedEvent}()`);
+      document.body.appendChild(script);
+    }
+  </script>
+  <script>
+    function initQuickLink() {
+      quicklink.listen();
+    }
+  </script>
+  <script
+    async
+    onload="initQuickLink()"
+    onerror="fallbackJSloader('https://s4.zstatic.net/ajax/libs/quicklink/2.3.0/quicklink.umd.js','initQuickLink')"
+    src="https://cdn.jsdelivr.net/npm/quicklink@2/dist/quicklink.umd.js"
+  ></script>
 </html>
