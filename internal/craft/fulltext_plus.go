@@ -3,6 +3,7 @@ package craft
 import (
 	"FeedCraft/internal/util"
 	"context"
+	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
@@ -19,7 +20,10 @@ func getRenderedHTML2(websiteUrl string, options util.BrowserlessOptions) (strin
 		logrus.Errorf("parse url failed: %v", err)
 		return "", err
 	}
-	host := parseUrl.Host
+	host := parseUrl.Hostname()
+	if host == "" {
+		return "", fmt.Errorf("empty hostname in URL: %s", websiteUrl)
+	}
 
 	// Acquire concurrency permit for this domain
 	ctx, cancel := context.WithTimeout(context.Background(), options.Timeout+10*time.Second)
