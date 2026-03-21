@@ -6,7 +6,7 @@
 
 - **调度与并发优化 (Dispatcher & Concurrency)**:
   - 增加 LLM 并发控制逻辑 (concurrency control)
-  - fulltext crafts 类新增 domain 级别 rate limiting 
+  - fulltext crafts 类新增 domain 级别 rate limiting
 - **搜索与 RSS (Search & RSS)**:
   - Search-to-RSS: 增加 enhanced mode
   - RSS wizards: 使用 `limax` 自动生成 recipe ID
@@ -30,7 +30,6 @@
   - 增加比较 FeedCraft 与其他工具的文档
   - 增加繁体中文文档 (zh-tw doc)
   - 更新 minimal docker compose example, theme 和 badge
-
 
 ## [v3.0.0] (since v2.1)
 
