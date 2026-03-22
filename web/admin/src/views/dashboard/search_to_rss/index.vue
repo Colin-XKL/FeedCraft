@@ -259,7 +259,11 @@
     IconRefresh,
   } from '@arco-design/web-vue/es/icon';
   import XHeader from '@/components/header/x-header.vue';
-  import { previewSearch, ParsedItem, SearchFetchReq } from '@/api/json_rss';
+  import {
+    previewSearch,
+    SearchFetchReq,
+    SearchPreviewItem,
+  } from '@/api/json_rss';
   import { createCustomRecipe } from '@/api/custom_recipe';
   import { useI18n } from 'vue-i18n';
   import generateRecipeId, { getRecipeIdRules } from '@/utils/slug';
@@ -271,7 +275,7 @@
   const currentStep = ref(1);
   const fetching = ref(false);
   const saving = ref(false);
-  const parsedItems = ref<ParsedItem[]>([]);
+  const parsedItems = ref<SearchPreviewItem[]>([]);
 
   // Step 1: Query
   const fetchReq = reactive<SearchFetchReq>({
@@ -328,13 +332,7 @@
     try {
       const res = await previewSearch(fetchReq);
       if (res.data) {
-        parsedItems.value = res.data.map((item: any) => ({
-          title: item.title || item.Title,
-          link: item.link || item.Link,
-          date: item.published || item.Published || item.date || item.Date,
-          description: item.description || item.Description,
-          content: item.content || item.Content,
-        }));
+        parsedItems.value = res.data;
       }
 
       if (parsedItems.value.length === 0) {

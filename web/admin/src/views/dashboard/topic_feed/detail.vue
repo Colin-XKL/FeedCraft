@@ -49,8 +49,8 @@
             </a-descriptions-item>
             <a-descriptions-item :label="t('topic.publicUrl')">
               <a-space>
-                <a-link :href="detail.public_url" target="_blank">
-                  {{ detail.public_url }}
+                <a-link :href="publicUrl" target="_blank">
+                  {{ publicUrl }}
                 </a-link>
                 <a-button size="mini" @click="copyPublicUrl">
                   {{ t('topic.copyLink') }}
@@ -141,6 +141,18 @@
                 data-index="message"
                 :ellipsis="true"
               />
+              <a-table-column :title="t('observability.actions')">
+                <template #cell="{ record }">
+                  <a-button
+                    type="text"
+                    size="small"
+                    :disabled="!record.details && !record.details_json"
+                    @click="openExecutionDetails(record)"
+                  >
+                    {{ t('topic.detail.viewExecutionDetails') }}
+                  </a-button>
+                </template>
+              </a-table-column>
             </template>
           </a-table>
           <a-empty
@@ -174,21 +186,44 @@
         </a-card>
       </a-space>
     </a-spin>
+
+    <a-modal
+      v-model:visible="detailsModalVisible"
+      :title="t('topic.detail.executionDetails')"
+      :footer="false"
+      width="720px"
+    >
+      <pre v-if="selectedExecutionDetails" class="details-json">{{
+        selectedExecutionDetails
+      }}</pre>
+      <a-empty v-else :description="t('topic.detail.noExecutionDetails')" />
+    </a-modal>
   </div>
 </template>
 
 <script lang="ts" setup>
-  import { onMounted, ref } from 'vue';
+  import { computed, onMounted, ref } from 'vue';
   import { Message } from '@arco-design/web-vue';
   import { useI18n } from 'vue-i18n';
   import { useRoute } from 'vue-router';
   import XHeader from '@/components/header/x-header.vue';
+  import {
+    formatObservabilityErrorKind,
+    formatObservabilityStatus,
+    formatObservabilityTrigger,
+  } from '@/utils/observability';
+  import buildPublicFeedUrl from '@/utils/publicFeedUrl';
   import { AggregatorStep, TopicDetail, getTopicFeedDetail } from '@/api/topic';
 
   const { t } = useI18n();
   const route = useRoute();
   const loading = ref(false);
   const detail = ref<TopicDetail | null>(null);
+  const detailsModalVisible = ref(false);
+  const selectedExecutionDetails = ref('');
+  const publicUrl = computed(() =>
+    detail.value ? buildPublicFeedUrl(detail.value.public_url) : ''
+  );
 
   const formatTime = (value?: string) => {
     if (!value) return '-';
@@ -196,19 +231,15 @@
   };
 
   const formatStatus = (status?: string) => {
-    if (!status) return '-';
-    return t(`observability.statusValue.${status}`);
+    return formatObservabilityStatus(t, status);
   };
 
   const formatTrigger = (trigger?: string) => {
-    if (!trigger) return '-';
-    return t(`observability.triggerValue.${trigger}`);
+    return formatObservabilityTrigger(t, trigger);
   };
 
   const formatErrorKind = (kind?: string) => {
-    if (!kind) return '-';
-    const key = `observability.errorKind.${kind}`;
-    return t(key);
+    return formatObservabilityErrorKind(t, kind);
   };
 
   const statusColor = (status?: string) => {
@@ -237,12 +268,31 @@
 
   const copyPublicUrl = async () => {
     if (!detail.value) return;
-    const fullUrl = new URL(
-      detail.value.public_url,
-      window.location.origin
-    ).toString();
-    await navigator.clipboard.writeText(fullUrl);
+    await navigator.clipboard.writeText(publicUrl.value);
     Message.success(t('topic.copyLink'));
+  };
+
+  const buildExecutionDetails = (
+    record: TopicDetail['recent_executions'][number]
+  ) => {
+    if (record.details) {
+      return JSON.stringify(record.details, null, 2);
+    }
+    if (record.details_json) {
+      try {
+        return JSON.stringify(JSON.parse(record.details_json), null, 2);
+      } catch {
+        return record.details_json;
+      }
+    }
+    return '';
+  };
+
+  const openExecutionDetails = (
+    record: TopicDetail['recent_executions'][number]
+  ) => {
+    selectedExecutionDetails.value = buildExecutionDetails(record);
+    detailsModalVisible.value = true;
   };
 
   const fetchDetail = async () => {
@@ -272,5 +322,15 @@
   .section-label {
     margin-bottom: 12px;
     font-weight: 600;
+  }
+
+  .details-json {
+    max-height: 60vh;
+    overflow: auto;
+    padding: 12px;
+    border-radius: 4px;
+    background: var(--color-fill-2);
+    white-space: pre-wrap;
+    word-break: break-word;
   }
 </style>

@@ -34,6 +34,13 @@ export interface SearchFetchReq {
   enhanced_mode?: boolean;
 }
 
+export interface SearchPreviewItem {
+  title: string;
+  link: string;
+  date: string;
+  description: string;
+}
+
 export function parseCurl(
   curlCommand: string
 ): Promise<APIResponse<JsonFetchReq>> {
@@ -59,8 +66,11 @@ export function parseJsonRss(
 }
 export function previewSearch(
   req: SearchFetchReq
-): Promise<APIResponse<any[]>> {
+): Promise<APIResponse<SearchPreviewItem[]>> {
   return axios
-    .post<APIResponse<any[]>>('/api/admin/tools/search/preview', req)
+    .post<APIResponse<SearchPreviewItem[]>>(
+      '/api/admin/tools/search/preview',
+      req
+    )
     .then((res) => res.data);
 }

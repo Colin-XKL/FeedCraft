@@ -16,6 +16,8 @@ export default {
   'topic.validateSuccess': 'Configuration is valid',
   'topic.validateFailed': 'Configuration validation failed',
   'topic.validationSummary': 'Please fix the issues below first',
+  'topic.validationWarnings':
+    'These warnings will not block saving, but should be reviewed',
   'topic.id': 'Topic ID',
   'topic.title': 'Title',
   'topic.descriptionLabel': 'Description',
@@ -31,10 +33,11 @@ export default {
   'topic.noTopics': 'No topics yet',
   'topic.inputs': 'Inputs',
   'topic.inputsHelp':
-    'Supports internal Recipes, internal Topics, and external http(s) addresses. External URLs are treated as third-party RawFeeds.',
+    'Supports feedcraft://recipe/:id, feedcraft://topic/:id, and external http(s) addresses. External URLs are treated as third-party RawFeeds.',
   'topic.inputPlaceholder': 'For example: feedcraft://recipe/my-recipe',
   'topic.addInput': 'Add Input',
   'topic.removeInput': 'Remove',
+  'topic.removeStep': 'Remove Rule',
   'topic.aggregatorConfig': 'Aggregation Rules',
   'topic.aggregatorHelp':
     'Aggregation rules run in order and can deduplicate, sort, or limit the final items.',
@@ -69,5 +72,8 @@ export default {
   'topic.detail.notificationCount': 'Recent Notifications',
   'topic.detail.emptyExecutions': 'No recent runs',
   'topic.detail.emptyNotifications': 'No system notifications',
+  'topic.detail.viewExecutionDetails': 'View Details',
+  'topic.detail.executionDetails': 'Execution Details',
+  'topic.detail.noExecutionDetails': 'No structured execution details',
   'topic.validation.field.runtime': 'Runtime Build',
 };

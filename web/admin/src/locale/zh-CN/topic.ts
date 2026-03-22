@@ -16,6 +16,7 @@ export default {
   'topic.validateSuccess': '配置校验通过',
   'topic.validateFailed': '配置校验未通过',
   'topic.validationSummary': '请先修复以下问题',
+  'topic.validationWarnings': '以下提醒不会阻止保存，但建议先确认',
   'topic.id': '主题 ID',
   'topic.title': '标题',
   'topic.descriptionLabel': '描述',
@@ -31,10 +32,11 @@ export default {
   'topic.noTopics': '暂无主题',
   'topic.inputs': '输入源',
   'topic.inputsHelp':
-    '支持内部 Recipe、内部 Topic 和外部 http(s) 地址。外部地址会按第三方网站 RawFeed 处理。',
+    '支持 feedcraft://recipe/:id、feedcraft://topic/:id 和外部 http(s) 地址。外部地址会按第三方网站 RawFeed 处理。',
   'topic.inputPlaceholder': '例如 feedcraft://recipe/my-recipe',
   'topic.addInput': '添加输入源',
   'topic.removeInput': '移除',
+  'topic.removeStep': '移除规则',
   'topic.aggregatorConfig': '聚合规则',
   'topic.aggregatorHelp':
     '聚合规则会按顺序执行。可用于去重、排序和限制最终文章数量。',
@@ -69,5 +71,8 @@ export default {
   'topic.detail.notificationCount': '最近通知数',
   'topic.detail.emptyExecutions': '暂无执行记录',
   'topic.detail.emptyNotifications': '暂无系统通知',
+  'topic.detail.viewExecutionDetails': '查看详情',
+  'topic.detail.executionDetails': '执行详情',
+  'topic.detail.noExecutionDetails': '没有可展示的结构化详情',
   'topic.validation.field.runtime': '运行时构建',
 };
