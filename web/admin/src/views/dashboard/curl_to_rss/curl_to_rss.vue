@@ -347,7 +347,9 @@
                       <a-textarea
                         v-model="parseReq.content_template"
                         :auto-size="{ minRows: 2, maxRows: 4 }"
-                        :placeholder="$t('curlToRss.placeholder.contentTemplate')"
+                        :placeholder="
+                          $t('curlToRss.placeholder.contentTemplate')
+                        "
                       />
                     </a-form-item>
                   </a-card>
