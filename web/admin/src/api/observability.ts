@@ -43,9 +43,12 @@ export interface SystemNotification {
 
 export function fetchObservableResources(params?: Record<string, any>) {
   return axios
-    .get<APIResponse<ObservableResource[]>>('/api/admin/observability/resources', {
-      params,
-    })
+    .get<APIResponse<ObservableResource[]>>(
+      '/api/admin/observability/resources',
+      {
+        params,
+      },
+    )
     .then((res) => res.data);
 }
 
@@ -73,4 +76,3 @@ export function resumeObservableResource(
     )
     .then((res) => res.data);
 }
-

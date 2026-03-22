@@ -16,10 +16,18 @@
                 :placeholder="t('observability.resourceType')"
               >
                 <a-option value="">{{ t('observability.all') }}</a-option>
-                <a-option value="recipe">{{ t('observability.resourceType.recipe') }}</a-option>
-                <a-option value="topic">{{ t('observability.resourceType.topic') }}</a-option>
+                <a-option value="recipe">{{
+                  t('observability.resourceType.recipe')
+                }}</a-option>
+                <a-option value="topic">{{
+                  t('observability.resourceType.topic')
+                }}</a-option>
               </a-select>
-              <a-button type="primary" :loading="resourceLoading" @click="loadResources">
+              <a-button
+                type="primary"
+                :loading="resourceLoading"
+                @click="loadResources"
+              >
                 {{ t('observability.refresh') }}
               </a-button>
             </a-space>
@@ -101,10 +109,18 @@
                 :placeholder="t('observability.status')"
               >
                 <a-option value="">{{ t('observability.all') }}</a-option>
-                <a-option value="success">{{ formatStatus('success') }}</a-option>
-                <a-option value="partial_success">{{ formatStatus('partial_success') }}</a-option>
-                <a-option value="failure">{{ formatStatus('failure') }}</a-option>
-                <a-option value="paused_skip">{{ formatStatus('paused_skip') }}</a-option>
+                <a-option value="success">{{
+                  formatStatus('success')
+                }}</a-option>
+                <a-option value="partial_success">{{
+                  formatStatus('partial_success')
+                }}</a-option>
+                <a-option value="failure">{{
+                  formatStatus('failure')
+                }}</a-option>
+                <a-option value="paused_skip">{{
+                  formatStatus('paused_skip')
+                }}</a-option>
               </a-select>
               <a-button type="primary" :loading="logLoading" @click="loadLogs">
                 {{ t('observability.refresh') }}
@@ -119,33 +135,57 @@
             row-key="id"
           >
             <template #columns>
-              <a-table-column :title="t('observability.time')" data-index="created_at">
+              <a-table-column
+                :title="t('observability.time')"
+                data-index="created_at"
+              >
                 <template #cell="{ record }">
                   {{ formatTime(record.created_at) }}
                 </template>
               </a-table-column>
-              <a-table-column :title="t('observability.type')" data-index="resource_type">
+              <a-table-column
+                :title="t('observability.type')"
+                data-index="resource_type"
+              >
                 <template #cell="{ record }">
                   {{ formatResourceType(record.resource_type) }}
                 </template>
               </a-table-column>
-              <a-table-column :title="t('observability.id')" data-index="resource_id" />
-              <a-table-column :title="t('observability.trigger')" data-index="trigger">
+              <a-table-column
+                :title="t('observability.id')"
+                data-index="resource_id"
+              />
+              <a-table-column
+                :title="t('observability.trigger')"
+                data-index="trigger"
+              >
                 <template #cell="{ record }">
                   {{ formatTrigger(record.trigger) }}
                 </template>
               </a-table-column>
-              <a-table-column :title="t('observability.status')" data-index="status">
+              <a-table-column
+                :title="t('observability.status')"
+                data-index="status"
+              >
                 <template #cell="{ record }">
-                  <a-tag :color="statusColor(record.status)">{{ formatStatus(record.status) }}</a-tag>
+                  <a-tag :color="statusColor(record.status)">{{
+                    formatStatus(record.status)
+                  }}</a-tag>
                 </template>
               </a-table-column>
-              <a-table-column :title="t('observability.errorType')" data-index="error_kind">
+              <a-table-column
+                :title="t('observability.errorType')"
+                data-index="error_kind"
+              >
                 <template #cell="{ record }">
                   {{ formatErrorKind(record.error_kind) }}
                 </template>
               </a-table-column>
-              <a-table-column :title="t('observability.message')" data-index="message" :ellipsis="true" />
+              <a-table-column
+                :title="t('observability.message')"
+                data-index="message"
+                :ellipsis="true"
+              />
             </template>
           </a-table>
         </a-card>
