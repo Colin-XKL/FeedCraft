@@ -23,6 +23,7 @@ export default {
   'menu.craftAtom': 'AtomCraft',
   'menu.craftFlow': 'FlowCraft',
   'menu.customRecipe': 'Custom Recipe',
+  'menu.topicFeed': 'Topic Feed',
   'menu.allCraftList': 'All Craft List',
   'menu.quickStart': 'Quick Start',
   'menu.dashboard.welcome': 'Welcome',
