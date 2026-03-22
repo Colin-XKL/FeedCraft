@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/itchyny/gojq"
 	"github.com/mmcdole/gofeed"
 )
 
@@ -25,117 +24,29 @@ func (p *JsonParser) Parse(data []byte) (*gofeed.Feed, error) {
 	}
 
 	feed := &gofeed.Feed{}
-
-	// Navigate to items array
-	var itemsArray []interface{}
-
-	// If ItemsIterator is empty or ".", use root
-	if p.Config.ItemsIterator == "" || p.Config.ItemsIterator == "." {
-		if arr, ok := rawData.([]interface{}); ok {
-			itemsArray = arr
-		} else {
-			itemsArray = []interface{}{rawData}
-		}
-	} else {
-		query, err := gojq.Parse(p.Config.ItemsIterator)
-		if err != nil {
-			return nil, fmt.Errorf("failed to parse items_iterator '%s': %w", p.Config.ItemsIterator, err)
-		}
-		iter := query.Run(rawData)
-		for {
-			v, ok := iter.Next()
-			if !ok {
-				break
-			}
-			if err, ok := v.(error); ok {
-				return nil, fmt.Errorf("jq execution failed: %w", err)
-			}
-			if arr, ok := v.([]interface{}); ok {
-				itemsArray = append(itemsArray, arr...)
-			} else {
-				itemsArray = append(itemsArray, v)
-			}
-		}
-	}
-
-	// Compile field selectors
-	compile := func(s string) (*gojq.Query, error) {
-		if s == "" {
-			return nil, nil
-		}
-		return gojq.Parse(s)
-	}
-
-	titleQ, err := compile(p.Config.Title)
+	items, err := ParseJSONItems(rawData, p.Config)
 	if err != nil {
-		return nil, fmt.Errorf("invalid title selector: %w", err)
+		return nil, err
 	}
 
-	linkQ, err := compile(p.Config.Link)
-	if err != nil {
-		return nil, fmt.Errorf("invalid link selector: %w", err)
-	}
-
-	dateQ, err := compile(p.Config.Date)
-	if err != nil {
-		return nil, fmt.Errorf("invalid date selector: %w", err)
-	}
-
-	descQ, err := compile(p.Config.Description)
-	if err != nil {
-		return nil, fmt.Errorf("invalid description selector: %w", err)
-	}
-
-	runQuery := func(q *gojq.Query, data interface{}) (interface{}, error) {
-		if q == nil {
-			return nil, nil
-		}
-		iter := q.Run(data)
-		v, ok := iter.Next()
-		if !ok {
-			return nil, nil
-		}
-		if err, ok := v.(error); ok {
-			return nil, err
-		}
-		return v, nil
-	}
-
-	for _, itemNode := range itemsArray {
+	for _, parsedFields := range items {
 		item := &gofeed.Item{}
 
-		if val, err := runQuery(titleQ, itemNode); err != nil {
-			return nil, fmt.Errorf("failed to extract title: %w", err)
-		} else if val != nil {
-			item.Title = fmt.Sprintf("%v", val)
-		}
+		item.Title = parsedFields.Title
+		item.Link = parsedFields.Link
 
-		if val, err := runQuery(linkQ, itemNode); err != nil {
-			return nil, fmt.Errorf("failed to extract link: %w", err)
-		} else if val != nil {
-			item.Link = fmt.Sprintf("%v", val)
-		}
-
-		if val, err := runQuery(dateQ, itemNode); err != nil {
-			return nil, fmt.Errorf("failed to extract date: %w", err)
-		} else if val != nil {
-			dateStr := fmt.Sprintf("%v", val)
-			item.Published = dateStr
+		if parsedFields.Date != "" {
+			item.Published = parsedFields.Date
 			// Attempt to parse into PublishedParsed
-			if t, err := time.Parse(time.RFC3339, dateStr); err == nil {
+			if t, err := time.Parse(time.RFC3339, parsedFields.Date); err == nil {
 				item.PublishedParsed = &t
-			} else if t, err := time.Parse("2006-01-02", dateStr); err == nil {
+			} else if t, err := time.Parse("2006-01-02", parsedFields.Date); err == nil {
 				item.PublishedParsed = &t
 			}
 		}
 
-		if val, err := runQuery(descQ, itemNode); err != nil {
-			return nil, fmt.Errorf("failed to extract description: %w", err)
-		} else if val != nil {
-			item.Description = fmt.Sprintf("%v", val)
-			item.Content = item.Description
-		}
-
+		item.Description = parsedFields.Description
+		item.Content = parsedFields.Description
 		feed.Items = append(feed.Items, item)
 	}
 
