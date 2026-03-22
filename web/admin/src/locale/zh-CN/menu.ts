@@ -23,6 +23,7 @@ export default {
   'menu.craftAtom': '原子工艺 (AtomCraft)',
   'menu.craftFlow': '组合工艺 (FlowCraft)',
   'menu.customRecipe': '自定义配方',
+  'menu.topicFeed': '主题订阅',
   'menu.allCraftList': '所有 Craft 列表',
   'menu.quickStart': '快速开始',
   'menu.dashboard.welcome': '欢迎页',

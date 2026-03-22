@@ -13,6 +13,16 @@ const WORKTABLE: AppRouteRecordRaw = {
   },
   children: [
     {
+      path: 'topic_feed',
+      name: 'TopicFeed',
+      component: () =>
+        import('@/views/dashboard/topic_feed/topic_feed.vue'),
+      meta: {
+        requiresAuth: true,
+        locale: 'menu.topicFeed',
+      },
+    },
+    {
       path: 'custom_recipe',
       name: 'CustomRecipe',
       component: () =>
