@@ -111,11 +111,8 @@ func CommonCraftHandlerUsingCraftOptionList(c *gin.Context, optionList []CraftOp
 		return
 	}
 
-	// Wrap in LegacySourceAdapter
-	provider := &source.LegacySourceAdapter{LegacySource: sourceInstance}
-
-	// Fetch raw feed using new Provider interface
-	rawCraftFeed, err := provider.Fetch(c.Request.Context())
+	// Fetch raw feed using the native Source interface
+	rawCraftFeed, err := sourceInstance.Fetch(c.Request.Context())
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return

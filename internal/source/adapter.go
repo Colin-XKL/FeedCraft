@@ -6,12 +6,19 @@ import (
 	"net/url"
 
 	"FeedCraft/internal/model"
+	"github.com/mmcdole/gofeed"
 	"github.com/sirupsen/logrus"
 )
 
+// LegacySource keeps the old Source contract for compatibility during migration.
+type LegacySource interface {
+	Generate(ctx context.Context) (*gofeed.Feed, error)
+	BaseURL() string
+}
+
 // LegacySourceAdapter wraps a legacy Source so it can be used as a FeedProvider.
 type LegacySourceAdapter struct {
-	LegacySource Source
+	LegacySource LegacySource
 }
 
 func (a *LegacySourceAdapter) Fetch(ctx context.Context) (*model.CraftFeed, error) {

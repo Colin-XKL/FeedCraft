@@ -415,7 +415,7 @@ func (p *RawFeedProvider) Fetch(ctx context.Context) (*model.CraftFeed, error) {
 // SourceConfigProvider adapts a full SourceConfig into the FeedProvider interface.
 type SourceConfigProvider struct {
 	SourceConfig *config.SourceConfig
-	LegacySource source.Source
+	Source       source.Source
 }
 
 func newSourceConfigProvider(sourceConfig *config.SourceConfig) (*SourceConfigProvider, error) {
@@ -435,20 +435,20 @@ func newSourceConfigProvider(sourceConfig *config.SourceConfig) (*SourceConfigPr
 
 	return &SourceConfigProvider{
 		SourceConfig: sourceConfig,
-		LegacySource: src,
+		Source:       src,
 	}, nil
 }
 
 func (p *SourceConfigProvider) BaseURL() string {
-	if p == nil || p.LegacySource == nil {
+	if p == nil || p.Source == nil {
 		return ""
 	}
-	return p.LegacySource.BaseURL()
+	return p.Source.BaseURL()
 }
 
 func (p *SourceConfigProvider) Fetch(ctx context.Context) (*model.CraftFeed, error) {
-	if p == nil || p.LegacySource == nil {
+	if p == nil || p.Source == nil {
 		return nil, errors.New("source provider is not initialized")
 	}
-	return (&source.LegacySourceAdapter{LegacySource: p.LegacySource}).Fetch(ctx)
+	return p.Source.Fetch(ctx)
 }

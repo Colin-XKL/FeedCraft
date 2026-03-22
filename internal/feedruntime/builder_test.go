@@ -10,10 +10,10 @@ import (
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/dao"
 	"FeedCraft/internal/engine"
+	"FeedCraft/internal/model"
 	"FeedCraft/internal/source"
 
 	"github.com/glebarez/sqlite"
-	"github.com/mmcdole/gofeed"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
@@ -219,21 +219,21 @@ type stubSource struct {
 	itemLinkOverride string
 }
 
-func (s *stubSource) Generate(ctx context.Context) (*gofeed.Feed, error) {
+func (s *stubSource) Fetch(ctx context.Context) (*model.CraftFeed, error) {
 	now := time.Now()
-	return &gofeed.Feed{
-		Title:           "stub-feed",
-		Link:            s.baseURL,
-		FeedLink:        s.baseURL + "/rss",
-		PublishedParsed: &now,
-		UpdatedParsed:   &now,
-		Items: []*gofeed.Item{
+	return &model.CraftFeed{
+		Title:   "stub-feed",
+		Link:    s.baseURL,
+		Id:      s.baseURL + "/rss",
+		Created: now,
+		Updated: now,
+		Articles: []*model.CraftArticle{
 			{
-				Title:           "Item 1",
-				Link:            firstNonEmpty(s.itemLinkOverride, s.baseURL+"/item-1"),
-				GUID:            "item-1",
-				PublishedParsed: &now,
-				UpdatedParsed:   &now,
+				Title:   "Item 1",
+				Link:    firstNonEmpty(s.itemLinkOverride, s.baseURL+"/item-1"),
+				Id:      "item-1",
+				Created: now,
+				Updated: now,
 			},
 		},
 	}, nil
