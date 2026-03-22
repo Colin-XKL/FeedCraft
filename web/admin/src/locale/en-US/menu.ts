@@ -37,6 +37,7 @@ export default {
   'menu.adCheckDebug': 'Ad Check',
   'menu.dependencyStatus': 'Dependency Services',
   'menu.llmApiDebug': 'LLM API Debug',
+  'menu.observability': 'System Runtime',
   // other menu
   'menu.settings': 'Settings',
   'menu.settings.searchProvider': 'Search Provider',
