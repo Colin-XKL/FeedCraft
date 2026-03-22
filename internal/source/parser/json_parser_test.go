@@ -45,11 +45,11 @@ func TestJsonParser_Parse(t *testing.T) {
 
 	assert.NoError(t, err)
 	if feed != nil {
-		assert.Len(t, feed.Items, 2)
-		if len(feed.Items) > 0 {
-			assert.Equal(t, "Title 1", feed.Items[0].Title)
-			assert.Equal(t, "http://example.com/1", feed.Items[0].Link)
-			assert.Equal(t, "Description 1", feed.Items[0].Description)
+		assert.Len(t, feed.Articles, 2)
+		if len(feed.Articles) > 0 {
+			assert.Equal(t, "Title 1", feed.Articles[0].Title)
+			assert.Equal(t, "http://example.com/1", feed.Articles[0].Link)
+			assert.Equal(t, "Description 1", feed.Articles[0].Description)
 		}
 	}
 }
@@ -79,10 +79,10 @@ func TestJsonParser_Parse_WithTemplates(t *testing.T) {
 	feed, err := parser.Parse([]byte(jsonContent))
 
 	assert.NoError(t, err)
-	if assert.NotNil(t, feed) && assert.Len(t, feed.Items, 1) {
-		assert.Equal(t, "Hello World", feed.Items[0].Title)
-		assert.Equal(t, "https://some-website.com/article/article-1", feed.Items[0].Link)
-		assert.Equal(t, "No summary", feed.Items[0].Description)
+	if assert.NotNil(t, feed) && assert.Len(t, feed.Articles, 1) {
+		assert.Equal(t, "Hello World", feed.Articles[0].Title)
+		assert.Equal(t, "https://some-website.com/article/article-1", feed.Articles[0].Link)
+		assert.Equal(t, "No summary", feed.Articles[0].Description)
 	}
 }
 
@@ -106,8 +106,8 @@ func TestJsonParser_Parse_WithItemTemplateOnly(t *testing.T) {
 	feed, err := parser.Parse([]byte(jsonContent))
 
 	assert.NoError(t, err)
-	if assert.NotNil(t, feed) && assert.Len(t, feed.Items, 1) {
-		assert.Equal(t, "https://example.com/article/42", feed.Items[0].Link)
+	if assert.NotNil(t, feed) && assert.Len(t, feed.Articles, 1) {
+		assert.Equal(t, "https://example.com/article/42", feed.Articles[0].Link)
 	}
 }
 

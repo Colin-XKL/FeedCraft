@@ -1,8 +1,8 @@
 package parser
 
-import "github.com/mmcdole/gofeed"
+import "FeedCraft/internal/model"
 
-// Parser focuses on logic, transforming binary data into a Feed object.
+// Parser focuses on logic, transforming binary data into a CraftFeed.
 type Parser interface {
-	Parse(data []byte) (*gofeed.Feed, error)
+	Parse(data []byte) (*model.CraftFeed, error)
 }

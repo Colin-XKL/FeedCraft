@@ -12,12 +12,12 @@ import (
 	"FeedCraft/internal/config"
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/dao"
+	"FeedCraft/internal/model"
 	"FeedCraft/internal/source"
 	"FeedCraft/internal/util"
 
 	"github.com/gin-gonic/gin"
 	"github.com/glebarez/sqlite"
-	"github.com/mmcdole/gofeed"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
@@ -35,19 +35,19 @@ type topicFeedTestSource struct {
 	cfg *config.SourceConfig
 }
 
-func (s *topicFeedTestSource) Generate(ctx context.Context) (*gofeed.Feed, error) {
-	return &gofeed.Feed{
+func (s *topicFeedTestSource) Fetch(ctx context.Context) (*model.CraftFeed, error) {
+	return &model.CraftFeed{
 		Title:       "Test Feed",
 		Link:        "https://example.com",
-		FeedLink:    "https://example.com/feed.xml",
+		Id:          "https://example.com/feed.xml",
 		Description: "test feed",
-		Items: []*gofeed.Item{
+		Articles: []*model.CraftArticle{
 			{
-				Title:           "Hello Topic",
-				Link:            "https://example.com/articles/1",
-				GUID:            "article-1",
-				Description:     "test article",
-				PublishedParsed: timePointer(time.Unix(1700000000, 0)),
+				Title:       "Hello Topic",
+				Link:        "https://example.com/articles/1",
+				Id:          "article-1",
+				Description: "test article",
+				Created:     time.Unix(1700000000, 0),
 			},
 		},
 	}, nil
@@ -360,8 +360,4 @@ func assertJSONMessageContains(t *testing.T, recorder *httptest.ResponseRecorder
 
 func uniqueTestID(prefix string) string {
 	return prefix + "-" + time.Now().Format("20060102150405.000000000")
-}
-
-func timePointer(value time.Time) *time.Time {
-	return &value
 }

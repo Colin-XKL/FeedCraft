@@ -2,12 +2,12 @@ package source
 
 import (
 	"FeedCraft/internal/config"
+	"FeedCraft/internal/model"
 	"FeedCraft/internal/source/fetcher"
 	"FeedCraft/internal/source/parser"
 	"FeedCraft/internal/util"
 	"context"
 	"fmt"
-	"github.com/mmcdole/gofeed"
 )
 
 // PipelineSource is the generic implementation for most scenarios.
@@ -18,8 +18,8 @@ type PipelineSource struct {
 	Parser  parser.Parser
 }
 
-// Generate executes the fetch-parse-override pipeline.
-func (p *PipelineSource) Generate(ctx context.Context) (*gofeed.Feed, error) {
+// Fetch executes the fetch-parse-normalize pipeline.
+func (p *PipelineSource) Fetch(ctx context.Context) (*model.CraftFeed, error) {
 	// 1. Fetch raw data
 	raw, err := p.Fetcher.Fetch(ctx)
 	if err != nil {
@@ -32,20 +32,7 @@ func (p *PipelineSource) Generate(ctx context.Context) (*gofeed.Feed, error) {
 		return nil, fmt.Errorf("parse failed: %w", err)
 	}
 
-	// 2.5 Resolve relative URLs
-	baseURL := p.BaseURL()
-	if baseURL != "" {
-		for _, item := range feed.Items {
-			if item.Link != "" {
-				if absURL, err := util.BuildAbsoluteURL(baseURL, item.Link); err == nil {
-					item.Link = absURL
-				}
-			}
-		}
-	}
-
-	// 3. Apply metadata overrides from config
-	p.applyFeedMetaOverrides(feed)
+	p.normalizeCraftFeed(feed)
 
 	return feed, nil
 }
@@ -58,9 +45,30 @@ func (p *PipelineSource) BaseURL() string {
 	return p.Fetcher.BaseURL()
 }
 
+func (p *PipelineSource) normalizeCraftFeed(feed *model.CraftFeed) {
+	if feed == nil {
+		return
+	}
+
+	baseURL := p.BaseURL()
+	if baseURL != "" {
+		for _, item := range feed.Articles {
+			if item == nil || item.Link == "" {
+				continue
+			}
+			if absURL, err := util.BuildAbsoluteURL(baseURL, item.Link); err == nil {
+				item.Link = absURL
+			}
+		}
+	}
+
+	feed.Link = getAbsFeedLink(baseURL, feed.Link)
+	p.applyFeedMetaOverrides(feed)
+}
+
 // applyFeedMetaOverrides checks for a FeedMetaConfig and uses its values
 // to override the metadata of the parsed feed.
-func (p *PipelineSource) applyFeedMetaOverrides(feed *gofeed.Feed) {
+func (p *PipelineSource) applyFeedMetaOverrides(feed *model.CraftFeed) {
 	if p.Config == nil || p.Config.FeedMeta == nil {
 		return // No overrides provided
 	}
@@ -79,9 +87,7 @@ func (p *PipelineSource) applyFeedMetaOverrides(feed *gofeed.Feed) {
 		feed.Copyright = meta.Copyright
 	}
 	if meta.AuthorName != "" || meta.AuthorEmail != "" {
-		feed.Author = &gofeed.Person{
-			Name:  meta.AuthorName,
-			Email: meta.AuthorEmail,
-		}
+		feed.AuthorName = meta.AuthorName
+		feed.AuthorEmail = meta.AuthorEmail
 	}
 }
