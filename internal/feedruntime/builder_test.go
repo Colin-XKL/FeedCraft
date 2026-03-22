@@ -37,6 +37,21 @@ func TestBuildProviderFromInput_RecipeURI(t *testing.T) {
 	assert.IsType(t, &RecipeProvider{}, provider)
 }
 
+func TestBuildRecipeProvider(t *testing.T) {
+	db := newTestDB(t)
+	require.NoError(t, db.Create(&dao.CustomRecipeV2{
+		ID:           "recipe-1",
+		Craft:        "proxy",
+		SourceType:   string(constant.SourceRSS),
+		SourceConfig: `{"type":"rss","http_fetcher":{"url":"https://example.com/feed.xml"}}`,
+	}).Error)
+
+	builder := NewBuilder(db)
+	provider, err := builder.BuildRecipeProvider(context.Background(), "recipe-1")
+	require.NoError(t, err)
+	assert.IsType(t, &RecipeProvider{}, provider)
+}
+
 func TestBuildProviderFromInput_HTTPURL(t *testing.T) {
 	builder := NewBuilder(newTestDB(t))
 	provider, err := builder.BuildProviderFromInput(context.Background(), InputSpec{
@@ -71,6 +86,36 @@ func TestBuildProviderFromInput_SourceConfig(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, feed)
 	assert.Equal(t, "stub-feed", feed.Title)
+}
+
+func TestBuildRecipe_AppliesCraftProcessor(t *testing.T) {
+	const testSourceType = constant.SourceType("unit_test_recipe_source")
+	registerTestSource(t, testSourceType, func(cfg *config.SourceConfig) (source.Source, error) {
+		return &stubSource{
+			baseURL:          cfg.HttpFetcher.URL,
+			itemLinkOverride: "/relative-item",
+		}, nil
+	})
+
+	db := newTestDB(t)
+	require.NoError(t, db.Create(&dao.CustomRecipeV2{
+		ID:         "recipe-relative-link-fix",
+		Craft:      "relative-link-fix",
+		SourceType: string(testSourceType),
+		SourceConfig: `{
+			"type":"unit_test_recipe_source",
+			"http_fetcher":{"url":"https://example.com/base/feed.xml"}
+		}`,
+	}).Error)
+
+	builder := NewBuilder(db)
+	provider, err := builder.BuildRecipeProvider(context.Background(), "recipe-relative-link-fix")
+	require.NoError(t, err)
+
+	feed, err := provider.Fetch(context.Background())
+	require.NoError(t, err)
+	require.Len(t, feed.Articles, 1)
+	assert.Equal(t, "https://example.com/relative-item", feed.Articles[0].Link)
 }
 
 func TestBuildProviderFromInput_InvalidURI(t *testing.T) {
@@ -170,7 +215,8 @@ func newTestDB(t *testing.T) *gorm.DB {
 }
 
 type stubSource struct {
-	baseURL string
+	baseURL          string
+	itemLinkOverride string
 }
 
 func (s *stubSource) Generate(ctx context.Context) (*gofeed.Feed, error) {
@@ -184,7 +230,7 @@ func (s *stubSource) Generate(ctx context.Context) (*gofeed.Feed, error) {
 		Items: []*gofeed.Item{
 			{
 				Title:           "Item 1",
-				Link:            s.baseURL + "/item-1",
+				Link:            firstNonEmpty(s.itemLinkOverride, s.baseURL+"/item-1"),
 				GUID:            "item-1",
 				PublishedParsed: &now,
 				UpdatedParsed:   &now,
@@ -195,6 +241,15 @@ func (s *stubSource) Generate(ctx context.Context) (*gofeed.Feed, error) {
 
 func (s *stubSource) BaseURL() string {
 	return s.baseURL
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, value := range values {
+		if value != "" {
+			return value
+		}
+	}
+	return ""
 }
 
 func registerTestSource(t *testing.T, sourceType constant.SourceType, factory source.SourceFactory) {
