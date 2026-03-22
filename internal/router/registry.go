@@ -70,6 +70,7 @@ func RegisterRouters(router *gin.Engine) {
 	{
 		recipeRoutes.GET("/:id", recipe.CustomRecipe)
 	}
+	router.GET("/system/notifications/rss", controller.SystemNotificationsRSS)
 
 	// admin api
 	adminApi := router.Group("/api/admin")
@@ -125,6 +126,11 @@ func RegisterRouters(router *gin.Engine) {
 		adminApi.GET("/dependencies", controller.GetDependencyStatus)
 		adminApi.POST("/dependencies/check", controller.CheckDependencyStatus)
 		adminApi.GET("/dependencies/health", controller.AnalyzeCraftDependencies)
+		adminApi.GET("/observability/resources", controller.ListObservableResources)
+		adminApi.GET("/observability/resources/:type/:id", controller.GetObservableResource)
+		adminApi.POST("/observability/resources/:type/:id/resume", controller.ResumeObservableResource)
+		adminApi.GET("/observability/executions", controller.ListExecutionLogs)
+		adminApi.GET("/system-notifications", controller.ListSystemNotifications)
 	}
 
 }
