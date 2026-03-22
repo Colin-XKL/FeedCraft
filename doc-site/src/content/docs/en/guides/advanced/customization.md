@@ -24,6 +24,7 @@ Navigate to **Settings > Search Provider** in the admin dashboard.
 ### Supported Providers
 
 - **LiteLLM / OpenAI Compatible**
+
   - **API URL**: The search endpoint of your provider (e.g., `http://litellm-proxy:4000/v1/search`).
   - **API Key**: Your API key. (Leave empty to keep existing key)
   - **Tool Name**: The specific function calling tool name if required (e.g., `google_search` for some agents). The tool name is appended to the API URL (e.g. `.../v1/search/google_search`).

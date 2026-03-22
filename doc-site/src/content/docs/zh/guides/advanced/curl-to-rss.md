@@ -8,7 +8,7 @@ sidebar:
     variant: success
 ---
 
-FeedCraft 包含一个 **从CURL语句生成RSS (CURL to RSS)** 工具，允许你从 JSON API 获取数据，先用 `jq` 提取字段，再通过可选模板将其转换为 RSS 订阅源。
+FeedCraft 包含一个 **从 CURL 语句生成 RSS (CURL to RSS)** 工具，允许你从 JSON API 获取数据，先用 `jq` 提取字段，再通过可选模板将其转换为 RSS 订阅源。
 
 ## 概览
 

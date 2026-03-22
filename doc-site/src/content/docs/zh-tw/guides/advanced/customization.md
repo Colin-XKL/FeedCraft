@@ -24,6 +24,7 @@ sidebar:
 ### 支援的供應商
 
 - **LiteLLM / OpenAI Compatible**
+
   - **API URL**: 搜尋服務的 API 端點（例如 `http://litellm-proxy:4000/v1/search`）。
   - **API Key**: 你的 API 金鑰。（留空以保留現有金鑰）
   - **Tool Name**: 特定函式調用工具名稱（如果需要，例如某些 Agent 的 `google_search`）。工具名稱將追加到 API URL 之後（例如 `.../v1/search/google_search`）。

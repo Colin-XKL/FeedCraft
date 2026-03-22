@@ -1,8 +1,8 @@
 package engine
 
 import (
-	"context"
 	"FeedCraft/internal/model"
+	"context"
 )
 
 // FeedProvider represents any node that can generate or output a CraftFeed.

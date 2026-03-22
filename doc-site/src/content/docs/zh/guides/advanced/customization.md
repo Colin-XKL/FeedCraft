@@ -24,6 +24,7 @@ sidebar:
 ### 支持的提供商
 
 - **LiteLLM / OpenAI Compatible**
+
   - **API URL**: 搜索服务的 API 端点（例如 `http://litellm-proxy:4000/v1/search`）。
   - **API Key**: 你的 API 密钥。（留空以保留现有密钥）
   - **Tool Name**: 特定函数调用工具名称（如果需要，例如某些 Agent 的 `google_search`）。工具名称将追加到 API URL 之后（例如 `.../v1/search/google_search`）。
@@ -98,4 +99,4 @@ services:
     restart: unless-stopped
 ```
 
-服务默认监听在 80 端口，你也可以在同一网络下的其他容器中，使用 `http://app.feed-craft/xxx` 这样来进行访问(比如RSS 阅读器中通过这种方式来走内网通信订阅)。
+服务默认监听在 80 端口，你也可以在同一网络下的其他容器中，使用 `http://app.feed-craft/xxx` 这样来进行访问(比如 RSS 阅读器中通过这种方式来走内网通信订阅)。

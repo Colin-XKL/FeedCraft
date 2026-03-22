@@ -12,8 +12,8 @@ import (
 
 // MockProvider is a simple FeedProvider for testing.
 type MockProvider struct {
-	Feed *model.CraftFeed
-	Err  error
+	Feed  *model.CraftFeed
+	Err   error
 	Delay time.Duration
 }
 
