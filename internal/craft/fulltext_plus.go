@@ -82,6 +82,10 @@ func GetFulltextPlusCraftOptions(config FulltextPlusConfig) []CraftOption {
 }
 
 func fulltextPlusLoadParam(m map[string]string) []CraftOption {
+	return GetFulltextPlusCraftOptions(parseFulltextPlusConfig(m))
+}
+
+func parseFulltextPlusConfig(m map[string]string) FulltextPlusConfig {
 	config := FulltextPlusConfig{
 		Wait: 0,
 		Mode: "networkidle2",
@@ -96,7 +100,7 @@ func fulltextPlusLoadParam(m map[string]string) []CraftOption {
 		config.Mode = val
 	}
 
-	return GetFulltextPlusCraftOptions(config)
+	return config
 }
 
 var fulltextPlusParamTmpl = []ParamTemplate{
