@@ -82,6 +82,12 @@ func RegisterRouters(router *gin.Engine) {
 		adminApi.POST("/craft-debug/advertorial", craft.DebugCheckIfAdvertorial)
 		adminApi.POST("/craft-debug/common-llm-call-test", admin.LLMDebug)
 
+		adminApi.POST("/topics", controller.CreateTopicFeed)
+		adminApi.GET("/topics", controller.ListTopicFeeds)
+		adminApi.GET("/topics/:id", controller.GetTopicFeed)
+		adminApi.PUT("/topics/:id", controller.UpdateTopicFeed)
+		adminApi.DELETE("/topics/:id", controller.DeleteTopicFeed)
+
 		adminApi.POST("/recipes", controller.CreateCustomRecipe)
 		adminApi.GET("/recipes", controller.ListCustomRecipe)
 		adminApi.GET("/recipes/:id", controller.GetCustomRecipe)
