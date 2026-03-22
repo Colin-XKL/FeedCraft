@@ -17,7 +17,7 @@ export interface TopicFeed {
 const adminApiBase = '/api/admin';
 
 export function createTopicFeed(
-  data: TopicFeed
+  data: TopicFeed,
 ): Promise<APIResponse<TopicFeed>> {
   return axios
     .post<APIResponse<TopicFeed>>(`${adminApiBase}/topics`, data)
@@ -38,7 +38,7 @@ export function getTopicFeed(id: string): Promise<APIResponse<TopicFeed>> {
 
 export function updateTopicFeed(
   id: string,
-  data: TopicFeed
+  data: TopicFeed,
 ): Promise<APIResponse<TopicFeed>> {
   return axios
     .put<APIResponse<TopicFeed>>(`${adminApiBase}/topics/${id}`, data)
