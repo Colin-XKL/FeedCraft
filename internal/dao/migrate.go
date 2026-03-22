@@ -21,6 +21,9 @@ func MigrateDatabases() {
 		&TopicFeed{}, // Add TopicFeed migration
 		&User{},      // 确保 User 表被初始化
 		&SystemSetting{},
+		&ExecutionLog{},
+		&ResourceHealth{},
+		&SystemNotification{},
 	)
 	if err != nil {
 		logrus.Fatalf("migrate database error: %v", err)
