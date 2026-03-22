@@ -56,7 +56,7 @@ const updateFlip = async () => {
       'from-orange-400 to-red-600 shadow-orange-500/50 text-white'     // P5: TopicFeed
     ];
     
-    floatingItemRef.value.className = `w-16 h-16 bg-gradient-to-br rounded-2xl flex items-center justify-center z-50 transition-all duration-1000 shadow-[0_0_30px_currentColor] ${colors[activeIndex.value]}`;
+    floatingItemRef.value.className = `w-16 h-16 bg-gradient-to-br rounded-2xl flex items-center justify-center z-50 transition-[background-color,box-shadow,color] duration-1000 shadow-[0_0_30px_currentColor] ${colors[activeIndex.value]}`;
 
     Flip.from(state, {
       duration: 0.8,
@@ -114,10 +114,10 @@ onMounted(() => {
     <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-900/10 rounded-full blur-[120px] pointer-events-none"></div>
 
     <!-- The Aspect-Ratio Stage Container -->
-    <div class="relative w-full max-w-6xl aspect-video bg-slate-900/80 backdrop-blur-xl rounded-[2rem] border border-slate-700/50 shadow-2xl flex flex-col overflow-hidden ring-1 ring-white/10">
+    <div class="relative w-full max-w-6xl min-h-[600px] lg:aspect-video bg-slate-900/80 backdrop-blur-xl rounded-[2rem] border border-slate-700/50 shadow-2xl flex flex-col overflow-hidden ring-1 ring-white/10">
       
       <!-- The Shared Element (Floating) -->
-      <div ref="floatingItemRef" id="floating-craft-item" class="w-16 h-16 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-2xl flex items-center justify-center z-50 transition-all duration-1000 shadow-[0_0_30px_currentColor] text-white">
+      <div ref="floatingItemRef" id="floating-craft-item" class="w-16 h-16 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-2xl flex items-center justify-center z-50 transition-[background-color,box-shadow,color] duration-1000 shadow-[0_0_30px_currentColor] text-white">
         <Cpu class="w-8 h-8 drop-shadow-md" v-if="activeIndex === 0" />
         <Sparkles class="w-8 h-8 drop-shadow-md" v-else-if="activeIndex === 1" />
         <Database class="w-8 h-8 drop-shadow-md" v-else-if="activeIndex === 2" />
@@ -370,9 +370,9 @@ onMounted(() => {
                 </linearGradient>
               </defs>
               <!-- Lines to center (50%, 50%) -->
-              <path class="topic-line" d="M 25% 30% L 50% 50%" stroke="url(#lineGrad)" stroke-width="2" md:stroke-width="3" stroke-dasharray="100" stroke-dashoffset="100" fill="none" />
-              <path class="topic-line" d="M 75% 30% L 50% 50%" stroke="url(#lineGrad2)" stroke-width="2" md:stroke-width="3" stroke-dasharray="100" stroke-dashoffset="100" fill="none" />
-              <path class="topic-line" d="M 50% 80% L 50% 50%" stroke="url(#lineGrad3)" stroke-width="2" md:stroke-width="3" stroke-dasharray="100" stroke-dashoffset="100" fill="none" />
+              <path class="topic-line md:stroke-[3px]" d="M 25% 30% L 50% 50%" stroke="url(#lineGrad)" stroke-width="2" stroke-dasharray="100" stroke-dashoffset="100" fill="none" />
+              <path class="topic-line md:stroke-[3px]" d="M 75% 30% L 50% 50%" stroke="url(#lineGrad2)" stroke-width="2" stroke-dasharray="100" stroke-dashoffset="100" fill="none" />
+              <path class="topic-line md:stroke-[3px]" d="M 50% 80% L 50% 50%" stroke="url(#lineGrad3)" stroke-width="2" stroke-dasharray="100" stroke-dashoffset="100" fill="none" />
             </svg>
 
             <!-- Network Nodes Container -->
@@ -444,10 +444,10 @@ onMounted(() => {
       </div>
 
       <!-- Pagination Custom Styling override via Swiper inject -->
-      <div class="absolute top-8 left-0 right-0 flex justify-center z-40 pointer-events-none">
+      <div class="absolute top-8 left-0 right-0 flex justify-center z-40">
          <div class="flex space-x-2">
             <div v-for="i in 5" :key="i" 
-                 class="h-1.5 rounded-full transition-all duration-300"
+                 @click="swiperInstance?.slideTo(i - 1)" class="h-1.5 rounded-full transition-all duration-300 cursor-pointer hover:bg-slate-400"
                  :class="i - 1 === activeIndex ? 'w-8 bg-blue-500' : 'w-2 bg-slate-700'">
             </div>
          </div>
@@ -464,9 +464,6 @@ onMounted(() => {
 }
 
 #floating-craft-item {
-  position: absolute;
-  top: 0;
-  left: 0;
   pointer-events: none;
 }
 /* Ensure the item stays inside the anchor even if it's rounded */
