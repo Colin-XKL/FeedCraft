@@ -5,7 +5,8 @@ export default {
   'curlToRss.step.requestConfig': 'Request Config',
   'curlToRss.step.requestConfig.desc': 'Configure JSON source',
   'curlToRss.step.parsingRules': 'Parsing Rules',
-  'curlToRss.step.parsingRules.desc': 'Define field extraction and output templates',
+  'curlToRss.step.parsingRules.desc':
+    'Define field extraction and output templates',
   'curlToRss.step.feedMetadata': 'Feed Metadata',
   'curlToRss.step.feedMetadata.desc': 'Set feed details',
   'curlToRss.step.saveRecipe': 'Save Recipe',
