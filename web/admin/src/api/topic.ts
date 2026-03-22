@@ -1,5 +1,10 @@
 import axios from 'axios';
 import { APIResponse } from './types';
+import {
+  ExecutionLog,
+  ObservableResource,
+  SystemNotification,
+} from './observability';
 
 export interface AggregatorStep {
   type: string;
@@ -12,6 +17,25 @@ export interface TopicFeed {
   description?: string;
   input_uris: string[];
   aggregator_config: AggregatorStep[];
+}
+
+export interface TopicValidationIssue {
+  field: string;
+  message: string;
+}
+
+export interface TopicValidationResult {
+  valid: boolean;
+  errors: TopicValidationIssue[];
+  warnings: TopicValidationIssue[];
+}
+
+export interface TopicDetail {
+  topic: TopicFeed;
+  public_url: string;
+  health: ObservableResource;
+  recent_executions: ExecutionLog[];
+  related_notifications: SystemNotification[];
 }
 
 const adminApiBase = '/api/admin';
@@ -48,5 +72,24 @@ export function updateTopicFeed(
 export function deleteTopicFeed(id: string): Promise<APIResponse<void>> {
   return axios
     .delete<APIResponse<void>>(`${adminApiBase}/topics/${id}`)
+    .then((res) => res.data);
+}
+
+export function validateTopicFeed(
+  data: TopicFeed
+): Promise<APIResponse<TopicValidationResult>> {
+  return axios
+    .post<APIResponse<TopicValidationResult>>(
+      `${adminApiBase}/topics/validate`,
+      data
+    )
+    .then((res) => res.data);
+}
+
+export function getTopicFeedDetail(
+  id: string
+): Promise<APIResponse<TopicDetail>> {
+  return axios
+    .get<APIResponse<TopicDetail>>(`${adminApiBase}/topics/${id}/detail`)
     .then((res) => res.data);
 }

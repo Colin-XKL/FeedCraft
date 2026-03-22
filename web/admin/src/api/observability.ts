@@ -25,6 +25,7 @@ export interface ExecutionLog {
   error_kind: string;
   message: string;
   details_json: string;
+  details?: any;
   request_id: string;
   duration_ms: number;
   created_at: string;

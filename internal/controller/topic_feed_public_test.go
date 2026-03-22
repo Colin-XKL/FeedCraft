@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -156,6 +157,164 @@ func TestPublicTopicFeed(t *testing.T) {
 
 		assert.Equal(t, http.StatusInternalServerError, recorder.Code)
 		assertJSONMessageContains(t, recorder, "all upstream providers failed")
+	})
+}
+
+func TestTopicFeedAdminEndpoints(t *testing.T) {
+	db := topicFeedTestDatabase(t)
+	require.NoError(t, db.AutoMigrate(
+		&dao.CustomRecipeV2{},
+		&dao.TopicFeed{},
+		&dao.ResourceHealth{},
+		&dao.ExecutionLog{},
+		&dao.SystemNotification{},
+	))
+
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	router.POST("/api/admin/topics/validate", ValidateTopicFeed)
+	router.GET("/api/admin/topics/:id/detail", GetTopicFeedDetail)
+
+	t.Run("validate returns success for valid topic config", func(t *testing.T) {
+		recipeID := uniqueTestID("recipe-validate-ok")
+		createTopicTestRecipe(t, db, recipeID)
+
+		body := `{
+			"id":"` + uniqueTestID("topic-validate-ok") + `",
+			"title":"Tech Topic",
+			"input_uris":["feedcraft://recipe/` + recipeID + `"],
+			"aggregator_config":[{"type":"limit","option":{"max":"10"}}]
+		}`
+
+		req, err := http.NewRequest(http.MethodPost, "/api/admin/topics/validate", strings.NewReader(body))
+		require.NoError(t, err)
+		req.Header.Set("Content-Type", "application/json")
+		recorder := httptest.NewRecorder()
+
+		router.ServeHTTP(recorder, req)
+
+		require.Equal(t, http.StatusOK, recorder.Code)
+		var response util.APIResponse[TopicValidationResult]
+		require.NoError(t, json.Unmarshal(recorder.Body.Bytes(), &response))
+		assert.True(t, response.Data.Valid)
+		assert.Empty(t, response.Data.Errors)
+	})
+
+	t.Run("validate reports invalid aggregator", func(t *testing.T) {
+		recipeID := uniqueTestID("recipe-invalid-step")
+		createTopicTestRecipe(t, db, recipeID)
+		body := `{
+			"id":"` + uniqueTestID("topic-invalid-step") + `",
+			"title":"Broken Step Topic",
+			"input_uris":["feedcraft://recipe/` + recipeID + `"],
+			"aggregator_config":[{"type":"limit","option":{"max":"0"}}]
+		}`
+
+		req, err := http.NewRequest(http.MethodPost, "/api/admin/topics/validate", strings.NewReader(body))
+		require.NoError(t, err)
+		req.Header.Set("Content-Type", "application/json")
+		recorder := httptest.NewRecorder()
+
+		router.ServeHTTP(recorder, req)
+
+		require.Equal(t, http.StatusOK, recorder.Code)
+		var response util.APIResponse[TopicValidationResult]
+		require.NoError(t, json.Unmarshal(recorder.Body.Bytes(), &response))
+		assert.False(t, response.Data.Valid)
+		require.NotEmpty(t, response.Data.Errors)
+		assert.Contains(t, response.Data.Errors[0].Message, "invalid max")
+	})
+
+	t.Run("validate reports topic cycle", func(t *testing.T) {
+		topicID := uniqueTestID("topic-cycle")
+		body := `{
+			"id":"` + topicID + `",
+			"title":"Cycle Topic",
+			"input_uris":["feedcraft://topic/` + topicID + `"],
+			"aggregator_config":[{"type":"limit","option":{"max":"10"}}]
+		}`
+
+		req, err := http.NewRequest(http.MethodPost, "/api/admin/topics/validate", strings.NewReader(body))
+		require.NoError(t, err)
+		req.Header.Set("Content-Type", "application/json")
+		recorder := httptest.NewRecorder()
+
+		router.ServeHTTP(recorder, req)
+
+		require.Equal(t, http.StatusOK, recorder.Code)
+		var response util.APIResponse[TopicValidationResult]
+		require.NoError(t, json.Unmarshal(recorder.Body.Bytes(), &response))
+		assert.False(t, response.Data.Valid)
+		require.NotEmpty(t, response.Data.Errors)
+		assert.Contains(t, response.Data.Errors[0].Message, "topic dependency cycle detected")
+	})
+
+	t.Run("detail returns topic config and related runtime records", func(t *testing.T) {
+		topicID := uniqueTestID("topic-detail")
+		createTopicTestTopic(t, db, &dao.TopicFeed{
+			ID:          topicID,
+			Title:       "Detail Topic",
+			Description: "detail description",
+			InputURIs:   []string{"https://example.com/feed.xml"},
+			AggregatorConfig: []dao.AggregatorStep{
+				{Type: "limit", Option: map[string]string{"max": "20"}},
+			},
+		})
+		now := time.Now()
+		require.NoError(t, dao.UpsertResourceHealth(db, &dao.ResourceHealth{
+			ResourceType:        dao.ResourceTypeTopic,
+			ResourceID:          topicID,
+			ResourceName:        "Detail Topic",
+			CurrentStatus:       dao.ResourceStatusDegraded,
+			ConsecutiveFailures: 2,
+			LastFailureAt:       &now,
+			LastErrorKind:       "upstream_partial_failure",
+			LastErrorMessage:    "partial failure",
+		}))
+		require.NoError(t, dao.CreateExecutionLog(db, &dao.ExecutionLog{
+			ResourceType: dao.ResourceTypeTopic,
+			ResourceID:   topicID,
+			ResourceName: "Detail Topic",
+			Trigger:      "topic_aggregation",
+			Status:       dao.ExecutionStatusPartialSuccess,
+			ErrorKind:    "upstream_partial_failure",
+			Message:      "topic completed with partial upstream failures",
+		}))
+		require.NoError(t, dao.CreateSystemNotification(db, &dao.SystemNotification{
+			ResourceType: dao.ResourceTypeTopic,
+			ResourceID:   topicID,
+			EventType:    "topic.degraded",
+			Title:        "Topic degraded",
+			Content:      "detail topic has partial failures",
+			StatusAfter:  dao.ResourceStatusDegraded,
+			DedupeKey:    uniqueTestID("notification"),
+		}))
+
+		req, err := http.NewRequest(http.MethodGet, "/api/admin/topics/"+topicID+"/detail", nil)
+		require.NoError(t, err)
+		recorder := httptest.NewRecorder()
+
+		router.ServeHTTP(recorder, req)
+
+		require.Equal(t, http.StatusOK, recorder.Code)
+		var response util.APIResponse[TopicDetailResponse]
+		require.NoError(t, json.Unmarshal(recorder.Body.Bytes(), &response))
+		assert.Equal(t, topicID, response.Data.Topic.ID)
+		assert.Equal(t, "/topic/"+topicID, response.Data.PublicURL)
+		assert.Equal(t, dao.ResourceStatusDegraded, response.Data.Health.CurrentStatus)
+		assert.Len(t, response.Data.RecentExecutions, 1)
+		assert.Len(t, response.Data.RelatedNotifications, 1)
+	})
+
+	t.Run("detail returns 404 when topic is missing", func(t *testing.T) {
+		req, err := http.NewRequest(http.MethodGet, "/api/admin/topics/"+uniqueTestID("topic-missing")+"/detail", nil)
+		require.NoError(t, err)
+		recorder := httptest.NewRecorder()
+
+		router.ServeHTTP(recorder, req)
+
+		assert.Equal(t, http.StatusNotFound, recorder.Code)
+		assertJSONMessage(t, recorder, "Topic feed not found")
 	})
 }
 
