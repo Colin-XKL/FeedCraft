@@ -333,6 +333,12 @@ func buildNativeProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedPr
 		return &GUIDFixProcessor{}, true, nil
 	case "relative-link-fix":
 		return &RelativeLinkFixProcessor{OriginalFeedURL: feedURL}, true, nil
+	case "cleanup":
+		return newCleanupProcessor(), true, nil
+	case "fulltext":
+		return newFulltextProcessor(feedURL), true, nil
+	case "fulltext-plus":
+		return newFulltextPlusProcessor(feedURL, parseFulltextPlusConfig(atom.Params)), true, nil
 	default:
 		return nil, false, nil
 	}

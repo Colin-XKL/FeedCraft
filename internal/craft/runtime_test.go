@@ -2,12 +2,14 @@ package craft
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
 	"FeedCraft/internal/dao"
 	"FeedCraft/internal/engine"
 	"FeedCraft/internal/model"
+	"FeedCraft/internal/util"
 
 	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
@@ -40,30 +42,20 @@ func TestResolveCraftAtoms_FlowAndCustomAtom(t *testing.T) {
 
 func TestBuildProcessor_UsesNativeProcessors(t *testing.T) {
 	db := newCraftRuntimeTestDB(t)
-	processor, err := BuildProcessor(db, "limit,time-limit,guid-fix,relative-link-fix", "https://example.com/feed.xml")
+	processor, err := BuildProcessor(db, "limit,time-limit,guid-fix,relative-link-fix,cleanup,fulltext,fulltext-plus", "https://example.com/feed.xml")
 	require.NoError(t, err)
 	require.NotNil(t, processor)
 
 	flow, ok := processor.(*engine.FlowCraftProcessor)
 	require.True(t, ok)
-	require.Len(t, flow.Processors, 4)
+	require.Len(t, flow.Processors, 7)
 	assert.IsType(t, &LimitProcessor{}, flow.Processors[0])
 	assert.IsType(t, &TimeLimitProcessor{}, flow.Processors[1])
 	assert.IsType(t, &GUIDFixProcessor{}, flow.Processors[2])
 	assert.IsType(t, &RelativeLinkFixProcessor{}, flow.Processors[3])
-}
-
-func TestBuildProcessor_FallsBackToLegacyForUnsupportedAtom(t *testing.T) {
-	db := newCraftRuntimeTestDB(t)
-	processor, err := BuildProcessor(db, "cleanup", "https://example.com/feed.xml")
-	require.NoError(t, err)
-	require.NotNil(t, processor)
-
-	flow, ok := processor.(*engine.FlowCraftProcessor)
-	require.True(t, ok)
-	require.Len(t, flow.Processors, 1)
-	_, isNestedFlow := flow.Processors[0].(*engine.FlowCraftProcessor)
-	assert.True(t, isNestedFlow)
+	assert.IsType(t, &CleanupProcessor{}, flow.Processors[4])
+	assert.IsType(t, &FulltextProcessor{}, flow.Processors[5])
+	assert.IsType(t, &FulltextPlusProcessor{}, flow.Processors[6])
 }
 
 func TestNativeProcessors_EndToEnd(t *testing.T) {
@@ -110,6 +102,113 @@ func TestNativeProcessors_EndToEnd(t *testing.T) {
 	require.Len(t, result.Articles, 1)
 	assert.Equal(t, "https://example.com/article-1", result.Articles[0].Link)
 	assert.NotEmpty(t, result.Articles[0].Id)
+}
+
+func TestCleanupProcessor_UsesDescriptionFallback(t *testing.T) {
+	original := cleanupTransformFunc
+	cleanupTransformFunc = func(content string, domain string) (string, error) {
+		return fmt.Sprintf("%s|%s", domain, content), nil
+	}
+	t.Cleanup(func() { cleanupTransformFunc = original })
+
+	processor := newCleanupProcessor()
+	feed := &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{
+				Title:       "article",
+				Link:        "https://example.com/post",
+				Description: "<p>fallback</p>",
+			},
+		},
+	}
+
+	result, err := processor.Process(context.Background(), feed)
+	require.NoError(t, err)
+	require.Len(t, result.Articles, 1)
+	assert.Equal(t, "https://example.com|<p>fallback</p>", result.Articles[0].Content)
+	assert.Equal(t, "https://example.com|<p>fallback</p>", result.Articles[0].Description)
+	assert.Empty(t, feed.Articles[0].Content)
+}
+
+func TestFulltextProcessor_PartialFailureAndRelativeLinkFix(t *testing.T) {
+	original := fulltextExtractFunc
+	fulltextExtractFunc = func(url string, timeout time.Duration) (string, error) {
+		if url == "https://example.com/fail" {
+			return "", fmt.Errorf("boom")
+		}
+		return "fulltext:" + url, nil
+	}
+	t.Cleanup(func() { fulltextExtractFunc = original })
+
+	processor := newFulltextProcessor("https://example.com/feed.xml")
+	feed := &model.CraftFeed{
+		Link: "https://example.com",
+		Articles: []*model.CraftArticle{
+			{Title: "ok", Link: "/ok"},
+			{Title: "bad", Link: "/fail"},
+		},
+	}
+
+	result, err := processor.Process(context.Background(), feed)
+	require.NoError(t, err)
+	require.Len(t, result.Articles, 2)
+	assert.Equal(t, "https://example.com/ok", result.Articles[0].Link)
+	assert.Equal(t, "fulltext:https://example.com/ok", result.Articles[0].Content)
+	assert.Equal(t, "fulltext:https://example.com/ok", result.Articles[0].Description)
+	assert.Equal(t, "https://example.com/fail", result.Articles[1].Link)
+	assert.Empty(t, result.Articles[1].Content)
+}
+
+func TestFulltextProcessor_AllFailureReturnsError(t *testing.T) {
+	original := fulltextExtractFunc
+	fulltextExtractFunc = func(url string, timeout time.Duration) (string, error) {
+		return "", fmt.Errorf("always fail")
+	}
+	t.Cleanup(func() { fulltextExtractFunc = original })
+
+	processor := newFulltextProcessor("https://example.com/feed.xml")
+	feed := &model.CraftFeed{
+		Link: "https://example.com",
+		Articles: []*model.CraftArticle{
+			{Title: "a", Link: "/a"},
+			{Title: "b", Link: "/b"},
+		},
+	}
+
+	_, err := processor.Process(context.Background(), feed)
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "all items failed to process")
+}
+
+func TestFulltextPlusProcessor_UsesConfiguredOptions(t *testing.T) {
+	original := fulltextPlusExtractFunc
+	var capturedURL string
+	var capturedOptions util.BrowserlessOptions
+	fulltextPlusExtractFunc = func(url string, options util.BrowserlessOptions) (string, error) {
+		capturedURL = url
+		capturedOptions = options
+		return "rendered", nil
+	}
+	t.Cleanup(func() { fulltextPlusExtractFunc = original })
+
+	processor := newFulltextPlusProcessor("https://example.com/feed.xml", FulltextPlusConfig{
+		Wait: 42,
+		Mode: "networkidle0",
+	})
+	feed := &model.CraftFeed{
+		Link: "https://example.com",
+		Articles: []*model.CraftArticle{
+			{Title: "a", Link: "/article"},
+		},
+	}
+
+	result, err := processor.Process(context.Background(), feed)
+	require.NoError(t, err)
+	assert.Equal(t, "https://example.com/article", capturedURL)
+	assert.Equal(t, "networkidle0", capturedOptions.WaitUntil)
+	assert.Equal(t, 42*time.Second, capturedOptions.WaitTime)
+	assert.Equal(t, 52*time.Second, capturedOptions.Timeout)
+	assert.Equal(t, "rendered", result.Articles[0].Content)
 }
 
 func newCraftRuntimeTestDB(t *testing.T) *gorm.DB {
