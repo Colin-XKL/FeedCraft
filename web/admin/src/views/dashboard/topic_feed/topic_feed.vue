@@ -64,7 +64,7 @@
                 <a-button type="text" size="small" @click="handleEdit(record)">
                   {{ t('topic.editAction') }}
                 </a-button>
-                <a-link :href="`/topic/${record.id}`" target="_blank">
+                <a-link :href="buildTopicFeedUrl(record.id)" target="_blank">
                   {{ t('topic.viewFeed') }}
                 </a-link>
                 <a-popconfirm
@@ -195,7 +195,7 @@
             />
 
             <a-button type="text" status="danger" @click="removeStep(idx)">
-              {{ t('topic.removeInput') }}
+              {{ t('topic.removeStep') }}
             </a-button>
           </div>
 
@@ -209,6 +209,21 @@
           <template #title>{{ t('topic.validationSummary') }}</template>
           <div
             v-for="issue in validationErrors"
+            :key="`${issue.field}-${issue.message}`"
+            class="validation-item"
+          >
+            <strong>{{ issue.field }}</strong
+            >: {{ issue.message }}
+          </div>
+        </a-alert>
+        <a-alert
+          v-if="validationWarnings.length > 0"
+          type="warning"
+          style="margin-top: 12px"
+        >
+          <template #title>{{ t('topic.validationWarnings') }}</template>
+          <div
+            v-for="issue in validationWarnings"
             :key="`${issue.field}-${issue.message}`"
             class="validation-item"
           >
@@ -241,6 +256,7 @@
   import { useI18n } from 'vue-i18n';
   import { useRouter } from 'vue-router';
   import XHeader from '@/components/header/x-header.vue';
+  import buildPublicFeedUrl from '@/utils/publicFeedUrl';
   import {
     AggregatorStep,
     TopicFeed,
@@ -276,6 +292,7 @@
   const submitting = ref(false);
   const validating = ref(false);
   const validationErrors = ref<TopicValidationIssue[]>([]);
+  const validationWarnings = ref<TopicValidationIssue[]>([]);
 
   const createDefaultStep = (type: StepType = 'limit'): StepFormItem => {
     if (type === 'deduplicate') return { type, value: 'by_link' };
@@ -348,8 +365,11 @@
 
   const openModal = () => {
     validationErrors.value = [];
+    validationWarnings.value = [];
     modalVisible.value = true;
   };
+
+  const buildTopicFeedUrl = (id: string) => buildPublicFeedUrl(`/topic/${id}`);
 
   const handleAdd = () => {
     isEdit.value = false;
@@ -418,6 +438,7 @@
     const payload = normalizeTopicPayload();
     const res = await validateTopicFeed(payload);
     validationErrors.value = res.data?.errors || [];
+    validationWarnings.value = res.data?.warnings || [];
     return res.data;
   };
 

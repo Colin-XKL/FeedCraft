@@ -85,6 +85,14 @@
               <a-table-column :title="t('observability.actions')">
                 <template #cell="{ record }">
                   <a-space>
+                    <a-link
+                      :href="
+                        buildFeedUrl(record.resource_type, record.resource_id)
+                      "
+                      target="_blank"
+                    >
+                      {{ t('observability.link') }}
+                    </a-link>
                     <a-button
                       v-if="record.resource_type === 'topic'"
                       type="text"
@@ -205,8 +213,8 @@
         <a-card class="general-card">
           <template #extra>
             <a-space>
-              <a-link href="/system/notifications/rss" target="_blank">
-                /system/notifications/rss
+              <a-link :href="systemNotificationUrl" target="_blank">
+                {{ systemNotificationUrl }}
               </a-link>
               <a-button
                 type="primary"
@@ -249,6 +257,13 @@
   import { useRouter } from 'vue-router';
   import XHeader from '@/components/header/x-header.vue';
   import {
+    formatObservabilityErrorKind,
+    formatObservabilityResourceType,
+    formatObservabilityStatus,
+    formatObservabilityTrigger,
+  } from '@/utils/observability';
+  import buildPublicFeedUrl from '@/utils/publicFeedUrl';
+  import {
     ExecutionLog,
     ObservableResource,
     SystemNotification,
@@ -270,6 +285,7 @@
   const resources = ref<ObservableResource[]>([]);
   const logs = ref<ExecutionLog[]>([]);
   const notifications = ref<SystemNotification[]>([]);
+  const systemNotificationUrl = buildPublicFeedUrl('/system/notifications/rss');
 
   const formatTime = (value?: string) => {
     if (!value) return '-';
@@ -277,25 +293,19 @@
   };
 
   const formatStatus = (status?: string) => {
-    if (!status) return '-';
-    return t(`observability.statusValue.${status}`);
+    return formatObservabilityStatus(t, status);
   };
 
   const formatResourceType = (type?: string) => {
-    if (!type) return '-';
-    return t(`observability.resourceType.${type}`);
+    return formatObservabilityResourceType(t, type);
   };
 
   const formatTrigger = (trigger?: string) => {
-    if (!trigger) return '-';
-    return t(`observability.triggerValue.${trigger}`);
+    return formatObservabilityTrigger(t, trigger);
   };
 
   const formatErrorKind = (kind?: string) => {
-    if (!kind) return '-';
-    const key = `observability.errorKind.${kind}`;
-    const translated = t(key);
-    return translated === key ? kind : translated;
+    return formatObservabilityErrorKind(t, kind);
   };
 
   const statusColor = (status?: string) => {
@@ -368,6 +378,13 @@
 
   const goToTopicDetail = (id: string) => {
     router.push({ name: 'TopicFeedDetail', params: { id } });
+  };
+
+  const buildFeedUrl = (resourceType: string, resourceId: string) => {
+    if (resourceType === 'topic') {
+      return buildPublicFeedUrl(`/topic/${resourceId}`);
+    }
+    return buildPublicFeedUrl(`/recipe/${resourceId}`);
   };
 
   watch(resourceType, () => loadResources());

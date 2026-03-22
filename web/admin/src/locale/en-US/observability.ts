@@ -22,6 +22,7 @@ export default {
   'observability.resumeSuccess': 'Service resumed',
   'observability.resumeFailed': 'Failed to resume service',
   'observability.message': 'Message',
+  'observability.link': 'Feed Link',
   'observability.refresh': 'Refresh',
   'observability.loadFailed': 'Failed to load runtime data',
   'observability.all': 'All',

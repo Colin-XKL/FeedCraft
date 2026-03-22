@@ -22,6 +22,7 @@ export default {
   'observability.resumeSuccess': '资源已恢复',
   'observability.resumeFailed': '恢复资源失败',
   'observability.message': '消息',
+  'observability.link': '订阅链接',
   'observability.refresh': '刷新数据',
   'observability.loadFailed': '加载运行数据失败',
   'observability.all': '全部',
