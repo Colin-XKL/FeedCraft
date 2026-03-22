@@ -87,7 +87,9 @@ func RegisterRouters(router *gin.Engine) {
 		adminApi.POST("/craft-debug/common-llm-call-test", admin.LLMDebug)
 
 		adminApi.POST("/topics", controller.CreateTopicFeed)
+		adminApi.POST("/topics/validate", controller.ValidateTopicFeed)
 		adminApi.GET("/topics", controller.ListTopicFeeds)
+		adminApi.GET("/topics/:id/detail", controller.GetTopicFeedDetail)
 		adminApi.GET("/topics/:id", controller.GetTopicFeed)
 		adminApi.PUT("/topics/:id", controller.UpdateTopicFeed)
 		adminApi.DELETE("/topics/:id", controller.DeleteTopicFeed)

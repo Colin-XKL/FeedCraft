@@ -6,6 +6,7 @@ import localeMenu from './en-US/menu';
 import localeCraftAtom from './en-US/craftAtom';
 import localeCraftFlow from './en-US/craftFlow';
 import localeCustomRecipe from './en-US/customRecipe';
+import localeTopic from './en-US/topic';
 import localeAllCraftList from './en-US/allCraftList';
 import localeFeedCompare from './en-US/feedCompare';
 import localeFeedViewer from './en-US/feedViewer';
@@ -26,6 +27,7 @@ export default {
   ...localeCraftAtom,
   ...localeCraftFlow,
   ...localeCustomRecipe,
+  ...localeTopic,
   ...localeAllCraftList,
   ...localeFeedCompare,
   ...localeFeedViewer,

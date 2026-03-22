@@ -84,14 +84,24 @@
               </a-table-column>
               <a-table-column :title="t('observability.actions')">
                 <template #cell="{ record }">
-                  <a-button
-                    v-if="record.current_status === 'paused'"
-                    type="outline"
-                    size="small"
-                    @click="handleResume(record)"
-                  >
-                    {{ t('observability.resume') }}
-                  </a-button>
+                  <a-space>
+                    <a-button
+                      v-if="record.resource_type === 'topic'"
+                      type="text"
+                      size="small"
+                      @click="goToTopicDetail(record.resource_id)"
+                    >
+                      {{ t('topic.viewDetails') }}
+                    </a-button>
+                    <a-button
+                      v-if="record.current_status === 'paused'"
+                      type="outline"
+                      size="small"
+                      @click="handleResume(record)"
+                    >
+                      {{ t('observability.resume') }}
+                    </a-button>
+                  </a-space>
                 </template>
               </a-table-column>
             </template>
@@ -236,6 +246,7 @@
   import { onMounted, ref, watch } from 'vue';
   import { Message } from '@arco-design/web-vue';
   import { useI18n } from 'vue-i18n';
+  import { useRouter } from 'vue-router';
   import XHeader from '@/components/header/x-header.vue';
   import {
     ExecutionLog,
@@ -248,6 +259,7 @@
   } from '@/api/observability';
 
   const { t } = useI18n();
+  const router = useRouter();
   const resourceLoading = ref(false);
   const logLoading = ref(false);
   const notificationLoading = ref(false);
@@ -352,6 +364,10 @@
     } catch (err: any) {
       Message.error(err.message || t('observability.resumeFailed'));
     }
+  };
+
+  const goToTopicDetail = (id: string) => {
+    router.push({ name: 'TopicFeedDetail', params: { id } });
   };
 
   watch(resourceType, () => loadResources());
