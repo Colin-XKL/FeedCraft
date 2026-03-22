@@ -70,6 +70,10 @@ func RegisterRouters(router *gin.Engine) {
 	{
 		recipeRoutes.GET("/:id", recipe.CustomRecipe)
 	}
+	topicRoutes := router.Group("/topic")
+	{
+		topicRoutes.GET("/:id", controller.PublicTopicFeed)
+	}
 	router.GET("/system/notifications/rss", controller.SystemNotificationsRSS)
 
 	// admin api

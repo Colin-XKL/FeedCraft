@@ -2,6 +2,7 @@ package engine
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sync"
 	"time"
@@ -98,8 +99,17 @@ func (t *TopicFeed) Fetch(ctx context.Context) (*model.CraftFeed, error) {
 			})
 			return nil, err
 		}
+		if len(processedFeed.Articles) == 0 && len(failedInputs) > 0 {
+			reportTopicResult(ctx, t, processedFeed, failedInputs, startedAt)
+			return nil, errors.New("topic failed because all upstream providers failed or produced no items")
+		}
 		reportTopicResult(ctx, t, processedFeed, failedInputs, startedAt)
 		return processedFeed, nil
+	}
+
+	if len(mergedFeed.Articles) == 0 && len(failedInputs) > 0 {
+		reportTopicResult(ctx, t, mergedFeed, failedInputs, startedAt)
+		return nil, errors.New("topic failed because all upstream providers failed or produced no items")
 	}
 
 	reportTopicResult(ctx, t, mergedFeed, failedInputs, startedAt)

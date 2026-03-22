@@ -106,3 +106,18 @@ func TestTopicFeed_Fetch_WithAggregator(t *testing.T) {
 	assert.NotNil(t, result)
 	assert.Len(t, result.Articles, 2)
 }
+
+func TestTopicFeed_Fetch_AllInputsFailed(t *testing.T) {
+	providerFail1 := &MockProvider{Err: errors.New("network error")}
+	providerFail2 := &MockProvider{Err: errors.New("timeout")}
+
+	topic := &TopicFeed{
+		ID:     "topic-3",
+		Inputs: []FeedProvider{providerFail1, providerFail2},
+	}
+
+	result, err := topic.Fetch(context.Background())
+	assert.Error(t, err)
+	assert.Nil(t, result)
+	assert.Contains(t, err.Error(), "all upstream providers failed")
+}
