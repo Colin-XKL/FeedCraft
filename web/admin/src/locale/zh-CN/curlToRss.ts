@@ -22,7 +22,7 @@ export default {
   'curlToRss.step1.fetchAndNext': '获取并下一步',
   'curlToRss.step2.responseJson': '响应 JSON',
   'curlToRss.step2.alert':
-    '先用 jq 选择器提取字段，再按需用模板加工最终结果。列表选择器支持 <code>.data.items</code> 或 <code>.data.items[]</code>。',
+    '先用 jq 选择器提取字段，再按需用模板加工最终结果。列表选择器支持 .data.items 或 .data.items[]。',
   'curlToRss.step2.iteration': '迭代',
   'curlToRss.step2.itemsIterator': '条目迭代器 (例如 .data.items 或 .items[])',
   'curlToRss.step2.itemFields': '条目字段',

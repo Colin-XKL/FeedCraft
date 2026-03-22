@@ -196,7 +196,7 @@
             <a-col :span="12" class="h-full flex flex-col">
               <div class="flex-1 overflow-y-auto pr-2">
                 <a-alert type="info" class="mb-4">
-                  <span v-html="$t('curlToRss.step2.alert')"></span>
+                  {{ $t('curlToRss.step2.alert') }}
                 </a-alert>
                 <a-alert type="normal" class="mb-4">
                   <div class="text-sm font-medium mb-2">
@@ -715,10 +715,9 @@
         const data = JSON.parse(val);
         treeData.value = jsonToTree(data);
       } catch (e) {
-        console.error('Invalid JSON content:', e);
         treeData.value = [];
       }
-    },
+    }
   );
 
   const getRelativePath = (fullPath: string, listSel: string) => {
@@ -738,7 +737,7 @@
 
   const handleNodeSelect = (
     selectedKeys: (string | number)[],
-    { node }: { node: TreeNodeData },
+    { node }: { node: TreeNodeData }
   ) => {
     if (!activeField.value || !node.key) return;
 
@@ -781,7 +780,7 @@
       if (val === 4 && !recipeMeta.id && feedMeta.title) {
         recipeMeta.id = generateRecipeId(feedMeta.title);
       }
-    },
+    }
   );
 
   // Step 1 Logic
@@ -813,8 +812,11 @@
         Message.success(t('curlToRss.msg.curlParsed'));
       }
     } catch (err) {
-      // Error handled by interceptor usually
-      console.error(err);
+      Message.error(
+        t('curlToRss.msg.saveFailed', {
+          msg: err instanceof Error ? err.message : String(err),
+        })
+      );
     } finally {
       parsingCurl.value = false;
     }
@@ -873,8 +875,8 @@
       Message.success(t('curlToRss.msg.fetched'));
       nextStep();
     } catch (err: any) {
-      console.error(err);
       fetchError.value = err.message || String(err);
+      Message.error(fetchError.value);
     } finally {
       fetching.value = false;
     }
@@ -902,11 +904,15 @@
         Message.warning(t('curlToRss.msg.noItems'));
       } else {
         Message.success(
-          t('curlToRss.msg.parsedItems', { count: parsedItems.value.length }),
+          t('curlToRss.msg.parsedItems', { count: parsedItems.value.length })
         );
       }
     } catch (err) {
-      console.error(err);
+      Message.error(
+        t('curlToRss.msg.saveFailed', {
+          msg: err instanceof Error ? err.message : String(err),
+        })
+      );
     } finally {
       parsing.value = false;
     }

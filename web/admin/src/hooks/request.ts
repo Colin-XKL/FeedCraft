@@ -1,5 +1,4 @@
 import { ref, UnwrapRef } from 'vue';
-import { AxiosResponse } from 'axios';
 import { APIResponse } from '@/api/types';
 import useLoading from './loading';
 
@@ -11,7 +10,7 @@ import useLoading from './loading';
 export default function useRequest<T>(
   api: () => Promise<APIResponse>,
   defaultValue = [] as unknown as T,
-  isLoading = true,
+  isLoading = true
 ) {
   const { loading, setLoading } = useLoading(isLoading);
   const response = ref<T>(defaultValue);

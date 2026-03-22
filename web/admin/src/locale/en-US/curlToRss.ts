@@ -24,7 +24,7 @@ export default {
   'curlToRss.step1.fetchAndNext': 'Fetch & Next',
   'curlToRss.step2.responseJson': 'Response JSON',
   'curlToRss.step2.alert':
-    'Use jq selectors to extract raw values, then optionally use templates to build the final field output. The items selector supports <code>.data.items</code> and <code>.data.items[]</code>.',
+    'Use jq selectors to extract raw values, then optionally use templates to build the final field output. The items selector supports .data.items and .data.items[].',
   'curlToRss.step2.iteration': 'Iteration',
   'curlToRss.step2.itemsIterator':
     'Items Iterator (e.g. .data.items or .items[])',

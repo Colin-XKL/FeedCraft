@@ -47,7 +47,7 @@ export function fetchObservableResources(params?: Record<string, any>) {
       '/api/admin/observability/resources',
       {
         params,
-      },
+      }
     )
     .then((res) => res.data);
 }
@@ -68,11 +68,11 @@ export function fetchSystemNotifications() {
 
 export function resumeObservableResource(
   resourceType: string,
-  resourceID: string,
+  resourceID: string
 ) {
   return axios
     .post<APIResponse>(
-      `/api/admin/observability/resources/${resourceType}/${resourceID}/resume`,
+      `/api/admin/observability/resources/${resourceType}/${resourceID}/resume`
     )
     .then((res) => res.data);
 }

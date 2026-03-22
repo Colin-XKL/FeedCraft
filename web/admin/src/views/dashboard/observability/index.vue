@@ -212,7 +212,11 @@
             <a-list-item v-for="item in notifications" :key="item.id">
               <a-list-item-meta
                 :title="item.title"
-                :description="`${formatTime(item.created_at)} · ${formatResourceType(item.resource_type)} / ${item.resource_id}`"
+                :description="`${formatTime(
+                  item.created_at
+                )} · ${formatResourceType(item.resource_type)} / ${
+                  item.resource_id
+                }`"
               />
               <template #actions>
                 <a-tag :color="statusColor(item.status_after)">

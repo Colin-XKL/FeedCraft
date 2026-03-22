@@ -66,7 +66,6 @@
       response.value = resp.data.output;
     } catch (error) {
       Message.warning(error?.toString() ?? t('llmDebug.llmTest.unknownError'));
-      console.error(error);
     } finally {
       isLoading.value = false;
     }
