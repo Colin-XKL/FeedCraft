@@ -12,9 +12,13 @@ export interface JsonParseReq {
   json_content: string;
   list_selector: string;
   title_selector: string;
+  title_template: string;
   link_selector: string;
+  link_template: string;
   date_selector: string;
+  date_template: string;
   content_selector: string;
+  content_template: string;
 }
 
 export interface ParsedItem {

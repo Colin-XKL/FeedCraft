@@ -198,6 +198,26 @@
                 <a-alert type="info" class="mb-4">
                   <span v-html="$t('curlToRss.step2.alert')"></span>
                 </a-alert>
+                <a-alert type="normal" class="mb-4">
+                  <div class="text-sm font-medium mb-2">
+                    {{ $t('curlToRss.step2.templateHelpTitle') }}
+                  </div>
+                  <div class="text-sm text-gray-600 mb-2">
+                    {{ $t('curlToRss.step2.templateHelpDesc') }}
+                  </div>
+                  <div class="flex flex-wrap gap-2 mb-2">
+                    <a-tag
+                      v-for="variable in templateVariables"
+                      :key="variable"
+                      size="small"
+                    >
+                      {{ variable }}
+                    </a-tag>
+                  </div>
+                  <div class="text-xs text-gray-500 whitespace-pre-line">
+                    {{ $t('curlToRss.step2.templateExamples') }}
+                  </div>
+                </a-alert>
 
                 <a-form :model="parseReq" layout="vertical">
                   <a-card
@@ -251,6 +271,13 @@
                         @focus="activeField = 'title_selector'"
                       />
                     </a-form-item>
+                    <a-form-item :label="$t('curlToRss.step2.titleTemplate')">
+                      <a-textarea
+                        v-model="parseReq.title_template"
+                        :auto-size="{ minRows: 2, maxRows: 4 }"
+                        :placeholder="$t('curlToRss.placeholder.titleTemplate')"
+                      />
+                    </a-form-item>
                     <a-form-item :label="$t('curlToRss.step2.linkSelector')">
                       <template #label>
                         {{ $t('curlToRss.step2.linkSelector') }}
@@ -266,6 +293,13 @@
                           'border-primary': activeField === 'link_selector',
                         }"
                         @focus="activeField = 'link_selector'"
+                      />
+                    </a-form-item>
+                    <a-form-item :label="$t('curlToRss.step2.linkTemplate')">
+                      <a-textarea
+                        v-model="parseReq.link_template"
+                        :auto-size="{ minRows: 2, maxRows: 4 }"
+                        :placeholder="$t('curlToRss.placeholder.linkTemplate')"
                       />
                     </a-form-item>
                     <a-form-item :label="$t('curlToRss.step2.dateSelector')">
@@ -285,6 +319,13 @@
                         @focus="activeField = 'date_selector'"
                       />
                     </a-form-item>
+                    <a-form-item :label="$t('curlToRss.step2.dateTemplate')">
+                      <a-textarea
+                        v-model="parseReq.date_template"
+                        :auto-size="{ minRows: 2, maxRows: 4 }"
+                        :placeholder="$t('curlToRss.placeholder.dateTemplate')"
+                      />
+                    </a-form-item>
                     <a-form-item :label="$t('curlToRss.step2.contentSelector')">
                       <template #label>
                         {{ $t('curlToRss.step2.contentSelector') }}
@@ -300,6 +341,15 @@
                           'border-primary': activeField === 'content_selector',
                         }"
                         @focus="activeField = 'content_selector'"
+                      />
+                    </a-form-item>
+                    <a-form-item :label="$t('curlToRss.step2.contentTemplate')">
+                      <a-textarea
+                        v-model="parseReq.content_template"
+                        :auto-size="{ minRows: 2, maxRows: 4 }"
+                        :placeholder="
+                          $t('curlToRss.placeholder.contentTemplate')
+                        "
                       />
                     </a-form-item>
                   </a-card>
@@ -565,11 +615,22 @@
   const parseReq = reactive({
     list_selector: '',
     title_selector: '',
+    title_template: '',
     link_selector: '',
+    link_template: '',
     date_selector: '',
+    date_template: '',
     content_selector: '',
+    content_template: '',
   });
   const parsedItems = ref<ParsedItem[]>([]);
+  const templateVariables = [
+    '.Item.id',
+    '.Fields.Title',
+    '.Fields.Link',
+    '.Fields.Date',
+    '.Fields.Description',
+  ];
 
   // Step 3 State
   const feedMeta = reactive({
@@ -881,9 +942,13 @@
       json_parser: {
         items_iterator: parseReq.list_selector,
         title: parseReq.title_selector,
+        title_template: parseReq.title_template,
         link: parseReq.link_selector,
+        link_template: parseReq.link_template,
         date: parseReq.date_selector,
+        date_template: parseReq.date_template,
         description: parseReq.content_selector,
+        description_template: parseReq.content_template,
       },
       feed_meta: {
         title: feedMeta.title,
