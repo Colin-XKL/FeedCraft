@@ -1,14 +1,11 @@
 package recipe
 
 import (
-	"FeedCraft/internal/config"
-	"FeedCraft/internal/craft"
 	"FeedCraft/internal/dao"
+	"FeedCraft/internal/feedruntime"
 	"FeedCraft/internal/observability"
-	"FeedCraft/internal/source"
 	"FeedCraft/internal/util"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -47,55 +44,22 @@ func ProcessRecipeByIDWithTrigger(ctx context.Context, recipeId string, trigger 
 		return nil, err
 	}
 
-	// 1. Parse SourceConfig to get the source of the feed
-	var sourceConfig config.SourceConfig
-	if err := json.Unmarshal([]byte(recipe.SourceConfig), &sourceConfig); err != nil {
-		wrapped := fmt.Errorf("invalid source config: %w", err)
-		reportRecipeFailure(ctx, recipe, trigger, startedAt, wrapped, nil)
-		return nil, wrapped
-	}
-
-	// ... (rest of the function uses sourceConfig)
-
-	// 2. Get factory from registry
-	factory, err := source.Get(sourceConfig.Type)
+	recipeRuntime, err := feedruntime.NewBuilder(db).BuildRecipe(ctx, recipe)
 	if err != nil {
-		reportRecipeFailure(ctx, recipe, trigger, startedAt, err, map[string]any{"source_type": sourceConfig.Type})
+		reportRecipeFailure(ctx, recipe, trigger, startedAt, err, nil)
 		return nil, err
 	}
 
-	// 3. Create source instance
-	sourceInstance, err := factory(&sourceConfig)
+	processedCraftFeed, err := recipeRuntime.Fetch(ctx)
 	if err != nil {
-		reportRecipeFailure(ctx, recipe, trigger, startedAt, err, map[string]any{"source_type": sourceConfig.Type})
+		reportRecipeFailure(ctx, recipe, trigger, startedAt, err, map[string]any{
+			"source_type": recipeRuntime.SourceType,
+			"base_url":    recipeRuntime.BaseURL,
+			"craft":       recipeRuntime.CraftName,
+		})
 		return nil, err
 	}
-
-	// 4. Generate the base feed
-	baseFeed, err := sourceInstance.Generate(ctx)
-	if err != nil {
-		wrapped := errors.New("failed to generate base feed: " + err.Error())
-		reportRecipeFailure(ctx, recipe, trigger, startedAt, wrapped, map[string]any{
-			"source_type": sourceConfig.Type,
-			"base_url":    sourceInstance.BaseURL(),
-		})
-		return nil, wrapped
-	}
-
-	// 5. Get the base URL from the source for relative link resolution
-	feedURL := sourceInstance.BaseURL()
-
-	// 6. Process the feed through the craft flow
-	processedFeed, err := craft.ProcessFeed(baseFeed, feedURL, recipe.Craft)
-	if err != nil {
-		wrapped := errors.New("failed to process feed: " + err.Error())
-		reportRecipeFailure(ctx, recipe, trigger, startedAt, wrapped, map[string]any{
-			"source_type": sourceConfig.Type,
-			"base_url":    sourceInstance.BaseURL(),
-			"craft":       recipe.Craft,
-		})
-		return nil, wrapped
-	}
+	processedFeed := processedCraftFeed.ToFeedsFeed()
 
 	observability.Report(observability.ExecutionEvent{
 		ResourceType: dao.ResourceTypeRecipe,
@@ -105,8 +69,8 @@ func ProcessRecipeByIDWithTrigger(ctx context.Context, recipeId string, trigger 
 		Status:       dao.ExecutionStatusSuccess,
 		Message:      fmt.Sprintf("recipe executed successfully with %d items", len(processedFeed.Items)),
 		Details: map[string]any{
-			"source_type": sourceConfig.Type,
-			"base_url":    feedURL,
+			"source_type": recipeRuntime.SourceType,
+			"base_url":    recipeRuntime.BaseURL,
 			"item_count":  len(processedFeed.Items),
 		},
 		RequestID: observability.RequestIDFromContext(ctx),

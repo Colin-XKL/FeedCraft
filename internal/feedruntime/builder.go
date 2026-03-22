@@ -2,18 +2,21 @@ package feedruntime
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/url"
 	"strconv"
 	"strings"
+	"time"
 
 	"FeedCraft/internal/config"
 	"FeedCraft/internal/constant"
+	"FeedCraft/internal/craft"
 	"FeedCraft/internal/dao"
 	"FeedCraft/internal/engine"
 	"FeedCraft/internal/model"
-	"FeedCraft/internal/recipe"
+	"FeedCraft/internal/observability"
 	"FeedCraft/internal/source"
 	"FeedCraft/internal/util"
 
@@ -61,6 +64,14 @@ func BuildTopic(ctx context.Context, topic *dao.TopicFeed, stack []string) (*eng
 	return NewBuilder(nil).BuildTopic(ctx, topic, stack)
 }
 
+func BuildRecipeProvider(ctx context.Context, recipeID string) (engine.FeedProvider, error) {
+	return NewBuilder(nil).BuildRecipeProvider(ctx, recipeID)
+}
+
+func BuildRecipe(ctx context.Context, recipeData *dao.CustomRecipeV2) (*engine.RecipeFeed, error) {
+	return NewBuilder(nil).BuildRecipe(ctx, recipeData)
+}
+
 func BuildAggregator(steps []dao.AggregatorStep) (engine.FeedProcessor, error) {
 	return buildAggregator(steps)
 }
@@ -73,7 +84,7 @@ func (b *Builder) BuildProviderFromInput(ctx context.Context, spec InputSpec, st
 		if spec.SourceConfig == nil {
 			return nil, errors.New("source input requires source_config")
 		}
-		return &SourceConfigProvider{SourceConfig: spec.SourceConfig}, nil
+		return newSourceConfigProvider(spec.SourceConfig)
 	default:
 		return nil, fmt.Errorf("unsupported input kind %q", spec.Kind)
 	}
@@ -81,6 +92,27 @@ func (b *Builder) BuildProviderFromInput(ctx context.Context, spec InputSpec, st
 
 func (b *Builder) BuildTopicProvider(ctx context.Context, topicID string) (engine.FeedProvider, error) {
 	return b.buildTopicProvider(ctx, topicID, nil)
+}
+
+func (b *Builder) BuildRecipeProvider(ctx context.Context, recipeID string) (engine.FeedProvider, error) {
+	return b.buildRecipeProvider(ctx, recipeID, observability.TriggerUserRequest)
+}
+
+func (b *Builder) buildRecipeProvider(ctx context.Context, recipeID string, trigger string) (engine.FeedProvider, error) {
+	recipeData, err := dao.GetCustomRecipeByIDV2(b.db(), recipeID)
+	if err != nil {
+		return nil, err
+	}
+
+	recipeRuntime, err := b.BuildRecipe(ctx, recipeData)
+	if err != nil {
+		return nil, err
+	}
+
+	return &RecipeProvider{
+		Recipe:  recipeRuntime,
+		Trigger: trigger,
+	}, nil
 }
 
 func (b *Builder) buildTopicProvider(ctx context.Context, topicID string, stack []string) (engine.FeedProvider, error) {
@@ -128,6 +160,37 @@ func (b *Builder) BuildTopic(ctx context.Context, topic *dao.TopicFeed, stack []
 	}, nil
 }
 
+func (b *Builder) BuildRecipe(ctx context.Context, recipeData *dao.CustomRecipeV2) (*engine.RecipeFeed, error) {
+	if recipeData == nil {
+		return nil, errors.New("recipe is nil")
+	}
+
+	var sourceConfig config.SourceConfig
+	if err := jsonUnmarshalSourceConfig(recipeData, &sourceConfig); err != nil {
+		return nil, err
+	}
+
+	inputProvider, err := newSourceConfigProvider(&sourceConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	processor, err := craft.BuildProcessor(b.db(), recipeData.Craft, inputProvider.BaseURL())
+	if err != nil {
+		return nil, err
+	}
+
+	return &engine.RecipeFeed{
+		ID:          recipeData.ID,
+		Description: recipeData.Description,
+		SourceType:  recipeData.SourceType,
+		BaseURL:     inputProvider.BaseURL(),
+		CraftName:   recipeData.Craft,
+		Input:       inputProvider,
+		Processor:   processor,
+	}, nil
+}
+
 func (b *Builder) buildProviderFromURI(ctx context.Context, rawURI string, stack []string) (engine.FeedProvider, error) {
 	if rawURI == "" {
 		return nil, errors.New("uri input requires a non-empty uri")
@@ -148,10 +211,7 @@ func (b *Builder) buildProviderFromURI(ctx context.Context, rawURI string, stack
 		}
 		switch resourceType {
 		case internalResourceTypeRecipe:
-			if _, err := dao.GetCustomRecipeByIDV2(b.db(), resourceID); err != nil {
-				return nil, err
-			}
-			return &RecipeProvider{RecipeID: resourceID}, nil
+			return b.buildRecipeProvider(ctx, resourceID, observability.TriggerTopicAggregation)
 		case internalResourceTypeTopic:
 			return b.buildTopicProvider(ctx, resourceID, stack)
 		default:
@@ -160,6 +220,22 @@ func (b *Builder) buildProviderFromURI(ctx context.Context, rawURI string, stack
 	default:
 		return nil, fmt.Errorf("unsupported uri scheme %q", parsed.Scheme)
 	}
+}
+
+func jsonUnmarshalSourceConfig(recipeData *dao.CustomRecipeV2, sourceConfig *config.SourceConfig) error {
+	if recipeData == nil {
+		return errors.New("recipe is nil")
+	}
+	if sourceConfig == nil {
+		return errors.New("source config target is nil")
+	}
+	if err := json.Unmarshal([]byte(recipeData.SourceConfig), sourceConfig); err != nil {
+		return fmt.Errorf("invalid source config: %w", err)
+	}
+	if sourceConfig.Type == "" && recipeData.SourceType != "" {
+		sourceConfig.Type = constant.SourceType(recipeData.SourceType)
+	}
+	return nil
 }
 
 func (b *Builder) db() *gorm.DB {
@@ -251,17 +327,70 @@ func parseInternalResourceURI(parsed *url.URL) (string, string, error) {
 	return resourceType, resourceID, nil
 }
 
-// RecipeProvider adapts an existing RecipeFeed into the FeedProvider interface.
+// RecipeProvider adapts a runtime RecipeFeed and adds execution metadata.
 type RecipeProvider struct {
-	RecipeID string
+	Recipe  *engine.RecipeFeed
+	Trigger string
 }
 
 func (p *RecipeProvider) Fetch(ctx context.Context) (*model.CraftFeed, error) {
-	feed, err := recipe.ProcessRecipeByID(ctx, p.RecipeID)
+	if p.Recipe == nil {
+		return nil, errors.New("recipe runtime is nil")
+	}
+
+	startedAt := time.Now()
+	feed, err := p.Recipe.Fetch(ctx)
 	if err != nil {
+		reportRecipeRuntimeFailure(ctx, p.Recipe, p.Trigger, startedAt, err)
 		return nil, err
 	}
-	return model.FromFeedsFeed(feed), nil
+
+	observability.Report(observability.ExecutionEvent{
+		ResourceType: dao.ResourceTypeRecipe,
+		ResourceID:   p.Recipe.ID,
+		ResourceName: p.Recipe.ID,
+		Trigger:      p.triggerOrDefault(),
+		Status:       dao.ExecutionStatusSuccess,
+		Message:      fmt.Sprintf("recipe executed successfully with %d items", len(feed.Articles)),
+		Details: map[string]any{
+			"source_type": p.Recipe.SourceType,
+			"base_url":    p.Recipe.BaseURL,
+			"item_count":  len(feed.Articles),
+		},
+		RequestID: observability.RequestIDFromContext(ctx),
+		Duration:  time.Since(startedAt),
+	})
+
+	return feed, nil
+}
+
+func (p *RecipeProvider) triggerOrDefault() string {
+	if strings.TrimSpace(p.Trigger) != "" {
+		return p.Trigger
+	}
+	return observability.TriggerUserRequest
+}
+
+func reportRecipeRuntimeFailure(ctx context.Context, recipeRuntime *engine.RecipeFeed, trigger string, startedAt time.Time, err error) {
+	if recipeRuntime == nil {
+		return
+	}
+	observability.Report(observability.ExecutionEvent{
+		ResourceType: dao.ResourceTypeRecipe,
+		ResourceID:   recipeRuntime.ID,
+		ResourceName: recipeRuntime.ID,
+		Trigger:      trigger,
+		Status:       dao.ExecutionStatusFailure,
+		ErrorKind:    observability.ClassifyError(err),
+		Message:      err.Error(),
+		Details: map[string]any{
+			"source_type": recipeRuntime.SourceType,
+			"base_url":    recipeRuntime.BaseURL,
+			"craft":       recipeRuntime.CraftName,
+		},
+		RequestID: observability.RequestIDFromContext(ctx),
+		Duration:  time.Since(startedAt),
+	})
 }
 
 // RawFeedProvider fetches a third-party URL using the minimal raw-feed semantics.
@@ -276,28 +405,50 @@ func (p *RawFeedProvider) Fetch(ctx context.Context) (*model.CraftFeed, error) {
 			URL: p.URL,
 		},
 	}
-	return (&SourceConfigProvider{SourceConfig: sourceConfig}).Fetch(ctx)
+	provider, err := newSourceConfigProvider(sourceConfig)
+	if err != nil {
+		return nil, err
+	}
+	return provider.Fetch(ctx)
 }
 
 // SourceConfigProvider adapts a full SourceConfig into the FeedProvider interface.
 type SourceConfigProvider struct {
 	SourceConfig *config.SourceConfig
+	LegacySource source.Source
 }
 
-func (p *SourceConfigProvider) Fetch(ctx context.Context) (*model.CraftFeed, error) {
-	if p.SourceConfig == nil {
+func newSourceConfigProvider(sourceConfig *config.SourceConfig) (*SourceConfigProvider, error) {
+	if sourceConfig == nil {
 		return nil, errors.New("source config is nil")
 	}
 
-	factory, err := source.Get(p.SourceConfig.Type)
+	factory, err := source.Get(sourceConfig.Type)
 	if err != nil {
 		return nil, err
 	}
 
-	src, err := factory(p.SourceConfig)
+	src, err := factory(sourceConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	return (&source.LegacySourceAdapter{LegacySource: src}).Fetch(ctx)
+	return &SourceConfigProvider{
+		SourceConfig: sourceConfig,
+		LegacySource: src,
+	}, nil
+}
+
+func (p *SourceConfigProvider) BaseURL() string {
+	if p == nil || p.LegacySource == nil {
+		return ""
+	}
+	return p.LegacySource.BaseURL()
+}
+
+func (p *SourceConfigProvider) Fetch(ctx context.Context) (*model.CraftFeed, error) {
+	if p == nil || p.LegacySource == nil {
+		return nil, errors.New("source provider is not initialized")
+	}
+	return (&source.LegacySourceAdapter{LegacySource: p.LegacySource}).Fetch(ctx)
 }
