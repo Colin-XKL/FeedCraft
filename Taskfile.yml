@@ -254,13 +254,44 @@ tasks:
           export GOCACHE=$(pwd)/.gocache
           go test -v ./...
 
-  backend-test:
-    desc: "Run all backend Go tests (alias for test)"
+  format-go:
+    desc: "Format Go source files with gofmt"
     cmds:
-      - task: test
+      - cmd: |
+          echo "Formatting Go files..."
+          files=$(git ls-files '*.go')
+          if [ -n "$files" ]; then
+            gofmt -w $files
+          else
+            echo "No Go files found."
+          fi
+
+  format-web:
+    desc: "Format web, docs, and config files with the project's local Prettier"
+    preconditions:
+      - sh: test -x web/admin/node_modules/.bin/prettier
+        msg: "Prettier not found. Run 'pnpm --dir web/admin install' first."
+    cmds:
+      - cmd: |
+          echo "Formatting web and docs files..."
+          files=$(git ls-files '*.js' '*.jsx' '*.ts' '*.tsx' '*.vue' '*.css' '*.less' '*.scss' '*.html' '*.json' '*.md' '*.mdx' '*.yml' '*.yaml')
+          if [ -n "$files" ]; then
+            web/admin/node_modules/.bin/prettier --ignore-path .prettierignore --write $files
+          else
+            echo "No Prettier-managed files found."
+          fi
+
+  format:
+    desc: "Auto-format Go and frontend/docs files"
+    deps:
+      - format-go
+      - format-web
 
   lint:
-    desc: "Lint and format code (Go and Web)"
+    desc: "Run linters without extra formatting steps"
+    preconditions:
+      - sh: test -f web/admin/package.json
+        msg: "Frontend package.json not found."
     cmds:
       - cmd: |
           echo "Running Go linter..."
@@ -268,7 +299,22 @@ tasks:
             golangci-lint run ./...
           else
             echo "golangci-lint not installed. Please install it to lint Go code."
+            exit 1
           fi
       - cmd: |
-          echo "Running Prettier..."
-          npx --yes prettier --write .
+          echo "Running frontend ESLint..."
+          cd web/admin && pnpm run lint
+
+  fix:
+    desc: "Auto-format code, then run Go and frontend lint checks"
+    cmds:
+      - task: format
+      - task: lint
+
+  install-hooks:
+    desc: "Install repository-managed git hooks"
+    cmds:
+      - cmd: |
+          git config core.hooksPath .githooks
+          chmod +x .githooks/pre-commit
+          echo "Git hooks installed. core.hooksPath=.githooks"

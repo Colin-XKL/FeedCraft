@@ -1,0 +1,15 @@
+#!/bin/sh
+set -eu
+
+echo "Running pre-commit checks..."
+staged_files=$(git diff --cached --name-only --diff-filter=ACMR)
+
+task fix
+
+if [ -n "$staged_files" ]; then
+  printf '%s\n' "$staged_files" | while IFS= read -r file; do
+    if [ -e "$file" ]; then
+      git add -- "$file"
+    fi
+  done
+fi

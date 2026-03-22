@@ -38,8 +38,8 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm --dir web/admin install --frozen-lockfile
 
-      - name: Auto-format repository
-        run: task format
+      - name: Run format and lint workflow
+        run: task fix
 
       - name: Commit changes
         if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
@@ -60,6 +60,3 @@ jobs:
             fi
             git push origin "HEAD:$TARGET_REF"
           fi
-
-      - name: Run lint checks
-        run: task lint-check
