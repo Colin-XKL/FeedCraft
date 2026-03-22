@@ -5,6 +5,7 @@ import (
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/source"
 	"FeedCraft/internal/util"
+	"FeedCraft/internal/engine"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -103,15 +104,18 @@ func CommonCraftHandlerUsingCraftOptionList(c *gin.Context, optionList []CraftOp
 		return
 	}
 
-	// Create the source instance
+	// Create the legacy source instance
 	sourceInstance, err := factory(sourceConfig)
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	// Generate the base feed
-	baseFeed, err := sourceInstance.Generate(c.Request.Context())
+	// Wrap in LegacySourceAdapter
+	provider := &source.LegacySourceAdapter{LegacySource: sourceInstance}
+
+	// Fetch raw feed using new Provider interface
+	rawCraftFeed, err := provider.Fetch(c.Request.Context())
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
@@ -119,16 +123,27 @@ func CommonCraftHandlerUsingCraftOptionList(c *gin.Context, optionList []CraftOp
 
 	// Get the base URL for link resolution
 	baseURL := sourceInstance.BaseURL()
+	payload := ExtraPayload{originalFeedUrl: baseURL}
 
-	// Craft the feed using the new, unified function
-	craftedFeed, err := NewCraftedFeedFromGofeed(baseFeed, baseURL, optionList...)
+	// Build the FlowCraft processor using adapters
+	processors := make([]engine.FeedProcessor, len(optionList))
+	for i, opt := range optionList {
+		processors[i] = &LegacyOptionAdapter{
+			Option: opt,
+			Extra:  payload,
+		}
+	}
+	flowCraft := &engine.FlowCraftProcessor{Processors: processors}
+
+	// Process the feed using the new Processor interface
+	finalCraftFeed, err := flowCraft.Process(c.Request.Context(), rawCraftFeed)
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	// Render the result
-	rssStr, err := craftedFeed.OutputFeed.ToRss()
+	rssStr, err := finalCraftFeed.ToFeedsFeed().ToRss()
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
