@@ -44,6 +44,7 @@ export default {
   'observability.errorKind.craft': 'Processing Error',
   'observability.errorKind.dependency': 'Dependency Error',
   'observability.errorKind.config': 'Configuration Error',
-  'observability.errorKind.upstream_partial_failure': 'Partial Upstream Failure',
+  'observability.errorKind.upstream_partial_failure':
+    'Partial Upstream Failure',
   'observability.errorKind.unknown': 'Unknown Error',
 };
