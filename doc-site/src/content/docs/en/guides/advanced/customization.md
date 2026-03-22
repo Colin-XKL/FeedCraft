@@ -32,7 +32,9 @@ Navigate to **Settings > Search Provider** in the admin dashboard.
   - **API URL**: The base URL of your SearXNG instance (e.g., `http://my-searxng.com`). The `/search` path is automatically appended.
   - **Engines**: (Optional) Comma-separated list of engines to use (e.g., `google,bing`).
 
-> **Tip:** You can use the **Check Connection** button to verify connectivity with your provider before saving.
+:::tip
+You can use the **Check Connection** button to verify connectivity with your provider before saving.
+:::
 
 ## Dependency Services
 
@@ -50,7 +52,9 @@ Use this dashboard to troubleshoot connectivity issues if features like "Enhance
 
 You can use the **Check Connection** button to verify if FeedCraft can successfully connect to the search provider with the provided credentials.
 
-> **Note:** For monitoring internal Craft dependencies (Recipes, Flows, Atoms), use the [Craft Dependencies](/en/guides/advanced/tools#craft-dependencies) tool.
+:::note
+For monitoring internal Craft dependencies (Recipes, Flows, Atoms), use the [Craft Dependencies](/en/guides/advanced/tools#craft-dependencies) tool.
+:::
 
 ## Advanced Configuration
 

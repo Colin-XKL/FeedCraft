@@ -23,15 +23,19 @@ type PreheatingContext struct {
 
 // PreheatingScheduler 预热调度器
 type PreheatingScheduler struct {
-	contexts map[string]*PreheatingContext
-	mutex    sync.RWMutex
-	taskFunc func(string) error // 实际的长任务函数
+	contexts  map[string]*PreheatingContext
+	mutex     sync.RWMutex
+	taskFunc  func(string) error // 实际的长任务函数
+	shouldRun func(string) bool
+	onSkip    func(string)
 }
 
-func NewPreheatingScheduler(taskFunc func(payload string) error) *PreheatingScheduler {
+func NewPreheatingScheduler(taskFunc func(payload string) error, shouldRun func(string) bool, onSkip func(string)) *PreheatingScheduler {
 	return &PreheatingScheduler{
-		contexts: make(map[string]*PreheatingContext),
-		taskFunc: taskFunc,
+		contexts:  make(map[string]*PreheatingContext),
+		taskFunc:  taskFunc,
+		shouldRun: shouldRun,
+		onSkip:    onSkip,
 	}
 }
 
@@ -83,6 +87,13 @@ func (s *PreheatingScheduler) ScheduleTask(recipeName string) {
 			_, taskExist := s.contexts[recipeName]
 			s.mutex.Unlock()
 			if !taskExist {
+				return
+			}
+
+			if s.shouldRun != nil && !s.shouldRun(recipeName) {
+				if s.onSkip != nil {
+					s.onSkip(recipeName)
+				}
 				return
 			}
 

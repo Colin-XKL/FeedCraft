@@ -32,7 +32,9 @@ sidebar:
   - **API URL**: 你的 SearXNG 实例基础 URL（例如 `http://my-searxng.com`）。`/search` 路径会自动追加。
   - **Engines**: (可选) 逗号分隔的搜索引擎列表（例如 `google,bing`）。
 
-> **提示：** 在保存之前，你可以使用 **检查连接 (Check Connection)** 按钮来验证与提供商的连接。
+:::tip
+在保存之前，你可以使用 **检查连接 (Check Connection)** 按钮来验证与提供商的连接。
+:::
 
 ## 依赖服务 (Dependency Services)
 
@@ -50,7 +52,9 @@ sidebar:
 
 你可以使用 **检查连接 (Check Connection)** 按钮来验证 FeedCraft 是否可以成功连接到配置的搜索提供商。
 
-> **注意：** 如需监控内部 Craft 依赖关系（Recipes, Flows, Atoms），请使用 [Craft 依赖检查](/zh/guides/advanced/tools) 工具。
+:::note
+如需监控内部 Craft 依赖关系（Recipes, Flows, Atoms），请使用 [Craft 依赖检查](/zh/guides/advanced/tools) 工具。
+:::
 
 ## 高级配置
 
