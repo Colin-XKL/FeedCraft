@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/feeds"
-	"strings"
 	"github.com/samber/lo"
 	"github.com/samber/lo/parallel"
+	"strings"
 
 	"net/http"
 	"time"

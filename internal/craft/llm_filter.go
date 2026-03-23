@@ -2,10 +2,10 @@ package craft
 
 import (
 	"fmt"
-	"strings"
 	"github.com/gorilla/feeds"
 	"github.com/samber/lo"
 	"github.com/samber/lo/parallel"
+	"strings"
 )
 
 // llm-filter generic implementation
