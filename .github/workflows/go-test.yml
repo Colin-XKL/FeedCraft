@@ -29,4 +29,6 @@ jobs:
         run: go build -v ./...
 
       - name: Test
+        env:
+          FC_REDIS_URI: "redis://localhost:6379"
         run: go test -v ./...
