@@ -63,7 +63,8 @@ func OptionIgnoreAdvertorial(prompt string) CraftOption {
 			if len(content) == 0 {
 				content = itm.Description
 			}
-			return CheckIfAdvertorial(content, prompt)
+			textToEvaluate := fmt.Sprintf("Title: %s\n\nContent:\n%s", itm.Title, content)
+			return CheckIfAdvertorial(textToEvaluate, prompt)
 		})
 
 		// 2. 同步过滤

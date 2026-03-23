@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/feeds"
+	"strings"
 	"github.com/samber/lo"
 	"github.com/samber/lo/parallel"
 
@@ -63,7 +64,8 @@ func OptionIgnoreAdvertorial(prompt string) CraftOption {
 			if len(content) == 0 {
 				content = itm.Description
 			}
-			textToEvaluate := fmt.Sprintf("Title: %s\n\nContent:\n%s", itm.Title, content)
+			safeContent := strings.ReplaceAll(content, "```", "")
+			textToEvaluate := fmt.Sprintf("```markdown\nTitle: %s\n\nContent:\n%s\n```", itm.Title, safeContent)
 			return CheckIfAdvertorial(textToEvaluate, prompt)
 		})
 
