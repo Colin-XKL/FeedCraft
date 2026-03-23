@@ -40,6 +40,12 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm --dir web/admin install --frozen-lockfile
 
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: 3.x
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Run format and lint workflow
         run: task fix
 
