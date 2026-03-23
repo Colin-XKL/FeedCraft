@@ -9,7 +9,8 @@ function normalizeBaseUrl(): string {
     return apiBaseUrl.replace(/\/$/, '');
   }
 
-  return `${window.location.origin}${apiBaseUrl}`.replace(/\/$/, '');
+  const normalizedApiBaseUrl = apiBaseUrl.startsWith('/') ? apiBaseUrl : `/${apiBaseUrl}`;
+  return `${window.location.origin}${normalizedApiBaseUrl}`.replace(/\/$/, '');
 }
 
 export default function buildPublicFeedUrl(path: string): string {
