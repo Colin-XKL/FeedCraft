@@ -3,9 +3,10 @@ package util
 import (
 	"FeedCraft/internal/constant"
 	"context"
+	"fmt"
 	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
-	"log"
+
 	"time"
 )
 
@@ -13,28 +14,38 @@ import (
 func GetRedisClient() *redis.Client {
 	envClient := GetEnvClient()
 	if envClient == nil {
-		log.Fatalf("get env client error.")
 		return nil
 	}
 	redisURI := envClient.GetString("REDIS_URI")
+	if redisURI == "" {
+		return nil
+	}
 
 	opts, err := redis.ParseURL(redisURI)
 	if err != nil {
-		log.Fatalf("parse redis uri fail. err:%v", err)
+		logrus.Warnf("parse redis uri fail. err:%v", err)
+		return nil
 	}
 	rdb := redis.NewClient(opts)
 	if rdb == nil {
-		log.Fatalf("create redis client error.")
+		logrus.Warn("create redis client error.")
+		return nil
 	}
 	return rdb
 }
 
 func CacheSetString(key string, value string, ttl time.Duration) error {
 	rdb := GetRedisClient()
+	if rdb == nil {
+		return fmt.Errorf("redis client not configured")
+	}
 	return rdb.Set(context.Background(), key, value, ttl).Err()
 }
 func CacheGetString(key string) (string, error) {
 	rdb := GetRedisClient()
+	if rdb == nil {
+		return "", fmt.Errorf("redis client not configured")
+	}
 	return rdb.Get(context.Background(), key).Result()
 }
 
