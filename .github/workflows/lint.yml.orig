@@ -36,9 +36,6 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: web/admin/pnpm-lock.yaml
 
-      - name: Install task
-        uses: arduino/setup-task@v2
-
       - name: Install frontend dependencies
         run: pnpm --dir web/admin install --frozen-lockfile
 
