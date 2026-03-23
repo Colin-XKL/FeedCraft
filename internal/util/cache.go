@@ -3,38 +3,47 @@ package util
 import (
 	"FeedCraft/internal/constant"
 	"context"
+	"errors"
 	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
-	"log"
 	"time"
 )
 
-// GetRedisClient 返回一个非空的redis client
-func GetRedisClient() *redis.Client {
+// GetRedisClient 返回一个redis client或错误
+func GetRedisClient() (*redis.Client, error) {
 	envClient := GetEnvClient()
 	if envClient == nil {
-		log.Fatalf("get env client error.")
-		return nil
+		return nil, errors.New("get env client error")
 	}
 	redisURI := envClient.GetString("REDIS_URI")
+	if redisURI == "" {
+		return nil, errors.New("REDIS_URI not configured")
+	}
 
 	opts, err := redis.ParseURL(redisURI)
 	if err != nil {
-		log.Fatalf("parse redis uri fail. err:%v", err)
+		return nil, err
 	}
 	rdb := redis.NewClient(opts)
 	if rdb == nil {
-		log.Fatalf("create redis client error.")
+		return nil, errors.New("create redis client error")
 	}
-	return rdb
+	return rdb, nil
 }
 
 func CacheSetString(key string, value string, ttl time.Duration) error {
-	rdb := GetRedisClient()
+	rdb, err := GetRedisClient()
+	if err != nil {
+		return err
+	}
 	return rdb.Set(context.Background(), key, value, ttl).Err()
 }
+
 func CacheGetString(key string) (string, error) {
-	rdb := GetRedisClient()
+	rdb, err := GetRedisClient()
+	if err != nil {
+		return "", err
+	}
 	return rdb.Get(context.Background(), key).Result()
 }
 
