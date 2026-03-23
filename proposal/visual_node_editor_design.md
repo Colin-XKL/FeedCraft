@@ -21,7 +21,7 @@
   - 对应后端的 `FeedProvider`。如：RSS 抓取节点、网页转换节点、搜索节点。
   - 视觉特征：只有输出端口（Output Port），没有输入端口。
 - **加工节点 (Processor Node)**：
-  - 对应后端的 `FeedProcessor` (Atom-Craft)。如：翻译节点、AI摘要节点、去广告节点。
+  - 对应后端的 `FeedProcessor` (Atom-Craft)。如：翻译节点、AI 摘要节点、去广告节点。
   - 视觉特征：同时具有输入和输出端口（Input & Output Ports）。
 - **聚合/结构节点 (Router/Struct Node)**：
   - 负责多流合并或条件分发。如：Topic 中的合并去重器 (Merge Aggregator)。
