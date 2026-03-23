@@ -1,7 +1,6 @@
 package craft
 
 import (
-	"fmt"
 	"github.com/gorilla/feeds"
 	"github.com/samber/lo"
 	"github.com/samber/lo/parallel"
@@ -44,8 +43,7 @@ func OptionLLMFilterGeneric(condition string) CraftOption {
 			if len(content) == 0 {
 				content = itm.Description
 			}
-			textToEvaluate := fmt.Sprintf("Title: %s\n\nContent:\n%s", itm.Title, content)
-			match, err := CheckConditionWithGenericPrompt(textToEvaluate, condition)
+			match, err := CheckConditionWithGenericPrompt(content, condition)
 			if err != nil {
 				return false
 			}
