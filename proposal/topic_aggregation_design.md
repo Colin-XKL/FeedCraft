@@ -13,11 +13,13 @@
 为构建此主题，数据的获取与处理流程如下：
 
 1. **多渠道数据获取 (Multi-channel Sourcing)**：
+
    - **渠道 A (官方 RSS)**: 从官方网站直接获取 RSS。（部分可能需要 `fulltext` 预处理）。
    - **渠道 B (关键词搜索)**: 使用 `search-to-rss` 模块获取相关最新文章。
    - **渠道 C (网页抓取)**: 使用 `html-to-rss` 功能将未提供 RSS 的博客转换为 RSS。
 
 2. **内容合并与极简去重 (Aggregation & MVP De-duplication)**：
+
    - 将上述渠道获取到的所有文章内容汇总合并。
    - **基础去重**: 仅基于文章 URL 或 `OriginalID` 进行精确的内存去重。（_注：更高级的文本相似度、LLM 语义去重策略目前已延后至未来实现，详见 `proposal/future/advanced_deduplication.md`_）。
 

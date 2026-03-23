@@ -268,8 +268,13 @@
 
   const copyPublicUrl = async () => {
     if (!detail.value) return;
-    await navigator.clipboard.writeText(publicUrl.value);
-    Message.success(t('topic.copyLink'));
+    try {
+      await navigator.clipboard.writeText(publicUrl.value);
+      Message.success(t('topic.copyLink'));
+    } catch (err) {
+      console.error(err);
+      Message.error(t('topic.copyLinkFailed'));
+    }
   };
 
   const buildExecutionDetails = (

@@ -26,8 +26,7 @@ jobs:
         with:
           version: latest
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v3
+      - uses: pnpm/action-setup@v3
         with:
           version: 9
 
@@ -37,13 +36,11 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: web/admin/pnpm-lock.yaml
 
+      - name: Install Task
+        run: sudo sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
+
       - name: Install frontend dependencies
         run: pnpm --dir web/admin install --frozen-lockfile
-
-      - name: Install Task
-        uses: arduino/setup-task@v2
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run format and lint workflow
         run: task fix
