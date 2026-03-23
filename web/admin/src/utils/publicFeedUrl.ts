@@ -5,14 +5,7 @@ function normalizeBaseUrl(): string {
     return window.location.origin;
   }
 
-  if (/^https?:\/\//.test(apiBaseUrl)) {
-    return apiBaseUrl.replace(/\/$/, '');
-  }
-
-  const normalizedApiBaseUrl = apiBaseUrl.startsWith('/')
-    ? apiBaseUrl
-    : `/${apiBaseUrl}`;
-  return `${window.location.origin}${normalizedApiBaseUrl}`.replace(/\/$/, '');
+  return new URL(apiBaseUrl, window.location.origin).href.replace(/\/$/, '');
 }
 
 export default function buildPublicFeedUrl(path: string): string {
