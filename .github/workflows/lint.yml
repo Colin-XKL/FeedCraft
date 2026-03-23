@@ -36,6 +36,9 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: web/admin/pnpm-lock.yaml
 
+      - name: Install Task
+        run: sudo sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
+
       - name: Install frontend dependencies
         run: pnpm --dir web/admin install --frozen-lockfile
 

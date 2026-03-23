@@ -25,6 +25,7 @@ export default {
   'topic.aggregator': 'Aggregation',
   'topic.publicUrl': 'Subscription URL',
   'topic.copyLink': 'Copy Link',
+  'topic.copyLinkFailed': 'Failed to copy link',
   'topic.viewFeed': 'Open Feed',
   'topic.viewDetails': 'View Details',
   'topic.editAction': 'Edit',
