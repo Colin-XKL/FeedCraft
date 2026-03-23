@@ -40,6 +40,9 @@ jobs:
       - name: Install frontend dependencies
         run: pnpm --dir web/admin install --frozen-lockfile
 
+      - name: Install Task
+        uses: arduino/setup-task@v2
+
       - name: Run format and lint workflow
         run: task fix
 
