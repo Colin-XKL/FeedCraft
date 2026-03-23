@@ -26,14 +26,18 @@ jobs:
         with:
           version: latest
 
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: "pnpm"
           cache-dependency-path: web/admin/pnpm-lock.yaml
 
-      - name: Enable pnpm
-        run: corepack enable
+      - name: Install Task
+        run: sudo sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
 
       - name: Install frontend dependencies
         run: pnpm --dir web/admin install --frozen-lockfile
