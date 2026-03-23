@@ -9,7 +9,9 @@ function normalizeBaseUrl(): string {
     return apiBaseUrl.replace(/\/$/, '');
   }
 
-  const normalizedApiBaseUrl = apiBaseUrl.startsWith('/') ? apiBaseUrl : `/${apiBaseUrl}`;
+  const normalizedApiBaseUrl = apiBaseUrl.startsWith('/')
+    ? apiBaseUrl
+    : `/${apiBaseUrl}`;
   return `${window.location.origin}${normalizedApiBaseUrl}`.replace(/\/$/, '');
 }
 
