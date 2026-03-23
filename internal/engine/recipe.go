@@ -21,7 +21,7 @@ type RecipeFeed struct {
 // Fetch implements the FeedProvider interface.
 func (r *RecipeFeed) Fetch(ctx context.Context) (*model.CraftFeed, error) {
 	if r.Input == nil {
-		return nil, nil
+		return &model.CraftFeed{}, nil
 	}
 
 	rawFeed, err := r.Input.Fetch(ctx)
@@ -29,7 +29,7 @@ func (r *RecipeFeed) Fetch(ctx context.Context) (*model.CraftFeed, error) {
 		return nil, err
 	}
 	if rawFeed == nil {
-		return nil, nil
+		return &model.CraftFeed{}, nil
 	}
 	if r.Processor == nil {
 		return rawFeed, nil
