@@ -28,6 +28,9 @@ func (r *RecipeFeed) Fetch(ctx context.Context) (*model.CraftFeed, error) {
 	if err != nil {
 		return nil, err
 	}
+	if rawFeed == nil {
+		return nil, nil
+	}
 	if r.Processor == nil {
 		return rawFeed, nil
 	}
