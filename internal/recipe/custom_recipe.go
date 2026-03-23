@@ -59,6 +59,11 @@ func ProcessRecipeByIDWithTrigger(ctx context.Context, recipeId string, trigger 
 		})
 		return nil, err
 	}
+
+	if processedCraftFeed == nil {
+		return &feeds.Feed{}, nil
+	}
+
 	processedFeed := processedCraftFeed.ToFeedsFeed()
 
 	observability.Report(observability.ExecutionEvent{
