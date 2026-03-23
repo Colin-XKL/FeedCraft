@@ -42,6 +42,8 @@ jobs:
 
       - name: Install Task
         uses: arduino/setup-task@v2
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run format and lint workflow
         run: task fix
