@@ -84,9 +84,13 @@ func (p *HtmlParser) Parse(data []byte) (*model.CraftFeed, error) {
 		// Content (rich HTML)
 		if p.Config.Content != "" {
 			sel := getSelection(p.Config.Content)
-			htmlStr, err := sel.Html()
-			if err == nil && htmlStr != "" {
-				item.Content = htmlStr
+			html, err := sel.Html()
+			if err != nil {
+				// Log error but don't fail, just leave content empty
+				// logrus.Warnf("Failed to extract content for item: %v", err)
+				item.Content = ""
+			} else {
+				item.Content = html
 			}
 		}
 

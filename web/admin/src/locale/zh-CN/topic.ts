@@ -24,7 +24,6 @@ export default {
   'topic.aggregator': '聚合规则',
   'topic.publicUrl': '订阅地址',
   'topic.copyLink': '复制链接',
-  'topic.copyLinkFailed': '复制链接失败',
   'topic.viewFeed': '查看订阅',
   'topic.viewDetails': '查看详情',
   'topic.editAction': '编辑',
