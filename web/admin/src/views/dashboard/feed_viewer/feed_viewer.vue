@@ -45,6 +45,7 @@
   import XHeader from '@/components/header/x-header.vue';
   import { useI18n } from 'vue-i18n';
   import { useRoute } from 'vue-router';
+  import { normalizeBaseUrl } from '@/utils/publicFeedUrl';
 
   const { t } = useI18n();
   const route = useRoute();
@@ -52,14 +53,44 @@
   const feedUrl = ref('');
   const feedContent = ref<any>(null);
   const isLoading = ref(false);
-  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
   async function fetchFeed() {
     if (!feedUrl.value) return;
     isLoading.value = true;
-    const requestUrl = `${baseUrl}/craft/proxy?input_url=${encodeURIComponent(
-      feedUrl.value
-    )}`;
+
+    let requestUrl = feedUrl.value;
+
+    try {
+      let isInternal = false;
+      if (feedUrl.value.startsWith('/')) {
+        isInternal = true;
+      } else {
+        const urlObj = new URL(feedUrl.value, window.location.origin);
+        if (urlObj.origin === window.location.origin) {
+          isInternal = true;
+        } else {
+          // If the API base URL is fully qualified and matches the input URL origin, consider it internal
+          const apiBase = normalizeBaseUrl();
+          if (apiBase) {
+            const apiBaseObj = new URL(apiBase, window.location.origin);
+            if (urlObj.origin === apiBaseObj.origin) {
+              isInternal = true;
+            }
+          }
+        }
+      }
+
+      if (!isInternal) {
+        // If it's an external URL, wrap it in our proxy
+        const prefix = normalizeBaseUrl();
+        requestUrl = `${prefix}/craft/proxy?input_url=${encodeURIComponent(feedUrl.value)}`;
+      }
+    } catch (e) {
+      // Invalid URL format, default to using proxy
+      const prefix = normalizeBaseUrl();
+      requestUrl = `${prefix}/craft/proxy?input_url=${encodeURIComponent(feedUrl.value)}`;
+    }
+
     try {
       const parser = new Parser();
       const resp = await fetch(requestUrl);
