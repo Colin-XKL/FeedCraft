@@ -83,12 +83,16 @@
       if (!isInternal) {
         // If it's an external URL, wrap it in our proxy
         const prefix = normalizeBaseUrl();
-        requestUrl = `${prefix}/craft/proxy?input_url=${encodeURIComponent(feedUrl.value)}`;
+        requestUrl = `${prefix}/craft/proxy?input_url=${encodeURIComponent(
+          feedUrl.value
+        )}`;
       }
     } catch (e) {
       // Invalid URL format, default to using proxy
       const prefix = normalizeBaseUrl();
-      requestUrl = `${prefix}/craft/proxy?input_url=${encodeURIComponent(feedUrl.value)}`;
+      requestUrl = `${prefix}/craft/proxy?input_url=${encodeURIComponent(
+        feedUrl.value
+      )}`;
     }
 
     try {
