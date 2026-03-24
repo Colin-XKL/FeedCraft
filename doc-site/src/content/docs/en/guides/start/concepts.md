@@ -51,6 +51,7 @@ Navigate to **Worktable > Custom Recipe** to manage all your created recipes.
 **Topic Feed** is an aggregation unit that combines multiple input sources (like `RawFeed`s or other `Recipe`s) into a single, unified RSS feed. It solves information overload by bringing disparate sources into one place.
 
 You can configure processors for a Topic Feed to automatically handle the combined data:
+
 - **Deduplicate**: Removes duplicate articles across sources.
 - **Sort**: Orders the combined articles by publication date.
 - **Limit**: Keeps only the most recent items.
