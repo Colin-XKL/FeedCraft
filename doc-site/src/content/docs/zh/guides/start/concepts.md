@@ -45,3 +45,18 @@ sidebar:
 - **输入 URL：** `https://news.ycombinator.com/rss`
 - **处理器：** `digest-and-translate` (上面创建的工作流)
 - **结果：** 你会得到一个新的 FeedCraft URL，订阅它即可获得带全文、摘要和翻译的 Hacker News。
+
+## 主题订阅 (Topic Feed)
+
+**Topic Feed** 是一个聚合单元，能够将多个输入源（如原始 Feed 或其他配方 `Recipe`）组合成一个统一的 RSS 订阅源。它通过集中管理分散的信息来源，有效解决信息过载问题。
+
+你可以为主题订阅配置聚合器来自动处理合并后的数据：
+- **去重 (Deduplicate)**：移除跨来源的重复文章。
+- **排序 (Sort)**：按发布日期对合并的文章进行排序。
+- **限制 (Limit)**：仅保留最新发布的指定数量项目。
+
+**管理主题订阅：**
+在管理后台导航至 **工作台 (Worktable) > 主题订阅 (Topic Feed)** 页面创建和管理主题。
+
+- **创建**：定义标题，添加多个输入 URI（例如 `feedcraft://recipe/my-recipe` 或外部 RSS 链接），并配置你的聚合规则。
+- **公开访问**：你的新主题订阅源可以在无需认证的情况下通过 `http://your-feedcraft-instance/topic/{id}` 访问。
