@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, onBeforeUnmount } from 'vue';
+  import { ref, onBeforeUnmount, watch } from 'vue';
 
   const props = defineProps({
     htmlContent: {

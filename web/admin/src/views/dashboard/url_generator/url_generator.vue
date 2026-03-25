@@ -139,7 +139,7 @@
       : selectedCraft.value;
     const baseUrl = import.meta.env.VITE_API_BASE_URL ?? window.location.origin;
     resultUrl.value = `${baseUrl}/craft/${currentSelectedCraft}?input_url=${encodeURIComponent(
-      inputUrl.value
+      inputUrl.value,
     )}`;
     copyButtonText.value = t('urlGenerator.copyUrl');
   };
@@ -151,8 +151,8 @@
         .then(() => {
           copyButtonText.value = t('urlGenerator.copied');
         })
-        .catch(() => {
-          Message.error(t('urlGenerator.parseError'));
+        .catch((err) => {
+          console.error('无法复制文本: ', err);
         });
     }
   };

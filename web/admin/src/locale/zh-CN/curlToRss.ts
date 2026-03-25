@@ -1,11 +1,11 @@
 export default {
   'curlToRss.title': 'Curl 转 RSS',
   'curlToRss.description':
-    '通过字段提取规则和可选模板，从任何 JSON API 生成 RSS 订阅源。',
+    '通过定义解析规则，从任何 JSON API 生成 RSS 订阅源。',
   'curlToRss.step.requestConfig': '请求配置',
   'curlToRss.step.requestConfig.desc': '配置 JSON 源',
   'curlToRss.step.parsingRules': '解析规则',
-  'curlToRss.step.parsingRules.desc': '定义字段提取和结果模板',
+  'curlToRss.step.parsingRules.desc': '定义 jq 选择器',
   'curlToRss.step.feedMetadata': 'Feed 元数据',
   'curlToRss.step.feedMetadata.desc': '设置订阅详情',
   'curlToRss.step.saveRecipe': '保存配方',
@@ -22,23 +22,14 @@ export default {
   'curlToRss.step1.fetchAndNext': '获取并下一步',
   'curlToRss.step2.responseJson': '响应 JSON',
   'curlToRss.step2.alert':
-    '先用 jq 选择器提取字段，再按需用模板加工最终结果。列表选择器支持 .data.items 或 .data.items[]。',
+    '定义选择器以提取 Feed 条目。使用点号表示法 (例如 <code>.data.items</code>)。',
   'curlToRss.step2.iteration': '迭代',
   'curlToRss.step2.itemsIterator': '条目迭代器 (例如 .data.items 或 .items[])',
-  'curlToRss.step2.itemFields': '条目字段',
-  'curlToRss.step2.titleSelector': '标题提取规则',
-  'curlToRss.step2.titleTemplate': '标题模板（可选）',
-  'curlToRss.step2.linkSelector': '链接提取规则',
-  'curlToRss.step2.linkTemplate': '链接模板（可选）',
-  'curlToRss.step2.dateSelector': '日期提取规则',
-  'curlToRss.step2.dateTemplate': '日期模板（可选）',
-  'curlToRss.step2.contentSelector': '内容/摘要提取规则',
-  'curlToRss.step2.contentTemplate': '内容/摘要模板（可选）',
-  'curlToRss.step2.templateHelpTitle': '模板说明',
-  'curlToRss.step2.templateHelpDesc':
-    '提取规则负责从当前条目取值，模板负责拼接、补全或清理最终文本。模板可访问当前条目对象和已提取字段。',
-  'curlToRss.step2.templateExamples':
-    '示例：\n链接拼接：https://some-website.com/article/{{ .Item.id }}\n清理标题：{{ .Fields.Title | trimSpace }}\n默认摘要：{{ default .Fields.Description "暂无摘要" }}',
+  'curlToRss.step2.itemFields': '条目字段 (相对于迭代器)',
+  'curlToRss.step2.titleSelector': '标题选择器',
+  'curlToRss.step2.linkSelector': '链接选择器',
+  'curlToRss.step2.dateSelector': '日期选择器',
+  'curlToRss.step2.contentSelector': '内容/描述选择器',
   'curlToRss.step2.previewResults': '预览结果 ({count})',
   'curlToRss.step2.previewPlaceholder': '预览结果将出现在这里',
   'curlToRss.step2.previewPlaceholder.help': '请配置上方选择器并点击“运行预览”',
@@ -86,13 +77,7 @@ export default {
   'curlToRss.placeholder.curl': 'curl -X POST ...',
   'curlToRss.placeholder.items': '.items',
   'curlToRss.placeholder.title': '.title',
-  'curlToRss.placeholder.titleTemplate': '{{ .Fields.Title | trimSpace }}',
   'curlToRss.placeholder.link': '.url',
-  'curlToRss.placeholder.linkTemplate':
-    'https://some-website.com/article/{{ .Item.id }}',
   'curlToRss.placeholder.date': '.created_at',
-  'curlToRss.placeholder.dateTemplate': '{{ .Fields.Date }}',
   'curlToRss.placeholder.content': '.content',
-  'curlToRss.placeholder.contentTemplate':
-    '{{ default .Fields.Description "暂无摘要" }}',
 };

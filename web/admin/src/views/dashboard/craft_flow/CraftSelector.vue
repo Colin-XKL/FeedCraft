@@ -37,7 +37,7 @@
   import MultiCraftSelector from './components/MultiCraftSelector.vue';
   import CraftPickerModal from './components/CraftPickerModal.vue';
 
-  defineProps({
+  const props = defineProps({
     modelValue: {
       type: [String, Array],
       default: () => [],

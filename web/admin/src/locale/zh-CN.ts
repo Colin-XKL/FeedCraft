@@ -6,7 +6,6 @@ import localeMenu from './zh-CN/menu';
 import localeCraftAtom from './zh-CN/craftAtom';
 import localeCraftFlow from './zh-CN/craftFlow';
 import localeCustomRecipe from './zh-CN/customRecipe';
-import localeTopic from './zh-CN/topic';
 import localeAllCraftList from './zh-CN/allCraftList';
 import localeFeedCompare from './zh-CN/feedCompare';
 import localeFeedViewer from './zh-CN/feedViewer';
@@ -17,7 +16,6 @@ import localeCurlToRss from './zh-CN/curlToRss';
 import localeSearchToRss from './zh-CN/searchToRss';
 import localeDependencyService from './zh-CN/dependencyService';
 import localeHealth from './zh-CN/health';
-import localeObservability from './zh-CN/observability';
 
 export default {
   ...localeSettings,
@@ -27,7 +25,6 @@ export default {
   ...localeCraftAtom,
   ...localeCraftFlow,
   ...localeCustomRecipe,
-  ...localeTopic,
   ...localeAllCraftList,
   ...localeFeedCompare,
   ...localeFeedViewer,
@@ -38,5 +35,4 @@ export default {
   ...localeSearchToRss,
   ...localeDependencyService,
   ...localeHealth,
-  ...localeObservability,
 };

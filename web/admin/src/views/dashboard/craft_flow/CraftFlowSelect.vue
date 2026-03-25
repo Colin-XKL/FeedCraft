@@ -13,7 +13,7 @@
   import CraftSelector from './CraftSelector.vue';
 
   const { t } = useI18n();
-  defineProps<{
+  const props = defineProps<{
     modelValue: string[] | string;
     mode: 'single' | 'multiple';
   }>();

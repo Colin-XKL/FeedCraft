@@ -49,7 +49,7 @@
           :content="
             t('customRecipe.status.activeTooltip', {
               time: dayjs(record.last_accessed_at).format(
-                'YYYY-MM-DD HH:mm:ss'
+                'YYYY-MM-DD HH:mm:ss',
               ),
             })
           "
@@ -114,7 +114,7 @@
           <a-button type="outline" @click="previewRecipe(record)">{{
             t('customRecipe.preview')
           }}</a-button>
-          <a-link :href="buildRecipeFeedUrl(record?.id)" target="_blank">{{
+          <a-link :href="`${baseUrl}/recipe/${record?.id}`" target="_blank">{{
             t('customRecipe.link')
           }}</a-link>
           <a-tooltip :content="t('customRecipe.copyLink')">
@@ -137,8 +137,8 @@
         editing
           ? t('customRecipe.editModalTitle.edit')
           : quickCreate
-          ? t('customRecipe.quickCreateRSS')
-          : t('customRecipe.editModalTitle.create')
+            ? t('customRecipe.quickCreateRSS')
+            : t('customRecipe.editModalTitle.create')
       "
     >
       <a-form
@@ -273,11 +273,12 @@
   import { useI18n } from 'vue-i18n';
   import { useRouter } from 'vue-router';
   import { useClipboard } from '@vueuse/core';
-  import buildPublicFeedUrl from '@/utils/publicFeedUrl';
   import CraftSelector from '../craft_flow/CraftSelector.vue';
 
   const { t } = useI18n();
   const router = useRouter();
+
+  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
   const recipes = ref<CustomRecipe[]>([]);
   const showModal = ref(false);
@@ -307,8 +308,6 @@
   });
 
   const { copy, copied } = useClipboard();
-  const buildRecipeFeedUrl = (id?: string) =>
-    buildPublicFeedUrl(`/recipe/${id || ''}`);
 
   const handleCopyConfig = async () => {
     try {
@@ -320,8 +319,15 @@
   };
 
   const handleCopyLink = async (id: string) => {
+    const fullBaseUrl = baseUrl || window.location.origin;
+    let url = '';
+    if (fullBaseUrl.startsWith('http')) {
+      url = `${fullBaseUrl}/recipe/${id}`;
+    } else {
+      url = `${window.location.origin}${fullBaseUrl}/recipe/${id}`;
+    }
     try {
-      await copy(buildRecipeFeedUrl(id));
+      await copy(url);
       Message.success(t('customRecipe.copied'));
     } catch (e: any) {
       Message.error(t('customRecipe.copyFailed', { msg: e.message || e }));
@@ -508,7 +514,7 @@
   };
 
   const previewRecipe = (record: CustomRecipe) => {
-    const feedUrl = buildRecipeFeedUrl(record.id);
+    const feedUrl = `${baseUrl}/recipe/${record.id}`;
     router.push({ name: 'FeedViewer', query: { url: feedUrl } });
   };
 

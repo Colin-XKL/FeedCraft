@@ -66,7 +66,7 @@
   const visible = ref(false);
 
   const hasSelection = computed(
-    () => props.modelValue && props.modelValue.length > 0
+    () => props.modelValue && props.modelValue.length > 0,
   );
 
   const openModal = () => {

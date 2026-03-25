@@ -24,7 +24,6 @@ sidebar:
 ### 支持的提供商
 
 - **LiteLLM / OpenAI Compatible**
-
   - **API URL**: 搜索服务的 API 端点（例如 `http://litellm-proxy:4000/v1/search`）。
   - **API Key**: 你的 API 密钥。（留空以保留现有密钥）
   - **Tool Name**: 特定函数调用工具名称（如果需要，例如某些 Agent 的 `google_search`）。工具名称将追加到 API URL 之后（例如 `.../v1/search/google_search`）。
@@ -33,9 +32,7 @@ sidebar:
   - **API URL**: 你的 SearXNG 实例基础 URL（例如 `http://my-searxng.com`）。`/search` 路径会自动追加。
   - **Engines**: (可选) 逗号分隔的搜索引擎列表（例如 `google,bing`）。
 
-:::tip
-在保存之前，你可以使用 **检查连接 (Check Connection)** 按钮来验证与提供商的连接。
-:::
+> **提示：** 在保存之前，你可以使用 **检查连接 (Check Connection)** 按钮来验证与提供商的连接。
 
 ## 依赖服务 (Dependency Services)
 
@@ -53,9 +50,7 @@ sidebar:
 
 你可以使用 **检查连接 (Check Connection)** 按钮来验证 FeedCraft 是否可以成功连接到配置的搜索提供商。
 
-:::note
-如需监控内部 Craft 依赖关系（Recipes, Flows, Atoms），请使用 [Craft 依赖检查](/zh/guides/advanced/tools) 工具。
-:::
+> **注意：** 如需监控内部 Craft 依赖关系（Recipes, Flows, Atoms），请使用 [Craft 依赖检查](/zh/guides/advanced/tools) 工具。
 
 ## 高级配置
 
@@ -99,4 +94,4 @@ services:
     restart: unless-stopped
 ```
 
-服务默认监听在 80 端口，你也可以在同一网络下的其他容器中，使用 `http://app.feed-craft/xxx` 这样来进行访问(比如 RSS 阅读器中通过这种方式来走内网通信订阅)。
+服务默认监听在 80 端口，你也可以在同一网络下的其他容器中，使用 `http://app.feed-craft/xxx` 这样来进行访问(比如RSS 阅读器中通过这种方式来走内网通信订阅)。

@@ -58,15 +58,6 @@ const TOOLS: AppRouteRecordRaw = {
         requiresAuth: true,
       },
     },
-    {
-      path: 'observability',
-      name: 'Observability',
-      component: () => import('@/views/dashboard/observability/index.vue'),
-      meta: {
-        locale: 'menu.observability',
-        requiresAuth: true,
-      },
-    },
   ],
 };
 

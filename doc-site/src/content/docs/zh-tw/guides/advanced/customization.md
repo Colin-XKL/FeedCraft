@@ -24,7 +24,6 @@ sidebar:
 ### 支援的供應商
 
 - **LiteLLM / OpenAI Compatible**
-
   - **API URL**: 搜尋服務的 API 端點（例如 `http://litellm-proxy:4000/v1/search`）。
   - **API Key**: 你的 API 金鑰。（留空以保留現有金鑰）
   - **Tool Name**: 特定函式調用工具名稱（如果需要，例如某些 Agent 的 `google_search`）。工具名稱將追加到 API URL 之後（例如 `.../v1/search/google_search`）。
@@ -33,9 +32,7 @@ sidebar:
   - **API URL**: 你的 SearXNG 實例基礎 URL（例如 `http://my-searxng.com`）。`/search` 路徑會自動追加。
   - **Engines**: (可選) 逗號分隔的搜尋引擎列表（例如 `google,bing`）。
 
-:::tip
-在保存之前，你可以使用 **檢查連線 (Check Connection)** 按鈕來驗證與供應商的連線。
-:::
+> **提示：** 在保存之前，你可以使用 **檢查連線 (Check Connection)** 按鈕來驗證與供應商的連線。
 
 ## 依賴服務 (Dependency Services)
 
@@ -53,9 +50,7 @@ sidebar:
 
 你可以使用 **檢查連線 (Check Connection)** 按鈕來驗證 FeedCraft 是否可以成功連線到配置的搜尋供應商。
 
-:::note
-如需監控內部 Craft 依賴關係（Recipes, Flows, Atoms），請使用 [Craft 依賴檢查](/zh-tw/guides/advanced/tools) 工具。
-:::
+> **注意：** 如需監控內部 Craft 依賴關係（Recipes, Flows, Atoms），請使用 [Craft 依賴檢查](/zh-tw/guides/advanced/tools) 工具。
 
 ## 進階配置
 

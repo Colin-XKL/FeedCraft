@@ -2,14 +2,14 @@ package source
 
 import (
 	"FeedCraft/internal/config"
-	"FeedCraft/internal/model"
 	"context"
+	"github.com/mmcdole/gofeed"
 )
 
-// Source is the top-level interface for all source providers.
-// Its responsibility is to fetch and parse upstream data into a CraftFeed.
+// Source is the top-level interface for all generators.
+// Its sole responsibility is to produce a standard feed.
 type Source interface {
-	Fetch(ctx context.Context) (*model.CraftFeed, error)
+	Generate(ctx context.Context) (*gofeed.Feed, error)
 	BaseURL() string
 }
 

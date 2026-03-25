@@ -12,13 +12,9 @@ export interface JsonParseReq {
   json_content: string;
   list_selector: string;
   title_selector: string;
-  title_template: string;
   link_selector: string;
-  link_template: string;
   date_selector: string;
-  date_template: string;
   content_selector: string;
-  content_template: string;
 }
 
 export interface ParsedItem {
@@ -34,15 +30,8 @@ export interface SearchFetchReq {
   enhanced_mode?: boolean;
 }
 
-export interface SearchPreviewItem {
-  title: string;
-  link: string;
-  date: string;
-  description: string;
-}
-
 export function parseCurl(
-  curlCommand: string
+  curlCommand: string,
 ): Promise<APIResponse<JsonFetchReq>> {
   return axios
     .post<APIResponse<JsonFetchReq>>('/api/admin/tools/json/parse_curl', {
@@ -58,19 +47,16 @@ export function fetchJson(req: JsonFetchReq): Promise<APIResponse<string>> {
 }
 
 export function parseJsonRss(
-  req: JsonParseReq
+  req: JsonParseReq,
 ): Promise<APIResponse<ParsedItem[]>> {
   return axios
     .post<APIResponse<ParsedItem[]>>('/api/admin/tools/json/parse', req)
     .then((res) => res.data);
 }
 export function previewSearch(
-  req: SearchFetchReq
-): Promise<APIResponse<SearchPreviewItem[]>> {
+  req: SearchFetchReq,
+): Promise<APIResponse<any[]>> {
   return axios
-    .post<APIResponse<SearchPreviewItem[]>>(
-      '/api/admin/tools/search/preview',
-      req
-    )
+    .post<APIResponse<any[]>>('/api/admin/tools/search/preview', req)
     .then((res) => res.data);
 }

@@ -24,7 +24,6 @@ Navigate to **Settings > Search Provider** in the admin dashboard.
 ### Supported Providers
 
 - **LiteLLM / OpenAI Compatible**
-
   - **API URL**: The search endpoint of your provider (e.g., `http://litellm-proxy:4000/v1/search`).
   - **API Key**: Your API key. (Leave empty to keep existing key)
   - **Tool Name**: The specific function calling tool name if required (e.g., `google_search` for some agents). The tool name is appended to the API URL (e.g. `.../v1/search/google_search`).
@@ -33,9 +32,7 @@ Navigate to **Settings > Search Provider** in the admin dashboard.
   - **API URL**: The base URL of your SearXNG instance (e.g., `http://my-searxng.com`). The `/search` path is automatically appended.
   - **Engines**: (Optional) Comma-separated list of engines to use (e.g., `google,bing`).
 
-:::tip
-You can use the **Check Connection** button to verify connectivity with your provider before saving.
-:::
+> **Tip:** You can use the **Check Connection** button to verify connectivity with your provider before saving.
 
 ## Dependency Services
 
@@ -53,9 +50,7 @@ Use this dashboard to troubleshoot connectivity issues if features like "Enhance
 
 You can use the **Check Connection** button to verify if FeedCraft can successfully connect to the search provider with the provided credentials.
 
-:::note
-For monitoring internal Craft dependencies (Recipes, Flows, Atoms), use the [Craft Dependencies](/en/guides/advanced/tools#craft-dependencies) tool.
-:::
+> **Note:** For monitoring internal Craft dependencies (Recipes, Flows, Atoms), use the [Craft Dependencies](/en/guides/advanced/tools#craft-dependencies) tool.
 
 ## Advanced Configuration
 

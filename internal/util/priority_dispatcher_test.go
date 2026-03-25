@@ -81,7 +81,7 @@ func TestPriorityDispatcher_Priority(t *testing.T) {
 	// Block the worker with a long task
 	blockChan := make(chan struct{})
 	go func() {
-		_, _ = dispatcher.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
+		dispatcher.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
 			<-blockChan
 			return "unblocked", nil
 		})
@@ -93,13 +93,13 @@ func TestPriorityDispatcher_Priority(t *testing.T) {
 	// Enqueue 2 normal tasks
 	order := make(chan string, 3)
 	go func() {
-		_, _ = dispatcher.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
+		dispatcher.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
 			order <- "normal 1"
 			return "", nil
 		})
 	}()
 	go func() {
-		_, _ = dispatcher.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
+		dispatcher.Execute(context.Background(), false, func(ctx context.Context) (string, error) {
 			order <- "normal 2"
 			return "", nil
 		})
@@ -110,7 +110,7 @@ func TestPriorityDispatcher_Priority(t *testing.T) {
 
 	// Enqueue 1 urgent task
 	go func() {
-		_, _ = dispatcher.Execute(context.Background(), true, func(ctx context.Context) (string, error) {
+		dispatcher.Execute(context.Background(), true, func(ctx context.Context) (string, error) {
 			order <- "urgent"
 			return "", nil
 		})

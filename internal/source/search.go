@@ -5,7 +5,6 @@ import (
 	"FeedCraft/internal/config"
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/dao"
-	"FeedCraft/internal/model"
 	"FeedCraft/internal/source/fetcher"
 	"FeedCraft/internal/source/fetcher/provider"
 	"FeedCraft/internal/source/parser"
@@ -15,6 +14,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/mmcdole/gofeed"
 	"github.com/sirupsen/logrus"
 )
 
@@ -82,7 +82,7 @@ type EnhancedSearchSource struct {
 	Config *config.SourceConfig
 }
 
-func (s *EnhancedSearchSource) Fetch(ctx context.Context) (*model.CraftFeed, error) {
+func (s *EnhancedSearchSource) Generate(ctx context.Context) (*gofeed.Feed, error) {
 	queries, err := expandQueryWithLLM(s.Config.SearchFetcher.Query)
 	if err != nil {
 		logrus.Warnf("LLM expansion failed: %v, falling back to original query", err)
@@ -95,7 +95,7 @@ func (s *EnhancedSearchSource) Fetch(ctx context.Context) (*model.CraftFeed, err
 
 	var wg sync.WaitGroup
 	var mu sync.Mutex
-	var allItems []*model.CraftArticle
+	var allItems []*gofeed.Item
 	seenLinks := make(map[string]bool)
 
 	for _, q := range queries {
@@ -117,7 +117,7 @@ func (s *EnhancedSearchSource) Fetch(ctx context.Context) (*model.CraftFeed, err
 				return
 			}
 
-			feed, err := src.Fetch(ctx)
+			feed, err := src.Generate(ctx)
 			if err != nil {
 				logrus.Warnf("Generation failed for query %s: %v", queryStr, err)
 				return
@@ -125,23 +125,20 @@ func (s *EnhancedSearchSource) Fetch(ctx context.Context) (*model.CraftFeed, err
 
 			mu.Lock()
 			defer mu.Unlock()
-			for _, item := range feed.Articles {
-				if item == nil || seenLinks[item.Link] {
-					continue
-				}
-				if item.Link != "" {
+			for _, item := range feed.Items {
+				if !seenLinks[item.Link] {
 					seenLinks[item.Link] = true
+					allItems = append(allItems, item)
 				}
-				allItems = append(allItems, item)
 			}
 		}(q)
 	}
 	wg.Wait()
 
-	return &model.CraftFeed{
+	return &gofeed.Feed{
 		Title:       fmt.Sprintf("Search: %s", s.Config.SearchFetcher.Query),
 		Description: fmt.Sprintf("Enhanced search results for %s", s.Config.SearchFetcher.Query),
-		Articles:    allItems,
+		Items:       allItems,
 	}, nil
 }
 

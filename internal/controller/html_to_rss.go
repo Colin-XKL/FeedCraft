@@ -212,13 +212,13 @@ func HtmlParse(c *gin.Context) {
 		}
 		if req.ContentSelector != "" {
 			sel := getSelection(req.ContentSelector)
-			htmlStr, err := sel.Html()
+			html, err := sel.Html()
 			if err != nil {
 				logrus.Infof("Warning: Failed to extract content using selector '%s' for item %d in feed %s: %v",
 					req.ContentSelector, i, req.URL, err)
-			}
-			if err == nil && htmlStr != "" {
-				item.Content = htmlStr
+				item.Content = ""
+			} else {
+				item.Content = html
 			}
 		}
 

@@ -21,7 +21,7 @@ export function getCustomRecipes(): Promise<APIResponse<CustomRecipe[]>> {
 }
 
 export function getCustomRecipeById(
-  id: string
+  id: string,
 ): Promise<APIResponse<CustomRecipe>> {
   return axios
     .get<APIResponse<CustomRecipe>>(`${adminApiBase}/recipes/${id}`)
@@ -29,7 +29,7 @@ export function getCustomRecipeById(
 }
 
 export function createCustomRecipe(
-  data: CustomRecipe
+  data: CustomRecipe,
 ): Promise<APIResponse<CustomRecipe>> {
   return axios
     .post<APIResponse<CustomRecipe>>(`${adminApiBase}/recipes`, data)
@@ -37,7 +37,7 @@ export function createCustomRecipe(
 }
 
 export function updateCustomRecipe(
-  data: CustomRecipe
+  data: CustomRecipe,
 ): Promise<APIResponse<CustomRecipe>> {
   return axios
     .put<APIResponse<CustomRecipe>>(`${adminApiBase}/recipes/${data.id}`, data)

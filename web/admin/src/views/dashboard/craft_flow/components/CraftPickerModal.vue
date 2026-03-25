@@ -67,7 +67,7 @@
             : [];
         }
       }
-    }
+    },
   );
 
   const confirmSelection = () => {

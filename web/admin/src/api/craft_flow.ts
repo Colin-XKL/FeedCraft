@@ -21,7 +21,7 @@ const craftFlowApiBase = `${adminApiBase}/craft-flows`;
 
 // Create a CraftFlow
 export function createCraftFlow(
-  craftFlow: CraftFlow
+  craftFlow: CraftFlow,
 ): Promise<APIResponse<CraftFlow>> {
   return axios
     .post<APIResponse<CraftFlow>>(craftFlowApiBase, craftFlow)
@@ -38,7 +38,7 @@ export function getCraftFlow(name: string): Promise<APIResponse<CraftFlow>> {
 // Update a CraftFlow
 export function updateCraftFlow(
   name: string,
-  craftFlow: CraftFlow
+  craftFlow: CraftFlow,
 ): Promise<APIResponse<CraftFlow>> {
   return axios
     .put<APIResponse<CraftFlow>>(`${craftFlowApiBase}/${name}`, craftFlow)
@@ -63,9 +63,9 @@ export function listSysCraftAtoms(): Promise<
   APIResponse<{ name: string; description: string }[]>
 > {
   return axios
-    .get<APIResponse<{ name: string; description: string }[]>>(
-      `${adminApiBase}/sys-craft-atoms`
-    )
+    .get<
+      APIResponse<{ name: string; description: string }[]>
+    >(`${adminApiBase}/sys-craft-atoms`)
     .then((res) => res.data);
 }
 

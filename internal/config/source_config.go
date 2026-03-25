@@ -37,15 +37,11 @@ type HtmlParserConfig struct {
 
 // JsonParserConfig holds the configuration for parsing JSON content.
 type JsonParserConfig struct {
-	ItemsIterator       string `json:"items_iterator"`
-	Title               string `json:"title"`
-	TitleTemplate       string `json:"title_template,omitempty"`
-	Link                string `json:"link"`
-	LinkTemplate        string `json:"link_template,omitempty"`
-	Date                string `json:"date,omitempty"`
-	DateTemplate        string `json:"date_template,omitempty"`
-	Description         string `json:"description,omitempty"`
-	DescriptionTemplate string `json:"description_template,omitempty"`
+	ItemsIterator string `json:"items_iterator"`
+	Title         string `json:"title"`
+	Link          string `json:"link"`
+	Date          string `json:"date,omitempty"`
+	Description   string `json:"description,omitempty"`
 	// ... other fields
 }
 

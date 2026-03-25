@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <title>FeedCraft</title>
@@ -26,9 +26,7 @@
         if (baseUrl.length === 0) {
           baseUrl = window.location.origin;
         }
-        const resultUrl = `${baseUrl}/craft/${selectedSite}?input_url=${encodeURIComponent(
-          inputUrl
-        )}`;
+        const resultUrl = `${baseUrl}/craft/${selectedSite}?input_url=${encodeURIComponent(inputUrl)}`;
         document.getElementById("resultUrl").textContent = resultUrl;
         const copyButton = document.getElementById("copyButton");
         if (resultUrl) {

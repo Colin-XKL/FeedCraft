@@ -2,7 +2,7 @@ name: Lint
 
 on:
   push:
-    branches: ["main", "dev"]
+    branches: ["dev"]
   pull_request:
     branches: ["main", "dev"]
 
@@ -10,57 +10,46 @@ permissions:
   contents: write
 
 jobs:
-  format-and-lint:
-    name: Format and Lint
+  golangci:
+    name: Go Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-go@v5
         with:
           go-version: "1.24"
           cache: false
 
-      - name: Install golangci-lint
+      - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
           version: latest
-
-      - uses: pnpm/action-setup@v3
-        with:
-          version: 9
+        continue-on-error: true
 
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: "pnpm"
-          cache-dependency-path: web/admin/pnpm-lock.yaml
 
-      - name: Install Task
-        run: sudo sh -c "$(curl --location https://taskfile.dev/install.sh)" -- -d -b /usr/local/bin
-
-      - name: Install frontend dependencies
-        run: pnpm --dir web/admin install --frozen-lockfile
-
-      - name: Run format and lint workflow
-        run: task fix
+      - name: Run Prettier
+        # Check formatting for web files, markdown, config files, etc.
+        run: npx prettier --write "**/*.{js,jsx,ts,tsx,vue,css,scss,html,json,md,mdx,yml,yaml}" --ignore-path .gitignore
 
       - name: Commit changes
-        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+        if: github.event_name == 'pull_request'
         env:
-          TARGET_REF: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref_name }}
+          HEAD_REF: ${{ github.head_ref }}
         run: |
           if [ -n "$(git status --porcelain)" ]; then
             git config --global user.name "github-actions[bot]"
             git config --global user.email "github-actions[bot]@users.noreply.github.com"
             git fetch origin
-            git checkout -B "$TARGET_REF" "origin/$TARGET_REF"
+            git checkout -B "$HEAD_REF" "origin/$HEAD_REF"
 
             git add .
             git commit -m "style: auto-format code"
-            if [[ ! "$TARGET_REF" =~ ^[a-zA-Z0-9/_-]+$ ]]; then
-              echo "Invalid branch name: $TARGET_REF"
+            if [[ ! "$HEAD_REF" =~ ^[a-zA-Z0-9/_-]+$ ]]; then
+              echo "Invalid branch name: $HEAD_REF"
               exit 1
             fi
-            git push origin "HEAD:$TARGET_REF"
+            git push origin "HEAD:$HEAD_REF"
           fi

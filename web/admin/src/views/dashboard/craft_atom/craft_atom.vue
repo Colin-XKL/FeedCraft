@@ -234,7 +234,7 @@
   const editBtnHandler = (craftAtom: CraftAtom) => {
     editedCraftAtom.value = { ...craftAtom };
     formParams.value = Object.entries(editedCraftAtom.value.params).map(
-      ([key, value]) => ({ key, value })
+      ([key, value]) => ({ key, value }),
     );
     showEditModal.value = true;
     isUpdating.value = true;

@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, onMounted } from 'vue';
+  import { computed, ref, onMounted } from 'vue';
   import Parser from 'rss-parser';
   import { Message } from '@arco-design/web-vue';
   import FeedViewContainer from '@/views/dashboard/feed_viewer/feed_view_container.vue';
@@ -58,7 +58,7 @@
     if (!feedUrl.value) return;
     isLoading.value = true;
     const requestUrl = `${baseUrl}/craft/proxy?input_url=${encodeURIComponent(
-      feedUrl.value
+      feedUrl.value,
     )}`;
     try {
       const parser = new Parser();
@@ -69,8 +69,9 @@
       feedContent.value = feed;
     } catch (error) {
       Message.warning(
-        error?.toString() ?? t('feedViewer.message.unknownError')
+        error?.toString() ?? t('feedViewer.message.unknownError'),
       );
+      console.error(error);
     } finally {
       isLoading.value = false;
     }

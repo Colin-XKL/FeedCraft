@@ -56,15 +56,15 @@ func TestLiteLLMProvider_EndToEnd(t *testing.T) {
 	assert.NotNil(t, feed)
 
 	// 3. Verify the parsed feed items
-	assert.Len(t, feed.Articles, 2)
+	assert.Len(t, feed.Items, 2)
 
 	// First item verification
-	assert.Equal(t, "LiteLLM Title 1", feed.Articles[0].Title)
-	assert.Equal(t, "https://example.com/litellm1", feed.Articles[0].Link)
-	assert.Equal(t, "This is a snippet for the first result.", feed.Articles[0].Description)
+	assert.Equal(t, "LiteLLM Title 1", feed.Items[0].Title)
+	assert.Equal(t, "https://example.com/litellm1", feed.Items[0].Link)
+	assert.Equal(t, "This is a snippet for the first result.", feed.Items[0].Description)
 
 	// Second item verification
-	assert.Equal(t, "LiteLLM Title 2", feed.Articles[1].Title)
-	assert.Equal(t, "https://example.com/litellm2", feed.Articles[1].Link)
-	assert.Equal(t, "Snippet for the second LiteLLM search result.", feed.Articles[1].Description)
+	assert.Equal(t, "LiteLLM Title 2", feed.Items[1].Title)
+	assert.Equal(t, "https://example.com/litellm2", feed.Items[1].Link)
+	assert.Equal(t, "Snippet for the second LiteLLM search result.", feed.Items[1].Description)
 }

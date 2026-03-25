@@ -97,7 +97,7 @@
   const countMissing = (nodes: DependencyNode[]) => {
     let count = 0;
     nodes.forEach((node) => {
-      if (!node.exists || node.type === 'missing') count += 1;
+      if (!node.exists || node.type === 'missing') count++;
       if (node.children) {
         count += countMissing(node.children);
       }

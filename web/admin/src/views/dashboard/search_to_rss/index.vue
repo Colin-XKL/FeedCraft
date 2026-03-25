@@ -259,11 +259,7 @@
     IconRefresh,
   } from '@arco-design/web-vue/es/icon';
   import XHeader from '@/components/header/x-header.vue';
-  import {
-    previewSearch,
-    SearchFetchReq,
-    SearchPreviewItem,
-  } from '@/api/json_rss';
+  import { previewSearch, ParsedItem, SearchFetchReq } from '@/api/json_rss';
   import { createCustomRecipe } from '@/api/custom_recipe';
   import { useI18n } from 'vue-i18n';
   import generateRecipeId, { getRecipeIdRules } from '@/utils/slug';
@@ -275,7 +271,7 @@
   const currentStep = ref(1);
   const fetching = ref(false);
   const saving = ref(false);
-  const parsedItems = ref<SearchPreviewItem[]>([]);
+  const parsedItems = ref<ParsedItem[]>([]);
 
   // Step 1: Query
   const fetchReq = reactive<SearchFetchReq>({
@@ -318,7 +314,7 @@
       if (val === 4 && !recipeMeta.id && feedMeta.title) {
         recipeMeta.id = generateRecipeId(feedMeta.title);
       }
-    }
+    },
   );
 
   // Step 1 -> 2
@@ -332,7 +328,13 @@
     try {
       const res = await previewSearch(fetchReq);
       if (res.data) {
-        parsedItems.value = res.data;
+        parsedItems.value = res.data.map((item: any) => ({
+          title: item.title || item.Title,
+          link: item.link || item.Link,
+          date: item.published || item.Published || item.date || item.Date,
+          description: item.description || item.Description,
+          content: item.content || item.Content,
+        }));
       }
 
       if (parsedItems.value.length === 0) {
@@ -348,12 +350,13 @@
         query: fetchReq.query,
       });
       feedMeta.link = `https://google.com/search?q=${encodeURIComponent(
-        fetchReq.query
+        fetchReq.query,
       )}`; // Fallback link
 
       nextStep();
     } catch (err) {
-      Message.error(err instanceof Error ? err.message : String(err));
+      // handled by interceptor usually, but log here
+      console.error(err);
     } finally {
       fetching.value = false;
     }
@@ -393,8 +396,9 @@
       Message.success(t('searchToRss.msg.saved'));
       router.push({ name: 'CustomRecipe' });
     } catch (err: any) {
+      console.error(err);
       Message.error(
-        t('searchToRss.msg.saveFailed', { msg: err.message || err })
+        t('searchToRss.msg.saveFailed', { msg: err.message || err }),
       );
     } finally {
       saving.value = false;
