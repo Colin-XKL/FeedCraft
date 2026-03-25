@@ -28,7 +28,11 @@
               }}</a-checkbox>
             </a-space>
 
-            <a-button :loading="isLoading" type="primary" @click="testLLMFilter">
+            <a-button
+              :loading="isLoading"
+              type="primary"
+              @click="testLLMFilter"
+            >
               {{ t('llmDebug.llmFilter.submit') }}
             </a-button>
           </a-space>
@@ -110,7 +114,9 @@
       if (response.data.code === 200) {
         testResult.value = response.data.data;
       } else {
-        Message.error(response.data.msg || t('llmDebug.llmFilter.message.unknownError'));
+        Message.error(
+          response.data.msg || t('llmDebug.llmFilter.message.unknownError')
+        );
       }
     } catch (error: any) {
       Message.error(
