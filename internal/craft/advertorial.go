@@ -37,8 +37,8 @@ const judgePrompt = `
 const promptCheckIfAdvertorial = "请阅读下面的文章, 并判断是不是广告推销软文. 如果非常确信这篇文章是营销推广文章, 请返回 'true', 不要包括其他内容. 如果不是或者没有把握确定,请返回 'false'"
 
 // CheckIfAdvertorial 判断是否为软文, 非常有把握则返回true, 如果不是或者不确定或是发生错误则返回false
-func CheckIfAdvertorial(content string, prompt string) bool {
-	res, _ := CheckConditionWithLLM(content, prompt)
+func CheckIfAdvertorial(title string, content string, prompt string) bool {
+	res, _ := CheckConditionWithLLM(title, content, prompt)
 	return res
 }
 
@@ -63,7 +63,7 @@ func OptionIgnoreAdvertorial(prompt string) CraftOption {
 			if len(content) == 0 {
 				content = itm.Description
 			}
-			return CheckIfAdvertorial(content, prompt)
+			return CheckIfAdvertorial(itm.Title, content, prompt)
 		})
 
 		// 2. 同步过滤
@@ -128,7 +128,7 @@ func DebugCheckIfAdvertorial(c *gin.Context) {
 	}
 	prompt := fmt.Sprintf("%s\n%s\n", judgePrompt, promptCheckIfAdvertorial)
 
-	result := CheckIfAdvertorial(webContent, prompt)
+	result := CheckIfAdvertorial("", webContent, prompt)
 	ret := CheckIfAdvertorialDebugResp{
 		Url:            reqBody.Url,
 		IsAdvertorial:  result,

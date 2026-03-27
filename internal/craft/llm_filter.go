@@ -48,7 +48,7 @@ func OptionLLMFilterGeneric(condition string) CraftOption {
 			if len(content) == 0 {
 				content = itm.Description
 			}
-			match, err := CheckConditionWithGenericPrompt(content, condition)
+			match, err := CheckConditionWithGenericPrompt(itm.Title, content, condition)
 			if err != nil {
 				return false
 			}
@@ -101,7 +101,7 @@ func DebugLLMFilterUrl(c *gin.Context) {
 		return
 	}
 
-	isFiltered, err := CheckConditionWithGenericPrompt(webContent, req.FilterCondition)
+	isFiltered, err := CheckConditionWithGenericPrompt("", webContent, req.FilterCondition)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: "LLM Check Failed: " + err.Error()})
 		return
@@ -132,7 +132,7 @@ func DebugLLMFilterText(c *gin.Context) {
 		return
 	}
 
-	isFiltered, err := CheckConditionWithGenericPrompt(req.Text, req.FilterCondition)
+	isFiltered, err := CheckConditionWithGenericPrompt("", req.Text, req.FilterCondition)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: "LLM Check Failed: " + err.Error()})
 		return
@@ -192,7 +192,7 @@ func DebugLLMFilterFeed(c *gin.Context) {
 			content = item.Description
 		}
 
-		isFiltered, llmErr := CheckConditionWithGenericPrompt(content, req.FilterCondition)
+		isFiltered, llmErr := CheckConditionWithGenericPrompt(item.Title, content, req.FilterCondition)
 
 		// Instead of failing the whole feed, append errors to content/title so the user knows this item failed.
 		if llmErr != nil {
