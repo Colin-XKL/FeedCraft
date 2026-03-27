@@ -50,6 +50,16 @@ const TOOLS: AppRouteRecordRaw = {
       },
     },
     {
+      path: 'llm-filter-debug',
+      name: 'LlmFilterDebug',
+      component: () =>
+        import('@/views/dashboard/llm_filter_debug/llm_filter_debug.vue'),
+      meta: {
+        locale: 'menu.llmFilterDebug',
+        requiresAuth: true,
+      },
+    },
+    {
       path: 'health',
       name: 'SystemHealth',
       component: () => import('@/views/dashboard/health/index.vue'),

@@ -34,6 +34,7 @@ export default {
   'menu.curlToRss': 'Curl 转 RSS',
   'menu.searchToRss': '搜索 转 RSS',
   'menu.llmDebug': 'LLM 调试',
+  'menu.llmFilterDebug': 'LLM Filter 调试',
   'menu.adCheckDebug': '广告软文检测',
   'menu.llmApiDebug': 'LLM API 调试',
   'menu.observability': '系统运行状态',

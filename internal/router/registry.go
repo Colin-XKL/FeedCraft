@@ -84,6 +84,9 @@ func RegisterRouters(router *gin.Engine) {
 		adminApi.POST("/user/change-password", controller.ChangePassword)
 
 		adminApi.POST("/craft-debug/advertorial", craft.DebugCheckIfAdvertorial)
+		adminApi.POST("/craft-debug/llm-filter/url", craft.DebugLLMFilterUrl)
+		adminApi.POST("/craft-debug/llm-filter/text", craft.DebugLLMFilterText)
+		adminApi.POST("/craft-debug/llm-filter/feed", craft.DebugLLMFilterFeed)
 		adminApi.POST("/craft-debug/common-llm-call-test", admin.LLMDebug)
 
 		adminApi.POST("/topics", controller.CreateTopicFeed)
