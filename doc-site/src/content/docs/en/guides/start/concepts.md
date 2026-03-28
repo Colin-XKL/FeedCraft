@@ -45,3 +45,19 @@ Navigate to **Worktable > Custom Recipe** to manage all your created recipes.
 - **Input URL:** `https://news.ycombinator.com/rss`
 - **Processor:** `digest-and-translate` (the workflow created above)
 - **Result:** You get a new FeedCraft URL. Subscribe to it to get Hacker News with full text, summary, and translation.
+
+## Topic Feed
+
+**Topic Feed** is an aggregation unit that combines multiple input sources (like `RawFeed`s or other `Recipe`s) into a single, unified RSS feed. It solves information overload by bringing disparate sources into one place.
+
+You can configure processors for a Topic Feed to automatically handle the combined data:
+
+- **Deduplicate**: Removes duplicate articles across sources.
+- **Sort**: Orders the combined articles by publication date.
+- **Limit**: Keeps only the most recent items.
+
+**Managing Topic Feeds:**
+Navigate to **Worktable > Topic Feed** to create and manage topics.
+
+- **Create**: Define a title, add multiple input URIs (e.g. `feedcraft://recipe/my-recipe` or external RSS URLs), and set your aggregator config.
+- **Public Access**: Your new topic feed will be available without authentication at `http://your-feedcraft-instance/topic/{id}`.
