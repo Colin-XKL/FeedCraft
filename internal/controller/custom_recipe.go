@@ -88,7 +88,7 @@ func UpdateCustomRecipe(c *gin.Context) {
 	}
 	db := util.GetDatabase()
 
-	_, err := dao.GetCustomRecipeByIDV2(db, id)
+	existingRecipe, err := dao.GetCustomRecipeByIDV2(db, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "Recipe not found"})
@@ -98,12 +98,17 @@ func UpdateCustomRecipe(c *gin.Context) {
 		return
 	}
 
-	if err := dao.UpdateCustomRecipeV2(db, &recipeData); err != nil {
+	existingRecipe.Description = recipeData.Description
+	existingRecipe.Craft = recipeData.Craft
+	existingRecipe.SourceType = recipeData.SourceType
+	existingRecipe.SourceConfig = recipeData.SourceConfig
+
+	if err := dao.UpdateCustomRecipeV2(db, existingRecipe); err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, util.APIResponse[any]{Data: recipeData})
+	c.JSON(http.StatusOK, util.APIResponse[any]{Data: existingRecipe})
 }
 
 func DeleteCustomRecipe(c *gin.Context) {

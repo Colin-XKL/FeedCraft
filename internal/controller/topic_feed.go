@@ -115,7 +115,7 @@ func UpdateTopicFeed(c *gin.Context) {
 
 	db := util.GetDatabase()
 
-	_, err := dao.GetTopicFeedByID(db, id)
+	existingTopic, err := dao.GetTopicFeedByID(db, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "Topic feed not found"})
@@ -125,12 +125,17 @@ func UpdateTopicFeed(c *gin.Context) {
 		return
 	}
 
-	if err := dao.UpdateTopicFeed(db, &topicData); err != nil {
+	existingTopic.Title = topicData.Title
+	existingTopic.Description = topicData.Description
+	existingTopic.InputURIs = topicData.InputURIs
+	existingTopic.AggregatorConfig = topicData.AggregatorConfig
+
+	if err := dao.UpdateTopicFeed(db, existingTopic); err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, util.APIResponse[any]{Data: topicData})
+	c.JSON(http.StatusOK, util.APIResponse[any]{Data: existingTopic})
 }
 
 func DeleteTopicFeed(c *gin.Context) {
