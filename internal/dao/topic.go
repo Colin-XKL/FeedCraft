@@ -57,7 +57,14 @@ func UpdateTopicFeed(db *gorm.DB, topic *TopicFeed) error {
 // DeleteTopicFeed deletes a TopicFeed record by its ID.
 func DeleteTopicFeed(db *gorm.DB, id string) error {
 	var topic TopicFeed
-	return db.Where("id = ?", id).Delete(&topic).Error
+	result := db.Where("id = ?", id).Delete(&topic)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }
 
 // ListTopicFeeds retrieves all TopicFeed records.
