@@ -80,8 +80,9 @@ func FromGofeed(parsedFeed *gofeed.Feed) *CraftFeed {
 		cf.ImageTitle = parsedFeed.Image.Title
 	}
 
-	cf.Articles = lo.Map(parsedFeed.Items, func(item *gofeed.Item, _ int) *CraftArticle {
-		return ArticleFromGofeed(item)
+	cf.Articles = lo.FilterMap(parsedFeed.Items, func(item *gofeed.Item, _ int) (*CraftArticle, bool) {
+		article := ArticleFromGofeed(item)
+		return article, article != nil
 	})
 
 	return cf
