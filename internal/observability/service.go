@@ -57,6 +57,7 @@ type ExecutionEvent struct {
 type Service struct {
 	db      *gorm.DB
 	events  chan ExecutionEvent
+	done    chan struct{}
 	wg      sync.WaitGroup
 	closed  bool
 	closeMu sync.Mutex
@@ -73,7 +74,9 @@ func Init(db *gorm.DB) {
 
 func Shutdown() {
 	if globalService != nil {
-		globalService.Close()
+		svc := globalService
+		globalService = nil
+		svc.Close()
 	}
 }
 
@@ -85,6 +88,7 @@ func newService(db *gorm.DB) *Service {
 	s := &Service{
 		db:     db,
 		events: make(chan ExecutionEvent, 256),
+		done:   make(chan struct{}),
 	}
 	s.wg.Add(1)
 	go s.run()
@@ -98,7 +102,7 @@ func (s *Service) Close() {
 		return
 	}
 	s.closed = true
-	close(s.events)
+	close(s.done)
 	s.closeMu.Unlock()
 	s.wg.Wait()
 }
@@ -115,6 +119,8 @@ func (s *Service) Report(event ExecutionEvent) {
 		event.OccurredAt = time.Now()
 	}
 	select {
+	case <-s.done:
+		return
 	case s.events <- event:
 	default:
 		logrus.Warnf("observability event dropped for %s/%s status=%s", event.ResourceType, event.ResourceID, event.Status)
@@ -123,9 +129,23 @@ func (s *Service) Report(event ExecutionEvent) {
 
 func (s *Service) run() {
 	defer s.wg.Done()
-	for event := range s.events {
-		if err := s.persistEvent(event); err != nil {
-			logrus.Errorf("persist observability event failed for %s/%s: %v", event.ResourceType, event.ResourceID, err)
+	for {
+		select {
+		case event := <-s.events:
+			if err := s.persistEvent(event); err != nil {
+				logrus.Errorf("persist observability event failed for %s/%s: %v", event.ResourceType, event.ResourceID, err)
+			}
+		case <-s.done:
+			for {
+				select {
+				case event := <-s.events:
+					if err := s.persistEvent(event); err != nil {
+						logrus.Errorf("persist observability event failed for %s/%s: %v", event.ResourceType, event.ResourceID, err)
+					}
+				default:
+					return
+				}
+			}
 		}
 	}
 }
