@@ -107,10 +107,15 @@ func ArticleFromGofeed(item *gofeed.Item) *CraftArticle {
 		content = item.Description
 	}
 
+	description := item.Description
+	if len(description) == 0 {
+		description = item.Content
+	}
+
 	article := &CraftArticle{
 		Title:       item.Title,
 		Link:        item.Link,
-		Description: item.Description,
+		Description: description,
 		Id:          item.GUID,
 		Updated:     updatedTime,
 		Created:     publishedTime,
