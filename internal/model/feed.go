@@ -74,6 +74,9 @@ func FromGofeed(parsedFeed *gofeed.Feed) *CraftFeed {
 	if len(parsedFeed.Authors) > 0 && parsedFeed.Authors[0] != nil {
 		cf.AuthorName = parsedFeed.Authors[0].Name
 		cf.AuthorEmail = parsedFeed.Authors[0].Email
+	} else if parsedFeed.Author != nil {
+		cf.AuthorName = parsedFeed.Author.Name
+		cf.AuthorEmail = parsedFeed.Author.Email
 	}
 	if parsedFeed.Image != nil {
 		cf.ImageURL = parsedFeed.Image.URL
@@ -121,6 +124,9 @@ func ArticleFromGofeed(item *gofeed.Item) *CraftArticle {
 	if authorItem != nil {
 		article.AuthorName = authorItem.Name
 		article.AuthorEmail = authorItem.Email
+	} else if item.Author != nil {
+		article.AuthorName = item.Author.Name
+		article.AuthorEmail = item.Author.Email
 	}
 
 	return article
