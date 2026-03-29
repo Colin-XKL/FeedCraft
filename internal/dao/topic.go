@@ -46,7 +46,10 @@ func GetTopicFeedByID(db *gorm.DB, id string) (*TopicFeed, error) {
 		return nil, gorm.ErrRecordNotFound
 	}
 	result := db.Where("id = ?", id).First(&topic)
-	return &topic, result.Error
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &topic, nil
 }
 
 // UpdateTopicFeed updates an existing TopicFeed record.
@@ -64,7 +67,7 @@ func DeleteTopicFeed(db *gorm.DB, id string) error {
 func ListTopicFeeds(db *gorm.DB) ([]*TopicFeed, error) {
 	var topics []*TopicFeed
 	if err := db.Find(&topics).Error; err != nil {
-		return topics, err
+		return nil, err
 	}
 	return topics, nil
 }
