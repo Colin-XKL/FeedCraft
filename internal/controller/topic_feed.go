@@ -138,6 +138,10 @@ func DeleteTopicFeed(c *gin.Context) {
 	db := util.GetDatabase()
 
 	if err := dao.DeleteTopicFeed(db, id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "Topic feed not found"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
