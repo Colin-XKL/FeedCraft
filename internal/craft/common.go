@@ -222,6 +222,9 @@ func getAbsFeedLink(feedUrl, feedLinkAttr string) string {
 	if err != nil {
 		logrus.Errorf("invalid feed url [%s]. err: %v", feedUrl, err)
 	} else {
+		if feedLinkAttr != "" && feedLinkUrl != nil {
+			return parsedFeedUrl.ResolveReference(feedLinkUrl).String()
+		}
 		return fmt.Sprintf("%s://%s", parsedFeedUrl.Scheme, parsedFeedUrl.Host)
 	}
 	return feedLinkAttr
