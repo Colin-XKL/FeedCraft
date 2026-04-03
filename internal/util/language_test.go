@@ -45,6 +45,14 @@ func TestIsSameLanguage(t *testing.T) {
 		{"Hello 这是一个中文句子。", "zh", true},
 		// Short text might be hard to detect, but let's see
 		{"你好", "zh", true},
+
+		// Test texts with noise (HTML tags, URLs, UUIDs)
+		{"<div id=\"12345678-1234-1234-1234-123456789012\">这是一个中文句子。</div>", "zh", true},
+		{"<a href=\"https://example.com/some/long/url/with/english/words\">这是一个带有链接的中文句子。</a>", "zh", true},
+		{"<p>Some English intro text here.</p> <p>然后是大量的中文内容，以确保中文被正确识别。</p>", "zh", true},
+		{"<div>[128/365]Thought as a Medium: Sculpting the Mind with Multi-Agent Systems 【128/365】2026年4月3日このところAI Agent（Tochikoma Multi Agent System）作品の制作にかかりっきりです。続きをみる</div>", "ja", true},
+		{"Gemma 4 の概要 「Gemma 4」の概要をまとめました。・Gemma 4: Byte for byte, the most capable open models 続きをみる", "ja", true},
+		{"<a href=\"https://example.com\">Hello World</a> これは日本語のテキストです。", "ja", true},
 	}
 
 	for _, test := range tests {
