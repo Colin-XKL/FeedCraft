@@ -75,7 +75,7 @@ func IsSameLanguage(text string, targetLangCode string) bool {
 	base, _ := targetTag.Base()
 	targetIso := base.String()
 
-	logrus.Debugf("Language detection: text_len=%d, detected=%s, target=%s", len(text), detectedIso, targetIso)
+	logrus.Tracef("Language detection: text_len=%d, detected=%s, target=%s", len(text), detectedIso, targetIso)
 
 	// whatlanggo returns "zh" for Mandarin (Cmn) when calling Iso6391()
 	return detectedIso == targetIso
