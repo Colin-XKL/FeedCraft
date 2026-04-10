@@ -155,7 +155,6 @@ type RawTransformer func(item *feeds.Item) (string, error)
 func GetCommonCachedTransformer(cacheKeyGenerator ContentCacheKeyGenerator, rawTransformer TransFunc, craftName string) TransFunc {
 	ret := func(item *feeds.Item) (string, error) {
 		originalTitle := item.Title
-		logrus.Infof("applying craft [%s] to article [%s]", craftName, originalTitle)
 
 		hashVal, _ := cacheKeyGenerator(item)
 		cacheKey := getCraftCacheKey(craftName, hashVal)
@@ -168,7 +167,9 @@ func GetCommonCachedTransformer(cacheKeyGenerator ContentCacheKeyGenerator, rawT
 			return ret, err
 		}
 
-		return util.CachedFunc(cacheKey, valFunc)
+		return util.CachedFuncWithPreLog(cacheKey, valFunc, func(isCached bool) {
+			logrus.Infof("applying craft [%s] to article [%s], cached: %v", craftName, originalTitle, isCached)
+		})
 	}
 	return ret
 }
