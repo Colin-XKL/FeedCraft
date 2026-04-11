@@ -339,6 +339,22 @@ func buildNativeProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedPr
 		return newFulltextProcessor(feedURL), true, nil
 	case "fulltext-plus":
 		return newFulltextPlusProcessor(feedURL, parseFulltextPlusConfig(atom.Params)), true, nil
+	case "summary":
+		return newSummaryProcessor(atom.Params["prompt"]), true, nil
+	case "introduction":
+		return newIntroductionProcessor(atom.Params["prompt"]), true, nil
+	case "translate-title":
+		return newTranslateTitleProcessor(atom.Params["prompt"]), true, nil
+	case "translate-content":
+		return newTranslateContentProcessor(atom.Params["prompt"]), true, nil
+	case "translate-content-immersive":
+		return newTranslateContentImmersiveProcessor(atom.Params["prompt"]), true, nil
+	case "beautify-content":
+		return newBeautifyContentProcessor(atom.Params["prompt"]), true, nil
+	case "llm-filter":
+		return newLLMFilterProcessor(atom.Params["filter_condition"]), true, nil
+	case "ignore-advertorial":
+		return newIgnoreAdvertorialProcessor(atom.Params["prompt-for-exclude"]), true, nil
 	default:
 		return nil, false, nil
 	}
