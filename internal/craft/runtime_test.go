@@ -41,6 +41,50 @@ func TestResolveCraftAtoms_FlowAndCustomAtom(t *testing.T) {
 	assert.Equal(t, "5", atoms[0].Params["num"])
 }
 
+func TestBuildProcessor_ProxyUsesNativeNoopProcessor(t *testing.T) {
+	db := newCraftRuntimeTestDB(t)
+	processor, err := BuildProcessor(db, "proxy", "https://example.com/feed.xml")
+	require.NoError(t, err)
+	require.NotNil(t, processor)
+
+	flow, ok := processor.(*engine.FlowCraftProcessor)
+	require.True(t, ok)
+	require.Len(t, flow.Processors, 1)
+	assert.IsType(t, &NoopProcessor{}, flow.Processors[0])
+
+	feed := &model.CraftFeed{Title: "proxy"}
+	result, err := flow.Process(context.Background(), feed)
+	require.NoError(t, err)
+	assert.Same(t, feed, result)
+}
+
+func TestBuildProcessor_KeywordContentScopeUsesContentOnly(t *testing.T) {
+	db := newCraftRuntimeTestDB(t)
+	require.NoError(t, dao.CreateCraftAtom(db, &dao.CraftAtom{
+		Name:         "keyword-content",
+		TemplateName: "keyword",
+		Params: map[string]string{
+			"mode":     "include",
+			"scope":    "content",
+			"keywords": "needle",
+		},
+	}))
+
+	processor, err := BuildProcessor(db, "keyword-content", "https://example.com/feed.xml")
+	require.NoError(t, err)
+	require.NotNil(t, processor)
+
+	result, err := processor.Process(context.Background(), &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Title: "needle in title only", Content: "body without match"},
+			{Title: "other", Content: "body with needle"},
+		},
+	})
+	require.NoError(t, err)
+	require.Len(t, result.Articles, 1)
+	assert.Equal(t, "other", result.Articles[0].Title)
+}
+
 func TestBuildProcessor_UsesNativeProcessors(t *testing.T) {
 	db := newCraftRuntimeTestDB(t)
 	processor, err := BuildProcessor(db, "limit,time-limit,guid-fix,relative-link-fix,cleanup,fulltext,fulltext-plus,summary,introduction,translate-title,translate-content,translate-content-immersive,beautify-content,llm-filter,ignore-advertorial", "https://example.com/feed.xml")
@@ -207,7 +251,7 @@ func TestFulltextPlusProcessor_UsesConfiguredOptions(t *testing.T) {
 	feed := &model.CraftFeed{
 		Link: "https://example.com",
 		Articles: []*model.CraftArticle{
-			{Title: "a", Link: "/article"},
+			{Title: "fulltext-plus-" + t.Name(), Link: "/article"},
 		},
 	}
 
@@ -303,7 +347,7 @@ func TestLLMFilterProcessor_RemovesMatchedArticleAndUsesTitleContentPayload(t *t
 	var seen []string
 	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
 		seen = append(seen, context)
-		if strings.Contains(context, "Drop Me") {
+		if strings.Contains(context, "Drop Me "+t.Name()) {
 			return "true", nil
 		}
 		return "false", nil
@@ -313,15 +357,15 @@ func TestLLMFilterProcessor_RemovesMatchedArticleAndUsesTitleContentPayload(t *t
 	processor := newLLMFilterProcessor("filter condition " + t.Name())
 	feed := &model.CraftFeed{
 		Articles: []*model.CraftArticle{
-			{Title: "Drop Me", Content: "<p>remove body with enough content length for llm filter</p>"},
-			{Title: "Keep Me", Content: "<p>keep body with enough content length for llm filter</p>"},
+			{Title: "Drop Me " + t.Name(), Content: "<p>remove body with enough content length for llm filter " + t.Name() + "</p>"},
+			{Title: "Keep Me " + t.Name(), Content: "<p>keep body with enough content length for llm filter " + t.Name() + "</p>"},
 		},
 	}
 
 	result, err := processor.Process(context.Background(), feed)
 	require.NoError(t, err)
 	require.Len(t, result.Articles, 1)
-	assert.Equal(t, "Keep Me", result.Articles[0].Title)
+	assert.Equal(t, "Keep Me "+t.Name(), result.Articles[0].Title)
 	require.Len(t, seen, 2)
 	assert.Contains(t, seen[0], "Article Title:")
 	assert.Contains(t, seen[0], "Article Content:")
