@@ -1,5 +1,7 @@
 # 高级去重策略 (Advanced Deduplication)
 
+> 状态：未开始
+
 ## 1. 需求场景
 
 在 RSS 聚合（Topic Aggregation）场景中，一个 Topic 往往关联多个数据源（Recipe）。多源抓取极易产生重复内容。例如：

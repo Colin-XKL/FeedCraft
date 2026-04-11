@@ -1,5 +1,7 @@
 # FeedCraft 底层架构重构规划 (Code Refactoring Plan)
 
+> 状态：部分完成
+
 ## 1. 重构目标
 
 将现有的 `Source - Craft - Recipe` 架构，全面升级为以**“数据产出物 (Feed)”**为核心的流式架构，并引入 `TopicFeed` 聚合能力。
@@ -26,11 +28,12 @@
     }
     ```
 2.  **FeedProcessor**: 任何能加工 `CraftFeed` 的节点。
-    ```go
-    type FeedProcessor interface {
-        Process(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error)
-    }
-    ```
+    `go
+type FeedProcessor interface {
+    Process(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error)
+}
+`
+    ·
 
 ## 3. 具体业务对象的实现映射
 
