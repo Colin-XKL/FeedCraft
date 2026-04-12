@@ -1,10 +1,10 @@
 import axios from 'axios';
-import { APIResponse } from './types';
+import { APIResponse } from '@/api/types';
 import {
   ExecutionLog,
   ObservableResource,
   SystemNotification,
-} from './observability';
+} from '@/api/observability';
 
 export interface AggregatorStep {
   type: string;

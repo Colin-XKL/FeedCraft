@@ -519,8 +519,11 @@
   import generateRecipeId, { getRecipeIdRules } from '@/utils/slug';
 
   // Import extracted utils and components
-  import { getCssSelector, IGNORED_CLASSES } from './utils/selector';
-  import HtmlPreview from './components/HtmlPreview.vue';
+  import {
+    getCssSelector,
+    IGNORED_CLASSES,
+  } from '@/views/dashboard/html_to_rss/utils/selector';
+  import HtmlPreview from '@/views/dashboard/html_to_rss/components/HtmlPreview.vue';
 
   const router = useRouter();
   const { t } = useI18n();

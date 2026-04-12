@@ -18,7 +18,7 @@
 <script setup lang="ts">
   import { ref, watch, computed } from 'vue';
   import { useI18n } from 'vue-i18n';
-  import CraftList from './CraftList.vue';
+  import CraftList from '@/views/dashboard/craft_flow/components/CraftList.vue';
 
   const { t } = useI18n();
 
