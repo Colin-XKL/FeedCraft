@@ -118,6 +118,32 @@ func TestBuildRecipe_AppliesCraftProcessor(t *testing.T) {
 	assert.Equal(t, "https://example.com/relative-item", feed.Articles[0].Link)
 }
 
+
+func TestBuildRecipe_UsesSourceInputSpecCompatibility(t *testing.T) {
+	const testSourceType = constant.SourceType("unit_test_recipe_source_compat")
+	registerTestSource(t, testSourceType, func(cfg *config.SourceConfig) (source.Source, error) {
+		return &stubSource{baseURL: cfg.HttpFetcher.URL}, nil
+	})
+
+	builder := NewBuilder(newTestDB(t))
+	recipeRuntime, err := builder.BuildRecipe(context.Background(), &dao.CustomRecipeV2{
+		ID:         "recipe-source-input-spec",
+		Craft:      "proxy",
+		SourceType: string(testSourceType),
+		SourceConfig: `{
+			"http_fetcher":{"url":"https://example.com/feed.xml"}
+		}`,
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "https://example.com/feed.xml", recipeRuntime.BaseURL)
+	assert.Equal(t, string(testSourceType), recipeRuntime.SourceType)
+
+	feed, err := recipeRuntime.Fetch(context.Background())
+	require.NoError(t, err)
+	require.NotNil(t, feed)
+	assert.Equal(t, "stub-feed", feed.Title)
+}
+
 func TestBuildProviderFromInput_InvalidURI(t *testing.T) {
 	builder := NewBuilder(newTestDB(t))
 	_, err := builder.BuildProviderFromInput(context.Background(), InputSpec{
