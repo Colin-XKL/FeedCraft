@@ -118,7 +118,6 @@ func TestBuildRecipe_AppliesCraftProcessor(t *testing.T) {
 	assert.Equal(t, "https://example.com/relative-item", feed.Articles[0].Link)
 }
 
-
 func TestBuildRecipe_UsesSourceInputSpecCompatibility(t *testing.T) {
 	const testSourceType = constant.SourceType("unit_test_recipe_source_compat")
 	registerTestSource(t, testSourceType, func(cfg *config.SourceConfig) (source.Source, error) {
