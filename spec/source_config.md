@@ -19,6 +19,7 @@
 其中当 `InputSpec.kind=source` 时，`InputSpec` 会携带一份 `SourceConfig`，再进入 Source 子系统的构建流程。
 
 核心目标：
+
 - **单一真值**：`Source` 子系统内的配置类型仅由 `SourceConfig.Type` 决定。
 - **序列化友好**：不使用 `interface{}` 或自定义 JSON 反序列化，直接依赖 Go 原生 `encoding/json` 及 SQLite JSON 存储。
 - **配置隔离**：不同类型的特有配置互不干扰，顶层结构保持精简。
@@ -77,6 +78,7 @@ type SearchSourceConfig struct {
 持久化到 SQLite 时，Go 会自动忽略 `omitempty` 为 nil 的字段，生成极其干净的 JSON 字符串。
 
 ### 场景 1：`curl-to-rss` (SourceJSON)
+
 用户自定义接口抓取和 JSON 解析规则。
 
 ```json
@@ -100,6 +102,7 @@ type SearchSourceConfig struct {
 ```
 
 ### 场景 2：`search-to-rss` (SourceSearch)
+
 用户配置搜索词，系统代码负责组装固定的 Parser 逻辑。
 
 ```json
