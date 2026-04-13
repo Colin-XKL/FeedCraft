@@ -71,6 +71,7 @@ You can configure FeedCraft using environment variables in `docker-compose.yml`.
 - **FC_LLM_API_TYPE**: (Optional) `openai` (default) or `ollama`.
 - **FC_LLM_MAX_CONCURRENCY**: (Optional) Global maximum concurrency for LLM requests (default: `3`). Limits concurrent API calls to prevent rate limits.
 - **FC_DOMAIN_MAX_CONCURRENCY**: (Optional) Maximum concurrent requests per target domain during web scraping like fulltext extraction (default: `3`). Prevents overwhelming target servers.
+- **LOG_LEVEL**: (Optional) Configures the system logging level. Available options are `debug`, `info`, `warn`, `error`, and `trace`. (Default: `info` in production, `debug` in development).
 
 ### External Services
 
