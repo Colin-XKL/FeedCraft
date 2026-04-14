@@ -149,3 +149,5 @@ feedcraft.exe
 
 # SQLite 数据库目录
 db/
+start.sh
+start-full.sh
