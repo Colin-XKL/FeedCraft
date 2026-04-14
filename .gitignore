@@ -145,7 +145,7 @@ feedcraft.exe
 *.log
 **/*.log
 .gocache
-.codebuddy/plan/embedding-topic-filter/requirements.md
+.codebuddy/
 
 # SQLite 数据库目录
 db/
