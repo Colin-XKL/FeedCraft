@@ -145,3 +145,4 @@ feedcraft.exe
 *.log
 **/*.log
 .gocache
+.codebuddy/plan/embedding-topic-filter/requirements.md
