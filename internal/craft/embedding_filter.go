@@ -4,12 +4,13 @@ import (
 	"FeedCraft/internal/adapter"
 	"FeedCraft/internal/util"
 	"context"
+	"fmt"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/gorilla/feeds"
 	"github.com/samber/lo"
-	"github.com/samber/lo/parallel"
 	"github.com/sirupsen/logrus"
 )
 
@@ -47,57 +48,60 @@ func OptionEmbeddingFilter(anchors []string, threshold float64, maxContentLen in
 		// 2. 获取或计算锚点向量（带内存缓存）
 		anchorVectors, err := adapter.GetOrComputeAnchorVectors(ctx, anchors, instruction)
 		if err != nil {
-			logrus.Errorf("[embedding-filter] failed to compute anchor vectors: %v, returning all items", err)
-			return nil
+			return fmt.Errorf("[embedding-filter] failed to compute anchor vectors: %w", err)
 		}
 
-		// 3. 并发计算每篇文章的 Embedding 向量
-		type articleResult struct {
-			vector []float64
-			err    error
+		// 3. 收集所有文章文本，批量调用 Embedding
+		texts := make([]string, len(items))
+		for i, item := range items {
+			texts[i] = buildArticleText(item, maxContentLen)
 		}
 
-		results := parallel.Map(items, func(item *feeds.Item, _ int) articleResult {
-			// 拼接标题 + 正文
-			text := buildArticleText(item, maxContentLen)
-			if len(strings.TrimSpace(text)) == 0 {
-				return articleResult{err: nil, vector: nil}
+		// 过滤掉空文本的索引，记录有效文本的映射
+		var validTexts []string
+		var validIndices []int
+		for i, text := range texts {
+			if len(strings.TrimSpace(text)) > 0 {
+				validTexts = append(validTexts, text)
+				validIndices = append(validIndices, i)
 			}
+		}
 
-			vectors, embedErr := adapter.EmbedTexts(ctx, []string{text}, instruction)
-			if embedErr != nil {
-				logrus.Warnf("[embedding-filter] failed to embed article [%s]: %v, keeping article", item.Title, embedErr)
-				return articleResult{err: embedErr, vector: nil}
+		// 批量计算文章向量
+		articleVectors := make([][]float64, len(items)) // nil 表示未计算
+		var embedErr error
+		if len(validTexts) > 0 {
+			vectors, batchErr := adapter.EmbedTexts(ctx, validTexts, instruction)
+			if batchErr != nil {
+				embedErr = batchErr
+				logrus.Errorf("[embedding-filter] batch embedding failed: %v", batchErr)
+			} else {
+				for j, idx := range validIndices {
+					if j < len(vectors) {
+						articleVectors[idx] = vectors[j]
+					}
+				}
 			}
-			if len(vectors) == 0 {
-				logrus.Warnf("[embedding-filter] empty embedding result for article [%s], keeping article", item.Title)
-				return articleResult{err: nil, vector: nil}
-			}
-			return articleResult{err: nil, vector: vectors[0]}
-		})
+		}
 
-		// 4. 检查是否全部失败
-		allFailed := lo.EveryBy(results, func(r articleResult) bool {
-			return r.err != nil
-		})
-		if allFailed && len(results) > 0 {
-			logrus.Error("[embedding-filter] all article embeddings failed, returning original feed without filtering")
-			return nil
+		// 4. 如果批量 Embedding 全部失败，返回错误
+		if embedErr != nil {
+			return fmt.Errorf("[embedding-filter] all article embeddings failed: %w", embedErr)
 		}
 
 		// 5. 根据相似度过滤
 		feed.Items = lo.Filter(items, func(item *feeds.Item, index int) bool {
-			r := results[index]
+			vec := articleVectors[index]
 
-			// Embedding 失败的文章保留（保守策略）
-			if r.err != nil || r.vector == nil {
+			// 向量为 nil 的文章保留（空文本或未计算）
+			if vec == nil {
 				return true
 			}
 
 			// 与所有锚点计算相似度，任一超过阈值即保留
-			maxSim := 0.0
+			maxSim := -1.0
 			for _, anchorVec := range anchorVectors {
-				sim := util.CosineSimilarity(r.vector, anchorVec)
+				sim := util.CosineSimilarity(vec, anchorVec)
 				if sim > maxSim {
 					maxSim = sim
 				}
@@ -116,16 +120,17 @@ func OptionEmbeddingFilter(anchors []string, threshold float64, maxContentLen in
 	}
 }
 
-// buildArticleText 拼接文章标题和正文，正文超过 maxLen 时截取
+// buildArticleText 拼接文章标题和正文，正文超过 maxLen 时按 Unicode 字符截取
 func buildArticleText(item *feeds.Item, maxLen int) string {
 	content := item.Content
 	if len(content) == 0 {
 		content = item.Description
 	}
 
-	// 截取正文
-	if len(content) > maxLen {
-		content = content[:maxLen]
+	// 按 Unicode 字符（rune）截取正文，避免切断多字节字符
+	if utf8.RuneCountInString(content) > maxLen {
+		runes := []rune(content)
+		content = string(runes[:maxLen])
 	}
 
 	if item.Title != "" && content != "" {

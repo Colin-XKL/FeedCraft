@@ -2,6 +2,7 @@ package craft
 
 import (
 	"testing"
+	"unicode/utf8"
 
 	"github.com/gorilla/feeds"
 	"github.com/stretchr/testify/assert"
@@ -133,7 +134,7 @@ func TestBuildArticleText_ContentTruncation(t *testing.T) {
 		Content: longContent,
 	}
 	result := buildArticleText(item, 100)
-	// 标题 + "\n" + 截取后的100字符
+	// 标题 + "\n" + 截取后的100字符（ASCII 字符 rune 和 byte 长度一致）
 	assert.Equal(t, "Title\n"+longContent[:100], result)
 }
 
@@ -141,6 +142,43 @@ func TestBuildArticleText_EmptyItem(t *testing.T) {
 	item := &feeds.Item{}
 	result := buildArticleText(item, 2000)
 	assert.Equal(t, "", result)
+}
+
+// --- UTF-8 安全截断测试 ---
+
+func TestBuildArticleText_ChineseTruncation(t *testing.T) {
+	// 中文字符每个占 3 字节，按 rune 截断应保证完整字符
+	chineseContent := "这是一段中文测试内容用于验证截断功能是否正确处理多字节字符"
+	item := &feeds.Item{
+		Content: chineseContent,
+	}
+	result := buildArticleText(item, 5)
+	// 应截取前 5 个 Unicode 字符
+	assert.Equal(t, "这是一段中", result)
+	assert.True(t, utf8.ValidString(result), "truncated string should be valid UTF-8")
+}
+
+func TestBuildArticleText_EmojiTruncation(t *testing.T) {
+	// Emoji 字符占 4 字节，按 rune 截断应保证完整字符
+	emojiContent := "🎉🎊🎈🎁🎄🎃🎆🎇"
+	item := &feeds.Item{
+		Content: emojiContent,
+	}
+	result := buildArticleText(item, 3)
+	assert.Equal(t, "🎉🎊🎈", result)
+	assert.True(t, utf8.ValidString(result), "truncated emoji string should be valid UTF-8")
+}
+
+func TestBuildArticleText_MixedUTF8Truncation(t *testing.T) {
+	// 混合 ASCII + 中文 + Emoji
+	mixedContent := "Hi你好🎉World世界"
+	item := &feeds.Item{
+		Content: mixedContent,
+	}
+	result := buildArticleText(item, 6)
+	// 前 6 个 rune: H, i, 你, 好, 🎉, W
+	assert.Equal(t, "Hi你好🎉W", result)
+	assert.True(t, utf8.ValidString(result), "truncated mixed string should be valid UTF-8")
 }
 
 // --- OptionEmbeddingFilter 边界测试 ---

@@ -4,7 +4,6 @@ import (
 	"FeedCraft/internal/util"
 	"context"
 	"fmt"
-	"log"
 	"sync"
 	"time"
 
@@ -44,10 +43,10 @@ type embeddingConfig struct {
 }
 
 // loadEmbeddingConfig 读取 Embedding 环境变量，未配置时回退使用 LLM 配置
-func loadEmbeddingConfig() embeddingConfig {
+func loadEmbeddingConfig() (embeddingConfig, error) {
 	envClient := util.GetEnvClient()
 	if envClient == nil {
-		log.Fatalf("get env client error.")
+		return embeddingConfig{}, fmt.Errorf("failed to initialize env client")
 	}
 
 	cfg := embeddingConfig{}
@@ -83,7 +82,7 @@ func loadEmbeddingConfig() embeddingConfig {
 		logrus.Debugf("FC_EMBEDDING_API_MODEL not set, using default: %s", defaultEmbeddingModel)
 	}
 
-	return cfg
+	return cfg, nil
 }
 
 // getOrCreateEmbedder 获取或创建 Embedding 客户端（带缓存）
@@ -117,6 +116,9 @@ func getOrCreateEmbedder(cfg embeddingConfig) (*embeddings.EmbedderImpl, error) 
 		// Gemini 通过 OpenAI 兼容接口调用（Google 提供了 OpenAI 兼容的 Embedding 端点）
 		// 用户需要将 FC_EMBEDDING_API_BASE 设置为 Gemini 的 OpenAI 兼容端点
 		logrus.Debug("Creating Gemini embedding client (via OpenAI-compatible API)")
+		if cfg.apiKey == "" {
+			return nil, fmt.Errorf("FC_EMBEDDING_API_KEY (or FC_LLM_API_KEY) must be set when using apiType 'gemini'")
+		}
 		opts := []openai.Option{
 			openai.WithToken(cfg.apiKey),
 			openai.WithEmbeddingModel(cfg.apiModel),
@@ -133,6 +135,9 @@ func getOrCreateEmbedder(cfg embeddingConfig) (*embeddings.EmbedderImpl, error) 
 
 	default: // "openai" 及其他 OpenAI 兼容服务
 		logrus.Debug("Creating OpenAI embedding client")
+		if cfg.apiKey == "" {
+			return nil, fmt.Errorf("FC_EMBEDDING_API_KEY (or FC_LLM_API_KEY) must be set when using apiType '%s'", cfg.apiType)
+		}
 		opts := []openai.Option{
 			openai.WithToken(cfg.apiKey),
 			openai.WithEmbeddingModel(cfg.apiModel),
@@ -161,7 +166,10 @@ func getOrCreateEmbedder(cfg embeddingConfig) (*embeddings.EmbedderImpl, error) 
 // instruction 参数：对于支持 instruction 的模型会拼接到文本前面，不支持的静默忽略
 // 返回 [][]float64 以便后续余弦相似度计算
 func EmbedTexts(ctx context.Context, texts []string, instruction string) ([][]float64, error) {
-	cfg := loadEmbeddingConfig()
+	cfg, err := loadEmbeddingConfig()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load embedding config: %w", err)
+	}
 
 	// 如果有 instruction 且非空，拼接到每条文本前面
 	// 这是一种通用的 instruction 传递方式，适用于大多数模型
@@ -178,12 +186,12 @@ func EmbedTexts(ctx context.Context, texts []string, instruction string) ([][]fl
 		}
 	}
 
-	embedder, err := getOrCreateEmbedder(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get embedder: %w", err)
+	embedder, embedErr := getOrCreateEmbedder(cfg)
+	if embedErr != nil {
+		return nil, fmt.Errorf("failed to get embedder: %w", embedErr)
 	}
 
-	// 带重试的 Embedding 调用
+	// 带重试的 Embedding 调用，绑定父 Context 以尊重取消信号
 	var result32 [][]float32
 	result32, err = retry.DoWithData(
 		func() ([][]float32, error) {
@@ -191,6 +199,7 @@ func EmbedTexts(ctx context.Context, texts []string, instruction string) ([][]fl
 			defer cancel()
 			return embedder.EmbedDocuments(callCtx, processedTexts)
 		},
+		retry.Context(ctx),
 		retry.Attempts(3),
 		retry.DelayType(retry.BackOffDelay),
 		retry.Delay(1*time.Second),
@@ -224,8 +233,12 @@ func GetOrComputeAnchorVectors(ctx context.Context, anchors []string, instructio
 		return nil, nil
 	}
 
-	cfg := loadEmbeddingConfig()
+	cfg, err := loadEmbeddingConfig()
+	if err != nil {
+		return nil, fmt.Errorf("failed to load embedding config: %w", err)
+	}
 	modelName := cfg.apiModel
+	instructionHash := util.GetMD5Hash(instruction)
 
 	// 检查哪些锚点已缓存，哪些需要计算
 	result := make([][]float64, len(anchors))
@@ -233,7 +246,7 @@ func GetOrComputeAnchorVectors(ctx context.Context, anchors []string, instructio
 	var uncachedTexts []string
 
 	for i, anchor := range anchors {
-		cacheKey := fmt.Sprintf("anchor|%s|%s", util.GetMD5Hash(anchor), modelName)
+		cacheKey := fmt.Sprintf("anchor|%s|%s|%s", util.GetMD5Hash(anchor), modelName, instructionHash)
 		if cached, ok := anchorVectorCache.Load(cacheKey); ok {
 			result[i] = cached.([]float64)
 		} else {
@@ -258,7 +271,7 @@ func GetOrComputeAnchorVectors(ctx context.Context, anchors []string, instructio
 
 	// 将新计算的向量写入缓存和结果
 	for j, idx := range uncachedIndices {
-		cacheKey := fmt.Sprintf("anchor|%s|%s", util.GetMD5Hash(anchors[idx]), modelName)
+		cacheKey := fmt.Sprintf("anchor|%s|%s|%s", util.GetMD5Hash(anchors[idx]), modelName, instructionHash)
 		anchorVectorCache.Store(cacheKey, newVectors[j])
 		result[idx] = newVectors[j]
 	}

@@ -6,8 +6,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// --- loadEmbeddingConfig 测试 ---
+
 func TestLoadEmbeddingConfig_Defaults(t *testing.T) {
-	cfg := loadEmbeddingConfig()
+	cfg, err := loadEmbeddingConfig()
+	assert.NoError(t, err)
 	// 默认 apiType 应为 "openai"
 	assert.Equal(t, "openai", cfg.apiType)
 	// 默认模型应为 defaultEmbeddingModel
@@ -15,10 +18,20 @@ func TestLoadEmbeddingConfig_Defaults(t *testing.T) {
 }
 
 func TestLoadEmbeddingConfig_ApiTypeDefault(t *testing.T) {
-	cfg := loadEmbeddingConfig()
+	cfg, err := loadEmbeddingConfig()
+	assert.NoError(t, err)
 	// 未设置 FC_EMBEDDING_API_TYPE 时应默认为 "openai"
 	assert.Equal(t, "openai", cfg.apiType)
 }
+
+func TestLoadEmbeddingConfig_ReturnsNoFatal(t *testing.T) {
+	// 确保 loadEmbeddingConfig 不会 panic 或 fatal
+	cfg, err := loadEmbeddingConfig()
+	assert.NoError(t, err)
+	assert.NotEmpty(t, cfg.apiType)
+}
+
+// --- getOrCreateEmbedder 测试 ---
 
 func TestGetOrCreateEmbedder_OllamaWithoutBase(t *testing.T) {
 	cfg := embeddingConfig{
@@ -73,4 +86,42 @@ func TestGetOrCreateEmbedder_ClientCaching(t *testing.T) {
 	embedder2, err := getOrCreateEmbedder(cfg)
 	assert.NoError(t, err)
 	assert.Equal(t, embedder1, embedder2, "should return cached embedder instance")
+}
+
+// --- API Key 校验测试 ---
+
+func TestGetOrCreateEmbedder_OpenAIEmptyApiKey(t *testing.T) {
+	cfg := embeddingConfig{
+		apiType:  "openai",
+		apiBase:  "https://api.openai.com/v1",
+		apiKey:   "",
+		apiModel: "text-embedding-3-small",
+	}
+	_, err := getOrCreateEmbedder(cfg)
+	assert.Error(t, err, "openai with empty apiKey should return error")
+	assert.Contains(t, err.Error(), "FC_EMBEDDING_API_KEY")
+}
+
+func TestGetOrCreateEmbedder_GeminiEmptyApiKey(t *testing.T) {
+	cfg := embeddingConfig{
+		apiType:  "gemini",
+		apiBase:  "https://generativelanguage.googleapis.com/v1beta/openai/",
+		apiKey:   "",
+		apiModel: "gemini-embedding-001",
+	}
+	_, err := getOrCreateEmbedder(cfg)
+	assert.Error(t, err, "gemini with empty apiKey should return error")
+	assert.Contains(t, err.Error(), "FC_EMBEDDING_API_KEY")
+}
+
+func TestGetOrCreateEmbedder_OllamaNoApiKeyRequired(t *testing.T) {
+	cfg := embeddingConfig{
+		apiType:  "ollama",
+		apiBase:  "http://localhost:11434",
+		apiKey:   "",
+		apiModel: "bge-m3",
+	}
+	embedder, err := getOrCreateEmbedder(cfg)
+	assert.NoError(t, err, "ollama should not require apiKey")
+	assert.NotNil(t, embedder)
 }
