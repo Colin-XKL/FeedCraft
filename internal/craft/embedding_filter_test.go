@@ -184,7 +184,7 @@ func TestBuildArticleText_MixedUTF8Truncation(t *testing.T) {
 // --- OptionEmbeddingFilter 边界测试 ---
 
 func TestOptionEmbeddingFilter_EmptyItems(t *testing.T) {
-	option := OptionEmbeddingFilter([]string{"test"}, 0.6, 2000, "")
+	option := OptionEmbeddingFilter([]string{"test"}, 0.6, 2000, "", EmbeddingIncludeMode)
 	feed := &feeds.Feed{Items: []*feeds.Item{}}
 	err := option(feed, ExtraPayload{})
 	assert.NoError(t, err)
@@ -192,7 +192,7 @@ func TestOptionEmbeddingFilter_EmptyItems(t *testing.T) {
 }
 
 func TestOptionEmbeddingFilter_EmptyAnchors(t *testing.T) {
-	option := OptionEmbeddingFilter([]string{}, 0.6, 2000, "")
+	option := OptionEmbeddingFilter([]string{}, 0.6, 2000, "", EmbeddingIncludeMode)
 	feed := &feeds.Feed{
 		Items: []*feeds.Item{
 			{Title: "Article 1", Content: "Content 1"},
@@ -209,7 +209,7 @@ func TestOptionEmbeddingFilter_EmptyAnchors(t *testing.T) {
 
 func TestOptionEmbeddingFilter_ThresholdClampBelowZero(t *testing.T) {
 	// 阈值 < 0 应被钳制为 0，不应 panic
-	option := OptionEmbeddingFilter([]string{"test"}, -0.5, 2000, "")
+	option := OptionEmbeddingFilter([]string{"test"}, -0.5, 2000, "", EmbeddingIncludeMode)
 	feed := &feeds.Feed{Items: []*feeds.Item{}}
 	err := option(feed, ExtraPayload{})
 	assert.NoError(t, err)
@@ -217,7 +217,7 @@ func TestOptionEmbeddingFilter_ThresholdClampBelowZero(t *testing.T) {
 
 func TestOptionEmbeddingFilter_ThresholdClampAboveOne(t *testing.T) {
 	// 阈值 > 1 应被钳制为 1，不应 panic
-	option := OptionEmbeddingFilter([]string{"test"}, 1.5, 2000, "")
+	option := OptionEmbeddingFilter([]string{"test"}, 1.5, 2000, "", EmbeddingIncludeMode)
 	feed := &feeds.Feed{Items: []*feeds.Item{}}
 	err := option(feed, ExtraPayload{})
 	assert.NoError(t, err)
@@ -225,12 +225,12 @@ func TestOptionEmbeddingFilter_ThresholdClampAboveOne(t *testing.T) {
 
 func TestOptionEmbeddingFilter_ThresholdExactBoundary(t *testing.T) {
 	// 阈值恰好为 0 和 1 应正常工作
-	option0 := OptionEmbeddingFilter([]string{"test"}, 0.0, 2000, "")
+	option0 := OptionEmbeddingFilter([]string{"test"}, 0.0, 2000, "", EmbeddingIncludeMode)
 	feed0 := &feeds.Feed{Items: []*feeds.Item{}}
 	err := option0(feed0, ExtraPayload{})
 	assert.NoError(t, err)
 
-	option1 := OptionEmbeddingFilter([]string{"test"}, 1.0, 2000, "")
+	option1 := OptionEmbeddingFilter([]string{"test"}, 1.0, 2000, "", EmbeddingIncludeMode)
 	feed1 := &feeds.Feed{Items: []*feeds.Item{}}
 	err = option1(feed1, ExtraPayload{})
 	assert.NoError(t, err)
@@ -272,4 +272,73 @@ func TestEmbeddingFilterTemplateRegistered(t *testing.T) {
 	assert.True(t, paramKeys["threshold"], "should have 'threshold' param")
 	assert.True(t, paramKeys["max_content_length"], "should have 'max_content_length' param")
 	assert.True(t, paramKeys["instruction"], "should have 'instruction' param")
+	assert.True(t, paramKeys["mode"], "should have 'mode' param")
+}
+
+// --- mode 参数解析测试 ---
+
+func TestEmbeddingFilterLoadParam_ModeInclude(t *testing.T) {
+	params := map[string]string{
+		"anchors": "test anchor",
+		"mode":    "include",
+	}
+	options := embeddingFilterLoadParam(params)
+	assert.Len(t, options, 1, "include mode should return one option")
+}
+
+func TestEmbeddingFilterLoadParam_ModeExclude(t *testing.T) {
+	params := map[string]string{
+		"anchors": "test anchor",
+		"mode":    "exclude",
+	}
+	options := embeddingFilterLoadParam(params)
+	assert.Len(t, options, 1, "exclude mode should return one option")
+}
+
+func TestEmbeddingFilterLoadParam_ModeDefault(t *testing.T) {
+	params := map[string]string{
+		"anchors": "test anchor",
+	}
+	options := embeddingFilterLoadParam(params)
+	assert.Len(t, options, 1, "missing mode should default to include")
+}
+
+func TestEmbeddingFilterLoadParam_ModeInvalid(t *testing.T) {
+	params := map[string]string{
+		"anchors": "test anchor",
+		"mode":    "invalid_mode",
+	}
+	options := embeddingFilterLoadParam(params)
+	assert.Len(t, options, 1, "invalid mode should fallback to include")
+}
+
+func TestEmbeddingFilterLoadParam_ModeCaseInsensitive(t *testing.T) {
+	params := map[string]string{
+		"anchors": "test anchor",
+		"mode":    "EXCLUDE",
+	}
+	options := embeddingFilterLoadParam(params)
+	assert.Len(t, options, 1, "mode should be case-insensitive")
+}
+
+func TestOptionEmbeddingFilter_ExcludeMode_EmptyItems(t *testing.T) {
+	option := OptionEmbeddingFilter([]string{"test"}, 0.6, 2000, "", EmbeddingExcludeMode)
+	feed := &feeds.Feed{Items: []*feeds.Item{}}
+	err := option(feed, ExtraPayload{})
+	assert.NoError(t, err)
+	assert.Empty(t, feed.Items)
+}
+
+func TestOptionEmbeddingFilter_ExcludeMode_EmptyAnchors(t *testing.T) {
+	option := OptionEmbeddingFilter([]string{}, 0.6, 2000, "", EmbeddingExcludeMode)
+	feed := &feeds.Feed{
+		Items: []*feeds.Item{
+			{Title: "Article 1", Content: "Content 1"},
+			{Title: "Article 2", Content: "Content 2"},
+		},
+	}
+	err := option(feed, ExtraPayload{})
+	assert.NoError(t, err)
+	// 锚点为空时不过滤，保留所有文章
+	assert.Len(t, feed.Items, 2)
 }

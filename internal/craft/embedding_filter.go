@@ -25,12 +25,21 @@ const (
 	defaultMaxContentLength   = 2000
 )
 
+// EmbeddingFilterMode 定义 Embedding 过滤器的工作模式
+type EmbeddingFilterMode string
+
+var (
+	EmbeddingIncludeMode EmbeddingFilterMode = "include" // 匹配锚点的文章被保留（默认）
+	EmbeddingExcludeMode EmbeddingFilterMode = "exclude" // 匹配锚点的文章被移除（反选）
+)
+
 // OptionEmbeddingFilter 创建 Embedding 主题过滤器的 CraftOption
 // anchors: 锚点文本列表
-// threshold: 余弦相似度阈值，≥ 阈值即保留
+// threshold: 余弦相似度阈值
 // maxContentLen: 文章正文最大截取长度
 // instruction: 传递给 Embedding 模型的 instruction 参数
-func OptionEmbeddingFilter(anchors []string, threshold float64, maxContentLen int, instruction string) CraftOption {
+// mode: include（匹配即保留，默认）或 exclude（匹配即移除，反选）
+func OptionEmbeddingFilter(anchors []string, threshold float64, maxContentLen int, instruction string, mode EmbeddingFilterMode) CraftOption {
 	return func(feed *feeds.Feed, payload ExtraPayload) error {
 		items := feed.Items
 		if len(items) == 0 {
@@ -133,17 +142,27 @@ func OptionEmbeddingFilter(anchors []string, threshold float64, maxContentLen in
 			}
 
 			matched := maxSim >= threshold
-			if matched {
-				logrus.Debugf("[embedding-filter] article [%s] MATCHED (max similarity: %.4f >= %.4f)", item.Title, maxSim, threshold)
-			} else {
-				logrus.Debugf("[embedding-filter] article [%s] DROPPED (max similarity: %.4f < %.4f)", item.Title, maxSim, threshold)
+
+			// 根据 mode 决定保留逻辑
+			var keep bool
+			switch mode {
+			case EmbeddingExcludeMode:
+				keep = !matched // 反选：匹配的移除，不匹配的保留
+			default: // include
+				keep = matched // 选中：匹配的保留，不匹配的移除
 			}
-			return matched
+
+			if keep {
+				logrus.Debugf("[embedding-filter] article [%s] KEPT (max similarity: %.4f, threshold: %.4f, mode: %s)", item.Title, maxSim, threshold, mode)
+			} else {
+				logrus.Debugf("[embedding-filter] article [%s] DROPPED (max similarity: %.4f, threshold: %.4f, mode: %s)", item.Title, maxSim, threshold, mode)
+			}
+			return keep
 		})
 
 		keptCount := len(feed.Items)
 		droppedCount := totalCount - keptCount
-		logrus.Infof("[embedding-filter] filtering complete: %d total, %d kept, %d dropped (threshold: %.4f)", totalCount, keptCount, droppedCount, threshold)
+		logrus.Infof("[embedding-filter] filtering complete: %d total, %d kept, %d dropped (threshold: %.4f, mode: %s)", totalCount, keptCount, droppedCount, threshold, mode)
 
 		return nil
 	}
@@ -172,9 +191,9 @@ func buildArticleText(item *feeds.Item, maxLen int) string {
 }
 
 // GetEmbeddingFilterOptions 返回 Embedding 过滤器的 CraftOption 列表
-func GetEmbeddingFilterOptions(anchors []string, threshold float64, maxContentLen int, instruction string) []CraftOption {
+func GetEmbeddingFilterOptions(anchors []string, threshold float64, maxContentLen int, instruction string, mode EmbeddingFilterMode) []CraftOption {
 	return []CraftOption{
-		OptionEmbeddingFilter(anchors, threshold, maxContentLen, instruction),
+		OptionEmbeddingFilter(anchors, threshold, maxContentLen, instruction, mode),
 	}
 }
 
@@ -183,13 +202,18 @@ func GetEmbeddingFilterOptions(anchors []string, threshold float64, maxContentLe
 var embeddingFilterParamTmpl = []ParamTemplate{
 	{
 		Key:         "anchors",
-		Description: "自然语言描述的主题锚点文本，每行一条。文章与任一锚点相似度超过阈值即被保留。",
+		Description: "自然语言描述的主题锚点文本，每行一条。文章与任一锚点相似度超过阈值即被视为匹配。",
 		Default:     "",
 	},
 	{
 		Key:         "threshold",
 		Description: "余弦相似度阈值（0-1），越高越严格。默认 0.6。",
 		Default:     "0.6",
+	},
+	{
+		Key:         "mode",
+		Description: "过滤模式：include（保留匹配项，默认）或 exclude（移除匹配项，反选）。",
+		Default:     "include",
 	},
 	{
 		Key:         "max_content_length",
@@ -246,8 +270,21 @@ func embeddingFilterLoadParam(m map[string]string) []CraftOption {
 		}
 	}
 
+	// 解析过滤模式
+	mode := EmbeddingIncludeMode
+	if modeStr, ok := m["mode"]; ok && modeStr != "" {
+		switch strings.ToLower(strings.TrimSpace(modeStr)) {
+		case "exclude":
+			mode = EmbeddingExcludeMode
+		case "include":
+			mode = EmbeddingIncludeMode
+		default:
+			logrus.Warnf("[embedding-filter] unknown mode [%s], using default 'include'", modeStr)
+		}
+	}
+
 	// 解析 instruction
 	instruction := m["instruction"]
 
-	return GetEmbeddingFilterOptions(anchors, threshold, maxContentLen, instruction)
+	return GetEmbeddingFilterOptions(anchors, threshold, maxContentLen, instruction, mode)
 }

@@ -132,7 +132,7 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 	}
 	sysCraftTempList["embedding-filter"] = CraftTemplate{
 		Name:                "embedding-filter",
-		Description:         "使用 Embedding 模型按主题过滤文章（零样本分类）。文章与任一锚点相似度超过阈值即被保留。",
+		Description:         "使用 Embedding 模型按主题过滤文章（零样本分类）。支持 include（保留匹配项）和 exclude（移除匹配项）两种模式。",
 		ParamTemplateDefine: embeddingFilterParamTmpl,
 		OptionFunc:          embeddingFilterLoadParam,
 	}
