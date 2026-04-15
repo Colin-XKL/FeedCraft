@@ -125,3 +125,68 @@ func TestGetOrCreateEmbedder_OllamaNoApiKeyRequired(t *testing.T) {
 	assert.NoError(t, err, "ollama should not require apiKey")
 	assert.NotNil(t, embedder)
 }
+
+// --- Gemini apiBase 校验测试（需求 3）---
+
+func TestGetOrCreateEmbedder_GeminiEmptyApiBase(t *testing.T) {
+	cfg := embeddingConfig{
+		apiType:  "gemini",
+		apiBase:  "",
+		apiKey:   "test-key",
+		apiModel: "gemini-embedding-001",
+	}
+	_, err := getOrCreateEmbedder(cfg)
+	assert.Error(t, err, "gemini with empty apiBase should return error")
+	assert.Contains(t, err.Error(), "FC_EMBEDDING_API_BASE")
+	assert.Contains(t, err.Error(), "gemini")
+}
+
+// --- 默认模型逻辑测试（需求 4）---
+
+func TestLoadEmbeddingConfig_OllamaEmptyModel(t *testing.T) {
+	// 设置环境变量模拟 ollama 类型但不设模型
+	t.Setenv("FC_EMBEDDING_API_TYPE", "ollama")
+	t.Setenv("FC_EMBEDDING_API_BASE", "http://localhost:11434")
+	t.Setenv("FC_EMBEDDING_API_MODEL", "")
+	_, err := loadEmbeddingConfig()
+	assert.Error(t, err, "ollama with empty model should return error")
+	assert.Contains(t, err.Error(), "FC_EMBEDDING_API_MODEL")
+}
+
+func TestLoadEmbeddingConfig_GeminiEmptyModel(t *testing.T) {
+	t.Setenv("FC_EMBEDDING_API_TYPE", "gemini")
+	t.Setenv("FC_EMBEDDING_API_BASE", "https://generativelanguage.googleapis.com/v1beta/openai/")
+	t.Setenv("FC_EMBEDDING_API_KEY", "test-key")
+	t.Setenv("FC_EMBEDDING_API_MODEL", "")
+	_, err := loadEmbeddingConfig()
+	assert.Error(t, err, "gemini with empty model should return error")
+	assert.Contains(t, err.Error(), "FC_EMBEDDING_API_MODEL")
+}
+
+func TestLoadEmbeddingConfig_OpenAIDefaultModel(t *testing.T) {
+	t.Setenv("FC_EMBEDDING_API_TYPE", "openai")
+	t.Setenv("FC_EMBEDDING_API_MODEL", "")
+	cfg, err := loadEmbeddingConfig()
+	assert.NoError(t, err)
+	assert.Equal(t, defaultEmbeddingModel, cfg.apiModel, "openai should use default model when not set")
+}
+
+// --- resolveInstruction 测试（需求 1）---
+
+func TestResolveInstruction_ExplicitInstruction(t *testing.T) {
+	cfg := embeddingConfig{instruction: "global_instruction"}
+	result := resolveInstruction("explicit_instruction", cfg)
+	assert.Equal(t, "explicit_instruction", result, "explicit instruction should take priority")
+}
+
+func TestResolveInstruction_FallbackToGlobal(t *testing.T) {
+	cfg := embeddingConfig{instruction: "global_instruction"}
+	result := resolveInstruction("", cfg)
+	assert.Equal(t, "global_instruction", result, "should fallback to global instruction when empty")
+}
+
+func TestResolveInstruction_BothEmpty(t *testing.T) {
+	cfg := embeddingConfig{instruction: ""}
+	result := resolveInstruction("", cfg)
+	assert.Equal(t, "", result, "should return empty when both are empty")
+}

@@ -205,6 +205,54 @@ func TestOptionEmbeddingFilter_EmptyAnchors(t *testing.T) {
 	assert.Len(t, feed.Items, 2)
 }
 
+// --- 阈值 clamp 测试（需求 9）---
+
+func TestOptionEmbeddingFilter_ThresholdClampBelowZero(t *testing.T) {
+	// 阈值 < 0 应被钳制为 0，不应 panic
+	option := OptionEmbeddingFilter([]string{"test"}, -0.5, 2000, "")
+	feed := &feeds.Feed{Items: []*feeds.Item{}}
+	err := option(feed, ExtraPayload{})
+	assert.NoError(t, err)
+}
+
+func TestOptionEmbeddingFilter_ThresholdClampAboveOne(t *testing.T) {
+	// 阈值 > 1 应被钳制为 1，不应 panic
+	option := OptionEmbeddingFilter([]string{"test"}, 1.5, 2000, "")
+	feed := &feeds.Feed{Items: []*feeds.Item{}}
+	err := option(feed, ExtraPayload{})
+	assert.NoError(t, err)
+}
+
+func TestOptionEmbeddingFilter_ThresholdExactBoundary(t *testing.T) {
+	// 阈值恰好为 0 和 1 应正常工作
+	option0 := OptionEmbeddingFilter([]string{"test"}, 0.0, 2000, "")
+	feed0 := &feeds.Feed{Items: []*feeds.Item{}}
+	err := option0(feed0, ExtraPayload{})
+	assert.NoError(t, err)
+
+	option1 := OptionEmbeddingFilter([]string{"test"}, 1.0, 2000, "")
+	feed1 := &feeds.Feed{Items: []*feeds.Item{}}
+	err = option1(feed1, ExtraPayload{})
+	assert.NoError(t, err)
+}
+
+// --- buildArticleText 空文本标记测试（需求 2 辅助）---
+
+func TestBuildArticleText_EmptyItemReturnsEmpty(t *testing.T) {
+	item := &feeds.Item{}
+	result := buildArticleText(item, 2000)
+	assert.Equal(t, "", result, "empty item should produce empty text for emptyTextSet marking")
+}
+
+func TestBuildArticleText_WhitespaceOnlyContent(t *testing.T) {
+	item := &feeds.Item{
+		Content: "   \t\n  ",
+	}
+	result := buildArticleText(item, 2000)
+	// buildArticleText 不做 trim，但调用方会用 strings.TrimSpace 判断
+	assert.NotEmpty(t, result, "whitespace content is returned as-is by buildArticleText")
+}
+
 // --- CraftTemplate 注册测试 ---
 
 func TestEmbeddingFilterTemplateRegistered(t *testing.T) {

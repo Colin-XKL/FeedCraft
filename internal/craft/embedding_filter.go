@@ -37,6 +37,16 @@ func OptionEmbeddingFilter(anchors []string, threshold float64, maxContentLen in
 			return nil
 		}
 
+		// 0. 阈值 clamp：将 threshold 钳制到 [0, 1] 范围
+		if threshold < 0 {
+			logrus.Warnf("[embedding-filter] threshold %.4f is below 0, clamping to 0", threshold)
+			threshold = 0
+		}
+		if threshold > 1 {
+			logrus.Warnf("[embedding-filter] threshold %.4f is above 1, clamping to 1", threshold)
+			threshold = 1
+		}
+
 		// 1. 校验锚点
 		if len(anchors) == 0 {
 			logrus.Warn("[embedding-filter] anchors list is empty, skipping filter (returning all items)")
@@ -60,10 +70,14 @@ func OptionEmbeddingFilter(anchors []string, threshold float64, maxContentLen in
 		// 过滤掉空文本的索引，记录有效文本的映射
 		var validTexts []string
 		var validIndices []int
+		// emptyTextSet 记录空文本文章的索引，用于区分"空文本保留"和"计算失败保留"
+		emptyTextSet := make(map[int]bool)
 		for i, text := range texts {
 			if len(strings.TrimSpace(text)) > 0 {
 				validTexts = append(validTexts, text)
 				validIndices = append(validIndices, i)
+			} else {
+				emptyTextSet[i] = true
 			}
 		}
 
@@ -76,6 +90,10 @@ func OptionEmbeddingFilter(anchors []string, threshold float64, maxContentLen in
 				embedErr = batchErr
 				logrus.Errorf("[embedding-filter] batch embedding failed: %v", batchErr)
 			} else {
+				// 检查返回的向量数量是否与请求数量一致
+				if len(vectors) < len(validTexts) {
+					logrus.Warnf("[embedding-filter] embedding returned %d vectors for %d texts, some articles may not be properly filtered", len(vectors), len(validTexts))
+				}
 				for j, idx := range validIndices {
 					if j < len(vectors) {
 						articleVectors[idx] = vectors[j]
@@ -90,11 +108,18 @@ func OptionEmbeddingFilter(anchors []string, threshold float64, maxContentLen in
 		}
 
 		// 5. 根据相似度过滤
+		totalCount := len(items)
 		feed.Items = lo.Filter(items, func(item *feeds.Item, index int) bool {
 			vec := articleVectors[index]
 
-			// 向量为 nil 的文章保留（空文本或未计算）
+			// 向量为 nil 时区分原因
 			if vec == nil {
+				if emptyTextSet[index] {
+					// 空文本文章：保留（行为不变）
+					return true
+				}
+				// 有效文本但向量计算失败：保留但记录警告
+				logrus.Warnf("[embedding-filter] article [%s] has valid text but nil vector (embedding failed), keeping by default", item.Title)
 				return true
 			}
 
@@ -109,12 +134,16 @@ func OptionEmbeddingFilter(anchors []string, threshold float64, maxContentLen in
 
 			matched := maxSim >= threshold
 			if matched {
-				logrus.Infof("[embedding-filter] article [%s] MATCHED (max similarity: %.4f >= %.4f)", item.Title, maxSim, threshold)
+				logrus.Debugf("[embedding-filter] article [%s] MATCHED (max similarity: %.4f >= %.4f)", item.Title, maxSim, threshold)
 			} else {
-				logrus.Infof("[embedding-filter] article [%s] DROPPED (max similarity: %.4f < %.4f)", item.Title, maxSim, threshold)
+				logrus.Debugf("[embedding-filter] article [%s] DROPPED (max similarity: %.4f < %.4f)", item.Title, maxSim, threshold)
 			}
 			return matched
 		})
+
+		keptCount := len(feed.Items)
+		droppedCount := totalCount - keptCount
+		logrus.Infof("[embedding-filter] filtering complete: %d total, %d kept, %d dropped (threshold: %.4f)", totalCount, keptCount, droppedCount, threshold)
 
 		return nil
 	}

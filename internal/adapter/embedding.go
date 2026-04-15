@@ -23,6 +23,7 @@ import (
 const (
 	defaultEmbeddingModel = "text-embedding-3-small"
 	embeddingCallTimeout  = 2 * time.Minute
+	embeddingTotalTimeout = 5 * time.Minute // 全局超时预算，所有重试在此预算内执行
 )
 
 var (
@@ -78,8 +79,13 @@ func loadEmbeddingConfig() (embeddingConfig, error) {
 	}
 
 	if cfg.apiModel == "" {
-		cfg.apiModel = defaultEmbeddingModel
-		logrus.Debugf("FC_EMBEDDING_API_MODEL not set, using default: %s", defaultEmbeddingModel)
+		switch cfg.apiType {
+		case "ollama", "gemini":
+			return embeddingConfig{}, fmt.Errorf("FC_EMBEDDING_API_MODEL must be set when using FC_EMBEDDING_API_TYPE='%s'", cfg.apiType)
+		default: // "openai" 及其他 OpenAI 兼容服务
+			cfg.apiModel = defaultEmbeddingModel
+			logrus.Debugf("FC_EMBEDDING_API_MODEL not set, using default: %s", defaultEmbeddingModel)
+		}
 	}
 
 	return cfg, nil
@@ -116,15 +122,16 @@ func getOrCreateEmbedder(cfg embeddingConfig) (*embeddings.EmbedderImpl, error) 
 		// Gemini 通过 OpenAI 兼容接口调用（Google 提供了 OpenAI 兼容的 Embedding 端点）
 		// 用户需要将 FC_EMBEDDING_API_BASE 设置为 Gemini 的 OpenAI 兼容端点
 		logrus.Debug("Creating Gemini embedding client (via OpenAI-compatible API)")
+		if cfg.apiBase == "" {
+			return nil, fmt.Errorf("FC_EMBEDDING_API_BASE (or FC_LLM_API_BASE) must be set when using FC_EMBEDDING_API_TYPE='gemini' to avoid sending credentials to wrong endpoint")
+		}
 		if cfg.apiKey == "" {
 			return nil, fmt.Errorf("FC_EMBEDDING_API_KEY (or FC_LLM_API_KEY) must be set when using apiType 'gemini'")
 		}
 		opts := []openai.Option{
 			openai.WithToken(cfg.apiKey),
 			openai.WithEmbeddingModel(cfg.apiModel),
-		}
-		if cfg.apiBase != "" {
-			opts = append(opts, openai.WithBaseURL(cfg.apiBase))
+			openai.WithBaseURL(cfg.apiBase), // apiBase 已在上方强制校验非空
 		}
 		var openaiLLM *openai.LLM
 		openaiLLM, err = openai.New(opts...)
@@ -162,6 +169,14 @@ func getOrCreateEmbedder(cfg embeddingConfig) (*embeddings.EmbedderImpl, error) 
 	return embedder, nil
 }
 
+// resolveInstruction 解析最终生效的 instruction：调用方传入的优先，为空时 fallback 到全局配置
+func resolveInstruction(instruction string, cfg embeddingConfig) string {
+	if instruction != "" {
+		return instruction
+	}
+	return cfg.instruction
+}
+
 // EmbedTexts 统一的 Embedding 接口，将文本列表编码为向量
 // instruction 参数：对于支持 instruction 的模型会拼接到文本前面，不支持的静默忽略
 // 返回 [][]float64 以便后续余弦相似度计算
@@ -171,18 +186,14 @@ func EmbedTexts(ctx context.Context, texts []string, instruction string) ([][]fl
 		return nil, fmt.Errorf("failed to load embedding config: %w", err)
 	}
 
-	// 如果有 instruction 且非空，拼接到每条文本前面
-	// 这是一种通用的 instruction 传递方式，适用于大多数模型
-	globalInstruction := cfg.instruction
-	if instruction != "" {
-		globalInstruction = instruction
-	}
+	// 解析最终生效的 instruction（调用方传入优先，为空时 fallback 到全局配置）
+	effectiveInstruction := resolveInstruction(instruction, cfg)
 
 	processedTexts := texts
-	if globalInstruction != "" {
+	if effectiveInstruction != "" {
 		processedTexts = make([]string, len(texts))
 		for i, t := range texts {
-			processedTexts[i] = globalInstruction + ": " + t
+			processedTexts[i] = effectiveInstruction + ": " + t
 		}
 	}
 
@@ -191,15 +202,20 @@ func EmbedTexts(ctx context.Context, texts []string, instruction string) ([][]fl
 		return nil, fmt.Errorf("failed to get embedder: %w", embedErr)
 	}
 
-	// 带重试的 Embedding 调用，绑定父 Context 以尊重取消信号
+	// 全局超时预算：所有重试在此预算内执行，避免重试叠加导致总耗时无限增长
+	// 如果调用方已传入带 deadline 的 context，WithTimeout 会取两者中较短的那个
+	totalCtx, totalCancel := context.WithTimeout(ctx, embeddingTotalTimeout)
+	defer totalCancel()
+
+	// 带重试的 Embedding 调用，绑定全局超时 Context 以尊重取消信号
 	var result32 [][]float32
 	result32, err = retry.DoWithData(
 		func() ([][]float32, error) {
-			callCtx, cancel := context.WithTimeout(ctx, embeddingCallTimeout)
+			callCtx, cancel := context.WithTimeout(totalCtx, embeddingCallTimeout)
 			defer cancel()
 			return embedder.EmbedDocuments(callCtx, processedTexts)
 		},
-		retry.Context(ctx),
+		retry.Context(totalCtx),
 		retry.Attempts(3),
 		retry.DelayType(retry.BackOffDelay),
 		retry.Delay(1*time.Second),
@@ -238,7 +254,9 @@ func GetOrComputeAnchorVectors(ctx context.Context, anchors []string, instructio
 		return nil, fmt.Errorf("failed to load embedding config: %w", err)
 	}
 	modelName := cfg.apiModel
-	instructionHash := util.GetMD5Hash(instruction)
+	// 使用 resolveInstruction 解析最终生效的 instruction，确保缓存 key 与 EmbedTexts 实际使用的一致
+	effectiveInstruction := resolveInstruction(instruction, cfg)
+	instructionHash := util.GetMD5Hash(effectiveInstruction)
 
 	// 检查哪些锚点已缓存，哪些需要计算
 	result := make([][]float64, len(anchors))
@@ -267,6 +285,11 @@ func GetOrComputeAnchorVectors(ctx context.Context, anchors []string, instructio
 	newVectors, err := EmbedTexts(ctx, uncachedTexts, instruction)
 	if err != nil {
 		return nil, fmt.Errorf("failed to compute anchor vectors: %w", err)
+	}
+
+	// 越界防御：检查返回的向量数量是否与请求数量一致
+	if len(newVectors) != len(uncachedTexts) {
+		return nil, fmt.Errorf("embedding returned %d vectors, expected %d", len(newVectors), len(uncachedTexts))
 	}
 
 	// 将新计算的向量写入缓存和结果
