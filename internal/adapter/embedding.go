@@ -4,6 +4,7 @@ import (
 	"FeedCraft/internal/util"
 	"context"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
@@ -21,10 +22,10 @@ import (
  */
 
 const (
-	defaultEmbeddingModel = "text-embedding-3-small"
-	embeddingCallTimeout  = 2 * time.Minute
-	embeddingTotalTimeout = 5 * time.Minute // 全局超时预算，所有重试在此预算内执行
-	embeddingBatchSize    = 5               // 每批发送给 Embedding 服务的最大文本数，避免本地模型 OOM
+	defaultEmbeddingModel     = "text-embedding-3-small"
+	embeddingCallTimeout      = 2 * time.Minute
+	embeddingTotalTimeout     = 5 * time.Minute // 全局超时预算，所有重试在此预算内执行
+	defaultEmbeddingBatchSize = 5               // 每批发送给 Embedding 服务的默认最大文本数
 )
 
 var (
@@ -42,6 +43,7 @@ type embeddingConfig struct {
 	apiKey      string
 	apiModel    string
 	instruction string // 全局默认 instruction
+	batchSize   int    // 每批发送给 Embedding 服务的最大文本数，用户可根据模型和硬件自行调整
 }
 
 // loadEmbeddingConfig 读取 Embedding 环境变量，未配置时回退使用 LLM 配置
@@ -59,6 +61,17 @@ func loadEmbeddingConfig() (embeddingConfig, error) {
 	cfg.apiKey = envClient.GetString("EMBEDDING_API_KEY")
 	cfg.apiModel = envClient.GetString("EMBEDDING_API_MODEL")
 	cfg.instruction = envClient.GetString("EMBEDDING_INSTRUCTION")
+
+	// 读取批次大小配置，未配置或无效时使用默认值
+	cfg.batchSize = defaultEmbeddingBatchSize
+	if batchSizeStr := envClient.GetString("EMBEDDING_BATCH_SIZE"); batchSizeStr != "" {
+		if parsed, parseErr := strconv.Atoi(batchSizeStr); parseErr != nil || parsed <= 0 {
+			logrus.Warnf("FC_EMBEDDING_BATCH_SIZE value [%s] is invalid, using default %d", batchSizeStr, defaultEmbeddingBatchSize)
+		} else {
+			cfg.batchSize = parsed
+			logrus.Debugf("Embedding batch size set to %d from FC_EMBEDDING_BATCH_SIZE", parsed)
+		}
+	}
 
 	// 2. 回退逻辑：未配置时使用 LLM 配置
 	if cfg.apiType == "" {
@@ -210,10 +223,11 @@ func EmbedTexts(ctx context.Context, texts []string, instruction string) ([][]fl
 
 	// 分批处理：将大批量文本拆分为小批次，逐批调用 Embedding 服务
 	// 避免一次性发送过多文本导致本地模型（如 Ollama）OOM 崩溃或超时
+	batchSize := cfg.batchSize
 	allResults := make([][]float64, len(processedTexts))
 
-	for batchStart := 0; batchStart < len(processedTexts); batchStart += embeddingBatchSize {
-		batchEnd := batchStart + embeddingBatchSize
+	for batchStart := 0; batchStart < len(processedTexts); batchStart += batchSize {
+		batchEnd := batchStart + batchSize
 		if batchEnd > len(processedTexts) {
 			batchEnd = len(processedTexts)
 		}
