@@ -24,6 +24,7 @@ const (
 	defaultEmbeddingModel = "text-embedding-3-small"
 	embeddingCallTimeout  = 2 * time.Minute
 	embeddingTotalTimeout = 5 * time.Minute // 全局超时预算，所有重试在此预算内执行
+	embeddingBatchSize    = 5               // 每批发送给 Embedding 服务的最大文本数，避免本地模型 OOM
 )
 
 var (
@@ -202,43 +203,56 @@ func EmbedTexts(ctx context.Context, texts []string, instruction string) ([][]fl
 		return nil, fmt.Errorf("failed to get embedder: %w", embedErr)
 	}
 
-	// 全局超时预算：所有重试在此预算内执行，避免重试叠加导致总耗时无限增长
+	// 全局超时预算：所有批次和重试在此预算内执行，避免总耗时无限增长
 	// 如果调用方已传入带 deadline 的 context，WithTimeout 会取两者中较短的那个
 	totalCtx, totalCancel := context.WithTimeout(ctx, embeddingTotalTimeout)
 	defer totalCancel()
 
-	// 带重试的 Embedding 调用，绑定全局超时 Context 以尊重取消信号
-	var result32 [][]float32
-	result32, err = retry.DoWithData(
-		func() ([][]float32, error) {
-			callCtx, cancel := context.WithTimeout(totalCtx, embeddingCallTimeout)
-			defer cancel()
-			return embedder.EmbedDocuments(callCtx, processedTexts)
-		},
-		retry.Context(totalCtx),
-		retry.Attempts(3),
-		retry.DelayType(retry.BackOffDelay),
-		retry.Delay(1*time.Second),
-		retry.MaxDelay(5*time.Second),
-		retry.OnRetry(func(n uint, err error) {
-			logrus.Warnf("Retrying embedding call (attempt %d), err: %v", n+1, err)
-		}),
-	)
-	if err != nil {
-		return nil, fmt.Errorf("embedding call failed after retries: %w", err)
-	}
+	// 分批处理：将大批量文本拆分为小批次，逐批调用 Embedding 服务
+	// 避免一次性发送过多文本导致本地模型（如 Ollama）OOM 崩溃或超时
+	allResults := make([][]float64, len(processedTexts))
 
-	// 将 float32 转换为 float64（余弦相似度计算使用 float64 精度更高）
-	result := make([][]float64, len(result32))
-	for i, vec32 := range result32 {
-		vec64 := make([]float64, len(vec32))
-		for j, v := range vec32 {
-			vec64[j] = float64(v)
+	for batchStart := 0; batchStart < len(processedTexts); batchStart += embeddingBatchSize {
+		batchEnd := batchStart + embeddingBatchSize
+		if batchEnd > len(processedTexts) {
+			batchEnd = len(processedTexts)
 		}
-		result[i] = vec64
+		batch := processedTexts[batchStart:batchEnd]
+
+		logrus.Debugf("Embedding batch [%d-%d] of %d texts", batchStart, batchEnd-1, len(processedTexts))
+
+		// 带重试的 Embedding 调用，绑定全局超时 Context 以尊重取消信号
+		var result32 [][]float32
+		result32, err = retry.DoWithData(
+			func() ([][]float32, error) {
+				callCtx, cancel := context.WithTimeout(totalCtx, embeddingCallTimeout)
+				defer cancel()
+				return embedder.EmbedDocuments(callCtx, batch)
+			},
+			retry.Context(totalCtx),
+			retry.Attempts(3),
+			retry.DelayType(retry.BackOffDelay),
+			retry.Delay(1*time.Second),
+			retry.MaxDelay(5*time.Second),
+			retry.OnRetry(func(n uint, err error) {
+				logrus.Warnf("Retrying embedding call (attempt %d), batch [%d-%d], err: %v", n+1, batchStart, batchEnd-1, err)
+			}),
+		)
+		if err != nil {
+			return nil, fmt.Errorf("embedding call failed after retries (batch [%d-%d]): %w", batchStart, batchEnd-1, err)
+		}
+
+		// 将 float32 转换为 float64（余弦相似度计算使用 float64 精度更高）
+		for i, vec32 := range result32 {
+			vec64 := make([]float64, len(vec32))
+			for j, v := range vec32 {
+				vec64[j] = float64(v)
+			}
+			allResults[batchStart+i] = vec64
+		}
 	}
 
-	return result, nil
+	return allResults, nil
 }
 
 // GetOrComputeAnchorVectors 获取或计算锚点向量（带内存缓存）
