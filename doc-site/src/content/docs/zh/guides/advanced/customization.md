@@ -70,6 +70,7 @@ sidebar:
 - **FC_LLM_API_BASE**: API 接口地址。如果是兼容 OpenAI 的 API，通常以 `/v1` 结尾。
 - **FC_LLM_API_TYPE**: (可选) `openai` (默认) 或 `ollama`.
 - **FC_LLM_MAX_CONCURRENCY**: (可选) 全局最大 LLM 并发请求数（默认: `3`）。用于限制并发请求数量以防止触发 API 速率限制。
+- **LOG_LEVEL**: (可选) 覆盖默认的应用程序日志级别 (例如: debug, info, warn, error)。
 - **FC_DOMAIN_MAX_CONCURRENCY**: (可选) 网页抓取（如全文提取）时每个目标域名的最大并发数（默认: `3`）。防止抓取目标服务器负载过高。
 
 ### 外部服务
