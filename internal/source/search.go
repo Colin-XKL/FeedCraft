@@ -5,6 +5,7 @@ import (
 	"FeedCraft/internal/config"
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/dao"
+	"FeedCraft/internal/model"
 	"FeedCraft/internal/source/fetcher"
 	"FeedCraft/internal/source/fetcher/provider"
 	"FeedCraft/internal/source/parser"
@@ -14,7 +15,6 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/mmcdole/gofeed"
 	"github.com/sirupsen/logrus"
 )
 
@@ -82,7 +82,7 @@ type EnhancedSearchSource struct {
 	Config *config.SourceConfig
 }
 
-func (s *EnhancedSearchSource) Generate(ctx context.Context) (*gofeed.Feed, error) {
+func (s *EnhancedSearchSource) Fetch(ctx context.Context) (*model.CraftFeed, error) {
 	queries, err := expandQueryWithLLM(s.Config.SearchFetcher.Query)
 	if err != nil {
 		logrus.Warnf("LLM expansion failed: %v, falling back to original query", err)
@@ -95,7 +95,7 @@ func (s *EnhancedSearchSource) Generate(ctx context.Context) (*gofeed.Feed, erro
 
 	var wg sync.WaitGroup
 	var mu sync.Mutex
-	var allItems []*gofeed.Item
+	var allItems []*model.CraftArticle
 	seenLinks := make(map[string]bool)
 
 	for _, q := range queries {
@@ -117,7 +117,7 @@ func (s *EnhancedSearchSource) Generate(ctx context.Context) (*gofeed.Feed, erro
 				return
 			}
 
-			feed, err := src.Generate(ctx)
+			feed, err := src.Fetch(ctx)
 			if err != nil {
 				logrus.Warnf("Generation failed for query %s: %v", queryStr, err)
 				return
@@ -125,20 +125,23 @@ func (s *EnhancedSearchSource) Generate(ctx context.Context) (*gofeed.Feed, erro
 
 			mu.Lock()
 			defer mu.Unlock()
-			for _, item := range feed.Items {
-				if !seenLinks[item.Link] {
-					seenLinks[item.Link] = true
-					allItems = append(allItems, item)
+			for _, item := range feed.Articles {
+				if item == nil || seenLinks[item.Link] {
+					continue
 				}
+				if item.Link != "" {
+					seenLinks[item.Link] = true
+				}
+				allItems = append(allItems, item)
 			}
 		}(q)
 	}
 	wg.Wait()
 
-	return &gofeed.Feed{
+	return &model.CraftFeed{
 		Title:       fmt.Sprintf("Search: %s", s.Config.SearchFetcher.Query),
 		Description: fmt.Sprintf("Enhanced search results for %s", s.Config.SearchFetcher.Query),
-		Items:       allItems,
+		Articles:    allItems,
 	}, nil
 }
 

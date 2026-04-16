@@ -117,7 +117,7 @@
       result = items.filter(
         (item) =>
           item.name.toLowerCase().includes(lower) ||
-          (item.description && item.description.toLowerCase().includes(lower)),
+          (item.description && item.description.toLowerCase().includes(lower))
       );
     }
     return [...result].sort((a, b) => a.name.localeCompare(b.name));

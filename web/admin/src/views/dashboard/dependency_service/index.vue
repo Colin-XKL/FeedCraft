@@ -82,8 +82,9 @@
         data.value = res.data;
       }
     } catch (err) {
-      Message.error(t('dependencyService.fetchError'));
-      console.error(err);
+      Message.error(
+        err instanceof Error ? err.message : t('dependencyService.fetchError')
+      );
     } finally {
       loading.value = false;
     }
@@ -98,8 +99,9 @@
         Message.success(t('dependencyService.checkSuccess'));
       }
     } catch (err) {
-      Message.error(t('dependencyService.checkError'));
-      console.error(err);
+      Message.error(
+        err instanceof Error ? err.message : t('dependencyService.checkError')
+      );
     } finally {
       loading.value = false;
     }

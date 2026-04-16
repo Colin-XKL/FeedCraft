@@ -24,6 +24,7 @@ sidebar:
 ### 支持的提供商
 
 - **LiteLLM / OpenAI Compatible**
+
   - **API URL**: 搜索服务的 API 端点（例如 `http://litellm-proxy:4000/v1/search`）。
   - **API Key**: 你的 API 密钥。（留空以保留现有密钥）
   - **Tool Name**: 特定函数调用工具名称（如果需要，例如某些 Agent 的 `google_search`）。工具名称将追加到 API URL 之后（例如 `.../v1/search/google_search`）。
@@ -32,7 +33,9 @@ sidebar:
   - **API URL**: 你的 SearXNG 实例基础 URL（例如 `http://my-searxng.com`）。`/search` 路径会自动追加。
   - **Engines**: (可选) 逗号分隔的搜索引擎列表（例如 `google,bing`）。
 
-> **提示：** 在保存之前，你可以使用 **检查连接 (Check Connection)** 按钮来验证与提供商的连接。
+:::tip
+在保存之前，你可以使用 **检查连接 (Check Connection)** 按钮来验证与提供商的连接。
+:::
 
 ## 依赖服务 (Dependency Services)
 
@@ -50,7 +53,9 @@ sidebar:
 
 你可以使用 **检查连接 (Check Connection)** 按钮来验证 FeedCraft 是否可以成功连接到配置的搜索提供商。
 
-> **注意：** 如需监控内部 Craft 依赖关系（Recipes, Flows, Atoms），请使用 [Craft 依赖检查](/zh/guides/advanced/tools) 工具。
+:::note
+如需监控内部 Craft 依赖关系（Recipes, Flows, Atoms），请使用 [Craft 依赖检查](/zh/guides/advanced/tools) 工具。
+:::
 
 ## 高级配置
 
@@ -64,7 +69,7 @@ sidebar:
 - **FC_LLM_API_MODEL**: 默认使用的模型（如 `gemini-pro`, `gpt-3.5-turbo`）。**支持多个模型：** 你可以提供一个逗号分隔的模型列表（例如 `gpt-3.5-turbo,gpt-4`）。FeedCraft 会为每个请求随机选择一个模型，如果调用失败，会自动重试列表中的其他模型。
 - **FC_LLM_API_BASE**: API 接口地址。如果是兼容 OpenAI 的 API，通常以 `/v1` 结尾。
 - **FC_LLM_API_TYPE**: (可选) `openai` (默认) 或 `ollama`.
-- **FC_LLM_MAX_CONCURRENCY**: (可选) 全局最大 LLM 并发请求数（默认: `5`）。用于限制并发请求数量以防止触发 API 速率限制。
+- **FC_LLM_MAX_CONCURRENCY**: (可选) 全局最大 LLM 并发请求数（默认: `3`）。用于限制并发请求数量以防止触发 API 速率限制。
 - **FC_DOMAIN_MAX_CONCURRENCY**: (可选) 网页抓取（如全文提取）时每个目标域名的最大并发数（默认: `3`）。防止抓取目标服务器负载过高。
 
 ### 外部服务
@@ -94,4 +99,4 @@ services:
     restart: unless-stopped
 ```
 
-服务默认监听在 80 端口，你也可以在同一网络下的其他容器中，使用 `http://app.feed-craft/xxx` 这样来进行访问(比如RSS 阅读器中通过这种方式来走内网通信订阅)。
+服务默认监听在 80 端口，你也可以在同一网络下的其他容器中，使用 `http://app.feed-craft/xxx` 这样来进行访问(比如 RSS 阅读器中通过这种方式来走内网通信订阅)。

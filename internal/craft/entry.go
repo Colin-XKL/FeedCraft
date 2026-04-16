@@ -140,6 +140,10 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 }
 
 func GetCraftAtomDict() map[string]dao.CraftAtom {
+	return getCraftAtomDict(util.GetDatabase())
+}
+
+func getCraftAtomDict(db *gorm.DB) map[string]dao.CraftAtom {
 	tmplDict := GetSysCraftTemplateDict()
 	craftAtomDict := make(map[string]dao.CraftAtom)
 	for name, craftTemplate := range tmplDict {
@@ -152,7 +156,6 @@ func GetCraftAtomDict() map[string]dao.CraftAtom {
 		craftAtomDict[name] = item
 	}
 
-	db := util.GetDatabase()
 	craftAtomList, err := dao.GetAllCraftAtoms(db)
 	if err != nil {
 		logrus.Errorf("read craft atom list from db error. only built-in atom will work now. err: %s", err)

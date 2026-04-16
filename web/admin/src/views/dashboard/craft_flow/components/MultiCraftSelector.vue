@@ -46,7 +46,7 @@
   import { ref, computed } from 'vue';
   import { useI18n } from 'vue-i18n';
   import { IconDown } from '@arco-design/web-vue/es/icon';
-  import CraftPickerModal from './CraftPickerModal.vue';
+  import CraftPickerModal from '@/views/dashboard/craft_flow/components/CraftPickerModal.vue';
 
   const { t } = useI18n();
 
@@ -66,7 +66,7 @@
   const visible = ref(false);
 
   const hasSelection = computed(
-    () => props.modelValue && props.modelValue.length > 0,
+    () => props.modelValue && props.modelValue.length > 0
   );
 
   const openModal = () => {

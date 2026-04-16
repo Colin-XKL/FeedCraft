@@ -2,7 +2,7 @@ import axios from 'axios';
 import { md5 } from 'js-md5';
 import type { RouteRecordNormalized } from 'vue-router';
 import { UserState } from '@/store/modules/user/types';
-import { APIResponse } from './types';
+import { APIResponse } from '@/api/types';
 
 export interface LoginData {
   username: string;
@@ -48,7 +48,7 @@ export interface ChangePasswordData {
 }
 
 export function changePassword(
-  data: ChangePasswordData,
+  data: ChangePasswordData
 ): Promise<APIResponse<any>> {
   const currentPasswordMd5 = md5(data.currentPassword).toString();
   const newPasswordMd5 = md5(data.newPassword).toString();

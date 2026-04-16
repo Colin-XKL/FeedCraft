@@ -73,22 +73,35 @@ pnpm run build
 # Type checking
 pnpm run type:check
 
-# Lint and fix
-pnpm run lint-staged
+# Lint only
+pnpm run lint
+
+# Auto-fix ESLint issues where possible
+pnpm run lint:fix
+
+# Format frontend files
+pnpm run format
 ```
 
 ## Hooks When You Are Ready to Submit Your Code Changes
 
-When you finish the task, before submitting your code changes, run these steps to make sure our code works as expected.
+When you finish writing code, do not stop at implementation. Before submitting your changes, proactively run formatting, lint, tests, and build checks to make sure the repo still works as expected.
 
 ```bash
-# code lint
-task lint
-# run build test for backend
+# format code and run lint checks
+task fix
+
+# run Go tests
+go test ./...
+
+# run build check for backend
 task backend-build
-# run build test for frontend
+
+# run build check for frontend
 task frontend-build
 ```
+
+If a command fails, report the failure clearly in your final response instead of silently skipping it.
 
 ## Database Schema
 

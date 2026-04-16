@@ -2,6 +2,7 @@ package main
 
 import (
 	"FeedCraft/internal/dao"
+	"FeedCraft/internal/observability"
 	"FeedCraft/internal/recipe"
 	"FeedCraft/internal/router"
 	"FeedCraft/internal/util"
@@ -32,10 +33,23 @@ func init() {
 	taskFunc := func(recipeName string) error {
 		// The second return value (*feeds.Feed) is ignored as we only care about
 		// the side effect of caching, which happens inside ProcessRecipeByID.
-		_, err := recipe.ProcessRecipeByID(context.Background(), recipeName)
+		_, err := recipe.ProcessRecipeByIDWithTrigger(context.Background(), recipeName, observability.TriggerPreheating)
 		return err
 	}
-	recipe.Scheduler = util.NewPreheatingScheduler(taskFunc)
+	shouldRun := func(recipeName string) bool {
+		return !observability.ShouldSkipRecipe(recipeName)
+	}
+	onSkip := func(recipeName string) {
+		observability.Report(observability.ExecutionEvent{
+			ResourceType: observability.ResourceTypeRecipe,
+			ResourceID:   recipeName,
+			ResourceName: recipeName,
+			Trigger:      observability.TriggerPreheating,
+			Status:       dao.ExecutionStatusPausedSkip,
+			Message:      "preheating skipped because resource is paused",
+		})
+	}
+	recipe.Scheduler = util.NewPreheatingScheduler(taskFunc, shouldRun, onSkip)
 	logrus.Info("Preheating scheduler started.")
 }
 
@@ -89,9 +103,20 @@ func startServer() {
 		env = "prod"
 	}
 	isProd := env == "prod"
+
 	if !isProd {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
+
+	logLevelStr := os.Getenv("LOG_LEVEL")
+	if logLevelStr != "" {
+		if level, err := logrus.ParseLevel(logLevelStr); err == nil {
+			logrus.SetLevel(level)
+		} else {
+			logrus.Warnf("Invalid LOG_LEVEL '%s': %v. Using default.", logLevelStr, err)
+		}
+	}
+
 	if len(sentryDsn) > 0 {
 		logrus.Info("Initializing Sentry...")
 		sampledRate := 1.0
@@ -123,6 +148,8 @@ func startServer() {
 
 	router.RegisterRouters(r)
 	dao.MigrateDatabases()
+	observability.Init(util.GetDatabase())
+	defer observability.Shutdown()
 	logrus.Info("Database migration done.")
 
 	listenAddr := os.Getenv("LISTEN_ADDR")

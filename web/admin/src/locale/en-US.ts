@@ -1,21 +1,23 @@
 import localeMessageBox from '@/components/message-box/locale/en-US';
 import localeLogin from '@/views/login/locale/en-US';
 
-import localeSettings from './en-US/settings';
-import localeMenu from './en-US/menu';
-import localeCraftAtom from './en-US/craftAtom';
-import localeCraftFlow from './en-US/craftFlow';
-import localeCustomRecipe from './en-US/customRecipe';
-import localeAllCraftList from './en-US/allCraftList';
-import localeFeedCompare from './en-US/feedCompare';
-import localeFeedViewer from './en-US/feedViewer';
-import localeLlmDebug from './en-US/llmDebug';
-import localeUrlGenerator from './en-US/urlGenerator';
-import localeHtmlToRss from './en-US/htmlToRss';
-import localeCurlToRss from './en-US/curlToRss';
-import localeSearchToRss from './en-US/searchToRss';
-import localeDependencyService from './en-US/dependencyService';
-import localeHealth from './en-US/health';
+import localeSettings from '@/locale/en-US/settings';
+import localeMenu from '@/locale/en-US/menu';
+import localeCraftAtom from '@/locale/en-US/craftAtom';
+import localeCraftFlow from '@/locale/en-US/craftFlow';
+import localeCustomRecipe from '@/locale/en-US/customRecipe';
+import localeTopic from '@/locale/en-US/topic';
+import localeAllCraftList from '@/locale/en-US/allCraftList';
+import localeFeedCompare from '@/locale/en-US/feedCompare';
+import localeFeedViewer from '@/locale/en-US/feedViewer';
+import localeLlmDebug from '@/locale/en-US/llmDebug';
+import localeUrlGenerator from '@/locale/en-US/urlGenerator';
+import localeHtmlToRss from '@/locale/en-US/htmlToRss';
+import localeCurlToRss from '@/locale/en-US/curlToRss';
+import localeSearchToRss from '@/locale/en-US/searchToRss';
+import localeDependencyService from '@/locale/en-US/dependencyService';
+import localeHealth from '@/locale/en-US/health';
+import localeObservability from '@/locale/en-US/observability';
 
 export default {
   ...localeSettings,
@@ -25,6 +27,7 @@ export default {
   ...localeCraftAtom,
   ...localeCraftFlow,
   ...localeCustomRecipe,
+  ...localeTopic,
   ...localeAllCraftList,
   ...localeFeedCompare,
   ...localeFeedViewer,
@@ -35,4 +38,5 @@ export default {
   ...localeSearchToRss,
   ...localeDependencyService,
   ...localeHealth,
+  ...localeObservability,
 };

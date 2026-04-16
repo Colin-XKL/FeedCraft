@@ -22,53 +22,53 @@ It can serve as middleware to handle your RSS feeds; you can use it to extract t
 It includes a built-in visual RSS generator (HTML/Curl/Search to RSS) that can turn web pages, API responses, or search results into RSS feeds.
 
 **FeedCraft** 是一个简单、强大的 RSS 源处理工具.
-他可以作为一个中间件处理你的RSS源, 你可以用它来提取正文、智能翻译、通过AI生成文章摘要、通过自然语言筛选文章等.
+他可以作为一个中间件处理你的 RSS 源, 你可以用它来提取正文、智能翻译、通过 AI 生成文章摘要、通过自然语言筛选文章等.
 它内置了可视化 RSS 生成器 (HTML/Curl/Search to RSS)，支持将网页、API (Curl) 或搜索结果转换为 RSS 订阅源。
 
 ## 核心特性
 
-- 开源可自部署. 可以作为中间件与现有的任何RSS阅读器协同使用
-- AI Power, 可以接入Open AI接口兼容的LLM对RSS进行处理, 可自定义prompt
+- 开源可自部署. 可以作为中间件与现有的任何 RSS 阅读器协同使用
+- AI Power, 可以接入 Open AI 接口兼容的 LLM 对 RSS 进行处理, 可自定义 prompt
 - **HTML/Curl/Search to RSS**: 内置可视化 RSS 生成器，支持将网页、API (Curl) 或搜索结果转换为 RSS 订阅源
-- 支持**便携模式**(portable mode, 即用即走, 只需要在原RSS地址前面加个前缀即可), 和**高级模式**(dock mode,
-  在后台页面自定义RSS地址和各类深度加工参数)
+- 支持**便携模式**(portable mode, 即用即走, 只需要在原 RSS 地址前面加个前缀即可), 和**高级模式**(dock mode,
+  在后台页面自定义 RSS 地址和各类深度加工参数)
 
 ## 快速开始
 
-访问以下URL格式即可快速调用FeedCraft对输入的RSS源进行指定的处理
+访问以下 URL 格式即可快速调用 FeedCraft 对输入的 RSS 源进行指定的处理
 `https://feed-craft.colinx.one/craft/{craft_name_here}?input_url={input_rss_url}`
 
-FeedCraft中的几个核心概念:
+FeedCraft 中的几个核心概念:
 
-- AtomCraft(原子工艺), 指要如何处理一个rss源, 比如是要进行翻译,还是提取正文,还是AI生成摘要等
+- AtomCraft(原子工艺), 指要如何处理一个 rss 源, 比如是要进行翻译,还是提取正文,还是 AI 生成摘要等
 - FlowCraft(组合工艺), 多个 AtomCraft 组成的序列, 比如你可以定义一个新的名叫 clean-article 的 FlowCraft,
-  将提取全文、AI筛选文章、AI摘要组合到一起,
-- Recipe(配方), 记录了以什么样的 Craft 或 FlowCraft 对某个指定的rss源进行处理, 比如你可以指定一个名叫my-zhihu-daily的recipe,
-  对知乎日报的rss自动进行AI生成摘要的操作, 这个recipe对应一个新的rss地址, 你可以直接订阅这个地址得到带摘要版本的知乎日报
+  将提取全文、AI 筛选文章、AI 摘要组合到一起,
+- Recipe(配方), 记录了以什么样的 Craft 或 FlowCraft 对某个指定的 rss 源进行处理, 比如你可以指定一个名叫 my-zhihu-daily 的 recipe,
+  对知乎日报的 rss 自动进行 AI 生成摘要的操作, 这个 recipe 对应一个新的 rss 地址, 你可以直接订阅这个地址得到带摘要版本的知乎日报
 
 你可以先开始尝试下面的几个原子工艺(AtomCraft):
 
-- **proxy**: 简易RSS代理, 不作任何处理
-- **limit**: 限制文章个数, 默认最新10个
+- **proxy**: 简易 RSS 代理, 不作任何处理
+- **limit**: 限制文章个数, 默认最新 10 个
 - **fulltext**: 获取全文
 - **fulltext-plus**: 获取全文,但是会模拟浏览器渲染网页,适用于常规模式无法获取到文章内容,动态渲染内容的站点
-- **introduction**: 调用AI为文章生成摘要,附加在原文开头
-- **summary**: 调用AI总结文章主要内容,附加在原文开头
-- **translate-title**: 调用AI翻译文章标题
-- **translate-content**: 调用AI翻译文章内容, 只输出翻译后内容
-- **translate-content-immersive**: 调用AI翻译文章内容, 沉浸式翻译模式, 每个原文段落后面添加翻译后内容
-- **beautify-content**: 调用AI美化文章排版，去除广告和无关信息
-- **ignore-advertorial**: 调用AI对文章进行筛选, 排除营销软文
+- **introduction**: 调用 AI 为文章生成摘要,附加在原文开头
+- **summary**: 调用 AI 总结文章主要内容,附加在原文开头
+- **translate-title**: 调用 AI 翻译文章标题
+- **translate-content**: 调用 AI 翻译文章内容, 只输出翻译后内容
+- **translate-content-immersive**: 调用 AI 翻译文章内容, 沉浸式翻译模式, 每个原文段落后面添加翻译后内容
+- **beautify-content**: 调用 AI 美化文章排版，去除广告和无关信息
+- **ignore-advertorial**: 调用 AI 对文章进行筛选, 排除营销软文
 
-你可以使用提供的demo站点快速开始体验 :
+你可以使用提供的 demo 站点快速开始体验 :
 https://feed-craft.colinx.one
 
-例如, 现在你想要阅读这个RSS源 `https://feeds.feedburner.com/visualcapitalist`, 但是由于是全英文的不方便快速略读,
-使用FeedCraft对标题进行翻译,
+例如, 现在你想要阅读这个 RSS 源 `https://feeds.feedburner.com/visualcapitalist`, 但是由于是全英文的不方便快速略读,
+使用 FeedCraft 对标题进行翻译,
 那么只需要将订阅地址改成
 `https://feed-craft.colinx.one/craft/translate-title?input_url=https://feeds.feedburner.com/visualcapitalist` 即可.
 
-(部分RSS订阅软件不会自动进行字符转义, 你可以借助FeedCraft 后台的工具帮你自动进行转义)
+(部分 RSS 订阅软件不会自动进行字符转义, 你可以借助 FeedCraft 后台的工具帮你自动进行转义)
 
 你可以使用下面几个 RSS 快速进行测试
 
@@ -77,12 +77,12 @@ https://feed-craft.colinx.one
 - 全英文，无全文
   https://ourworldindata.org/atom.xml
 
-\*注意: Demo站点仅供体验使用
+\*注意: Demo 站点仅供体验使用
 
 ## 部署
 
-你可以通过docker快速自行部署一个FeedCraft实例,以获得更好的使用体验.
-下面为一个最小docker compose 示例:
+你可以通过 docker 快速自行部署一个 FeedCraft 实例,以获得更好的使用体验.
+下面为一个最小 docker compose 示例:
 
 控制台默认账号`admin`, 密码 `adminadmin`, 登陆后请尽快修改默认密码
 
@@ -108,7 +108,7 @@ services:
       FC_DEFAULT_TARGET_LANG: zh-CN # (Optional) LLM 处理任务的默认目标语言，如 zh-CN, en-US
 ```
 
-你也可以直接在一个compose文件中把redis等附加组件也一起部署好:
+你也可以直接在一个 compose 文件中把 redis 等附加组件也一起部署好:
 
 ```yaml
 version: "3"
@@ -143,8 +143,8 @@ services:
 
 ## 关于 FeedCraft
 
-FeedCraft 的名称和Logo参考并致敬两款游戏: MineCraft和塞尔达, 初衷和愿景是做一个简单易用、同时足够灵活, 能够有更多可能性的RSS工具.
-使用问题、建议等欢迎在Discussion区讨论交流
+FeedCraft 的名称和 Logo 参考并致敬两款游戏: MineCraft 和塞尔达, 初衷和愿景是做一个简单易用、同时足够灵活, 能够有更多可能性的 RSS 工具.
+使用问题、建议等欢迎在 Discussion 区讨论交流
 
 ## 许可
 
@@ -155,14 +155,14 @@ GPLv3
 **欢迎页**
 <img width="1900" alt="Xnip2024-08-08_00-48-49" src="https://github.com/user-attachments/assets/d3541f4e-9ab4-4948-9fc7-5b815db225ce">
 
-**RSS源比较工具**
-你可以输入一个RSS 源的地址, 然后选择要使用的 AtomCraft, 就可以看到前后的对比.
+**RSS 源比较工具**
+你可以输入一个 RSS 源的地址, 然后选择要使用的 AtomCraft, 就可以看到前后的对比.
 如下图我应用的 Craft 是自定义的, 只显示文章标题带有`RSS`的文章, 可以看到筛选后的结果少了很多
 
 <img width="1907" alt="Xnip2024-08-08_01-05-09" src="https://github.com/user-attachments/assets/7abd764a-8b19-4a72-8c94-e3ea442ff385">
 
-**创建 AtomCraft 自定义Prompt**
+**创建 AtomCraft 自定义 Prompt**
 <img width="1918" alt="Xnip2024-08-08_00-46-13" src="https://github.com/user-attachments/assets/ff15fe79-3792-4a96-b991-f121d2a8973e">
 
-**自定义recipe, 指定使用哪个 AtomCraft 处理哪个RSS源**
+**自定义 recipe, 指定使用哪个 AtomCraft 处理哪个 RSS 源**
 <img width="1900" alt="Xnip2024-08-08_00-48-34" src="https://github.com/user-attachments/assets/5794de1d-28b6-45ff-8737-16f8adc6ed8a">

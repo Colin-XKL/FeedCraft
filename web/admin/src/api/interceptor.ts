@@ -4,7 +4,7 @@ import { Message, Modal } from '@arco-design/web-vue';
 import { useUserStore } from '@/store';
 import { getToken } from '@/utils/auth';
 import { useRouter } from 'vue-router';
-import { APIResponse } from './types';
+import { APIResponse } from '@/api/types';
 
 if (import.meta.env.VITE_API_BASE_URL) {
   axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL;
@@ -28,7 +28,7 @@ axios.interceptors.request.use(
   (error) => {
     // do something
     return Promise.reject(error);
-  },
+  }
 );
 // add response interceptors
 axios.interceptors.response.use(
@@ -73,5 +73,5 @@ axios.interceptors.response.use(
       duration: 5 * 1000,
     });
     return Promise.reject(error);
-  },
+  }
 );

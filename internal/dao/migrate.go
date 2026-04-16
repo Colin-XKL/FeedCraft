@@ -18,8 +18,12 @@ func MigrateDatabases() {
 		// &CustomRecipe{},
 		&CustomRecipeV2{}, // Create the new V2 table
 		&CraftFlow{}, &CraftAtom{},
-		&User{}, // 确保 User 表被初始化
+		&TopicFeed{}, // Add TopicFeed migration
+		&User{},      // 确保 User 表被初始化
 		&SystemSetting{},
+		&ExecutionLog{},
+		&ResourceHealth{},
+		&SystemNotification{},
 	)
 	if err != nil {
 		logrus.Fatalf("migrate database error: %v", err)

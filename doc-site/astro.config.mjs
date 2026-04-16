@@ -9,6 +9,9 @@ export default defineConfig({
     starlight({
       title: "FeedCraft",
       defaultLocale: "en",
+      social: [
+        { icon: "github", label: "GitHub", href: "https://github.com/Colin-XKL/FeedCraft" }
+      ],
       plugins: [
         starlightCatppuccin({
           dark: { flavor: "mocha", accent: "sapphire" },

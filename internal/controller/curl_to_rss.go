@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"FeedCraft/internal/config"
+	"FeedCraft/internal/source/parser"
 	"FeedCraft/internal/util"
 	"bytes"
 	"encoding/json"
@@ -9,7 +11,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
-	"github.com/itchyny/gojq"
 )
 
 type JsonFetchReq struct {
@@ -23,9 +24,13 @@ type JsonParseReq struct {
 	JsonContent     string `json:"json_content"`
 	ListSelector    string `json:"list_selector"`
 	TitleSelector   string `json:"title_selector"`
+	TitleTemplate   string `json:"title_template"`
 	LinkSelector    string `json:"link_selector"`
+	LinkTemplate    string `json:"link_template"`
 	DateSelector    string `json:"date_selector"`
+	DateTemplate    string `json:"date_template"`
 	ContentSelector string `json:"content_selector"`
+	ContentTemplate string `json:"content_template"`
 }
 
 func CurlParseCmd(c *gin.Context) {
@@ -175,101 +180,30 @@ func CurlParse(c *gin.Context) {
 		return
 	}
 
-	// Execute List Selector
-	listQuery, err := gojq.Parse(req.ListSelector)
+	parsedFields, err := parser.ParseJSONItems(input, &config.JsonParserConfig{
+		ItemsIterator:       req.ListSelector,
+		Title:               req.TitleSelector,
+		TitleTemplate:       req.TitleTemplate,
+		Link:                req.LinkSelector,
+		LinkTemplate:        req.LinkTemplate,
+		Date:                req.DateSelector,
+		DateTemplate:        req.DateTemplate,
+		Description:         req.ContentSelector,
+		DescriptionTemplate: req.ContentTemplate,
+	})
 	if err != nil {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "List selector error: " + err.Error()})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
 		return
 	}
 
-	iter := listQuery.Run(input)
-	var rawItems []interface{}
-	for {
-		v, ok := iter.Next()
-		if !ok {
-			break
-		}
-		if err, ok := v.(error); ok {
-			c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "List extraction error: " + err.Error()})
-			return
-		}
-		// If v is a slice, we iterate it. If it's a single object, we take it.
-		// Usually list selector should return an array.
-		// If the selector returns multiple results (like .items[]), append them.
-		// If it returns one array (like .items), we should iterate that array.
-
-		// gojq behavior:
-		// .items returns [obj, obj] -> v is []interface{}
-		// .items[] returns obj, obj... -> v is interface{} (called multiple times)
-
-		if arr, ok := v.([]interface{}); ok {
-			rawItems = append(rawItems, arr...)
-		} else {
-			rawItems = append(rawItems, v)
-		}
-	}
-
-	var parsedItems []ParsedItem
-
-	// Parse other selectors for each item
-	// We need to pre-compile selectors for performance, though not critical here
-	compile := func(q string) (*gojq.Query, error) {
-		if q == "" {
-			return nil, nil
-		}
-		return gojq.Parse(q)
-	}
-
-	titleQ, err := compile(req.TitleSelector)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "invalid TitleSelector: " + err.Error()})
-		return
-	}
-	linkQ, err := compile(req.LinkSelector)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "invalid LinkSelector: " + err.Error()})
-		return
-	}
-	dateQ, err := compile(req.DateSelector)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "invalid DateSelector: " + err.Error()})
-		return
-	}
-	contentQ, err := compile(req.ContentSelector)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "invalid ContentSelector: " + err.Error()})
-		return
-	}
-
-	runQuery := func(q *gojq.Query, obj interface{}) string {
-		if q == nil {
-			return ""
-		}
-		iter := q.Run(obj)
-		v, ok := iter.Next()
-		if !ok {
-			return ""
-		}
-		if err, ok := v.(error); ok {
-			return "Error: " + err.Error()
-		}
-		// Convert v to string
-		if s, ok := v.(string); ok {
-			return s
-		}
-		// If not string, maybe json representation
-		b, _ := json.Marshal(v)
-		return string(b)
-	}
-
-	for _, rawItem := range rawItems {
-		item := ParsedItem{}
-		item.Title = runQuery(titleQ, rawItem)
-		item.Link = runQuery(linkQ, rawItem)
-		item.Date = runQuery(dateQ, rawItem)
-		item.Content = runQuery(contentQ, rawItem)
-
-		parsedItems = append(parsedItems, item)
+	parsedItems := make([]ParsedItem, 0, len(parsedFields))
+	for _, field := range parsedFields {
+		parsedItems = append(parsedItems, ParsedItem{
+			Title:   field.Title,
+			Link:    field.Link,
+			Date:    field.Date,
+			Content: field.Description,
+		})
 	}
 
 	c.JSON(http.StatusOK, util.APIResponse[[]ParsedItem]{

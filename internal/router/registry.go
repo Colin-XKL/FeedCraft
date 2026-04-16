@@ -70,6 +70,11 @@ func RegisterRouters(router *gin.Engine) {
 	{
 		recipeRoutes.GET("/:id", recipe.CustomRecipe)
 	}
+	topicRoutes := router.Group("/topic")
+	{
+		topicRoutes.GET("/:id", controller.PublicTopicFeed)
+	}
+	router.GET("/system/notifications/rss", controller.SystemNotificationsRSS)
 
 	// admin api
 	adminApi := router.Group("/api/admin")
@@ -80,6 +85,14 @@ func RegisterRouters(router *gin.Engine) {
 
 		adminApi.POST("/craft-debug/advertorial", craft.DebugCheckIfAdvertorial)
 		adminApi.POST("/craft-debug/common-llm-call-test", admin.LLMDebug)
+
+		adminApi.POST("/topics", controller.CreateTopicFeed)
+		adminApi.POST("/topics/validate", controller.ValidateTopicFeed)
+		adminApi.GET("/topics", controller.ListTopicFeeds)
+		adminApi.GET("/topics/:id/detail", controller.GetTopicFeedDetail)
+		adminApi.GET("/topics/:id", controller.GetTopicFeed)
+		adminApi.PUT("/topics/:id", controller.UpdateTopicFeed)
+		adminApi.DELETE("/topics/:id", controller.DeleteTopicFeed)
 
 		adminApi.POST("/recipes", controller.CreateCustomRecipe)
 		adminApi.GET("/recipes", controller.ListCustomRecipe)
@@ -125,6 +138,11 @@ func RegisterRouters(router *gin.Engine) {
 		adminApi.GET("/dependencies", controller.GetDependencyStatus)
 		adminApi.POST("/dependencies/check", controller.CheckDependencyStatus)
 		adminApi.GET("/dependencies/health", controller.AnalyzeCraftDependencies)
+		adminApi.GET("/observability/resources", controller.ListObservableResources)
+		adminApi.GET("/observability/resources/:type/:id", controller.GetObservableResource)
+		adminApi.POST("/observability/resources/:type/:id/resume", controller.ResumeObservableResource)
+		adminApi.GET("/observability/executions", controller.ListExecutionLogs)
+		adminApi.GET("/system-notifications", controller.ListSystemNotifications)
 	}
 
 }

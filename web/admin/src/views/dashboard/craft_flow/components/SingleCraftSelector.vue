@@ -53,11 +53,11 @@
   import { ref } from 'vue';
   import { useI18n } from 'vue-i18n';
   import { IconCloseCircle, IconDown } from '@arco-design/web-vue/es/icon';
-  import CraftPickerModal from './CraftPickerModal.vue';
+  import CraftPickerModal from '@/views/dashboard/craft_flow/components/CraftPickerModal.vue';
 
   const { t } = useI18n();
 
-  const props = defineProps({
+  defineProps({
     modelValue: {
       type: String,
       default: '',

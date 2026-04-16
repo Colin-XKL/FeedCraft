@@ -69,17 +69,17 @@ func TestSearXNGProvider_EndToEnd(t *testing.T) {
 	assert.NotNil(t, feed)
 
 	// 3. Verify the parsed feed items
-	assert.Len(t, feed.Items, 2)
+	assert.Len(t, feed.Articles, 2)
 
 	// First item verification
-	assert.Equal(t, "Example Domain 1", feed.Items[0].Title)
-	assert.Equal(t, "https://example.com/1", feed.Items[0].Link)
-	assert.Equal(t, "This domain is for use in illustrative examples.", feed.Items[0].Description)
-	assert.Equal(t, "2023-10-01T10:00:00Z", feed.Items[0].Published)
+	assert.Equal(t, "Example Domain 1", feed.Articles[0].Title)
+	assert.Equal(t, "https://example.com/1", feed.Articles[0].Link)
+	assert.Equal(t, "This domain is for use in illustrative examples.", feed.Articles[0].Description)
+	assert.False(t, feed.Articles[0].Created.IsZero())
 
 	// Second item verification (missing publishedDate)
-	assert.Equal(t, "Example Domain 2", feed.Items[1].Title)
-	assert.Equal(t, "https://example.com/2", feed.Items[1].Link)
-	assert.Equal(t, "More illustrative examples here.", feed.Items[1].Description)
-	assert.Empty(t, feed.Items[1].Published)
+	assert.Equal(t, "Example Domain 2", feed.Articles[1].Title)
+	assert.Equal(t, "https://example.com/2", feed.Articles[1].Link)
+	assert.Equal(t, "More illustrative examples here.", feed.Articles[1].Description)
+	assert.True(t, feed.Articles[1].Created.IsZero())
 }
