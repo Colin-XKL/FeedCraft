@@ -30,12 +30,7 @@
     <a-row :gutter="24">
       <a-col :span="12">
         <a-card :title="t('feedCompare.originalFeed')" :loading="isLoading">
-          <a-alert
-            v-if="originalFeedError"
-            type="error"
-            class="mb-4"
-            show-icon
-          >
+          <a-alert v-if="originalFeedError" type="error" class="mb-4" show-icon>
             {{ originalFeedError }}
           </a-alert>
           <div v-if="originalFeedContent">

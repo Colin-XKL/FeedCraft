@@ -221,14 +221,17 @@ v1 不需要把恢复逻辑强行塞进所有 LLM 流程里。
 后续实现时，至少应考虑这些现有路径：
 
 - `internal/craft/common_llm_logic.go`
+
   - 使用更激进的 profile
   - 适合 filter / condition / summary 一类语义型任务
 
 - `internal/craft/translate.go`
+
   - 使用更保守的 profile
   - 常规翻译需要保留更多结构与资源
 
 - immersive translate
+
   - 使用最保守的 profile
   - 尽量保留链接、图片和格式
 

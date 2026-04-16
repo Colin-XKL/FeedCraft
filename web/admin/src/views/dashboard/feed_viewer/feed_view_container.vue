@@ -15,7 +15,10 @@
       </a-radio-group>
     </div>
     <ul>
-      <li v-for="item in feedData.items?.slice(0, 10)" :key="item.guid || item.link">
+      <li
+        v-for="item in feedData.items?.slice(0, 10)"
+        :key="item.guid || item.link"
+      >
         <a-card class="my-2">
           <a-space>
             <a
@@ -81,7 +84,10 @@
       { label: 'copyright', value: data.copyright },
       {
         label: 'image',
-        value: data.image?.url || data.image?.title ? `${data.image?.title || ''} ${data.image?.url || ''}`.trim() : '',
+        value:
+          data.image?.url || data.image?.title
+            ? `${data.image?.title || ''} ${data.image?.url || ''}`.trim()
+            : '',
       },
     ].filter((item) => item.value);
   });

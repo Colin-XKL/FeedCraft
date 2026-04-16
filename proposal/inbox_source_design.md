@@ -119,30 +119,30 @@ Header: Authorization: Bearer <inbox_token>
 
 ### 5.3 字段说明
 
-| 字段        | 类型   | 必填   | 说明                                                                    |
-| ----------- | ------ | ------ | ----------------------------------------------------------------------- |
-| `title`     | string | **是** | 标题                                                                    |
-| `url`       | string | 否     | 原文链接；若为空或省略，则服务端自动填充为 Inbox 文章内容访问地址       |
-| `content`   | string | 否     | 正文内容（支持 HTML）                                                   |
-| `summary`   | string | 否     | 摘要文本，不填则自动截取 content 前 200 字符                            |
-| `id`        | string | 否     | 唯一标识，用于去重。不填则服务端自动生成 UUID（不参与去重）             |
-| `author`    | string | 否     | 作者名                                                                  |
-| `timestamp` | number | 否     | Unix 秒级时间戳，不填则使用服务端当前时间                               |
+| 字段        | 类型   | 必填   | 说明                                                              |
+| ----------- | ------ | ------ | ----------------------------------------------------------------- |
+| `title`     | string | **是** | 标题                                                              |
+| `url`       | string | 否     | 原文链接；若为空或省略，则服务端自动填充为 Inbox 文章内容访问地址 |
+| `content`   | string | 否     | 正文内容（支持 HTML）                                             |
+| `summary`   | string | 否     | 摘要文本，不填则自动截取 content 前 200 字符                      |
+| `id`        | string | 否     | 唯一标识，用于去重。不填则服务端自动生成 UUID（不参与去重）       |
+| `author`    | string | 否     | 作者名                                                            |
+| `timestamp` | number | 否     | Unix 秒级时间戳，不填则使用服务端当前时间                         |
 
 ### 5.4 POST 请求体与 DB 模型的映射
 
-| POST 字段    | DB 字段 (InboxItem) | 默认值逻辑                                                      |
-| ------------ | ------------------- | --------------------------------------------------------------- |
-| _(URL 路径)_ | `InboxID`           | 从 URL 路径 `/api/inbox/:inbox_id/items` 提取                   |
-| `title`      | `Title`             | 直接存储                                                        |
+| POST 字段    | DB 字段 (InboxItem) | 默认值逻辑                                                                           |
+| ------------ | ------------------- | ------------------------------------------------------------------------------------ |
+| _(URL 路径)_ | `InboxID`           | 从 URL 路径 `/api/inbox/:inbox_id/items` 提取                                        |
+| `title`      | `Title`             | 直接存储                                                                             |
 | `url`        | `URL`               | 优先使用请求值；若为空则自动填充为 `<feedcraft-site-base-url>/:inbox_id/:article_id` |
-| `content`    | `Content`           | 直接存储                                                        |
-| `summary`    | `Summary`           | 不填则截取 Content 前 200 字符                                  |
-| `id`         | `ItemID`            | 不填则服务端生成 UUID                                           |
-| `author`     | `Author`            | 直接存储                                                        |
-| `timestamp`  | `PublishedAt`       | 不填则 = `CreatedAt`                                            |
-| _(无)_       | `ID`                | DB 自增主键                                                     |
-| _(无)_       | `CreatedAt`         | GORM 自动填充为入库时间                                         |
+| `content`    | `Content`           | 直接存储                                                                             |
+| `summary`    | `Summary`           | 不填则截取 Content 前 200 字符                                                       |
+| `id`         | `ItemID`            | 不填则服务端生成 UUID                                                                |
+| `author`     | `Author`            | 直接存储                                                                             |
+| `timestamp`  | `PublishedAt`       | 不填则 = `CreatedAt`                                                                 |
+| _(无)_       | `ID`                | DB 自增主键                                                                          |
+| _(无)_       | `CreatedAt`         | GORM 自动填充为入库时间                                                              |
 
 ### 5.5 写入行为
 
