@@ -20,4 +20,32 @@ export default {
   'llmDebug.llmTest.submit': 'Submit',
   'llmDebug.llmTest.response': 'Response',
   'llmDebug.llmTest.unknownError': 'Unknown Error',
+  'llmDebug.llmFilter.title': 'LLM Filter Debug Page',
+  'llmDebug.llmFilter.description':
+    'Use large models to evaluate customized conditions against article content.',
+  'llmDebug.llmFilter.modeFeed': 'Feed Mode',
+  'llmDebug.llmFilter.modeUrl': 'Single URL Mode',
+  'llmDebug.llmFilter.inputFeed': 'Input Feed Configuration',
+  'llmDebug.llmFilter.feedPlaceholder': 'Enter Feed URL (or Recipe URL)',
+  'llmDebug.llmFilter.submitFeed': 'Test Whole Feed',
+  'llmDebug.llmFilter.tabAll': 'All Items',
+  'llmDebug.llmFilter.tabKept': 'Kept Items',
+  'llmDebug.llmFilter.tabFiltered': 'Filtered Items',
+  'llmDebug.llmFilter.statusFiltered': 'Filtered',
+  'llmDebug.llmFilter.statusKept': 'Kept',
+  'llmDebug.llmFilter.testSingle': 'Test This Item',
+  'llmDebug.llmFilter.testSingleModalTitle': 'Test Single Content',
+  'llmDebug.llmFilter.inputLink': 'Input Single URL Configuration',
+  'llmDebug.llmFilter.placeholder': 'Enter article link',
+  'llmDebug.llmFilter.conditionPlaceholder':
+    'Enter filter condition (e.g. Is this content spam or low quality?)',
+  'llmDebug.llmFilter.enhanceMode':
+    'Enable enhanced mode to get article content',
+  'llmDebug.llmFilter.submit': 'Test URL',
+  'llmDebug.llmFilter.resultPreview': 'Result Preview',
+  'llmDebug.llmFilter.isFiltered': 'Is Filtered (Matches Condition):',
+  'llmDebug.llmFilter.articleContent': 'Article Content:',
+  'llmDebug.llmFilter.message.inputRequired':
+    'Both URL and Filter Condition are required.',
+  'llmDebug.llmFilter.message.unknownError': 'Unknown Error',
 };

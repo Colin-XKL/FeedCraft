@@ -75,5 +75,5 @@ export const getCssSelector = (
     if (!currentEl || currentEl === body || currentEl === html) break;
   }
 
-  return path.join(' ');
+  return path.join(' > ');
 };

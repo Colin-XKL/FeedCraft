@@ -33,7 +33,7 @@
     MessageListType,
   } from '@/api/message';
   import useLoading from '@/hooks/loading';
-  import List from '@/components/message-box/list.vue';
+  import List from './list.vue';
 
   interface TabItem {
     key: string;

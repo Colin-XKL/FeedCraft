@@ -274,7 +274,7 @@
   import { useRouter } from 'vue-router';
   import { useClipboard } from '@vueuse/core';
   import buildPublicFeedUrl from '@/utils/publicFeedUrl';
-  import CraftSelector from '@/views/dashboard/craft_flow/CraftSelector.vue';
+  import CraftSelector from '../craft_flow/CraftSelector.vue';
 
   const { t } = useI18n();
   const router = useRouter();

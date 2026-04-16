@@ -1,7 +1,7 @@
 import { createPinia } from 'pinia';
-import useAppStore from '@/store/modules/app';
-import useUserStore from '@/store/modules/user';
-import useTabBarStore from '@/store/modules/tab-bar';
+import useAppStore from './modules/app';
+import useUserStore from './modules/user';
+import useTabBarStore from './modules/tab-bar';
 
 const pinia = createPinia();
 

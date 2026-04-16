@@ -18,7 +18,6 @@ export default {
   'topic.validationSummary': '请先修复以下问题',
   'topic.validationWarnings': '以下提醒不会阻止保存，但建议先确认',
   'topic.id': '主题 ID',
-  'topic.idRequired': '必须填写主题 ID',
   'topic.title': '标题',
   'topic.descriptionLabel': '描述',
   'topic.inputCount': '输入源',

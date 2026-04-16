@@ -1,7 +1,5 @@
 # 主题聚合与统一分发设计方案 (Topic Aggregation Design)
 
-> 状态：已完成
-
 ## 1. 业务场景与需求定义 (Scenario & Requirements)
 
 ### 1.1 核心需求描述
@@ -79,7 +77,7 @@ graph TD
 `Topic Aggregator` 作为协调者 (Orchestrator)：
 
 - **并发拉取**：使用 Go 的 `errgroup` 并发调用底层配置的 `RecipeIDs`。
-- **容错机制 (MVP)**：设置局部超时时间。若某个 Recipe 获取失败，聚合器仅打印 Warn 日志并忽略该源，继续合并其余成功的数据，不阻塞整体 Topic 的输出。（_注：完善的错误状态记录与可观测性看板功能延后，详见 `proposal/completed/error_handling_and_observability.md`_）。
+- **容错机制 (MVP)**：设置局部超时时间。若某个 Recipe 获取失败，聚合器仅打印 Warn 日志并忽略该源，继续合并其余成功的数据，不阻塞整体 Topic 的输出。（_注：完善的错误状态记录与可观测性看板功能延后，详见 `proposal/future/error_handling_and_observability.md`_）。
 
 ### 3.3 极简去重与排序截断 (Deduplication & Truncation)
 
@@ -116,4 +114,4 @@ graph TD
 
 1. `advanced_deduplication.md`: 高级去重策略（向量化检索与 LLM 判定）
 2. `article_quality_scoring.md`: 文章质量打分模型（多维度与 AI 评估）
-3. `completed/error_handling_and_observability.md`: 错误处理与可观测性（系统通知与健康度监控）
+3. `error_handling_and_observability.md`: 错误处理与可观测性（系统通知与健康度监控）

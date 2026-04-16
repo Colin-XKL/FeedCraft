@@ -43,17 +43,13 @@ type InputSpec struct {
 	SourceConfig *config.SourceConfig `json:"source_config,omitempty"`
 }
 
+// Builder compiles persisted feed configs into executable runtime providers.
 type Builder struct {
 	DB *gorm.DB
 }
 
 func NewBuilder(db *gorm.DB) *Builder {
 	return &Builder{DB: db}
-}
-
-type baseURLProvider interface {
-	engine.FeedProvider
-	BaseURL() string
 }
 
 func BuildProviderFromInput(ctx context.Context, spec InputSpec, stack []string) (engine.FeedProvider, error) {
@@ -169,19 +165,14 @@ func (b *Builder) BuildRecipe(ctx context.Context, recipeData *dao.CustomRecipeV
 		return nil, errors.New("recipe is nil")
 	}
 
-	inputSpec, err := buildRecipeInputSpec(recipeData)
-	if err != nil {
+	var sourceConfig config.SourceConfig
+	if err := jsonUnmarshalSourceConfig(recipeData, &sourceConfig); err != nil {
 		return nil, err
 	}
 
-	provider, err := b.BuildProviderFromInput(ctx, inputSpec, nil)
+	inputProvider, err := newSourceConfigProvider(&sourceConfig)
 	if err != nil {
 		return nil, err
-	}
-
-	inputProvider, ok := provider.(baseURLProvider)
-	if !ok {
-		return nil, fmt.Errorf("recipe input provider does not expose base url: %T", provider)
 	}
 
 	processor, err := craft.BuildProcessor(b.db(), recipeData.Craft, inputProvider.BaseURL())
@@ -197,18 +188,6 @@ func (b *Builder) BuildRecipe(ctx context.Context, recipeData *dao.CustomRecipeV
 		CraftName:   recipeData.Craft,
 		Input:       inputProvider,
 		Processor:   processor,
-	}, nil
-}
-
-func buildRecipeInputSpec(recipeData *dao.CustomRecipeV2) (InputSpec, error) {
-	var sourceConfig config.SourceConfig
-	if err := jsonUnmarshalSourceConfig(recipeData, &sourceConfig); err != nil {
-		return InputSpec{}, err
-	}
-
-	return InputSpec{
-		Kind:         InputKindSource,
-		SourceConfig: &sourceConfig,
 	}, nil
 }
 

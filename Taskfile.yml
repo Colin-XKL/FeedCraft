@@ -259,17 +259,7 @@ tasks:
     cmds:
       - cmd: |
           echo "Formatting Go files..."
-          if [ -n "{{.FILES}}" ]; then
-            # Filter only .go files from the provided list
-            files=""
-            for f in {{.FILES}}; do
-              case "$f" in
-                *.go) files="$files $f" ;;
-              esac
-            done
-          else
-            files=$(git ls-files '*.go')
-          fi
+          files=$(git ls-files '*.go')
           if [ -n "$files" ]; then
             gofmt -w $files
           else
@@ -284,31 +274,9 @@ tasks:
     cmds:
       - cmd: |
           echo "Formatting web and docs files..."
-          if [ -n "{{.FILES}}" ]; then
-            # Filter Prettier-managed files from the provided list
-            files=""
-            for f in {{.FILES}}; do
-              case "$f" in
-                *.js|*.jsx|*.ts|*.tsx|*.vue|*.css|*.less|*.scss|*.html|*.json|*.md|*.mdx|*.yml|*.yaml)
-                  files="$files $f" ;;
-              esac
-            done
-          else
-            files=$(git ls-files '*.js' '*.jsx' '*.ts' '*.tsx' '*.vue' '*.css' '*.less' '*.scss' '*.html' '*.json' '*.md' '*.mdx' '*.yml' '*.yaml')
-          fi
+          files=$(git ls-files '*.js' '*.jsx' '*.ts' '*.tsx' '*.vue' '*.css' '*.less' '*.scss' '*.html' '*.json' '*.md' '*.mdx' '*.yml' '*.yaml')
           if [ -n "$files" ]; then
-            # Filter out deleted files
-            existing_files=""
-            for file in $files; do
-              if [ -f "$file" ]; then
-                existing_files="$existing_files $file"
-              fi
-            done
-            if [ -n "$existing_files" ]; then
-              web/admin/node_modules/.bin/prettier --ignore-path .prettierignore --write $existing_files
-            else
-              echo "No Prettier-managed files found in working directory."
-            fi
+            web/admin/node_modules/.bin/prettier --ignore-path .prettierignore --write $files
           else
             echo "No Prettier-managed files found."
           fi

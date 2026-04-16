@@ -1,5 +1,5 @@
-import { DEFAULT_LAYOUT } from '@/router/routes/base';
-import { AppRouteRecordRaw } from '@/router/routes/types';
+import { DEFAULT_LAYOUT } from '../base';
+import { AppRouteRecordRaw } from '../types';
 
 const TOOLS: AppRouteRecordRaw = {
   path: '/tools',
@@ -46,6 +46,16 @@ const TOOLS: AppRouteRecordRaw = {
       component: () => import('@/views/dashboard/llm_debug/llm-test.vue'),
       meta: {
         locale: 'menu.llmDebug',
+        requiresAuth: true,
+      },
+    },
+    {
+      path: 'llm-filter-debug',
+      name: 'LlmFilterDebug',
+      component: () =>
+        import('@/views/dashboard/llm_filter_debug/llm_filter_debug.vue'),
+      meta: {
+        locale: 'menu.llmFilterDebug',
         requiresAuth: true,
       },
     },

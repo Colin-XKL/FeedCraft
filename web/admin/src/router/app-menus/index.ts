@@ -1,4 +1,4 @@
-import { appRoutes, appExternalRoutes } from '@/router/routes';
+import { appRoutes, appExternalRoutes } from '../routes';
 
 const mixinRoutes = [...appRoutes, ...appExternalRoutes];
 

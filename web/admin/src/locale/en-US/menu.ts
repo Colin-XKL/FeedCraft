@@ -34,6 +34,7 @@ export default {
   'menu.curlToRss': 'Curl to RSS',
   'menu.searchToRss': 'Search to RSS',
   'menu.llmDebug': 'LLM Debug',
+  'menu.llmFilterDebug': 'LLM Filter',
   'menu.changePassword': 'Change Password',
   'menu.adCheckDebug': 'Ad Check',
   'menu.dependencyStatus': 'Dependency Services',
