@@ -16,6 +16,14 @@ export default mergeConfig(
           target: 'http://localhost:8080',
           changeOrigin: true,
         },
+        '/craft': {
+          target: 'http://localhost:8080',
+          changeOrigin: true,
+        },
+        '/recipe': {
+          target: 'http://localhost:8080',
+          changeOrigin: true,
+        },
       },
     },
     plugins: [
