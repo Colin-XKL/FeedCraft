@@ -54,7 +54,7 @@
   import TabBar from '@/components/tab-bar/index.vue';
   import usePermission from '@/hooks/permission';
   import useResponsive from '@/hooks/responsive';
-  import PageLayout from './page-layout.vue';
+  import PageLayout from '@/layout/page-layout.vue';
 
   const isInit = ref(false);
   const appStore = useAppStore();
@@ -91,7 +91,7 @@
     (roleValue) => {
       if (roleValue && !permission.accessRouter(route))
         router.push({ name: 'notFound' });
-    },
+    }
   );
   const drawerVisible = ref(false);
   const drawerCancel = () => {

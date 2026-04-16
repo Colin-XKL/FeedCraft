@@ -1,6 +1,6 @@
 ---
 title: CURL to RSS
-description: Convert any JSON API response into an RSS feed using jq selectors.
+description: Convert any JSON API response into an RSS feed with jq selectors and optional templates.
 sidebar:
   order: 3
   badge:
@@ -8,14 +8,14 @@ sidebar:
     variant: success
 ---
 
-FeedCraft includes a **CURL to RSS** tool that allows you to fetch data from JSON APIs and transform it into an RSS feed using `jq` selectors.
+FeedCraft includes a **CURL to RSS** tool that allows you to fetch data from JSON APIs, extract fields with `jq`, and optionally post-process them with templates before generating an RSS feed.
 
 ## Overview
 
 The CURL to RSS tool helps you:
 
 1.  **Fetch** JSON data from an API endpoint (supporting custom headers and methods).
-2.  **Parse** the JSON structure using `jq` syntax to map fields to RSS items.
+2.  **Parse** the JSON structure using `jq` syntax, then optionally use templates to build the final RSS fields.
 3.  **Metadata** Define feed details like title and description.
 4.  **Save** the configuration as a Custom Recipe directly.
 
@@ -39,12 +39,14 @@ Click **Fetch and Next** to retrieve the data.
 
 Once the JSON is fetched, you will see the raw response in the left panel (visualized as a tree). You can now define selectors to extract feed items.
 
-The tool uses **[jq](https://jqlang.github.io/jq/)** syntax for querying JSON.
+The tool uses **[jq](https://jqlang.github.io/jq/)** syntax for querying JSON, and it can optionally apply Go templates to the extracted values.
 
 - **List Selector** (Items Iterator): The path to the array of items.
   - Tip: You can click on a node in the tree view to auto-fill selectors.
 - **Title Selector**: The path to the item's title _relative to the item object_.
+- **Title Template**: Optional. Post-process the extracted title, for example `{{ .Fields.Title | trimSpace }}`.
 - **Link Selector**: The path to the item's URL.
+- **Link Template**: Optional. Useful when the API only returns an ID, for example `https://some-website.com/article/{{ .Item.id }}`.
 - **Date Selector**: (Optional) Path to the publication date.
 - **Content Selector**: (Optional) Path to the full content or summary.
 

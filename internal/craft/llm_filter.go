@@ -43,7 +43,7 @@ func OptionLLMFilterGeneric(condition string) CraftOption {
 			if len(content) == 0 {
 				content = itm.Description
 			}
-			match, err := CheckConditionWithGenericPrompt(content, condition)
+			match, err := CheckConditionWithGenericPrompt(itm.Title, content, condition)
 			if err != nil {
 				return false
 			}

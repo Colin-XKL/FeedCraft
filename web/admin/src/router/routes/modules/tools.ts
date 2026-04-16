@@ -1,5 +1,5 @@
-import { DEFAULT_LAYOUT } from '../base';
-import { AppRouteRecordRaw } from '../types';
+import { DEFAULT_LAYOUT } from '@/router/routes/base';
+import { AppRouteRecordRaw } from '@/router/routes/types';
 
 const TOOLS: AppRouteRecordRaw = {
   path: '/tools',
@@ -55,6 +55,15 @@ const TOOLS: AppRouteRecordRaw = {
       component: () => import('@/views/dashboard/health/index.vue'),
       meta: {
         locale: 'menu.systemHealth',
+        requiresAuth: true,
+      },
+    },
+    {
+      path: 'observability',
+      name: 'Observability',
+      component: () => import('@/views/dashboard/observability/index.vue'),
+      meta: {
+        locale: 'menu.observability',
         requiresAuth: true,
       },
     },

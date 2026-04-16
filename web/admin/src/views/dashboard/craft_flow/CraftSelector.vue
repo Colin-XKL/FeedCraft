@@ -33,11 +33,11 @@
 
 <script setup lang="ts">
   import { ref } from 'vue';
-  import SingleCraftSelector from './components/SingleCraftSelector.vue';
-  import MultiCraftSelector from './components/MultiCraftSelector.vue';
-  import CraftPickerModal from './components/CraftPickerModal.vue';
+  import SingleCraftSelector from '@/views/dashboard/craft_flow/components/SingleCraftSelector.vue';
+  import MultiCraftSelector from '@/views/dashboard/craft_flow/components/MultiCraftSelector.vue';
+  import CraftPickerModal from '@/views/dashboard/craft_flow/components/CraftPickerModal.vue';
 
-  const props = defineProps({
+  defineProps({
     modelValue: {
       type: [String, Array],
       default: () => [],

@@ -69,15 +69,14 @@
         {
           url: articleUrl.value,
           enhance_mode: useEnhanceMode.value,
-        },
+        }
       );
       articleContent.value = resp.data.article_content;
       isAdvertorial.value = resp.data.is_advertorial;
     } catch (error) {
       Message.warning(
-        error?.toString() ?? t('llmDebug.adCheck.message.unknownError'),
+        error?.toString() ?? t('llmDebug.adCheck.message.unknownError')
       );
-      console.error(error);
     } finally {
       isLoading.value = false;
     }

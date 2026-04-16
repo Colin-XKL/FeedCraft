@@ -1,6 +1,6 @@
 import Mock from 'mockjs';
 
-import './message-box';
+import '@/mock/message-box';
 
 Mock.setup({
   timeout: '600-1000',

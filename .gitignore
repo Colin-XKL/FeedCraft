@@ -145,3 +145,4 @@ feedcraft.exe
 *.log
 **/*.log
 .gocache
+.claude/settings.local.json

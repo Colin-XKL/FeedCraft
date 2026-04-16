@@ -18,6 +18,13 @@ var (
 	once sync.Once
 )
 
+// SetDatabaseForTest overrides the global database singleton for tests.
+func SetDatabaseForTest(testDB *gorm.DB) {
+	db = testDB
+	once = sync.Once{}
+	once.Do(func() {})
+}
+
 func GetDatabase() *gorm.DB {
 	once.Do(func() {
 		envClient := GetEnvClient()

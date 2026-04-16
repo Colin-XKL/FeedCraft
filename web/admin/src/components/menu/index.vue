@@ -6,7 +6,7 @@
   import { useAppStore } from '@/store';
   import { listenerRouteChange } from '@/utils/route-listener';
   import { openWindow, regexUrl } from '@/utils';
-  import useMenuTree from './use-menu-tree';
+  import useMenuTree from '@/components/menu/use-menu-tree';
 
   export default defineComponent({
     emit: ['collapse'],
@@ -73,7 +73,7 @@
         const { requiresAuth, activeMenu, hideInMenu } = newRoute.meta;
         if (requiresAuth && (!hideInMenu || activeMenu)) {
           const menuOpenKeys = findMenuOpenKeys(
-            (activeMenu || newRoute.name) as string,
+            (activeMenu || newRoute.name) as string
           );
 
           const keySet = new Set([...menuOpenKeys, ...openKeys.value]);

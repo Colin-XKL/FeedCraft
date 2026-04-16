@@ -3,6 +3,7 @@ package craft
 import (
 	"FeedCraft/internal/config"
 	"FeedCraft/internal/constant"
+	"FeedCraft/internal/engine"
 	"FeedCraft/internal/source"
 	"FeedCraft/internal/util"
 	"fmt"
@@ -103,15 +104,15 @@ func CommonCraftHandlerUsingCraftOptionList(c *gin.Context, optionList []CraftOp
 		return
 	}
 
-	// Create the source instance
+	// Create the legacy source instance
 	sourceInstance, err := factory(sourceConfig)
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	// Generate the base feed
-	baseFeed, err := sourceInstance.Generate(c.Request.Context())
+	// Fetch raw feed using the native Source interface
+	rawCraftFeed, err := sourceInstance.Fetch(c.Request.Context())
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
@@ -119,16 +120,27 @@ func CommonCraftHandlerUsingCraftOptionList(c *gin.Context, optionList []CraftOp
 
 	// Get the base URL for link resolution
 	baseURL := sourceInstance.BaseURL()
+	payload := ExtraPayload{originalFeedUrl: baseURL}
 
-	// Craft the feed using the new, unified function
-	craftedFeed, err := NewCraftedFeedFromGofeed(baseFeed, baseURL, optionList...)
+	// Build the FlowCraft processor using adapters
+	processors := make([]engine.FeedProcessor, len(optionList))
+	for i, opt := range optionList {
+		processors[i] = &LegacyOptionAdapter{
+			Option: opt,
+			Extra:  payload,
+		}
+	}
+	flowCraft := &engine.FlowCraftProcessor{Processors: processors}
+
+	// Process the feed using the new Processor interface
+	finalCraftFeed, err := flowCraft.Process(c.Request.Context(), rawCraftFeed)
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	// Render the result
-	rssStr, err := craftedFeed.OutputFeed.ToRss()
+	rssStr, err := finalCraftFeed.ToFeedsFeed().ToRss()
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
@@ -143,7 +155,6 @@ type RawTransformer func(item *feeds.Item) (string, error)
 func GetCommonCachedTransformer(cacheKeyGenerator ContentCacheKeyGenerator, rawTransformer TransFunc, craftName string) TransFunc {
 	ret := func(item *feeds.Item) (string, error) {
 		originalTitle := item.Title
-		logrus.Infof("applying craft [%s] to article [%s]", craftName, originalTitle)
 
 		hashVal, _ := cacheKeyGenerator(item)
 		cacheKey := getCraftCacheKey(craftName, hashVal)
@@ -156,7 +167,9 @@ func GetCommonCachedTransformer(cacheKeyGenerator ContentCacheKeyGenerator, rawT
 			return ret, err
 		}
 
-		return util.CachedFunc(cacheKey, valFunc)
+		return util.CachedFuncWithPreLog(cacheKey, valFunc, func(isCached bool) {
+			logrus.Infof("applying craft [%s] to article [%s], cached: %v", craftName, originalTitle, isCached)
+		})
 	}
 	return ret
 }
@@ -210,6 +223,9 @@ func getAbsFeedLink(feedUrl, feedLinkAttr string) string {
 	if err != nil {
 		logrus.Errorf("invalid feed url [%s]. err: %v", feedUrl, err)
 	} else {
+		if feedLinkAttr != "" && feedLinkUrl != nil {
+			return parsedFeedUrl.ResolveReference(feedLinkUrl).String()
+		}
 		return fmt.Sprintf("%s://%s", parsedFeedUrl.Scheme, parsedFeedUrl.Host)
 	}
 	return feedLinkAttr

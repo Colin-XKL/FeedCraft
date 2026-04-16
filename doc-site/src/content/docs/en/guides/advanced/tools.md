@@ -44,7 +44,9 @@ The **Craft Dependencies** (System Health) tool visualizes the internal relation
   - **Health Check**: Automatically detects missing dependencies (e.g., a Recipe pointing to a deleted FlowCraft).
   - **Visual Indicators**: Different colors for Recipes, Flows, Atoms, and missing components.
 
-> **Tip:** If you encounter errors like "Craft not found", use this tool to trace the broken link in your configuration.
+:::tip
+If you encounter errors like "Craft not found", use this tool to trace the broken link in your configuration.
+:::
 
 ## Debug Tools
 

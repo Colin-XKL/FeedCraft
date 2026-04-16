@@ -26,7 +26,7 @@
     removeRouteListener,
   } from '@/utils/route-listener';
   import { useAppStore, useTabBarStore } from '@/store';
-  import tabItem from './tab-item.vue';
+  import tabItem from '@/components/tab-bar/tab-item.vue';
 
   const appStore = useAppStore();
   const tabBarStore = useTabBarStore();
@@ -43,7 +43,7 @@
     () => appStore.navbar,
     () => {
       affixRef.value.updatePosition();
-    },
+    }
   );
   listenerRouteChange((route: RouteLocationNormalized) => {
     if (

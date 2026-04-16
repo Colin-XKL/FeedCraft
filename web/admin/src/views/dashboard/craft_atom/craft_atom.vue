@@ -46,6 +46,7 @@
       "
     >
       <a-form
+        ref="formRef"
         :model="editedCraftAtom"
         :rules="rules"
         :label-col="{ span: 6 }"
@@ -167,6 +168,7 @@
   const { t } = useI18n();
 
   const isLoading = ref(false);
+  const formRef = ref();
   const craftAtoms = ref<CraftAtom[]>([]);
   const editedCraftAtom = ref<CraftAtom>({
     name: '',
@@ -234,7 +236,7 @@
   const editBtnHandler = (craftAtom: CraftAtom) => {
     editedCraftAtom.value = { ...craftAtom };
     formParams.value = Object.entries(editedCraftAtom.value.params).map(
-      ([key, value]) => ({ key, value }),
+      ([key, value]) => ({ key, value })
     );
     showEditModal.value = true;
     isUpdating.value = true;
@@ -260,6 +262,9 @@
   };
 
   const saveCraftAtom = async () => {
+    const res = await formRef.value?.validate();
+    if (res) return;
+
     // Convert formParams to map
     const paramsMap: Record<string, string> = {};
     formParams.value.forEach((param) => {

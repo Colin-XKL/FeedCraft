@@ -1,11 +1,12 @@
 export default {
   'curlToRss.title': 'Curl to RSS',
   'curlToRss.description':
-    'Generate RSS feeds from any JSON API by defining parsing rules.',
+    'Generate RSS feeds from any JSON API with field extraction rules and optional templates.',
   'curlToRss.step.requestConfig': 'Request Config',
   'curlToRss.step.requestConfig.desc': 'Configure JSON source',
   'curlToRss.step.parsingRules': 'Parsing Rules',
-  'curlToRss.step.parsingRules.desc': 'Define jq selectors',
+  'curlToRss.step.parsingRules.desc':
+    'Define field extraction and output templates',
   'curlToRss.step.feedMetadata': 'Feed Metadata',
   'curlToRss.step.feedMetadata.desc': 'Set feed details',
   'curlToRss.step.saveRecipe': 'Save Recipe',
@@ -23,15 +24,24 @@ export default {
   'curlToRss.step1.fetchAndNext': 'Fetch & Next',
   'curlToRss.step2.responseJson': 'Response JSON',
   'curlToRss.step2.alert':
-    'Define selectors to extract feed items. Use dot notation (e.g., <code>.data.items</code>).',
+    'Use jq selectors to extract raw values, then optionally use templates to build the final field output. The items selector supports .data.items and .data.items[].',
   'curlToRss.step2.iteration': 'Iteration',
   'curlToRss.step2.itemsIterator':
     'Items Iterator (e.g. .data.items or .items[])',
-  'curlToRss.step2.itemFields': 'Item Fields (Relative to Iterator)',
+  'curlToRss.step2.itemFields': 'Item Fields',
   'curlToRss.step2.titleSelector': 'Title Selector',
+  'curlToRss.step2.titleTemplate': 'Title Template (Optional)',
   'curlToRss.step2.linkSelector': 'Link Selector',
+  'curlToRss.step2.linkTemplate': 'Link Template (Optional)',
   'curlToRss.step2.dateSelector': 'Date Selector',
-  'curlToRss.step2.contentSelector': 'Content/Description Selector',
+  'curlToRss.step2.dateTemplate': 'Date Template (Optional)',
+  'curlToRss.step2.contentSelector': 'Content/Summary Selector',
+  'curlToRss.step2.contentTemplate': 'Content/Summary Template (Optional)',
+  'curlToRss.step2.templateHelpTitle': 'Template Help',
+  'curlToRss.step2.templateHelpDesc':
+    'Selectors extract raw values from the current item. Templates let you combine, clean up, or fill in the final text using the current item and extracted fields.',
+  'curlToRss.step2.templateExamples':
+    'Examples:\nBuild a link: https://some-website.com/article/{{ .Item.id }}\nTrim a title: {{ .Fields.Title | trimSpace }}\nFallback summary: {{ default .Fields.Description "No summary" }}',
   'curlToRss.step2.previewResults': 'Preview Results ({count})',
   'curlToRss.step2.previewPlaceholder': 'Preview results will appear here',
   'curlToRss.step2.previewPlaceholder.help':
@@ -82,7 +92,13 @@ export default {
   'curlToRss.placeholder.curl': 'curl -X POST ...',
   'curlToRss.placeholder.items': '.items',
   'curlToRss.placeholder.title': '.title',
+  'curlToRss.placeholder.titleTemplate': '{{ .Fields.Title | trimSpace }}',
   'curlToRss.placeholder.link': '.url',
+  'curlToRss.placeholder.linkTemplate':
+    'https://some-website.com/article/{{ .Item.id }}',
   'curlToRss.placeholder.date': '.created_at',
+  'curlToRss.placeholder.dateTemplate': '{{ .Fields.Date }}',
   'curlToRss.placeholder.content': '.content',
+  'curlToRss.placeholder.contentTemplate':
+    '{{ default .Fields.Description "No summary" }}',
 };

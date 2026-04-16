@@ -23,6 +23,7 @@ export default {
   'menu.craftAtom': '原子工艺 (AtomCraft)',
   'menu.craftFlow': '组合工艺 (FlowCraft)',
   'menu.customRecipe': '自定义配方',
+  'menu.topicFeed': '主题订阅',
   'menu.allCraftList': '所有 Craft 列表',
   'menu.quickStart': '快速开始',
   'menu.dashboard.welcome': '欢迎页',
@@ -35,6 +36,7 @@ export default {
   'menu.llmDebug': 'LLM 调试',
   'menu.adCheckDebug': '广告软文检测',
   'menu.llmApiDebug': 'LLM API 调试',
+  'menu.observability': '系统运行状态',
   // 其他
   'menu.dependencyStatus': '依赖服务状态',
   'menu.changePassword': '修改密码',

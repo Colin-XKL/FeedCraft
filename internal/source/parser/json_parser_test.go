@@ -45,12 +45,69 @@ func TestJsonParser_Parse(t *testing.T) {
 
 	assert.NoError(t, err)
 	if feed != nil {
-		assert.Len(t, feed.Items, 2)
-		if len(feed.Items) > 0 {
-			assert.Equal(t, "Title 1", feed.Items[0].Title)
-			assert.Equal(t, "http://example.com/1", feed.Items[0].Link)
-			assert.Equal(t, "Description 1", feed.Items[0].Description)
+		assert.Len(t, feed.Articles, 2)
+		if len(feed.Articles) > 0 {
+			assert.Equal(t, "Title 1", feed.Articles[0].Title)
+			assert.Equal(t, "http://example.com/1", feed.Articles[0].Link)
+			assert.Equal(t, "Description 1", feed.Articles[0].Description)
 		}
+	}
+}
+
+func TestJsonParser_Parse_WithTemplates(t *testing.T) {
+	jsonContent := `{
+	  "items": [
+	    {
+	      "id": " article-1 ",
+	      "title": "  Hello World  ",
+	      "summary": ""
+	    }
+	  ]
+	}`
+
+	cfg := &config.JsonParserConfig{
+		ItemsIterator:       ".items[]",
+		Title:               ".title",
+		TitleTemplate:       "{{ .Fields.Title | trimSpace }}",
+		Link:                ".id",
+		LinkTemplate:        "https://some-website.com/article/{{ .Fields.Link | trimSpace }}",
+		Description:         ".summary",
+		DescriptionTemplate: "{{ default .Fields.Description \"No summary\" }}",
+	}
+
+	parser := &JsonParser{Config: cfg}
+	feed, err := parser.Parse([]byte(jsonContent))
+
+	assert.NoError(t, err)
+	if assert.NotNil(t, feed) && assert.Len(t, feed.Articles, 1) {
+		assert.Equal(t, "Hello World", feed.Articles[0].Title)
+		assert.Equal(t, "https://some-website.com/article/article-1", feed.Articles[0].Link)
+		assert.Equal(t, "No summary", feed.Articles[0].Description)
+	}
+}
+
+func TestJsonParser_Parse_WithItemTemplateOnly(t *testing.T) {
+	jsonContent := `{
+	  "items": [
+	    {
+	      "id": "42",
+	      "title": "Entry"
+	    }
+	  ]
+	}`
+
+	cfg := &config.JsonParserConfig{
+		ItemsIterator: ".items[]",
+		Title:         ".title",
+		LinkTemplate:  "https://example.com/article/{{ .Item.id }}",
+	}
+
+	parser := &JsonParser{Config: cfg}
+	feed, err := parser.Parse([]byte(jsonContent))
+
+	assert.NoError(t, err)
+	if assert.NotNil(t, feed) && assert.Len(t, feed.Articles, 1) {
+		assert.Equal(t, "https://example.com/article/42", feed.Articles[0].Link)
 	}
 }
 
@@ -77,4 +134,21 @@ func TestJsonParser_Parse_Error(t *testing.T) {
 	assert.Error(t, err)
 	assert.Nil(t, feed)
 	assert.Contains(t, err.Error(), "failed to extract title")
+}
+
+func TestJsonParser_Parse_TemplateError(t *testing.T) {
+	jsonContent := `{"items":[{"title":"Hello"}]}`
+
+	cfg := &config.JsonParserConfig{
+		ItemsIterator: ".items[]",
+		Title:         ".title",
+		TitleTemplate: "{{ .Fields.Title ",
+	}
+
+	parser := &JsonParser{Config: cfg}
+	feed, err := parser.Parse([]byte(jsonContent))
+
+	assert.Error(t, err)
+	assert.Nil(t, feed)
+	assert.Contains(t, err.Error(), "invalid title template")
 }

@@ -2,20 +2,20 @@ package parser
 
 import (
 	"FeedCraft/internal/config"
+	"FeedCraft/internal/model"
 	"FeedCraft/internal/util"
 	"bytes"
 	"fmt"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/mmcdole/gofeed"
 )
 
 type HtmlParser struct {
 	Config *config.HtmlParserConfig
 }
 
-func (p *HtmlParser) Parse(data []byte) (*gofeed.Feed, error) {
+func (p *HtmlParser) Parse(data []byte) (*model.CraftFeed, error) {
 	if p == nil || p.Config == nil {
 		return nil, fmt.Errorf("parser config is nil")
 	}
@@ -25,14 +25,14 @@ func (p *HtmlParser) Parse(data []byte) (*gofeed.Feed, error) {
 		return nil, fmt.Errorf("failed to parse html: %w", err)
 	}
 
-	feed := &gofeed.Feed{}
+	feed := &model.CraftFeed{}
 
 	// Basic feed metadata (can be overridden by FeedMetaConfig later)
 	// For now, we might try to extract title from <title> if not provided via overrides
 	feed.Title = doc.Find("title").Text()
 
 	doc.Find(p.Config.ItemSelector).Each(func(i int, s *goquery.Selection) {
-		item := &gofeed.Item{}
+		item := &model.CraftArticle{}
 
 		// Helper to extract selection based on selector
 		// If selector is "." or empty, use current 's'
@@ -65,28 +65,32 @@ func (p *HtmlParser) Parse(data []byte) (*gofeed.Feed, error) {
 					dateStr = val
 				}
 			}
-			item.Published = dateStr
+			if dateStr != "" {
+				if parsedTime, ok := parseFlexibleTime(dateStr); ok {
+					item.Created = parsedTime
+					item.Updated = parsedTime
+				}
+			}
 		}
 
 		// Description (plain text)
 		if p.Config.Description != "" {
 			item.Description = strings.TrimSpace(getSelection(p.Config.Description).Text())
+			if item.Content == "" {
+				item.Content = item.Description
+			}
 		}
 
 		// Content (rich HTML)
 		if p.Config.Content != "" {
 			sel := getSelection(p.Config.Content)
-			html, err := sel.Html()
-			if err != nil {
-				// Log error but don't fail, just leave content empty
-				// logrus.Warnf("Failed to extract content for item: %v", err)
-				item.Content = ""
-			} else {
-				item.Content = html
+			htmlStr, err := sel.Html()
+			if err == nil && htmlStr != "" {
+				item.Content = htmlStr
 			}
 		}
 
-		feed.Items = append(feed.Items, item)
+		feed.Articles = append(feed.Articles, item)
 
 	})
 

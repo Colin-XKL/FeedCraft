@@ -28,14 +28,15 @@
             <p>{{ dayjs(item.isoDate).format('YYYY-MM-DD hh:mm:ss') }}</p>
           </a-space>
 
+          <!-- eslint-disable vue/no-v-html -->
           <div v-if="viewMode === 'rich'" class="rich-text-content">
-            <!-- eslint-disable-next-line vue/no-v-html -->
             <div
               v-html="
                 sanitizeContent(item.content || item.contentSnippet || '')
               "
             ></div>
           </div>
+          <!-- eslint-enable vue/no-v-html -->
           <a-typography-paragraph
             v-else
             :ellipsis="{

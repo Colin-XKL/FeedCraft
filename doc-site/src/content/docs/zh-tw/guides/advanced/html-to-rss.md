@@ -10,7 +10,9 @@ sidebar:
 
 FeedCraft 內建了視覺化的 **從 HTML 網頁生成 RSS (HTML to RSS)** 工具，允許你生成選取器，以便為那些沒有提供 RSS 的網站建立訂閱源。
 
-> **注意：** 此工具專為 HTML 頁面設計。如果你需要處理 JSON API，請使用 [從 CURL 語句生成 RSS](/zh-tw/guides/advanced/curl-to-rss/)。
+:::note
+此工具專為 HTML 頁面設計。如果你需要處理 JSON API，請使用 [從 CURL 語句生成 RSS](/zh-tw/guides/advanced/curl-to-rss/)。
+:::
 
 ## 概覽
 
@@ -61,7 +63,10 @@ HTML to RSS 工具允許你：
 
 審查你的配置並將其保存為永久配方。
 
-- **配方唯一 ID (Recipe Unique ID)**：此訂閱源配置的唯一識別碼（例如 `tech-blog-feed`）。如果留空，將自動根據訂閱源標題生成。
+- **配方唯一 ID (Recipe Unique ID)**：此訂閱源配置的唯一識別碼（例如 `tech-blog-feed`）。
+  - **自動填充 (Auto-Fill)**：該欄位將根據訂閱源標題自動填充。
+  - **格式 (Format)**：僅允許小寫字母、數字和連字符 (`[a-z0-9-]`)。
+  - **重整 (Refresh)**：你可以使用重整按鈕根據標題手動重新生成 ID。
 - **內部描述 (Internal Description)**：關於此配方的備註。
 
 點擊 **確認並保存 (Confirm and Save)**。工具將自動建立一個包含你的配置的新自定義配方，你可以在 **自定義配方 (Custom Recipes)** 儀表板中管理它。

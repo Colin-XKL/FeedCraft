@@ -23,6 +23,7 @@ export default {
   'menu.craftAtom': 'AtomCraft',
   'menu.craftFlow': 'FlowCraft',
   'menu.customRecipe': 'Custom Recipe',
+  'menu.topicFeed': 'Topic Feed',
   'menu.allCraftList': 'All Craft List',
   'menu.quickStart': 'Quick Start',
   'menu.dashboard.welcome': 'Welcome',
@@ -37,6 +38,7 @@ export default {
   'menu.adCheckDebug': 'Ad Check',
   'menu.dependencyStatus': 'Dependency Services',
   'menu.llmApiDebug': 'LLM API Debug',
+  'menu.observability': 'System Runtime',
   // other menu
   'menu.settings': 'Settings',
   'menu.settings.searchProvider': 'Search Provider',
