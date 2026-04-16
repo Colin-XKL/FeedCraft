@@ -12,11 +12,14 @@
           type="text"
           class="min-w-48"
           :placeholder="t('feedCompare.placeholder')"
+          @input="clearErrors"
+          @keyup.enter="compareFeeds"
         />
         <CraftFlowSelect
           v-model="selectedCraft"
           mode="single"
           class="min-w-48"
+          @change="clearErrors"
         />
         <a-button :loading="isLoading" type="primary" @click="compareFeeds"
           >{{ t('feedCompare.compare') }}
@@ -27,18 +30,34 @@
     <a-row :gutter="24">
       <a-col :span="12">
         <a-card :title="t('feedCompare.originalFeed')" :loading="isLoading">
+          <a-alert
+            v-if="originalFeedError"
+            type="error"
+            class="mb-4"
+            show-icon
+          >
+            {{ originalFeedError }}
+          </a-alert>
           <div v-if="originalFeedContent">
             <FeedViewContainer :feed-data="originalFeedContent" />
           </div>
-          <a-empty v-else />
+          <a-empty v-else-if="!originalFeedError" />
         </a-card>
       </a-col>
       <a-col :span="12">
         <a-card :title="t('feedCompare.craftAppliedFeed')" :loading="isLoading">
+          <a-alert
+            v-if="craftAppliedFeedError"
+            type="error"
+            class="mb-4"
+            show-icon
+          >
+            {{ craftAppliedFeedError }}
+          </a-alert>
           <div v-if="craftAppliedFeedContent">
             <FeedViewContainer :feed-data="craftAppliedFeedContent" />
           </div>
-          <a-empty v-else />
+          <a-empty v-else-if="!craftAppliedFeedError" />
         </a-card>
       </a-col>
     </a-row>
@@ -47,27 +66,26 @@
 
 <script lang="ts" setup>
   import { ref } from 'vue';
-  import Parser from 'rss-parser';
   import { Message } from '@arco-design/web-vue';
   import FeedViewContainer from '@/views/dashboard/feed_viewer/feed_view_container.vue';
   import XHeader from '@/components/header/x-header.vue';
   import CraftFlowSelect from '@/views/dashboard/craft_flow/CraftFlowSelect.vue';
   import { useI18n } from 'vue-i18n';
+  import { previewFeed, type FeedViewerPreview } from '@/api/feed_viewer';
 
   const { t } = useI18n();
 
   const feedUrl = ref('');
   const selectedCraft = ref('');
-  // const crafts = ref(['craft1', 'craft2', 'craft3']); // 这里需要从后端获取craft列表
-  const originalFeedContent = ref<any>(null);
-  const craftAppliedFeedContent = ref<any>(null);
+  const originalFeedContent = ref<FeedViewerPreview | null>(null);
+  const craftAppliedFeedContent = ref<FeedViewerPreview | null>(null);
+  const originalFeedError = ref('');
+  const craftAppliedFeedError = ref('');
   const isLoading = ref(false);
-  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
-  async function fetchFeed(url: string) {
-    const parser = new Parser();
-    const resp = await fetch(url);
-    return parser.parseString(await resp?.text());
+  function clearErrors() {
+    originalFeedError.value = '';
+    craftAppliedFeedError.value = '';
   }
 
   async function compareFeeds() {
@@ -77,22 +95,34 @@
     }
 
     isLoading.value = true;
-    try {
-      originalFeedContent.value = await fetchFeed(
-        `${baseUrl}/craft/proxy?input_url=${encodeURIComponent(feedUrl.value)}`
-      );
-      craftAppliedFeedContent.value = await fetchFeed(
-        `${baseUrl}/craft/${selectedCraft.value}?input_url=${encodeURIComponent(
-          feedUrl.value
-        )}`
-      );
-    } catch (error) {
-      Message.warning(
-        error?.toString() ?? t('feedCompare.message.unknownError')
-      );
-    } finally {
-      isLoading.value = false;
+    clearErrors();
+    originalFeedContent.value = null;
+    craftAppliedFeedContent.value = null;
+
+    const [originalResult, craftedResult] = await Promise.allSettled([
+      previewFeed(feedUrl.value),
+      previewFeed(feedUrl.value, { craftName: selectedCraft.value }),
+    ]);
+
+    if (originalResult.status === 'fulfilled') {
+      originalFeedContent.value = originalResult.value.data;
+    } else {
+      originalFeedError.value =
+        originalResult.reason instanceof Error
+          ? originalResult.reason.message
+          : t('feedCompare.message.unknownError');
     }
+
+    if (craftedResult.status === 'fulfilled') {
+      craftAppliedFeedContent.value = craftedResult.value.data;
+    } else {
+      craftAppliedFeedError.value =
+        craftedResult.reason instanceof Error
+          ? craftedResult.reason.message
+          : t('feedCompare.message.unknownError');
+    }
+
+    isLoading.value = false;
   }
 </script>
 

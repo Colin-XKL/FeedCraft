@@ -3,6 +3,7 @@ package controller
 import (
 	"FeedCraft/internal/config"
 	"FeedCraft/internal/constant"
+	"FeedCraft/internal/craft"
 	"FeedCraft/internal/model"
 	"FeedCraft/internal/source"
 	"FeedCraft/internal/util"
@@ -15,10 +16,12 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mmcdole/gofeed"
 )
 
 type FeedViewerPreviewReq struct {
-	InputURL string `json:"input_url" form:"input_url" binding:"required"`
+	InputURL  string `json:"input_url" form:"input_url" binding:"required"`
+	CraftName string `json:"craft_name" form:"craft_name"`
 }
 
 type FeedViewerPreview struct {
@@ -58,7 +61,7 @@ func PreviewFeedViewer(c *gin.Context) {
 		return
 	}
 
-	feed, err := loadFeedViewerPreview(c, req.InputURL)
+	feed, err := loadFeedViewerPreview(c, req)
 	if err != nil {
 		status, msg := classifyFeedViewerError(err)
 		c.JSON(status, util.APIResponse[any]{StatusCode: -1, Msg: msg})
@@ -71,11 +74,11 @@ func PreviewFeedViewer(c *gin.Context) {
 	})
 }
 
-func loadFeedViewerPreview(c *gin.Context, inputURL string) (*model.CraftFeed, error) {
+func loadFeedViewerPreview(c *gin.Context, req FeedViewerPreviewReq) (*model.CraftFeed, error) {
 	cfg := &config.SourceConfig{
 		Type: constant.SourceRSS,
 		HttpFetcher: &config.HttpFetcherConfig{
-			URL: inputURL,
+			URL: req.InputURL,
 		},
 	}
 
@@ -94,7 +97,35 @@ func loadFeedViewerPreview(c *gin.Context, inputURL string) (*model.CraftFeed, e
 		return nil, err
 	}
 
-	return feed, nil
+	if req.CraftName == "" || req.CraftName == "proxy" {
+		return feed, nil
+	}
+
+	craftedFeed, err := buildCraftPreview(feed, req.InputURL, req.CraftName)
+	if err != nil {
+		return nil, err
+	}
+
+	return craftedFeed, nil
+}
+
+func buildCraftPreview(feed *model.CraftFeed, inputURL, craftName string) (*model.CraftFeed, error) {
+	atomXML, err := feed.ToFeedsFeed().ToAtom()
+	if err != nil {
+		return nil, err
+	}
+
+	parsedFeed, err := gofeed.NewParser().ParseString(atomXML)
+	if err != nil {
+		return nil, err
+	}
+
+	craftedFeed, err := craft.ProcessFeed(parsedFeed, inputURL, craftName)
+	if err != nil {
+		return nil, err
+	}
+
+	return model.FromFeedsFeed(craftedFeed), nil
 }
 
 func buildFeedViewerPreview(feed *model.CraftFeed, inputURL string) FeedViewerPreview {
@@ -189,10 +220,12 @@ func classifyFeedViewerError(err error) (int, string) {
 	switch {
 	case strings.Contains(msg, "http status not ok:"):
 		return http.StatusOK, humanizeFeedViewerHTTPStatus(msg)
-	case strings.Contains(msg, "http get failed:"), strings.Contains(msg, "browserless fetch failed:"), strings.Contains(msg, "failed to read response body:"):
+	case strings.Contains(msg, "http get failed:"), strings.Contains(msg, "browserless fetch failed:"), strings.Contains(msg, "failed to read response body:"), strings.Contains(msg, "Unable to resolve this URL"):
 		return http.StatusOK, "Unable to fetch this URL. Please check the address and try again."
-	case strings.Contains(msg, "parse failed:"):
+	case strings.Contains(msg, "parse failed:"), strings.Contains(msg, "invalid XML"):
 		return http.StatusOK, "The URL is reachable, but it does not appear to be a valid RSS or Atom feed."
+	case strings.Contains(msg, "not a valid craft name"):
+		return http.StatusBadRequest, "Please select a valid craft before comparing feeds."
 	default:
 		return http.StatusInternalServerError, "Failed to preview this feed due to an internal error."
 	}

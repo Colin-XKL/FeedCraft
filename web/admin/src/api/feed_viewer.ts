@@ -26,12 +26,20 @@ export interface FeedViewerPreview {
   items: FeedViewerPreviewItem[];
 }
 
+export interface PreviewFeedOptions {
+  craftName?: string;
+}
+
 export function previewFeed(
-  inputUrl: string
+  inputUrl: string,
+  options: PreviewFeedOptions = {}
 ): Promise<APIResponse<FeedViewerPreview>> {
   return axios
     .get<APIResponse<FeedViewerPreview>>('/api/admin/tools/feed/preview', {
-      params: { input_url: inputUrl },
+      params: {
+        input_url: inputUrl,
+        craft_name: options.craftName,
+      },
     })
     .then((res) => res.data);
 }
