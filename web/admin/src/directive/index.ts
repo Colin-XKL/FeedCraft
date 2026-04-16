@@ -1,5 +1,5 @@
 import { App } from 'vue';
-import permission from './permission';
+import permission from '@/directive/permission';
 
 export default {
   install(Vue: App) {

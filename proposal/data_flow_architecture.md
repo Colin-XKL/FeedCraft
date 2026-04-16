@@ -1,5 +1,7 @@
 # 乐高式数据流架构设计 (Lego-based Data Flow Architecture)
 
+> 状态：部分完成
+
 ## 1. 核心设计理念 (Core Design Philosophy)
 
 在当前的系统中，`第三方原始 RSS`、`用户自定义 Recipe`、`处理后的 Feed` 以及即将引入的 `Topic (主题聚合)`，往往被视作不同的业务实体。

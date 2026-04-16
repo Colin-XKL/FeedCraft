@@ -74,14 +74,18 @@ func FromGofeed(parsedFeed *gofeed.Feed) *CraftFeed {
 	if len(parsedFeed.Authors) > 0 && parsedFeed.Authors[0] != nil {
 		cf.AuthorName = parsedFeed.Authors[0].Name
 		cf.AuthorEmail = parsedFeed.Authors[0].Email
+	} else if parsedFeed.Author != nil {
+		cf.AuthorName = parsedFeed.Author.Name
+		cf.AuthorEmail = parsedFeed.Author.Email
 	}
 	if parsedFeed.Image != nil {
 		cf.ImageURL = parsedFeed.Image.URL
 		cf.ImageTitle = parsedFeed.Image.Title
 	}
 
-	cf.Articles = lo.Map(parsedFeed.Items, func(item *gofeed.Item, _ int) *CraftArticle {
-		return ArticleFromGofeed(item)
+	cf.Articles = lo.FilterMap(parsedFeed.Items, func(item *gofeed.Item, _ int) (*CraftArticle, bool) {
+		article := ArticleFromGofeed(item)
+		return article, article != nil
 	})
 
 	return cf
@@ -107,10 +111,15 @@ func ArticleFromGofeed(item *gofeed.Item) *CraftArticle {
 		content = item.Description
 	}
 
+	description := item.Description
+	if len(description) == 0 {
+		description = item.Content
+	}
+
 	article := &CraftArticle{
 		Title:       item.Title,
 		Link:        item.Link,
-		Description: item.Description,
+		Description: description,
 		Id:          item.GUID,
 		Updated:     updatedTime,
 		Created:     publishedTime,
@@ -121,6 +130,9 @@ func ArticleFromGofeed(item *gofeed.Item) *CraftArticle {
 	if authorItem != nil {
 		article.AuthorName = authorItem.Name
 		article.AuthorEmail = authorItem.Email
+	} else if item.Author != nil {
+		article.AuthorName = item.Author.Name
+		article.AuthorEmail = item.Author.Email
 	}
 
 	return article

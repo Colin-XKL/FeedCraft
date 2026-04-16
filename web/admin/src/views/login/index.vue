@@ -16,7 +16,7 @@
 
 <script lang="ts" setup>
   import Footer from '@/components/footer/index.vue';
-  import LoginForm from './components/login-form.vue';
+  import LoginForm from '@/views/login/components/login-form.vue';
 </script>
 
 <style lang="less" scoped>

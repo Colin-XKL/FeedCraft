@@ -180,8 +180,10 @@ func GetCommonCachedArticleTransformer(cacheKeyGenerator ArticleCacheKeyGenerato
 			return "", err
 		}
 		cacheKey := getCraftCacheKey(craftName, hashVal)
-		return util.CachedFunc(cacheKey, func() (string, error) {
+		return util.CachedFuncWithPreLog(cacheKey, func() (string, error) {
 			return rawTransformer(ctx, article)
+		}, func(isCached bool) {
+			logrus.Infof("applying craft [%s] to article [%s], cached: %v", craftName, article.Title, isCached)
 		})
 	}
 }

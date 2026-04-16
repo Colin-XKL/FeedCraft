@@ -9,6 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var llmContextCaller = adapter.CallLLMUsingContext
+
 // CheckConditionWithLLM 检查文章内容是否符合特定条件
 // prompt: 用户提供的 prompt 模板，必须明确要求返回 'true' 或 'false'
 // title: 文章标题
@@ -29,12 +31,18 @@ func CheckConditionWithLLM(title string, content string, conditionPrompt string)
 	// 如果 prompt 没有明确包含 true/false 的指令，建议调用者在传入前拼接好。
 	// 但为了通用性，我们这里假设传入的 prompt 已经包含了判断逻辑。
 
+<<<<<<< feat/llm-filter-debug-page-4615120362506922783
 	contextData := content
 	if title != "" {
 		contextData = fmt.Sprintf("Title: %s\n\nContent:\n%s", title, content)
 	}
 
 	result, err := adapter.CallLLMUsingContext(conditionPrompt, contextData, option)
+=======
+	contextData := BuildLLMArticlePayload(title, content)
+
+	result, err := llmContextCaller(conditionPrompt, contextData, option)
+>>>>>>> dev
 	if err != nil {
 		logrus.Errorf("Error checking condition with LLM: %v", err)
 		return false, err
@@ -51,6 +59,21 @@ func CheckConditionWithLLM(title string, content string, conditionPrompt string)
 	}
 
 	return false, fmt.Errorf("unexpected llm response: [%s]", result)
+}
+
+func BuildLLMArticlePayload(title string, content string) string {
+	title = strings.TrimSpace(title)
+	content = strings.TrimSpace(content)
+	if title == "" {
+		return fmt.Sprintf("Article Content:\n```markdown\n%s\n```", content)
+	}
+	if content == "" {
+		return fmt.Sprintf("Article Title:\n```text\n%s\n```", title)
+	}
+	return fmt.Sprintf("Article Title:\n```text\n%s\n```\n\nArticle Content:\n```markdown\n%s\n```",
+		title,
+		content,
+	)
 }
 
 // CheckConditionWithGenericPrompt 使用通用模板构造 prompt 并调用 LLM

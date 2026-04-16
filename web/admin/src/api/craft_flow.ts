@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { APIResponse } from './types';
+import { APIResponse } from '@/api/types';
 
 export interface CraftFlowItem {
   craft_name: string;

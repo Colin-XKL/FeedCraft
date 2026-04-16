@@ -1,5 +1,7 @@
 # 可视化节点编排系统设计 (Visual Node-based Orchestration Design)
 
+> 状态：未开始
+
 ## 1. 需求场景与核心目标 (Scenario & Goals)
 
 随着 FeedCraft 架构向“流式数据处理管线”演进，系统内部将存在大量不同层级的组合：多个 Atom-Craft 组成 Flow-Craft，Source 和 Flow-Craft 组成 Recipe，多个 Recipe 汇聚成 Topic。

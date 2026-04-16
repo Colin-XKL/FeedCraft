@@ -5,10 +5,10 @@ import {
   getUserInfo,
   LoginData,
 } from '@/api/user';
+import useAppStore from '@/store/modules/app';
 import { setToken, clearToken } from '@/utils/auth';
 import { removeRouteListener } from '@/utils/route-listener';
-import { UserState } from './types';
-import useAppStore from '../app';
+import { UserState } from '@/store/modules/user/types';
 
 const useUserStore = defineStore('user', {
   state: (): UserState => ({
