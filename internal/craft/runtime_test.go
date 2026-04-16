@@ -3,7 +3,6 @@ package craft
 import (
 	"context"
 	"fmt"
-	"strings"
 	"testing"
 	"time"
 
@@ -41,59 +40,15 @@ func TestResolveCraftAtoms_FlowAndCustomAtom(t *testing.T) {
 	assert.Equal(t, "5", atoms[0].Params["num"])
 }
 
-func TestBuildProcessor_ProxyUsesNativeNoopProcessor(t *testing.T) {
-	db := newCraftRuntimeTestDB(t)
-	processor, err := BuildProcessor(db, "proxy", "https://example.com/feed.xml")
-	require.NoError(t, err)
-	require.NotNil(t, processor)
-
-	flow, ok := processor.(*engine.FlowCraftProcessor)
-	require.True(t, ok)
-	require.Len(t, flow.Processors, 1)
-	assert.IsType(t, &NoopProcessor{}, flow.Processors[0])
-
-	feed := &model.CraftFeed{Title: "proxy"}
-	result, err := flow.Process(context.Background(), feed)
-	require.NoError(t, err)
-	assert.Same(t, feed, result)
-}
-
-func TestBuildProcessor_KeywordContentScopeUsesContentOnly(t *testing.T) {
-	db := newCraftRuntimeTestDB(t)
-	require.NoError(t, dao.CreateCraftAtom(db, &dao.CraftAtom{
-		Name:         "keyword-content",
-		TemplateName: "keyword",
-		Params: map[string]string{
-			"mode":     "include",
-			"scope":    "content",
-			"keywords": "needle",
-		},
-	}))
-
-	processor, err := BuildProcessor(db, "keyword-content", "https://example.com/feed.xml")
-	require.NoError(t, err)
-	require.NotNil(t, processor)
-
-	result, err := processor.Process(context.Background(), &model.CraftFeed{
-		Articles: []*model.CraftArticle{
-			{Title: "needle in title only", Content: "body without match"},
-			{Title: "other", Content: "body with needle"},
-		},
-	})
-	require.NoError(t, err)
-	require.Len(t, result.Articles, 1)
-	assert.Equal(t, "other", result.Articles[0].Title)
-}
-
 func TestBuildProcessor_UsesNativeProcessors(t *testing.T) {
 	db := newCraftRuntimeTestDB(t)
-	processor, err := BuildProcessor(db, "limit,time-limit,guid-fix,relative-link-fix,cleanup,fulltext,fulltext-plus,summary,introduction,translate-title,translate-content,translate-content-immersive,beautify-content,llm-filter,ignore-advertorial", "https://example.com/feed.xml")
+	processor, err := BuildProcessor(db, "limit,time-limit,guid-fix,relative-link-fix,cleanup,fulltext,fulltext-plus", "https://example.com/feed.xml")
 	require.NoError(t, err)
 	require.NotNil(t, processor)
 
 	flow, ok := processor.(*engine.FlowCraftProcessor)
 	require.True(t, ok)
-	require.Len(t, flow.Processors, 15)
+	require.Len(t, flow.Processors, 7)
 	assert.IsType(t, &LimitProcessor{}, flow.Processors[0])
 	assert.IsType(t, &TimeLimitProcessor{}, flow.Processors[1])
 	assert.IsType(t, &GUIDFixProcessor{}, flow.Processors[2])
@@ -101,14 +56,6 @@ func TestBuildProcessor_UsesNativeProcessors(t *testing.T) {
 	assert.IsType(t, &CleanupProcessor{}, flow.Processors[4])
 	assert.IsType(t, &FulltextProcessor{}, flow.Processors[5])
 	assert.IsType(t, &FulltextPlusProcessor{}, flow.Processors[6])
-	assert.IsType(t, &ArticleTextTransformProcessor{}, flow.Processors[7])
-	assert.IsType(t, &ArticleTextTransformProcessor{}, flow.Processors[8])
-	assert.IsType(t, &ArticleTextTransformProcessor{}, flow.Processors[9])
-	assert.IsType(t, &ArticleTextTransformProcessor{}, flow.Processors[10])
-	assert.IsType(t, &ArticleTextTransformProcessor{}, flow.Processors[11])
-	assert.IsType(t, &ArticleTextTransformProcessor{}, flow.Processors[12])
-	assert.IsType(t, &ArticlePredicateProcessor{}, flow.Processors[13])
-	assert.IsType(t, &ArticlePredicateProcessor{}, flow.Processors[14])
 }
 
 func TestNativeProcessors_EndToEnd(t *testing.T) {
@@ -251,7 +198,7 @@ func TestFulltextPlusProcessor_UsesConfiguredOptions(t *testing.T) {
 	feed := &model.CraftFeed{
 		Link: "https://example.com",
 		Articles: []*model.CraftArticle{
-			{Title: "fulltext-plus-" + t.Name(), Link: "/article"},
+			{Title: "a", Link: "/article"},
 		},
 	}
 
@@ -262,133 +209,6 @@ func TestFulltextPlusProcessor_UsesConfiguredOptions(t *testing.T) {
 	assert.Equal(t, 42*time.Second, capturedOptions.WaitTime)
 	assert.Equal(t, 52*time.Second, capturedOptions.Timeout)
 	assert.Equal(t, "rendered", result.Articles[0].Content)
-}
-
-func TestBuildLLMArticlePayload_IncludesTitleAndContent(t *testing.T) {
-	payload := BuildLLMArticlePayload("Example Title", "Example Content")
-
-	assert.Contains(t, payload, "Article Title:")
-	assert.Contains(t, payload, "```text\nExample Title\n```")
-	assert.Contains(t, payload, "Article Content:")
-	assert.Contains(t, payload, "```markdown\nExample Content\n```")
-}
-
-func TestSummaryProcessor_UsesDescriptionFallback(t *testing.T) {
-	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
-		assert.Contains(t, context, "Article Title:")
-		assert.Contains(t, context, "fallback body")
-		return "generated summary", nil
-	}
-	t.Cleanup(func() { llmContextCaller = original })
-
-	processor := newSummaryProcessor("summary prompt " + t.Name())
-	feed := &model.CraftFeed{
-		Articles: []*model.CraftArticle{
-			{
-				Title:       "summary article",
-				Link:        "https://example.com/post",
-				Description: "<p>fallback body</p>",
-			},
-		},
-	}
-
-	result, err := processor.Process(context.Background(), feed)
-	require.NoError(t, err)
-	require.Len(t, result.Articles, 1)
-	assert.Contains(t, result.Articles[0].Content, "generated summary")
-	assert.Contains(t, result.Articles[0].Content, "<p>fallback body</p>")
-}
-
-func TestTranslateTitleProcessor_UsesNativeLLMFlow(t *testing.T) {
-	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
-		assert.Contains(t, context, "Original Title")
-		return "Translated Title", nil
-	}
-	t.Cleanup(func() { llmContextCaller = original })
-
-	processor := newTranslateTitleProcessor("translate prompt " + t.Name())
-	feed := &model.CraftFeed{
-		Articles: []*model.CraftArticle{
-			{Title: "Original Title"},
-		},
-	}
-
-	result, err := processor.Process(context.Background(), feed)
-	require.NoError(t, err)
-	assert.Equal(t, "Translated Title", result.Articles[0].Title)
-	assert.Equal(t, "Original Title", feed.Articles[0].Title)
-}
-
-func TestBeautifyContentProcessor_WritesHTML(t *testing.T) {
-	original := llmCaller
-	llmCaller = func(model string, promptInput string) (string, error) {
-		assert.Contains(t, promptInput, "<p>Body</p>")
-		return "# Heading\n\nBeautified body", nil
-	}
-	t.Cleanup(func() { llmCaller = original })
-
-	processor := newBeautifyContentProcessor("beautify prompt " + t.Name())
-	feed := &model.CraftFeed{
-		Articles: []*model.CraftArticle{
-			{Title: "beautify", Content: "<p>Body</p>"},
-		},
-	}
-
-	result, err := processor.Process(context.Background(), feed)
-	require.NoError(t, err)
-	assert.Contains(t, result.Articles[0].Content, "<h1")
-	assert.Contains(t, result.Articles[0].Content, "Beautified body")
-}
-
-func TestLLMFilterProcessor_RemovesMatchedArticleAndUsesTitleContentPayload(t *testing.T) {
-	original := llmContextCaller
-	var seen []string
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
-		seen = append(seen, context)
-		if strings.Contains(context, "Drop Me "+t.Name()) {
-			return "true", nil
-		}
-		return "false", nil
-	}
-	t.Cleanup(func() { llmContextCaller = original })
-
-	processor := newLLMFilterProcessor("filter condition " + t.Name())
-	feed := &model.CraftFeed{
-		Articles: []*model.CraftArticle{
-			{Title: "Drop Me " + t.Name(), Content: "<p>remove body with enough content length for llm filter " + t.Name() + "</p>"},
-			{Title: "Keep Me " + t.Name(), Content: "<p>keep body with enough content length for llm filter " + t.Name() + "</p>"},
-		},
-	}
-
-	result, err := processor.Process(context.Background(), feed)
-	require.NoError(t, err)
-	require.Len(t, result.Articles, 1)
-	assert.Equal(t, "Keep Me "+t.Name(), result.Articles[0].Title)
-	require.Len(t, seen, 2)
-	assert.Contains(t, seen[0], "Article Title:")
-	assert.Contains(t, seen[0], "Article Content:")
-}
-
-func TestIgnoreAdvertorialProcessor_KeepsArticleOnLLMError(t *testing.T) {
-	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
-		return "", fmt.Errorf("temporary llm error")
-	}
-	t.Cleanup(func() { llmContextCaller = original })
-
-	processor := newIgnoreAdvertorialProcessor("advertorial prompt " + t.Name())
-	feed := &model.CraftFeed{
-		Articles: []*model.CraftArticle{
-			{Title: "Maybe Ad", Content: "<p>body</p>"},
-		},
-	}
-
-	result, err := processor.Process(context.Background(), feed)
-	require.NoError(t, err)
-	require.Len(t, result.Articles, 1)
-	assert.Equal(t, "Maybe Ad", result.Articles[0].Title)
 }
 
 func newCraftRuntimeTestDB(t *testing.T) *gorm.DB {

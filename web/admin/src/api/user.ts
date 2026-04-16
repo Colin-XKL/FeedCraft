@@ -2,7 +2,7 @@ import axios from 'axios';
 import { md5 } from 'js-md5';
 import type { RouteRecordNormalized } from 'vue-router';
 import { UserState } from '@/store/modules/user/types';
-import { APIResponse } from '@/api/types';
+import { APIResponse } from './types';
 
 export interface LoginData {
   username: string;

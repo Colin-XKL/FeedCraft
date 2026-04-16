@@ -21,34 +21,6 @@ type ResolvedCraftAtom struct {
 	Params       map[string]string
 }
 
-type nativeProcessorBuilder func(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error)
-
-var nativeProcessorBuilders = map[string]nativeProcessorBuilder{
-	"proxy":                       buildNativeProxyProcessor,
-	"limit":                       buildNativeLimitProcessor,
-	"time-limit":                  buildNativeTimeLimitProcessor,
-	"keyword":                     buildNativeKeywordProcessor,
-	"guid-fix":                    buildNativeGUIDFixProcessor,
-	"relative-link-fix":           buildNativeRelativeLinkFixProcessor,
-	"cleanup":                     buildNativeCleanupProcessor,
-	"fulltext":                    buildNativeFulltextProcessor,
-	"fulltext-plus":               buildNativeFulltextPlusProcessor,
-	"summary":                     buildNativeSummaryProcessor,
-	"introduction":                buildNativeIntroductionProcessor,
-	"translate-title":             buildNativeTranslateTitleProcessor,
-	"translate-content":           buildNativeTranslateContentProcessor,
-	"translate-content-immersive": buildNativeTranslateContentImmersiveProcessor,
-	"beautify-content":            buildNativeBeautifyContentProcessor,
-	"llm-filter":                  buildNativeLLMFilterProcessor,
-	"ignore-advertorial":          buildNativeIgnoreAdvertorialProcessor,
-}
-
-type NoopProcessor struct{}
-
-func (p *NoopProcessor) Process(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
-	return feed, nil
-}
-
 type LimitProcessor struct {
 	MaxItems int
 }
@@ -295,122 +267,81 @@ func resolveCraftAtoms(db *gorm.DB, craftAtomDict *map[string]dao.CraftAtom, cra
 }
 
 func buildProcessorForAtom(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	builder, ok := nativeProcessorBuilders[atom.TemplateName]
-	if ok {
-		return builder(atom, feedURL)
+	if native, ok, err := buildNativeProcessor(atom, feedURL); err != nil {
+		return nil, err
+	} else if ok {
+		return native, nil
 	}
 
 	return buildLegacyProcessor(atom, feedURL)
 }
 
-func buildNativeProxyProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return &NoopProcessor{}, nil
-}
-
-func buildNativeLimitProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	maxItems := defaultLimit
-	if raw := strings.TrimSpace(atom.Params["num"]); raw != "" {
-		parsed, err := strconv.Atoi(raw)
-		if err != nil || parsed <= 0 {
-			return nil, fmt.Errorf("invalid limit num %q", raw)
+func buildNativeProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, bool, error) {
+	switch atom.TemplateName {
+	case "proxy":
+		return nil, true, nil
+	case "limit":
+		maxItems := defaultLimit
+		if raw := strings.TrimSpace(atom.Params["num"]); raw != "" {
+			parsed, err := strconv.Atoi(raw)
+			if err != nil || parsed <= 0 {
+				return nil, false, fmt.Errorf("invalid limit num %q", raw)
+			}
+			maxItems = parsed
 		}
-		maxItems = parsed
-	}
-	return &LimitProcessor{MaxItems: maxItems}, nil
-}
-
-func buildNativeTimeLimitProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	days := 7
-	if raw := strings.TrimSpace(atom.Params["days"]); raw != "" {
-		parsed, err := strconv.Atoi(raw)
-		if err != nil || parsed < 0 {
-			return nil, fmt.Errorf("invalid time-limit days %q", raw)
+		return &LimitProcessor{MaxItems: maxItems}, true, nil
+	case "time-limit":
+		days := 7
+		if raw := strings.TrimSpace(atom.Params["days"]); raw != "" {
+			parsed, err := strconv.Atoi(raw)
+			if err != nil || parsed < 0 {
+				return nil, false, fmt.Errorf("invalid time-limit days %q", raw)
+			}
+			days = parsed
 		}
-		days = parsed
-	}
-	return &TimeLimitProcessor{Days: days}, nil
-}
+		return &TimeLimitProcessor{Days: days}, true, nil
+	case "keyword":
+		var mode KeywordFilterMode
+		switch strings.TrimSpace(atom.Params["mode"]) {
+		case "", string(KeywordIncludeMode):
+			mode = KeywordIncludeMode
+		case string(KeywordExcludeMode):
+			mode = KeywordExcludeMode
+		default:
+			return nil, false, fmt.Errorf("invalid keyword mode %q", atom.Params["mode"])
+		}
 
-func buildNativeKeywordProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	var mode KeywordFilterMode
-	switch strings.TrimSpace(atom.Params["mode"]) {
-	case "", string(KeywordIncludeMode):
-		mode = KeywordIncludeMode
-	case string(KeywordExcludeMode):
-		mode = KeywordExcludeMode
+		var scope KeywordMatchScope
+		switch strings.TrimSpace(atom.Params["scope"]) {
+		case "", string(KeywordMatchAll):
+			scope = KeywordMatchAll
+		case string(KeywordMatchTitle):
+			scope = KeywordMatchTitle
+		case string(KeywordMatchContent):
+			scope = KeywordMatchContent
+		default:
+			return nil, false, fmt.Errorf("invalid keyword scope %q", atom.Params["scope"])
+		}
+
+		keywords := splitKeywords(atom.Params["keywords"])
+		return &KeywordProcessor{
+			Mode:       mode,
+			MatchScope: scope,
+			Keywords:   keywords,
+		}, true, nil
+	case "guid-fix":
+		return &GUIDFixProcessor{}, true, nil
+	case "relative-link-fix":
+		return &RelativeLinkFixProcessor{OriginalFeedURL: feedURL}, true, nil
+	case "cleanup":
+		return newCleanupProcessor(), true, nil
+	case "fulltext":
+		return newFulltextProcessor(feedURL), true, nil
+	case "fulltext-plus":
+		return newFulltextPlusProcessor(feedURL, parseFulltextPlusConfig(atom.Params)), true, nil
 	default:
-		return nil, fmt.Errorf("invalid keyword mode %q", atom.Params["mode"])
+		return nil, false, nil
 	}
-
-	var scope KeywordMatchScope
-	switch strings.TrimSpace(atom.Params["scope"]) {
-	case "", string(KeywordMatchAll):
-		scope = KeywordMatchAll
-	case string(KeywordMatchTitle):
-		scope = KeywordMatchTitle
-	case string(KeywordMatchContent):
-		scope = KeywordMatchContent
-	default:
-		return nil, fmt.Errorf("invalid keyword scope %q", atom.Params["scope"])
-	}
-
-	return &KeywordProcessor{
-		Mode:       mode,
-		MatchScope: scope,
-		Keywords:   splitKeywords(atom.Params["keywords"]),
-	}, nil
-}
-
-func buildNativeGUIDFixProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return &GUIDFixProcessor{}, nil
-}
-
-func buildNativeRelativeLinkFixProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return &RelativeLinkFixProcessor{OriginalFeedURL: feedURL}, nil
-}
-
-func buildNativeCleanupProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newCleanupProcessor(), nil
-}
-
-func buildNativeFulltextProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newFulltextProcessor(feedURL), nil
-}
-
-func buildNativeFulltextPlusProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newFulltextPlusProcessor(feedURL, parseFulltextPlusConfig(atom.Params)), nil
-}
-
-func buildNativeSummaryProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newSummaryProcessor(atom.Params["prompt"]), nil
-}
-
-func buildNativeIntroductionProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newIntroductionProcessor(atom.Params["prompt"]), nil
-}
-
-func buildNativeTranslateTitleProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newTranslateTitleProcessor(atom.Params["prompt"]), nil
-}
-
-func buildNativeTranslateContentProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newTranslateContentProcessor(atom.Params["prompt"]), nil
-}
-
-func buildNativeTranslateContentImmersiveProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newTranslateContentImmersiveProcessor(atom.Params["prompt"]), nil
-}
-
-func buildNativeBeautifyContentProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newBeautifyContentProcessor(atom.Params["prompt"]), nil
-}
-
-func buildNativeLLMFilterProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newLLMFilterProcessor(atom.Params["filter_condition"]), nil
-}
-
-func buildNativeIgnoreAdvertorialProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newIgnoreAdvertorialProcessor(atom.Params["prompt-for-exclude"]), nil
 }
 
 func buildLegacyProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {

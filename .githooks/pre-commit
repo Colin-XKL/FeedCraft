@@ -2,20 +2,14 @@
 set -eu
 
 echo "Running pre-commit checks..."
-# ACMR: Added, Copied, Modified, Renamed
-staged_files=$(git diff --cached --name-only --diff-filter=ACMR | tr '\n' ' ')
+staged_files=$(git diff --cached --name-only --diff-filter=ACMR)
+
+task fix
 
 if [ -n "$staged_files" ]; then
-  echo "Formatting staged files..."
-  task format FILES="$staged_files"
-  
-  # Re-add formatted files to ensure they are included in the commit
-  for file in $staged_files; do
-    if [ -f "$file" ]; then
-      git add "$file"
+  printf '%s\n' "$staged_files" | while IFS= read -r file; do
+    if [ -e "$file" ]; then
+      git add -- "$file"
     fi
   done
 fi
-
-# Run lint only on staged files if possible, or skip for speed if preferred.
-# For now, let's just do formatting to satisfy the user's request for efficiency.

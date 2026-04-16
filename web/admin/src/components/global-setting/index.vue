@@ -28,7 +28,7 @@
   import { useI18n } from 'vue-i18n';
   import { useClipboard } from '@vueuse/core';
   import { useAppStore } from '@/store';
-  import Block from '@/components/global-setting/block.vue';
+  import Block from './block.vue';
 
   const emit = defineEmits(['cancel']);
 

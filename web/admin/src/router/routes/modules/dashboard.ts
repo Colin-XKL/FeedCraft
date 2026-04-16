@@ -1,5 +1,5 @@
-import { DEFAULT_LAYOUT } from '@/router/routes/base';
-import { AppRouteRecordRaw } from '@/router/routes/types';
+import { DEFAULT_LAYOUT } from '../base';
+import { AppRouteRecordRaw } from '../types';
 
 const DASHBOARD: AppRouteRecordRaw = {
   path: '/dashboard',

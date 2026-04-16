@@ -38,17 +38,11 @@ func CacheGetString(key string) (string, error) {
 	return rdb.Get(context.Background(), key).Result()
 }
 
-// CachedFuncWithPreLog tries to get from cache, invokes preLog if provided, and if absent, calls valFunc and saves to cache
-func CachedFuncWithPreLog(cacheKey string, valFunc func() (string, error), preLog func(isCached bool)) (string, error) {
+// CachedFunc 先尝试取缓存, 如不存在, 则调用valFunc 获取值并写入缓存
+func CachedFunc(cacheKey string, valFunc func() (string, error)) (string, error) {
 	final := ""
 	cached, err := CacheGetString(cacheKey)
-	isCached := err == nil && cached != ""
-
-	if preLog != nil {
-		preLog(isCached)
-	}
-
-	if !isCached {
+	if err != nil || cached == "" {
 		processedContent, getValErr := valFunc()
 		if getValErr != nil {
 			return "", getValErr
@@ -57,6 +51,8 @@ func CachedFuncWithPreLog(cacheKey string, valFunc func() (string, error), preLo
 			cacheErr := CacheSetString(cacheKey, processedContent, constant.WebContentExpire)
 			if cacheErr != nil {
 				logrus.Warn("failed to cache result")
+				//logrus.Warnf("failed to cache result of craft [%s] for article [%s], %v\n", craftName,
+				//	originalTitle, cacheErr)
 			}
 		}
 	} else {
@@ -64,9 +60,4 @@ func CachedFuncWithPreLog(cacheKey string, valFunc func() (string, error), preLo
 	}
 
 	return final, nil
-}
-
-// CachedFunc 先尝试取缓存, 如不存在, 则调用valFunc 获取值并写入缓存
-func CachedFunc(cacheKey string, valFunc func() (string, error)) (string, error) {
-	return CachedFuncWithPreLog(cacheKey, valFunc, nil)
 }

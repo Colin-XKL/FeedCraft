@@ -106,7 +106,6 @@ services:
       FC_LLM_API_MODEL: gemini-pro/chatgpt-3.5/... # 默认使用的模型
       FC_LLM_API_TYPE: openai # openai 或 ollama
       FC_DEFAULT_TARGET_LANG: zh-CN # (Optional) LLM 处理任务的默认目标语言，如 zh-CN, en-US
-      LOG_LEVEL: info # (Optional) 日志级别，如 info, debug, trace
 ```
 
 你也可以直接在一个 compose 文件中把 redis 等附加组件也一起部署好:
@@ -130,7 +129,6 @@ services:
       FC_LLM_API_MODEL: gemini-pro/chatgpt-3.5/... # 默认使用的模型
       FC_LLM_API_TYPE: openai # openai 或 ollama
       FC_DEFAULT_TARGET_LANG: zh-CN # (Optional) LLM 处理任务的默认目标语言
-      LOG_LEVEL: info # (Optional) 日志级别，如 info, debug, trace
   service.redis:
     image: redis:6-alpine
     container_name: feedcraft_redis

@@ -1,6 +1,6 @@
 import { createI18n } from 'vue-i18n';
-import en from '@/locale/en-US';
-import cn from '@/locale/zh-CN';
+import en from './en-US';
+import cn from './zh-CN';
 
 export const LOCALE_OPTIONS = [
   { label: '中文', value: 'zh-CN' },

@@ -19,7 +19,6 @@ export default {
   'topic.validationWarnings':
     'These warnings will not block saving, but should be reviewed',
   'topic.id': 'Topic ID',
-  'topic.idRequired': 'Topic ID is required',
   'topic.title': 'Title',
   'topic.descriptionLabel': 'Description',
   'topic.inputCount': 'Inputs',

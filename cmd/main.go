@@ -103,20 +103,9 @@ func startServer() {
 		env = "prod"
 	}
 	isProd := env == "prod"
-
 	if !isProd {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
-
-	logLevelStr := os.Getenv("LOG_LEVEL")
-	if logLevelStr != "" {
-		if level, err := logrus.ParseLevel(logLevelStr); err == nil {
-			logrus.SetLevel(level)
-		} else {
-			logrus.Warnf("Invalid LOG_LEVEL '%s': %v. Using default.", logLevelStr, err)
-		}
-	}
-
 	if len(sentryDsn) > 0 {
 		logrus.Info("Initializing Sentry...")
 		sampledRate := 1.0

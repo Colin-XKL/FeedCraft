@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { APIResponse } from '@/api/types';
+import { APIResponse } from './types';
 
 export interface ObservableResource {
   resource_type: string;

@@ -96,13 +96,8 @@
       :cancel-button-props="{ disabled: submitting || validating }"
       @cancel="modalVisible = false"
     >
-      <a-form ref="formRef" :model="formData" layout="vertical">
-        <a-form-item
-          field="id"
-          :label="t('topic.id')"
-          required
-          :rules="getRecipeIdRules(t('topic.idRequired'))"
-        >
+      <a-form :model="formData" layout="vertical">
+        <a-form-item field="id" :label="t('topic.id')">
           <a-input
             v-model="formData.id"
             :disabled="isEdit"
@@ -262,7 +257,6 @@
   import { useRouter } from 'vue-router';
   import XHeader from '@/components/header/x-header.vue';
   import buildPublicFeedUrl from '@/utils/publicFeedUrl';
-  import { getRecipeIdRules } from '@/utils/slug';
   import {
     AggregatorStep,
     TopicFeed,
@@ -293,7 +287,6 @@
   const router = useRouter();
   const topics = ref<TopicFeed[]>([]);
   const loading = ref(false);
-  const formRef = ref();
   const modalVisible = ref(false);
   const isEdit = ref(false);
   const submitting = ref(false);
@@ -371,7 +364,6 @@
   };
 
   const openModal = () => {
-    formRef.value?.resetFields();
     validationErrors.value = [];
     validationWarnings.value = [];
     modalVisible.value = true;
@@ -467,11 +459,6 @@
   };
 
   const handleSubmit = async () => {
-    const res = await formRef.value?.validate();
-    if (res) {
-      return;
-    }
-
     submitting.value = true;
     try {
       const result = await runValidation();

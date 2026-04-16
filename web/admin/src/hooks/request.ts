@@ -1,6 +1,6 @@
 import { ref, UnwrapRef } from 'vue';
 import { APIResponse } from '@/api/types';
-import useLoading from '@/hooks/loading';
+import useLoading from './loading';
 
 // use to fetch list
 // Don't use async function. It doesn't work in async function.

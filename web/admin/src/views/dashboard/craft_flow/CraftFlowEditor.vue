@@ -76,7 +76,7 @@
 
 <script setup lang="ts">
   import { useI18n } from 'vue-i18n';
-  import CraftSelector from '@/views/dashboard/craft_flow/CraftSelector.vue';
+  import CraftSelector from './CraftSelector.vue';
 
   const { t } = useI18n();
 

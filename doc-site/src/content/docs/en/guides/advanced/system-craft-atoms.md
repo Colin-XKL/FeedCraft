@@ -142,14 +142,14 @@ Advanced filtering using semantic understanding.
 
 ### `ignore-advertorial`
 
-Uses LLM to detect if an article is an advertorial or soft advertisement (evaluating both title and content) and removes it.
+Uses LLM to detect if an article is an advertorial or soft advertisement and removes it.
 
 - **Parameters:**
   - `prompt-for-exclude`: A prompt that should return `true` if the item is an ad.
 
 ### `llm-filter`
 
-Generic LLM-based filter. You define the condition for **exclusion**. The LLM evaluates both the article title and content against this condition.
+Generic LLM-based filter. You define the condition for **exclusion**.
 
 - **Parameters:**
   - `filter_condition`: A natural language question/condition. If the LLM answers "yes" (true), the item is **removed**.

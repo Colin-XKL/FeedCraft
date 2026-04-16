@@ -23,10 +23,6 @@ func (p *DeduplicateProcessor) Process(ctx context.Context, feed *model.CraftFee
 	var uniqueArticles []*model.CraftArticle
 
 	for _, article := range feed.Articles {
-		if article == nil {
-			continue
-		}
-
 		var key string
 		switch strings.ToLower(p.Strategy) {
 		case "by_id":

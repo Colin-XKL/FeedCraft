@@ -6,7 +6,7 @@ import {
   REDIRECT_ROUTE_NAME,
 } from '@/router/constants';
 import { isString } from '@/utils/is';
-import { TabBarState, TagProps } from '@/store/modules/tab-bar/types';
+import { TabBarState, TagProps } from './types';
 
 const formatTag = (route: RouteLocationNormalized): TagProps => {
   const { name, meta, fullPath, query } = route;

@@ -45,7 +45,7 @@ func getLLMDispatcher() *util.PriorityDispatcher[string] {
 		}
 		concurrency := envClient.GetInt("LLM_MAX_CONCURRENCY")
 		if concurrency <= 0 {
-			concurrency = 3
+			concurrency = 5
 		}
 		llmDispatcher = util.NewPriorityDispatcher[string](concurrency)
 		// Fallback timeout to prevent tasks from sticking forever
