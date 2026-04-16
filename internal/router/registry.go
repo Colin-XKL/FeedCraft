@@ -123,6 +123,7 @@ func RegisterRouters(router *gin.Engine) {
 
 		adminApi.POST("/tools/fetch", controller.HtmlFetch)
 		adminApi.POST("/tools/parse", controller.HtmlParse)
+		adminApi.GET("/tools/feed/preview", controller.PreviewFeedViewer)
 
 		adminApi.POST("/tools/json/fetch", controller.CurlFetch)
 		adminApi.POST("/tools/json/parse", controller.CurlParse)

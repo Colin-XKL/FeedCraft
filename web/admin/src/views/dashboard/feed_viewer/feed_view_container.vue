@@ -15,7 +15,7 @@
       </a-radio-group>
     </div>
     <ul>
-      <li v-for="item in feedData.items?.slice(0, 10)" :key="item.guid">
+      <li v-for="item in feedData.items?.slice(0, 10)" :key="item.guid || item.link">
         <a-card class="my-2">
           <a-space>
             <a
@@ -25,7 +25,7 @@
             >
               <h3 class="font-bold cursor-pointer">{{ item.title }}</h3>
             </a>
-            <p>{{ dayjs(item.isoDate).format('YYYY-MM-DD hh:mm:ss') }}</p>
+            <p v-if="item.isoDate || item.pubDate">{{ formatDate(item) }}</p>
           </a-space>
 
           <!-- eslint-disable vue/no-v-html -->
@@ -57,37 +57,45 @@
 </template>
 
 <script lang="ts" setup>
-  import Parser from 'rss-parser';
   import { computed, ref } from 'vue';
   import dayjs from 'dayjs';
   import DOMPurify from 'dompurify';
   import { useI18n } from 'vue-i18n';
+  import type { FeedViewerPreview } from '@/api/feed_viewer';
 
   const { t } = useI18n();
 
   interface FeedViewerProp {
-    feedData: Parser.Output<any>;
+    feedData: FeedViewerPreview;
   }
 
   const props = defineProps<FeedViewerProp>();
   const viewMode = ref('normal');
 
   const feedMetaList = computed(() => {
-    return Object.keys(props.feedData)
-      .filter((key) => key !== 'items')
-      .map((key) => {
-        const feed = props.feedData as any;
-
-        const item = feed[key];
-        return {
-          label: key,
-          value: item,
-        };
-      });
+    const data = props.feedData;
+    return [
+      { label: 'description', value: data.description },
+      { label: 'link', value: data.link },
+      { label: 'feedUrl', value: data.feedUrl },
+      { label: 'copyright', value: data.copyright },
+      {
+        label: 'image',
+        value: data.image?.url || data.image?.title ? `${data.image?.title || ''} ${data.image?.url || ''}`.trim() : '',
+      },
+    ].filter((item) => item.value);
   });
 
   const sanitizeContent = (content: string) => {
     return DOMPurify.sanitize(content);
+  };
+
+  const formatDate = (item: FeedViewerPreview['items'][number]) => {
+    const dateValue = item.isoDate || item.pubDate;
+    if (!dateValue) return '';
+
+    const parsed = dayjs(dateValue);
+    return parsed.isValid() ? parsed.format('YYYY-MM-DD HH:mm:ss') : dateValue;
   };
 </script>
 
