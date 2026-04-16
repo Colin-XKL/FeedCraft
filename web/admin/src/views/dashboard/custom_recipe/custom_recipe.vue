@@ -283,6 +283,7 @@
   const showModal = ref(false);
   const showConfigModal = ref(false);
   const currentConfig = ref('');
+  const currentLink = ref('');
   const quickCreate = ref(false);
   const rssUrl = ref('');
 
@@ -306,13 +307,22 @@
     },
   });
 
-  const { copy, copied } = useClipboard();
+  const { copy: copyConfig, copied } = useClipboard({
+    source: currentConfig,
+    legacy: true,
+    copiedDuring: 1500,
+  });
+  const { copy: copyLink } = useClipboard({
+    source: currentLink,
+    legacy: true,
+    copiedDuring: 1500,
+  });
   const buildRecipeFeedUrl = (id?: string) =>
     buildPublicFeedUrl(`/recipe/${id || ''}`);
 
   const handleCopyConfig = async () => {
     try {
-      await copy(currentConfig.value);
+      await copyConfig();
       Message.success(t('customRecipe.copied'));
     } catch (e: any) {
       Message.error(t('customRecipe.copyFailed', { msg: e.message || e }));
@@ -321,7 +331,8 @@
 
   const handleCopyLink = async (id: string) => {
     try {
-      await copy(buildRecipeFeedUrl(id));
+      currentLink.value = buildRecipeFeedUrl(id);
+      await copyLink();
       Message.success(t('customRecipe.copied'));
     } catch (e: any) {
       Message.error(t('customRecipe.copyFailed', { msg: e.message || e }));
