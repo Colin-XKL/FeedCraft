@@ -1,5 +1,5 @@
 ---
-title: 從 CURL 語句生成 RSS
+title: 從 JSON 生成 RSS
 description: 使用 jq 提取欄位，並透過可選模板將任意 JSON API 響應轉換為 RSS 訂閱源。
 sidebar:
   order: 3
@@ -8,7 +8,7 @@ sidebar:
     variant: success
 ---
 
-FeedCraft 包含一個 **從 CURL 語句生成 RSS (CURL to RSS)** 工具，允許你從 JSON API 獲取資料，先用 `jq` 提取欄位，再透過可選模板將其轉換為 RSS 訂閱源。
+FeedCraft 包含一個 **從 JSON 生成 RSS (JSON to RSS)** 工具，允許你從 JSON API 獲取資料，先用 `jq` 提取欄位，再透過可選模板將其轉換為 RSS 訂閱源。
 
 ## 概覽
 
@@ -21,13 +21,13 @@ JSON RSS 生成器可以幫助你：
 
 ## 如何使用
 
-在管理後台導航至 **工作台 > Curl 轉 RSS**。
+在管理後台導航至 **工作台 > JSON 轉 RSS**。
 
 ### 第一步：請求配置 (Request Configuration)
 
 你需要定義如何獲取 JSON 資料。
 
-- **從 Curl 匯入 (Import from Curl)**：你可以貼上 `curl` 命令來自動填充 URL、方法、請求標頭和請求體。這在你從瀏覽器開發者工具複製請求時非常有用。
+- **從 cURL 匯入 (Import from cURL)**：你可以貼上 `curl` 命令來自動填充 URL、方法、請求標頭和請求體。這在你從瀏覽器開發者工具複製請求時非常有用。
 - **方法 (Method)**：選擇 `GET` 或 `POST`。
 - **URL**：API 端點 URL。
 - **Headers**：添加任何必要的請求標頭（例如 `Authorization`, `Content-Type`）。

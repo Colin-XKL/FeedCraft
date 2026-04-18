@@ -1,5 +1,5 @@
 ---
-title: CURL to RSS
+title: JSON to RSS
 description: Convert any JSON API response into an RSS feed with jq selectors and optional templates.
 sidebar:
   order: 3
@@ -8,11 +8,11 @@ sidebar:
     variant: success
 ---
 
-FeedCraft includes a **CURL to RSS** tool that allows you to fetch data from JSON APIs, extract fields with `jq`, and optionally post-process them with templates before generating an RSS feed.
+FeedCraft includes a **JSON to RSS** tool that allows you to fetch data from JSON APIs, extract fields with `jq`, and optionally post-process them with templates before generating an RSS feed.
 
 ## Overview
 
-The CURL to RSS tool helps you:
+The JSON to RSS tool helps you:
 
 1.  **Fetch** JSON data from an API endpoint (supporting custom headers and methods).
 2.  **Parse** the JSON structure using `jq` syntax, then optionally use templates to build the final RSS fields.
@@ -21,13 +21,13 @@ The CURL to RSS tool helps you:
 
 ## How to use
 
-Navigate to **Worktable > Curl to RSS** in the admin dashboard.
+Navigate to **Worktable > JSON to RSS** in the admin dashboard.
 
 ### Step 1: Request Configuration
 
 You need to define how to fetch the JSON data.
 
-- **Import from Curl**: You can paste a `curl` command to automatically populate the URL, method, headers, and body. This is useful if you copy the request from your browser's Developer Tools.
+- **Import from cURL**: You can paste a `curl` command to automatically populate the URL, method, headers, and body. This is useful if you copy the request from your browser's Developer Tools.
 - **Method**: Select `GET` or `POST`.
 - **URL**: The API endpoint URL.
 - **Headers**: Add any necessary headers (e.g., `Authorization`, `Content-Type`).

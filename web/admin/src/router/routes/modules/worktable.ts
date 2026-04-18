@@ -71,11 +71,11 @@ const WORKTABLE: AppRouteRecordRaw = {
       },
     },
     {
-      path: 'curl-to-rss',
-      name: 'CurlToRss',
+      path: 'json-to-rss',
+      name: 'JsonToRss',
       component: () => import('@/views/dashboard/curl_to_rss/curl_to_rss.vue'),
       meta: {
-        locale: 'menu.curlToRss',
+        locale: 'menu.jsonToRss',
         requiresAuth: true,
       },
     },

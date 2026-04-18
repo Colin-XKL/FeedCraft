@@ -11,7 +11,7 @@ sidebar:
 FeedCraft 内置了可视化的 **从 HTML 网页生成 RSS (HTML to RSS)** 工具，允许你生成选择器，以便为那些没有提供 RSS 的网站创建订阅源。
 
 :::note
-此工具专为 HTML 页面设计。如果你需要处理 JSON API，请使用 [从 CURL 语句生成 RSS](/zh/guides/advanced/curl-to-rss/)。
+此工具专为 HTML 页面设计。如果你需要处理 JSON API，请使用 [从 JSON 生成 RSS](/zh/guides/advanced/json-to-rss/)。
 :::
 
 ## 概览

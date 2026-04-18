@@ -1,8 +1,8 @@
 <template>
   <div class="py-8 px-16">
     <x-header
-      :title="$t('menu.curlToRss')"
-      :description="$t('curlToRss.description')"
+      :title="$t('menu.jsonToRss')"
+      :description="$t('jsonToRss.description')"
     ></x-header>
 
     <div class="content-wrapper">
@@ -14,27 +14,27 @@
           @change="onStepChange"
         >
           <a-step
-            :title="$t('curlToRss.step.requestConfig')"
-            :description="$t('curlToRss.step.requestConfig.desc')"
+            :title="$t('jsonToRss.step.requestConfig')"
+            :description="$t('jsonToRss.step.requestConfig.desc')"
           />
           <a-step
-            :title="$t('curlToRss.step.parsingRules')"
-            :description="$t('curlToRss.step.parsingRules.desc')"
+            :title="$t('jsonToRss.step.parsingRules')"
+            :description="$t('jsonToRss.step.parsingRules.desc')"
           />
           <a-step
-            :title="$t('curlToRss.step.feedMetadata')"
-            :description="$t('curlToRss.step.feedMetadata.desc')"
+            :title="$t('jsonToRss.step.feedMetadata')"
+            :description="$t('jsonToRss.step.feedMetadata.desc')"
           />
           <a-step
-            :title="$t('curlToRss.step.saveRecipe')"
-            :description="$t('curlToRss.step.saveRecipe.desc')"
+            :title="$t('jsonToRss.step.saveRecipe')"
+            :description="$t('jsonToRss.step.saveRecipe.desc')"
           />
         </a-steps>
 
         <!-- STEP 1: Request Configuration -->
         <div v-show="currentStep === 1" class="step-content">
           <a-space direction="vertical" size="large" fill>
-            <a-alert>{{ $t('curlToRss.step1.alert') }}</a-alert>
+            <a-alert>{{ $t('jsonToRss.step1.alert') }}</a-alert>
             <a-alert v-if="fetchError" type="error" show-icon>
               {{ fetchError }}
             </a-alert>
@@ -42,12 +42,12 @@
             <a-form :model="fetchReq" layout="vertical">
               <a-row :gutter="16">
                 <a-col :span="24">
-                  <a-form-item :label="$t('curlToRss.step1.curlCommand')">
+                  <a-form-item :label="$t('jsonToRss.step1.curlCommand')">
                     <div class="flex w-full gap-2">
                       <a-textarea
                         v-model="curlInput"
                         :auto-size="{ minRows: 2, maxRows: 6 }"
-                        :placeholder="$t('curlToRss.placeholder.curl')"
+                        :placeholder="$t('jsonToRss.placeholder.curl')"
                       />
                       <a-button
                         type="primary"
@@ -56,7 +56,7 @@
                         @click="handleParseCurl"
                       >
                         <template #icon><icon-import /></template>
-                        {{ $t('curlToRss.step1.import') }}
+                        {{ $t('jsonToRss.step1.import') }}
                       </a-button>
                     </div>
                   </a-form-item>
@@ -68,7 +68,7 @@
               <a-row :gutter="16">
                 <a-col :span="6">
                   <a-form-item
-                    :label="$t('curlToRss.step1.method')"
+                    :label="$t('jsonToRss.step1.method')"
                     field="method"
                     required
                   >
@@ -80,13 +80,13 @@
                 </a-col>
                 <a-col :span="18">
                   <a-form-item
-                    :label="$t('curlToRss.step1.url')"
+                    :label="$t('jsonToRss.step1.url')"
                     field="url"
                     required
                   >
                     <a-input
                       v-model="fetchReq.url"
-                      :placeholder="$t('curlToRss.placeholder.url')"
+                      :placeholder="$t('jsonToRss.placeholder.url')"
                       @keyup.enter="handleFetchAndNext"
                     />
                   </a-form-item>
@@ -94,7 +94,7 @@
               </a-row>
 
               <a-form-item
-                :label="$t('curlToRss.step1.headers')"
+                :label="$t('jsonToRss.step1.headers')"
                 field="headers"
               >
                 <a-space direction="vertical" fill>
@@ -124,29 +124,29 @@
                   <div class="flex gap-2">
                     <a-input
                       v-model="newHeaderKey"
-                      :placeholder="$t('curlToRss.placeholder.key')"
+                      :placeholder="$t('jsonToRss.placeholder.key')"
                       style="width: 30%"
                     />
                     <a-input
                       v-model="newHeaderVal"
-                      :placeholder="$t('curlToRss.placeholder.value')"
+                      :placeholder="$t('jsonToRss.placeholder.value')"
                       style="width: 60%"
                     />
                     <a-button @click="addHeader">{{
-                      $t('curlToRss.step1.add')
+                      $t('jsonToRss.step1.add')
                     }}</a-button>
                   </div>
                 </a-space>
               </a-form-item>
 
               <a-form-item
-                :label="$t('curlToRss.step1.requestBody')"
+                :label="$t('jsonToRss.step1.requestBody')"
                 field="body"
               >
                 <a-textarea
                   v-model="fetchReq.body"
                   :auto-size="{ minRows: 3, maxRows: 10 }"
-                  :placeholder="$t('curlToRss.placeholder.body')"
+                  :placeholder="$t('jsonToRss.placeholder.body')"
                 />
               </a-form-item>
 
@@ -158,7 +158,7 @@
                   :disabled="!fetchReq.url"
                   @click="handleFetchAndNext"
                 >
-                  {{ $t('curlToRss.step1.fetchAndNext') }} <icon-arrow-right />
+                  {{ $t('jsonToRss.step1.fetchAndNext') }} <icon-arrow-right />
                 </a-button>
               </div>
             </a-form>
@@ -174,7 +174,7 @@
             <!-- Left: JSON View -->
             <a-col :span="12" class="h-full flex flex-col">
               <div class="font-bold mb-2">
-                {{ $t('curlToRss.step2.responseJson') }}
+                {{ $t('jsonToRss.step2.responseJson') }}
               </div>
               <div
                 class="flex-1 overflow-auto border border-gray-200 rounded p-2 bg-gray-50"
@@ -196,14 +196,14 @@
             <a-col :span="12" class="h-full flex flex-col">
               <div class="flex-1 overflow-y-auto pr-2">
                 <a-alert type="info" class="mb-4">
-                  {{ $t('curlToRss.step2.alert') }}
+                  {{ $t('jsonToRss.step2.alert') }}
                 </a-alert>
                 <a-alert type="normal" class="mb-4">
                   <div class="text-sm font-medium mb-2">
-                    {{ $t('curlToRss.step2.templateHelpTitle') }}
+                    {{ $t('jsonToRss.step2.templateHelpTitle') }}
                   </div>
                   <div class="text-sm text-gray-600 mb-2">
-                    {{ $t('curlToRss.step2.templateHelpDesc') }}
+                    {{ $t('jsonToRss.step2.templateHelpDesc') }}
                   </div>
                   <div class="flex flex-wrap gap-2 mb-2">
                     <a-tag
@@ -215,22 +215,22 @@
                     </a-tag>
                   </div>
                   <div class="text-xs text-gray-500 whitespace-pre-line">
-                    {{ $t('curlToRss.step2.templateExamples') }}
+                    {{ $t('jsonToRss.step2.templateExamples') }}
                   </div>
                 </a-alert>
 
                 <a-form :model="parseReq" layout="vertical">
                   <a-card
-                    :title="$t('curlToRss.step2.iteration')"
+                    :title="$t('jsonToRss.step2.iteration')"
                     size="small"
                     class="mb-4"
                   >
                     <a-form-item
-                      :label="$t('curlToRss.step2.itemsIterator')"
+                      :label="$t('jsonToRss.step2.itemsIterator')"
                       required
                     >
                       <template #label>
-                        {{ $t('curlToRss.step2.itemsIterator') }}
+                        {{ $t('jsonToRss.step2.itemsIterator') }}
                         <icon-edit
                           v-if="activeField === 'list_selector'"
                           class="ml-2 text-primary"
@@ -238,7 +238,7 @@
                       </template>
                       <a-input
                         v-model="parseReq.list_selector"
-                        :placeholder="$t('curlToRss.placeholder.items')"
+                        :placeholder="$t('jsonToRss.placeholder.items')"
                         :class="{
                           'border-primary': activeField === 'list_selector',
                         }"
@@ -248,15 +248,15 @@
                   </a-card>
 
                   <a-card
-                    :title="$t('curlToRss.step2.itemFields')"
+                    :title="$t('jsonToRss.step2.itemFields')"
                     size="small"
                   >
                     <a-form-item
-                      :label="$t('curlToRss.step2.titleSelector')"
+                      :label="$t('jsonToRss.step2.titleSelector')"
                       required
                     >
                       <template #label>
-                        {{ $t('curlToRss.step2.titleSelector') }}
+                        {{ $t('jsonToRss.step2.titleSelector') }}
                         <icon-edit
                           v-if="activeField === 'title_selector'"
                           class="ml-2 text-primary"
@@ -264,23 +264,23 @@
                       </template>
                       <a-input
                         v-model="parseReq.title_selector"
-                        :placeholder="$t('curlToRss.placeholder.title')"
+                        :placeholder="$t('jsonToRss.placeholder.title')"
                         :class="{
                           'border-primary': activeField === 'title_selector',
                         }"
                         @focus="activeField = 'title_selector'"
                       />
                     </a-form-item>
-                    <a-form-item :label="$t('curlToRss.step2.titleTemplate')">
+                    <a-form-item :label="$t('jsonToRss.step2.titleTemplate')">
                       <a-textarea
                         v-model="parseReq.title_template"
                         :auto-size="{ minRows: 2, maxRows: 4 }"
-                        :placeholder="$t('curlToRss.placeholder.titleTemplate')"
+                        :placeholder="$t('jsonToRss.placeholder.titleTemplate')"
                       />
                     </a-form-item>
-                    <a-form-item :label="$t('curlToRss.step2.linkSelector')">
+                    <a-form-item :label="$t('jsonToRss.step2.linkSelector')">
                       <template #label>
-                        {{ $t('curlToRss.step2.linkSelector') }}
+                        {{ $t('jsonToRss.step2.linkSelector') }}
                         <icon-edit
                           v-if="activeField === 'link_selector'"
                           class="ml-2 text-primary"
@@ -288,23 +288,23 @@
                       </template>
                       <a-input
                         v-model="parseReq.link_selector"
-                        :placeholder="$t('curlToRss.placeholder.link')"
+                        :placeholder="$t('jsonToRss.placeholder.link')"
                         :class="{
                           'border-primary': activeField === 'link_selector',
                         }"
                         @focus="activeField = 'link_selector'"
                       />
                     </a-form-item>
-                    <a-form-item :label="$t('curlToRss.step2.linkTemplate')">
+                    <a-form-item :label="$t('jsonToRss.step2.linkTemplate')">
                       <a-textarea
                         v-model="parseReq.link_template"
                         :auto-size="{ minRows: 2, maxRows: 4 }"
-                        :placeholder="$t('curlToRss.placeholder.linkTemplate')"
+                        :placeholder="$t('jsonToRss.placeholder.linkTemplate')"
                       />
                     </a-form-item>
-                    <a-form-item :label="$t('curlToRss.step2.dateSelector')">
+                    <a-form-item :label="$t('jsonToRss.step2.dateSelector')">
                       <template #label>
-                        {{ $t('curlToRss.step2.dateSelector') }}
+                        {{ $t('jsonToRss.step2.dateSelector') }}
                         <icon-edit
                           v-if="activeField === 'date_selector'"
                           class="ml-2 text-primary"
@@ -312,23 +312,23 @@
                       </template>
                       <a-input
                         v-model="parseReq.date_selector"
-                        :placeholder="$t('curlToRss.placeholder.date')"
+                        :placeholder="$t('jsonToRss.placeholder.date')"
                         :class="{
                           'border-primary': activeField === 'date_selector',
                         }"
                         @focus="activeField = 'date_selector'"
                       />
                     </a-form-item>
-                    <a-form-item :label="$t('curlToRss.step2.dateTemplate')">
+                    <a-form-item :label="$t('jsonToRss.step2.dateTemplate')">
                       <a-textarea
                         v-model="parseReq.date_template"
                         :auto-size="{ minRows: 2, maxRows: 4 }"
-                        :placeholder="$t('curlToRss.placeholder.dateTemplate')"
+                        :placeholder="$t('jsonToRss.placeholder.dateTemplate')"
                       />
                     </a-form-item>
-                    <a-form-item :label="$t('curlToRss.step2.contentSelector')">
+                    <a-form-item :label="$t('jsonToRss.step2.contentSelector')">
                       <template #label>
-                        {{ $t('curlToRss.step2.contentSelector') }}
+                        {{ $t('jsonToRss.step2.contentSelector') }}
                         <icon-edit
                           v-if="activeField === 'content_selector'"
                           class="ml-2 text-primary"
@@ -336,19 +336,19 @@
                       </template>
                       <a-input
                         v-model="parseReq.content_selector"
-                        :placeholder="$t('curlToRss.placeholder.content')"
+                        :placeholder="$t('jsonToRss.placeholder.content')"
                         :class="{
                           'border-primary': activeField === 'content_selector',
                         }"
                         @focus="activeField = 'content_selector'"
                       />
                     </a-form-item>
-                    <a-form-item :label="$t('curlToRss.step2.contentTemplate')">
+                    <a-form-item :label="$t('jsonToRss.step2.contentTemplate')">
                       <a-textarea
                         v-model="parseReq.content_template"
                         :auto-size="{ minRows: 2, maxRows: 4 }"
                         :placeholder="
-                          $t('curlToRss.placeholder.contentTemplate')
+                          $t('jsonToRss.placeholder.contentTemplate')
                         "
                       />
                     </a-form-item>
@@ -359,7 +359,7 @@
                 <div v-if="parsedItems.length > 0" class="mt-4">
                   <a-divider orientation="left">
                     {{
-                      $t('curlToRss.step2.previewResults', {
+                      $t('jsonToRss.step2.previewResults', {
                         count: parsedItems.length,
                       })
                     }}
@@ -385,10 +385,10 @@
                 <!-- Empty State -->
                 <div v-else class="mt-8 text-center text-gray-400">
                   <a-empty
-                    :description="$t('curlToRss.step2.previewPlaceholder')"
+                    :description="$t('jsonToRss.step2.previewPlaceholder')"
                   >
                     <template #extra>
-                      {{ $t('curlToRss.step2.previewPlaceholder.help') }}
+                      {{ $t('jsonToRss.step2.previewPlaceholder.help') }}
                     </template>
                   </a-empty>
                 </div>
@@ -399,7 +399,7 @@
                 class="flex justify-between mt-4 pt-4 border-t border-gray-100 bg-white"
               >
                 <a-button @click="prevStep">{{
-                  $t('curlToRss.common.back')
+                  $t('jsonToRss.common.back')
                 }}</a-button>
                 <a-space>
                   <a-button
@@ -407,14 +407,14 @@
                     :loading="parsing"
                     @click="handlePreview"
                   >
-                    {{ $t('curlToRss.step2.runPreview') }}
+                    {{ $t('jsonToRss.step2.runPreview') }}
                   </a-button>
                   <a-button
                     type="primary"
                     :disabled="parsedItems.length === 0"
                     @click="nextStep"
                   >
-                    {{ $t('curlToRss.step2.nextStep') }}
+                    {{ $t('jsonToRss.step2.nextStep') }}
                   </a-button>
                 </a-space>
               </div>
@@ -426,36 +426,36 @@
         <div v-show="currentStep === 3" class="step-content">
           <div class="max-w-2xl mx-auto">
             <a-alert type="success" class="mb-6">
-              {{ $t('curlToRss.step3.alert', { count: parsedItems.length }) }}
+              {{ $t('jsonToRss.step3.alert', { count: parsedItems.length }) }}
             </a-alert>
 
             <a-form :model="feedMeta" layout="vertical">
-              <a-form-item :label="$t('curlToRss.step3.feedTitle')" required>
+              <a-form-item :label="$t('jsonToRss.step3.feedTitle')" required>
                 <a-input
                   v-model="feedMeta.title"
-                  :placeholder="$t('curlToRss.placeholder.feedTitle')"
+                  :placeholder="$t('jsonToRss.placeholder.feedTitle')"
                 />
               </a-form-item>
-              <a-form-item :label="$t('curlToRss.step3.feedDescription')">
+              <a-form-item :label="$t('jsonToRss.step3.feedDescription')">
                 <a-textarea
                   v-model="feedMeta.description"
-                  :placeholder="$t('curlToRss.placeholder.feedDesc')"
+                  :placeholder="$t('jsonToRss.placeholder.feedDesc')"
                 />
               </a-form-item>
-              <a-form-item :label="$t('curlToRss.step3.siteLink')">
+              <a-form-item :label="$t('jsonToRss.step3.siteLink')">
                 <a-input
                   v-model="feedMeta.link"
-                  :placeholder="$t('curlToRss.placeholder.siteLink')"
+                  :placeholder="$t('jsonToRss.placeholder.siteLink')"
                 />
               </a-form-item>
               <a-row :gutter="16">
                 <a-col :span="12">
-                  <a-form-item :label="$t('curlToRss.step3.authorName')">
+                  <a-form-item :label="$t('jsonToRss.step3.authorName')">
                     <a-input v-model="feedMeta.author_name" />
                   </a-form-item>
                 </a-col>
                 <a-col :span="12">
-                  <a-form-item :label="$t('curlToRss.step3.authorEmail')">
+                  <a-form-item :label="$t('jsonToRss.step3.authorEmail')">
                     <a-input v-model="feedMeta.author_email" />
                   </a-form-item>
                 </a-col>
@@ -464,10 +464,10 @@
 
             <div class="flex justify-between mt-8">
               <a-button @click="prevStep">{{
-                $t('curlToRss.common.back')
+                $t('jsonToRss.common.back')
               }}</a-button>
               <a-button type="primary" @click="handleStep3Next">{{
-                $t('curlToRss.common.next')
+                $t('jsonToRss.common.next')
               }}</a-button>
             </div>
           </div>
@@ -477,21 +477,21 @@
         <div v-show="currentStep === 4" class="step-content">
           <div class="max-w-xl mx-auto">
             <a-card
-              :title="$t('curlToRss.step4.reviewAndSave')"
+              :title="$t('jsonToRss.step4.reviewAndSave')"
               class="border-blue-100"
             >
               <a-descriptions
                 :column="1"
-                :title="$t('curlToRss.step4.summary')"
+                :title="$t('jsonToRss.step4.summary')"
                 bordered
               >
-                <a-descriptions-item :label="$t('curlToRss.step4.sourceUrl')">
+                <a-descriptions-item :label="$t('jsonToRss.step4.sourceUrl')">
                   {{ fetchReq.url }}
                 </a-descriptions-item>
-                <a-descriptions-item :label="$t('curlToRss.step3.feedTitle')">
+                <a-descriptions-item :label="$t('jsonToRss.step3.feedTitle')">
                   {{ feedMeta.title }}
                 </a-descriptions-item>
-                <a-descriptions-item :label="$t('curlToRss.step4.itemCount')">
+                <a-descriptions-item :label="$t('jsonToRss.step4.itemCount')">
                   {{ parsedItems.length }}
                 </a-descriptions-item>
               </a-descriptions>
@@ -500,17 +500,17 @@
 
               <a-form :model="recipeMeta" layout="vertical" class="mt-6">
                 <a-form-item
-                  :label="$t('curlToRss.step4.recipeId')"
+                  :label="$t('jsonToRss.step4.recipeId')"
                   required
                   field="id"
                   :rules="
-                    getRecipeIdRules($t('curlToRss.step4.recipeId.required'))
+                    getRecipeIdRules($t('jsonToRss.step4.recipeId.required'))
                   "
-                  :help="$t('curlToRss.step4.recipeId.help')"
+                  :help="$t('jsonToRss.step4.recipeId.help')"
                 >
                   <a-input
                     v-model="recipeMeta.id"
-                    :placeholder="$t('curlToRss.placeholder.recipeId')"
+                    :placeholder="$t('jsonToRss.placeholder.recipeId')"
                     allow-clear
                   >
                     <template #append>
@@ -526,10 +526,10 @@
                     </template>
                   </a-input>
                 </a-form-item>
-                <a-form-item :label="$t('curlToRss.step4.internalDescription')">
+                <a-form-item :label="$t('jsonToRss.step4.internalDescription')">
                   <a-textarea
                     v-model="recipeMeta.description"
-                    :placeholder="$t('curlToRss.placeholder.internalDesc')"
+                    :placeholder="$t('jsonToRss.placeholder.internalDesc')"
                   />
                 </a-form-item>
 
@@ -542,7 +542,7 @@
                     :loading="saving"
                     @click="handleSaveRecipe"
                   >
-                    <icon-save /> {{ $t('curlToRss.step4.confirmAndSave') }}
+                    <icon-save /> {{ $t('jsonToRss.step4.confirmAndSave') }}
                   </a-button>
                 </div>
               </a-form>
@@ -550,7 +550,7 @@
 
             <div class="flex justify-start mt-8">
               <a-button @click="prevStep">{{
-                $t('curlToRss.common.back')
+                $t('jsonToRss.common.back')
               }}</a-button>
             </div>
           </div>
@@ -798,7 +798,7 @@
 
   const handleParseCurl = async () => {
     if (!curlInput.value) {
-      Message.warning(t('curlToRss.msg.enterCurl'));
+      Message.warning(t('jsonToRss.msg.enterCurl'));
       return;
     }
     parsingCurl.value = true;
@@ -809,11 +809,11 @@
         fetchReq.url = res.data.url;
         fetchReq.headers = res.data.headers || {};
         fetchReq.body = res.data.body || '';
-        Message.success(t('curlToRss.msg.curlParsed'));
+        Message.success(t('jsonToRss.msg.curlParsed'));
       }
     } catch (err) {
       Message.error(
-        t('curlToRss.msg.saveFailed', {
+        t('jsonToRss.msg.saveFailed', {
           msg: err instanceof Error ? err.message : String(err),
         })
       );
@@ -824,7 +824,7 @@
 
   const handleFetchAndNext = async () => {
     if (!fetchReq.url) {
-      Message.warning(t('curlToRss.msg.urlRequired'));
+      Message.warning(t('jsonToRss.msg.urlRequired'));
       return;
     }
     fetching.value = true;
@@ -835,7 +835,7 @@
       const { data } = res;
 
       if (!data) {
-        const msg = t('curlToRss.msg.emptyResponse');
+        const msg = t('jsonToRss.msg.emptyResponse');
         fetchError.value = msg;
         Message.warning(msg);
         return;
@@ -856,7 +856,7 @@
       }
 
       if (!isValid) {
-        const msg = t('curlToRss.msg.invalidJson');
+        const msg = t('jsonToRss.msg.invalidJson');
         fetchError.value = msg;
         Message.error(msg);
         return;
@@ -872,7 +872,7 @@
 
       // Auto-fill link in meta if possible
       feedMeta.link = fetchReq.url;
-      Message.success(t('curlToRss.msg.fetched'));
+      Message.success(t('jsonToRss.msg.fetched'));
       nextStep();
     } catch (err: any) {
       fetchError.value = err.message || String(err);
@@ -886,11 +886,11 @@
   const handlePreview = async () => {
     if (!jsonContent.value) return;
     if (!parseReq.list_selector) {
-      Message.warning(t('curlToRss.msg.iteratorRequired'));
+      Message.warning(t('jsonToRss.msg.iteratorRequired'));
       return;
     }
     if (!parseReq.title_selector) {
-      Message.warning(t('curlToRss.msg.titleRequired'));
+      Message.warning(t('jsonToRss.msg.titleRequired'));
       return;
     }
     parsing.value = true;
@@ -901,15 +901,15 @@
       });
       parsedItems.value = res.data || [];
       if (parsedItems.value.length === 0) {
-        Message.warning(t('curlToRss.msg.noItems'));
+        Message.warning(t('jsonToRss.msg.noItems'));
       } else {
         Message.success(
-          t('curlToRss.msg.parsedItems', { count: parsedItems.value.length })
+          t('jsonToRss.msg.parsedItems', { count: parsedItems.value.length })
         );
       }
     } catch (err) {
       Message.error(
-        t('curlToRss.msg.saveFailed', {
+        t('jsonToRss.msg.saveFailed', {
           msg: err instanceof Error ? err.message : String(err),
         })
       );
@@ -921,7 +921,7 @@
   // Step 3 Logic
   const handleStep3Next = () => {
     if (!feedMeta.title.trim()) {
-      Message.warning(t('curlToRss.msg.feedTitleRequired'));
+      Message.warning(t('jsonToRss.msg.feedTitleRequired'));
       return;
     }
     nextStep();
@@ -930,7 +930,7 @@
   // Step 4 Logic
   const handleSaveRecipe = async () => {
     if (!recipeMeta.id) {
-      Message.warning(t('curlToRss.msg.recipeIdRequired'));
+      Message.warning(t('jsonToRss.msg.recipeIdRequired'));
       return;
     }
 
@@ -974,10 +974,10 @@
         source_config: JSON.stringify(sourceConfig),
       });
 
-      Message.success(t('curlToRss.msg.saved'));
+      Message.success(t('jsonToRss.msg.saved'));
       router.push({ name: 'CustomRecipe' });
     } catch (err: any) {
-      Message.error(t('curlToRss.msg.saveFailed', { msg: err.message || err }));
+      Message.error(t('jsonToRss.msg.saveFailed', { msg: err.message || err }));
     } finally {
       saving.value = false;
     }

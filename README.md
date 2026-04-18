@@ -19,17 +19,17 @@ Doc: [English](https://feed-craft-doc.vercel.app/en) | [简体中文](https://fe
 
 **FeedCraft** is a simple, powerful RSS feed processing tool.  
 It can serve as middleware to handle your RSS feeds; you can use it to extract the main text, perform intelligent translation, generate article summaries through AI, filter articles using natural language, and more.  
-It includes a built-in visual RSS generator (HTML/Curl/Search to RSS) that can turn web pages, API responses, or search results into RSS feeds.
+It includes a built-in visual RSS generator (HTML/JSON/Search to RSS) that can turn web pages, JSON API responses, or search results into RSS feeds.
 
 **FeedCraft** 是一个简单、强大的 RSS 源处理工具.
 他可以作为一个中间件处理你的 RSS 源, 你可以用它来提取正文、智能翻译、通过 AI 生成文章摘要、通过自然语言筛选文章等.
-它内置了可视化 RSS 生成器 (HTML/Curl/Search to RSS)，支持将网页、API (Curl) 或搜索结果转换为 RSS 订阅源。
+它内置了可视化 RSS 生成器 (HTML/JSON/Search to RSS)，支持将网页、JSON API (Curl) 或搜索结果转换为 RSS 订阅源。
 
 ## 核心特性
 
 - 开源可自部署. 可以作为中间件与现有的任何 RSS 阅读器协同使用
 - AI Power, 可以接入 Open AI 接口兼容的 LLM 对 RSS 进行处理, 可自定义 prompt
-- **HTML/Curl/Search to RSS**: 内置可视化 RSS 生成器，支持将网页、API (Curl) 或搜索结果转换为 RSS 订阅源
+- **HTML/JSON/Search to RSS**: 内置可视化 RSS 生成器，支持将网页、JSON API (支持Curl语句导入) 或搜索结果转换为 RSS 订阅源
 - 支持**便携模式**(portable mode, 即用即走, 只需要在原 RSS 地址前面加个前缀即可), 和**高级模式**(dock mode,
   在后台页面自定义 RSS 地址和各类深度加工参数)
 
@@ -87,7 +87,6 @@ https://feed-craft.colinx.one
 控制台默认账号`admin`, 密码 `adminadmin`, 登陆后请尽快修改默认密码
 
 ```yaml
-version: "3"
 services:
   app.feed-craft:
     image: ghcr.io/colin-xkl/feed-craft
@@ -106,7 +105,6 @@ services:
       FC_LLM_API_MODEL: gemini-pro/chatgpt-3.5/... # 默认使用的模型
       FC_LLM_API_TYPE: openai # openai 或 ollama
       FC_DEFAULT_TARGET_LANG: zh-CN # (Optional) LLM 处理任务的默认目标语言，如 zh-CN, en-US
-      LOG_LEVEL: info # (Optional) 日志级别，如 info, debug, trace
 ```
 
 你也可以直接在一个 compose 文件中把 redis 等附加组件也一起部署好:
