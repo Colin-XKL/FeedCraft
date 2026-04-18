@@ -35,6 +35,7 @@ func RegisterRouters(router *gin.Engine) {
 	router.LoadHTMLFiles("web/index.html")
 	router.LoadHTMLFiles("web/start.html")
 	router.StaticFile("/start.html", "web/start.html")
+	router.StaticFile("/favicon.ico", "web/favicon.ico")
 	//router.GET("/start.html", func(c *gin.Context) {
 	//	c.HTML(http.StatusOK, "start.html", gin.H{
 	//		"SiteBaseUrl": siteBaseUrl,
