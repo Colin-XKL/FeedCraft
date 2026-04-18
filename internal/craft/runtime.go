@@ -178,7 +178,7 @@ func (p *GUIDFixProcessor) Process(ctx context.Context, feed *model.CraftFeed) (
 			article.Id = article.Link
 			continue
 		}
-		article.Id = fmt.Sprintf("%x", util.GetMD5Hash(article.Title+article.Content+article.Description))
+		article.Id = util.GetTextContentHash(article.Title + article.Content + article.Description)
 	}
 	return cloned, nil
 }

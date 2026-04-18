@@ -105,7 +105,7 @@ var defaultAdminUser = User{
 }
 
 func createAdminUser(db *gorm.DB) {
-	md5Password := util.GetMD5Hash(defaultPassword)
+	md5Password := util.GetPasswordMD5Hash(defaultPassword)
 
 	// 检查是否已经存在 admin 用户
 	var user User
@@ -128,6 +128,6 @@ func createAdminUser(db *gorm.DB) {
 func ResetAdminPassword() error {
 	logrus.Info("resetting admin password...")
 	db := util.GetDatabase()
-	md5Password := util.GetMD5Hash(defaultPassword)
+	md5Password := util.GetPasswordMD5Hash(defaultPassword)
 	return UpdateUserPassword(db, &defaultAdminUser, md5Password)
 }

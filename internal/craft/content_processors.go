@@ -193,12 +193,12 @@ func cacheKeyForCraftArticleContent(article *model.CraftArticle) (string, error)
 	if strings.TrimSpace(content) == "" {
 		content = article.Description
 	}
-	return util.GetMD5Hash(content), nil
+	return util.GetTextContentHash(content), nil
 }
 
 func cacheKeyForCraftArticleLink(article *model.CraftArticle) (string, error) {
 	uniqLinkStr := article.Title + article.Id + article.Link
-	return util.GetMD5Hash(uniqLinkStr), nil
+	return util.GetTextContentHash(uniqLinkStr), nil
 }
 
 func applyRelativeLinkFix(ctx context.Context, feed *model.CraftFeed, originalFeedURL string) (*model.CraftFeed, error) {

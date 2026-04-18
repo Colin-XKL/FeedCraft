@@ -32,12 +32,11 @@ func BenchmarkProcessFeed_TranslateTitle_Cached(b *testing.B) {
 
 	// Pre-populate Cache
 	itemTitle := "Hello World"
-	// Calculate MD5
-	md5Hash := util.GetMD5Hash(itemTitle)
+	hash := util.GetTextContentHash(itemTitle)
 
-	// Key format: web_content_translate title_<MD5>
+	// Key format: web_content_translate title_<hash>
 	// We use the internal helper to avoid hardcoding the format
-	cacheKey := getCraftCacheKey("translate title", md5Hash)
+	cacheKey := getCraftCacheKey("translate title", hash)
 
 	// Set in Miniredis
 	_ = s.Set(cacheKey, "你好世界")
