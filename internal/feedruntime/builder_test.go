@@ -146,7 +146,6 @@ func TestBuildRecipe_UsesSourceInputSpecCompatibility(t *testing.T) {
 	assert.Equal(t, "stub-feed", feed.Title)
 }
 
-
 func TestProxyRecipeFetch_UsesDefaultUserAgent(t *testing.T) {
 	var gotUA string
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
