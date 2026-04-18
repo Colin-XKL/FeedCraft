@@ -16,6 +16,9 @@ func rssSourceFactory(cfg *config.SourceConfig) (Source, error) {
 	if cfg.HttpFetcher == nil {
 		return nil, fmt.Errorf("http_fetcher config is required for rss source")
 	}
+	if cfg.HttpFetcher.Purpose == "" {
+		cfg.HttpFetcher.Purpose = config.HttpFetcherPurposeFeed
+	}
 
 	return &PipelineSource{
 		Config:  cfg, // Inject the full config

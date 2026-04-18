@@ -19,6 +19,9 @@ func jsonSourceFactory(cfg *config.SourceConfig) (Source, error) {
 	if cfg.JsonParser == nil {
 		return nil, fmt.Errorf("json_parser config is required for json source")
 	}
+	if cfg.HttpFetcher.Purpose == "" {
+		cfg.HttpFetcher.Purpose = config.HttpFetcherPurposeHTML
+	}
 
 	return &PipelineSource{
 		Config:  cfg,
