@@ -48,6 +48,10 @@ Navigate to **Worktable > Custom Recipe** to manage all your created recipes.
 
 ## Topic Feed
 
+:::caution
+The Topic Feed feature is currently under development and its UI entry is hidden in the admin panel. It will be reopened in a future release once the feature is ready.
+:::
+
 **Topic Feed** is an aggregation unit that combines multiple input sources (like `RawFeed`s or other `Recipe`s) into a single, unified RSS feed. It solves information overload by bringing disparate sources into one place.
 
 You can configure processors for a Topic Feed to automatically handle the combined data:
