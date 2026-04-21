@@ -6,4 +6,5 @@ export default {
   'health.missing': 'Missing',
   'health.noData': 'No analysis data. Click Analyze to start.',
   'health.fetchError': 'Failed to fetch dependency health data',
+  'health.missingCrafts': 'Missing Crafts',
 };

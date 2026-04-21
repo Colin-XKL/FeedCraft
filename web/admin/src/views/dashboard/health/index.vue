@@ -7,25 +7,49 @@
     </x-header>
 
     <a-card class="general-card" :title="t('menu.systemHealth')">
-      <a-row style="margin-bottom: 16px">
-        <a-col :span="24">
-          <a-space>
-            <a-button type="primary" :loading="loading" @click="fetchData">
-              {{ t('health.analyze') }}
-            </a-button>
-          </a-space>
-        </a-col>
-      </a-row>
+      <template #extra>
+        <a-button type="primary" :loading="loading" @click="fetchData">
+          <template #icon>
+            <icon-refresh />
+          </template>
+          {{ t('health.analyze') }}
+        </a-button>
+      </template>
 
       <a-spin :loading="loading" style="width: 100%">
         <div v-if="treeData.length > 0">
-          <a-alert
-            v-if="missingCount > 0"
-            type="error"
-            style="margin-bottom: 16px"
-          >
-            {{ t('health.issuesFound', { count: missingCount }) }}
-          </a-alert>
+          <div v-if="missingCount > 0" class="mb-4">
+            <a-alert type="error" style="margin-bottom: 16px">
+              {{ t('health.issuesFound', { count: missingCount }) }}
+            </a-alert>
+            <a-card
+              class="mb-4 border-red-200"
+              style="background-color: var(--color-danger-light-1);"
+            >
+              <template #title>
+                <span class="font-medium" style="color: rgb(var(--danger-6))">{{
+                  t('health.missingCrafts')
+                }}</span>
+              </template>
+              <div class="flex flex-wrap gap-2">
+                <a-tag
+                  v-for="node in missingNodes"
+                  :key="node.key"
+                  color="red"
+                  size="large"
+                  class="font-medium px-3 py-1"
+                >
+                  <template #icon>
+                    <icon-exclamation-circle-fill />
+                  </template>
+                  {{ node.name }}
+                  <span v-if="node.details" class="ml-2 text-xs opacity-80"
+                    >({{ node.details }})</span
+                  >
+                </a-tag>
+              </div>
+            </a-card>
+          </div>
           <a-alert v-else type="success" style="margin-bottom: 16px">
             {{ t('health.allHealthy') }}
           </a-alert>
@@ -38,19 +62,32 @@
           >
             <template #title="node">
               <a-space>
-                <span style="font-weight: bold">{{ node.name }}</span>
+                <span
+                  :class="{
+                    'font-bold': true,
+                    'text-red-500': !node.exists || node.type === 'missing',
+                  }"
+                  >{{ node.name }}</span
+                >
                 <a-tag
                   v-if="node.type"
                   :color="getTypeColor(node.type)"
                   size="small"
                   >{{ node.type }}</a-tag
                 >
-                <a-tag v-if="!node.exists" color="red" size="small">{{
-                  t('health.missing')
-                }}</a-tag>
+                <a-tag
+                  v-if="!node.exists || node.type === 'missing'"
+                  color="red"
+                  size="small"
+                  >{{ t('health.missing') }}</a-tag
+                >
                 <span
                   v-if="node.details"
-                  style="color: #86909c; font-size: 12px"
+                  :class="{
+                    'text-xs': true,
+                    'text-gray-400': node.exists && node.type !== 'missing',
+                    'text-red-400': !node.exists || node.type === 'missing',
+                  }"
                   >{{ node.details }}</span
                 >
               </a-space>
@@ -69,11 +106,16 @@
   import { Message } from '@arco-design/web-vue';
   import { fetchDependencyHealth, DependencyNode } from '@/api/health';
   import XHeader from '@/components/header/x-header.vue';
+  import {
+    IconRefresh,
+    IconExclamationCircleFill,
+  } from '@arco-design/web-vue/es/icon';
 
   const { t } = useI18n();
   const loading = ref(false);
   const treeData = ref<DependencyNode[]>([]);
   const missingCount = ref(0);
+  const missingNodes = ref<DependencyNode[]>([]);
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -94,6 +136,23 @@
     }
   };
 
+  const collectMissingNodes = (
+    nodes: DependencyNode[],
+    missingList: DependencyNode[]
+  ) => {
+    nodes.forEach((node) => {
+      if (!node.exists || node.type === 'missing') {
+        // Prevent duplicates
+        if (!missingList.some((n) => n.name === node.name)) {
+          missingList.push(node);
+        }
+      }
+      if (node.children) {
+        collectMissingNodes(node.children, missingList);
+      }
+    });
+  };
+
   const countMissing = (nodes: DependencyNode[]) => {
     let count = 0;
     nodes.forEach((node) => {
@@ -112,9 +171,14 @@
       const data = res.data ?? [];
       treeData.value = data;
       missingCount.value = countMissing(data);
+
+      const missingList: DependencyNode[] = [];
+      collectMissingNodes(data, missingList);
+      missingNodes.value = missingList;
     } catch (err: any) {
       treeData.value = [];
       missingCount.value = 0;
+      missingNodes.value = [];
       Message.error(err.message || t('health.fetchError'));
     } finally {
       loading.value = false;
