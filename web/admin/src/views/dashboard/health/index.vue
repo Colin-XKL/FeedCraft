@@ -24,7 +24,7 @@
             </a-alert>
             <a-card
               class="mb-4 border-red-200"
-              style="background-color: var(--color-danger-light-1);"
+              style="background-color: var(--color-danger-light-1)"
             >
               <template #title>
                 <span class="font-medium" style="color: rgb(var(--danger-6))">{{
