@@ -216,9 +216,7 @@ func validateFeedViewerURL(rawURL string) error {
 
 func classifyFeedViewerError(err error) (int, string) {
 	msg := err.Error()
-	if strings.HasPrefix(msg, "all items failed to process. last error: ") {
-		msg = strings.TrimPrefix(msg, "all items failed to process. last error: ")
-	}
+	msg = strings.TrimPrefix(msg, "all items failed to process. last error: ")
 
 	switch {
 	case strings.Contains(msg, "browserless service returned status"):
