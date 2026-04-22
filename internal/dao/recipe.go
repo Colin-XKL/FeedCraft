@@ -85,7 +85,14 @@ func DeleteCustomRecipe(db *gorm.DB, id string) error {
 // DeleteCustomRecipeV2 deletes a CustomRecipeV2 record by its ID
 func DeleteCustomRecipeV2(db *gorm.DB, id string) error {
 	var recipe CustomRecipeV2
-	return db.Where("id = ?", id).Delete(&recipe).Error
+	result := db.Where("id = ?", id).Delete(&recipe)
+	if result.Error != nil {
+		return result.Error
+	}
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }
 
 func ListCustomRecipe(db *gorm.DB) ([]*CustomRecipe, error) {

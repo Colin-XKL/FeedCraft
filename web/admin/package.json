@@ -54,7 +54,6 @@
   "devDependencies": {
     "@arco-plugins/vite-vue": "^1.4.5",
     "@arco-themes/vue-colinx-studio": "^0.0.2",
-    "@playwright/test": "^1.59.1",
     "@types/dompurify": "^3.0.5",
     "@types/lodash": "^4.14.186",
     "@types/mockjs": "^1.0.7",
