@@ -115,7 +115,7 @@ func TestJsonParser_Parse_LargeNumberID(t *testing.T) {
 	jsonContent := `{
 	  "items": [
 	    {
-	      "id": 2658732,
+	      "id": 12345678901234567890,
 	      "title": "Entry"
 	    }
 	  ]
@@ -132,7 +132,7 @@ func TestJsonParser_Parse_LargeNumberID(t *testing.T) {
 
 	assert.NoError(t, err)
 	if assert.NotNil(t, feed) && assert.Len(t, feed.Articles, 1) {
-		assert.Equal(t, "https://example.com/article/2658732", feed.Articles[0].Link)
+		assert.Equal(t, "https://example.com/article/12345678901234567890", feed.Articles[0].Link)
 	}
 }
 
