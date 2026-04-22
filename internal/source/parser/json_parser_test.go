@@ -111,6 +111,31 @@ func TestJsonParser_Parse_WithItemTemplateOnly(t *testing.T) {
 	}
 }
 
+func TestJsonParser_Parse_LargeNumberID(t *testing.T) {
+	jsonContent := `{
+	  "items": [
+	    {
+	      "id": 2658732,
+	      "title": "Entry"
+	    }
+	  ]
+	}`
+
+	cfg := &config.JsonParserConfig{
+		ItemsIterator: ".items[]",
+		Title:         ".title",
+		LinkTemplate:  "https://example.com/article/{{ .Item.id }}",
+	}
+
+	parser := &JsonParser{Config: cfg}
+	feed, err := parser.Parse([]byte(jsonContent))
+
+	assert.NoError(t, err)
+	if assert.NotNil(t, feed) && assert.Len(t, feed.Articles, 1) {
+		assert.Equal(t, "https://example.com/article/2658732", feed.Articles[0].Link)
+	}
+}
+
 func TestJsonParser_Parse_Error(t *testing.T) {
 	// Test case where field selector causes a runtime error in jq
 	// e.g. trying to iterate a string

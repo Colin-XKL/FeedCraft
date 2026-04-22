@@ -3,6 +3,7 @@ package parser
 import (
 	"FeedCraft/internal/config"
 	"FeedCraft/internal/model"
+	"bytes"
 	"encoding/json"
 	"fmt"
 )
@@ -17,7 +18,9 @@ func (p *JsonParser) Parse(data []byte) (*model.CraftFeed, error) {
 	}
 
 	var rawData interface{}
-	if err := json.Unmarshal(data, &rawData); err != nil {
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.UseNumber()
+	if err := decoder.Decode(&rawData); err != nil {
 		return nil, fmt.Errorf("invalid json data: %w", err)
 	}
 

@@ -175,7 +175,9 @@ func CurlParse(c *gin.Context) {
 	}
 
 	var input interface{}
-	if err := json.Unmarshal([]byte(req.JsonContent), &input); err != nil {
+	decoder := json.NewDecoder(strings.NewReader(req.JsonContent))
+	decoder.UseNumber()
+	if err := decoder.Decode(&input); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "Invalid JSON content: " + err.Error()})
 		return
 	}
