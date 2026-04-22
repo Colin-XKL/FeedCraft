@@ -235,7 +235,12 @@ func classifyFeedViewerError(err error) (int, string) {
 }
 
 func humanizeBrowserlessStatus(msg string) string {
-	status := strings.TrimSpace(strings.TrimPrefix(msg, "browserless service returned status"))
+	prefix := "browserless service returned status"
+	idx := strings.Index(msg, prefix)
+	status := ""
+	if idx != -1 {
+		status = strings.TrimSpace(msg[idx+len(prefix):])
+	}
 	if status == "" {
 		return "Browserless service failed to render the URL."
 	}
