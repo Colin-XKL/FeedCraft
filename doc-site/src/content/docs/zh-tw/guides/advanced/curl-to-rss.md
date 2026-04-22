@@ -50,6 +50,25 @@ JSON RSS 生成器可以幫助你：
 - **日期選取器 (Date Selector)**：（可選）發布日期的路徑。
 - **內容選取器 (Content Selector)**：（可選）完整內容或摘要的路徑。
 
+#### 使用模板 (可選)
+
+你可以使用 [Go Templates](https://pkg.go.dev/text/template) 語法對提取的值進行進一步處理。
+
+**可用變數：**
+- `.Fields`：已解析的欄位值（例如 `.Fields.Title`, `.Fields.Link`, `.Fields.Date`, `.Fields.Description`）。
+- `.Item`：原始 JSON 列表項物件（例如 `.Item.id`, `.Item.author.name`）。
+
+**內建函數：**
+- `trimSpace`：移除首尾的空白字元。
+- `trim`：移除首尾指定的字元。
+- `default`：如果欄位為空，提供一個預設值。
+
+**範例：**
+- **清理標題空白字元**：`{{ .Fields.Title | trimSpace }}`
+- **拼接完整連結**：`https://example.com/article/{{ .Item.id }}`
+- **移除特定前缀**：`{{ .Fields.Description | trim "Prefix: " }}`
+- **預設值兜底**：`{{ default .Fields.Description "暫無摘要" }}`
+
 點擊 **執行預覽 (Run Preview)** 驗證你的選取器，然後點擊 **下一步 (Next Step)**。
 
 ### 第三步：訂閱源元數據 (Feed Metadata)
