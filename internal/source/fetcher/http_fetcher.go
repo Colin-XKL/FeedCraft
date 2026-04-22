@@ -50,6 +50,7 @@ func (f *HttpFetcher) Fetch(ctx context.Context) ([]byte, error) {
 			body = result
 			return nil
 		},
+		retry.Context(ctx),
 		retry.Attempts(profile.retryAttempts),
 		retry.Delay(300*time.Millisecond),
 		retry.DelayType(retry.FixedDelay),
