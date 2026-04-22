@@ -55,15 +55,18 @@ JSON RSS 生成器可以帮助你：
 你可以使用 [Go Templates](https://pkg.go.dev/text/template) 语法对提取的值进行进一步处理。
 
 **可用变量：**
+
 - `.Fields`：已解析的字段值（例如 `.Fields.Title`, `.Fields.Link`, `.Fields.Date`, `.Fields.Description`）。
 - `.Item`：原始 JSON 列表项对象（例如 `.Item.id`, `.Item.author.name`）。
 
 **内置函数：**
+
 - `trimSpace`：移除首尾的空白字符。
 - `trim`：移除首尾指定的字符。
 - `default`：如果字段为空，提供一个默认值。
 
 **示例：**
+
 - **清理标题空白字符**：`{{ .Fields.Title | trimSpace }}`
 - **拼接完整链接**：`https://example.com/article/{{ .Item.id }}`
 - **移除特定前缀**：`{{ .Fields.Description | trim "Prefix: " }}`

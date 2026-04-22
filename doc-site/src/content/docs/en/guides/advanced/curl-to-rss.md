@@ -55,15 +55,18 @@ The tool uses **[jq](https://jqlang.github.io/jq/)** syntax for querying JSON, a
 You can use [Go Templates](https://pkg.go.dev/text/template) to further process extracted values.
 
 **Available Variables:**
+
 - `.Fields`: The parsed field values (e.g., `.Fields.Title`, `.Fields.Link`, `.Fields.Date`, `.Fields.Description`).
 - `.Item`: The raw JSON item object (e.g., `.Item.id`, `.Item.author.name`).
 
 **Built-in Functions:**
+
 - `trimSpace`: Removes leading and trailing whitespace.
 - `trim`: Removes specified leading and trailing characters.
 - `default`: Provides a fallback value if the field is empty.
 
 **Examples:**
+
 - **Clean up whitespace in title**: `{{ .Fields.Title | trimSpace }}`
 - **Build absolute URLs**: `https://example.com/article/{{ .Item.id }}`
 - **Remove specific prefixes**: `{{ .Fields.Description | trim "Prefix: " }}`
