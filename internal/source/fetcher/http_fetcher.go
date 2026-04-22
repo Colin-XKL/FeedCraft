@@ -14,6 +14,8 @@ import (
 	retry "github.com/avast/retry-go/v4"
 )
 
+const MaxResponseBodySize = 10 * 1024 * 1024 // 10MB
+
 type requestProfile struct {
 	defaultHeaders map[string]string
 	retryAttempts  uint
@@ -99,7 +101,7 @@ func (f *HttpFetcher) doRequest(ctx context.Context, profile requestProfile) ([]
 		}
 	}
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(io.LimitReader(resp.Body, MaxResponseBodySize))
 	if err != nil {
 		return nil, &fetchError{err: fmt.Errorf("failed to read response body: %w", err), retryable: true}
 	}
