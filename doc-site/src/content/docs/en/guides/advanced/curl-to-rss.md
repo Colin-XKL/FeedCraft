@@ -50,6 +50,28 @@ The tool uses **[jq](https://jqlang.github.io/jq/)** syntax for querying JSON, a
 - **Date Selector**: (Optional) Path to the publication date.
 - **Content Selector**: (Optional) Path to the full content or summary.
 
+#### Using Templates (Optional)
+
+You can use [Go Templates](https://pkg.go.dev/text/template) to further process extracted values.
+
+**Available Variables:**
+
+- `.Fields`: The parsed field values (e.g., `.Fields.Title`, `.Fields.Link`, `.Fields.Date`, `.Fields.Description`).
+- `.Item`: The raw JSON item object (e.g., `.Item.id`, `.Item.author.name`).
+
+**Built-in Functions:**
+
+- `trimSpace`: Removes leading and trailing whitespace.
+- `trim`: Removes specified leading and trailing characters.
+- `default`: Provides a fallback value if the field is empty.
+
+**Examples:**
+
+- **Clean up whitespace in title**: `{{ .Fields.Title | trimSpace }}`
+- **Build absolute URLs**: `https://example.com/article/{{ .Item.id }}`
+- **Remove specific prefixes**: `{{ .Fields.Description | trim "Prefix: " }}`
+- **Fallback values**: `{{ default .Fields.Description "No summary available" }}`
+
 Click **Run Preview** to verify your selectors, then click **Next Step**.
 
 ### Step 3: Feed Metadata
