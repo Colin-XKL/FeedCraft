@@ -29,7 +29,7 @@ It includes a built-in visual RSS generator (HTML/JSON/Search to RSS) that can t
 
 - 开源可自部署. 可以作为中间件与现有的任何 RSS 阅读器协同使用
 - AI Power, 可以接入 Open AI 接口兼容的 LLM 对 RSS 进行处理, 可自定义 prompt
-- **HTML/JSON/Search to RSS**: 内置可视化 RSS 生成器，支持将网页、JSON API (支持Curl语句导入) 或搜索结果转换为 RSS 订阅源
+- **HTML/JSON/Search to RSS**: 内置可视化 RSS 生成器，支持将网页、JSON API (支持 Curl 语句导入) 或搜索结果转换为 RSS 订阅源
 - 支持**便携模式**(portable mode, 即用即走, 只需要在原 RSS 地址前面加个前缀即可), 和**高级模式**(dock mode,
   在后台页面自定义 RSS 地址和各类深度加工参数)
 
