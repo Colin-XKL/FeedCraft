@@ -66,7 +66,7 @@ sidebar:
 - **FC_PUPPETEER_HTTP_ENDPOINT**: Browserless/Chrome 實例的地址。`fulltext-plus` 功能必須。
 - **FC_REDIS_URI**: Redis 連線地址。用於快取，加快處理速度並減少 AI Token 消耗。
 - **FC_HTTP_USER_AGENT_FEED**: （可選）feed 類外部請求的預設 `User-Agent`，例如抓取 RSS/XML 資源時使用。搜尋提供方請求目前也暫時歸入這一規則。
-- **FC_HTTP_USER_AGENT_HTML**: （可選）HTML 頁面抓取的預設 `User-Agent`，例如全文提取和 HTML 轉 RSS 工具使用。
+- **FC_HTTP_USER_AGENT_HTML**: （可選）HTML 頁面抓取的預設 `User-Agent`，例如全文提取和 HTML 轉 RSS 工具使用。**注意：** 如果該值包含空格或括號，必須使用引號括起來。
 - **FC_LLM_API_KEY**: OpenAI 或相容服務（如 DeepSeek, Gemini 等）的 API Key。
 - **FC_LLM_API_MODEL**: 預設使用的模型（如 `gemini-pro`, `gpt-3.5-turbo`）。**支援多個模型：** 你可以提供一個逗號分隔的模型列表（例如 `gpt-3.5-turbo,gpt-4`）。FeedCraft 會為每個請求隨機選擇一個模型，如果調用失敗，會自動重試列表中的其他模型。
 - **FC_LLM_API_BASE**: API 介面地址。如果是相容 OpenAI 的 API，通常以 `/v1` 結尾。
