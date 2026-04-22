@@ -93,9 +93,10 @@
         </a-space>
       </template>
       <template #actions="{ record }">
-        <a-space direction="horizontal">
+        <a-space wrap>
           <a-button
-            type="outline"
+            type="primary"
+            size="small"
             @click="
               () => {
                 isUpdating = true;
@@ -105,27 +106,28 @@
           >
             {{ t('customRecipe.edit') }}
           </a-button>
+          <a-button
+            type="text"
+            size="small"
+            @click="previewRecipe(record)"
+          >
+            {{ t('customRecipe.preview') }}
+          </a-button>
+          <a-button
+            type="text"
+            size="small"
+            @click="handleCopyLink(record.id)"
+          >
+            {{ t('customRecipe.copyLink') }}
+          </a-button>
           <a-popconfirm
             :content="t('customRecipe.deleteConfirm')"
             @ok="deleteRecipe(record.id)"
           >
-            <a-button status="danger">{{ t('customRecipe.delete') }}</a-button>
-          </a-popconfirm>
-          <a-button type="outline" @click="previewRecipe(record)">{{
-            t('customRecipe.preview')
-          }}</a-button>
-          <a-link :href="buildRecipeFeedUrl(record?.id)" target="_blank">{{
-            t('customRecipe.link')
-          }}</a-link>
-          <a-tooltip :content="t('customRecipe.copyLink')">
-            <a-button
-              type="text"
-              size="small"
-              @click="handleCopyLink(record.id)"
-            >
-              <template #icon><icon-copy /></template>
+            <a-button type="text" status="danger" size="small">
+              {{ t('customRecipe.delete') }}
             </a-button>
-          </a-tooltip>
+          </a-popconfirm>
         </a-space>
       </template>
     </a-table>
@@ -267,7 +269,7 @@
   } from '@/api/custom_recipe';
   import XHeader from '@/components/header/x-header.vue';
   import { namingValidator } from '@/utils/validator';
-  import { IconEye, IconPlus, IconCopy } from '@arco-design/web-vue/es/icon';
+  import { IconEye, IconPlus } from '@arco-design/web-vue/es/icon';
   import { Message } from '@arco-design/web-vue';
   import dayjs from 'dayjs';
   import { useI18n } from 'vue-i18n';
@@ -365,7 +367,7 @@
       dataIndex: 'source_config',
       slotName: 'source_config',
     },
-    { title: t('customRecipe.edit'), slotName: 'actions' },
+    { title: t('customRecipe.actions'), slotName: 'actions' },
   ];
 
   async function listCustomRecipes() {
