@@ -12,6 +12,7 @@ import (
 	"github.com/samber/lo/parallel"
 	"github.com/sirupsen/logrus"
 	"strings"
+	"time"
 )
 
 type CraftedFeed struct {
@@ -29,10 +30,13 @@ type CraftOption func(*feeds.Feed, ExtraPayload) error
 func NewCraftedFeedFromUrl(feedUrl string, options ...CraftOption) (CraftedFeed, error) {
 	ingredient := CraftedFeed{originalFeedUrl: feedUrl}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
 	raw, err := (&fetcher.HttpFetcher{Config: &config.HttpFetcherConfig{
 		URL:     feedUrl,
 		Purpose: config.HttpFetcherPurposeFeed,
-	}}).Fetch(context.Background())
+	}}).Fetch(ctx)
 	if err != nil {
 		return ingredient, err
 	}
