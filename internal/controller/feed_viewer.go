@@ -216,8 +216,11 @@ func validateFeedViewerURL(rawURL string) error {
 
 func classifyFeedViewerError(err error) (int, string) {
 	msg := err.Error()
+	msg = strings.TrimPrefix(msg, "all items failed to process. last error: ")
 
 	switch {
+	case strings.Contains(msg, "browserless service returned status"):
+		return http.StatusOK, humanizeBrowserlessStatus(msg)
 	case strings.Contains(msg, "http status not ok:"):
 		return http.StatusOK, humanizeFeedViewerHTTPStatus(msg)
 	case strings.Contains(msg, "http get failed:"), strings.Contains(msg, "browserless fetch failed:"), strings.Contains(msg, "failed to read response body:"), strings.Contains(msg, "Unable to resolve this URL"):
@@ -229,6 +232,14 @@ func classifyFeedViewerError(err error) (int, string) {
 	default:
 		return http.StatusInternalServerError, "Failed to preview this feed due to an internal error."
 	}
+}
+
+func humanizeBrowserlessStatus(msg string) string {
+	status := strings.TrimSpace(strings.TrimPrefix(msg, "browserless service returned status"))
+	if status == "" {
+		return "Browserless service failed to render the URL."
+	}
+	return fmt.Sprintf("Browserless service failed to render the URL (returned status %s). Please check the address or the browserless service.", status)
 }
 
 func humanizeFeedViewerHTTPStatus(msg string) string {
