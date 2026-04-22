@@ -101,9 +101,12 @@ func (f *HttpFetcher) doRequest(ctx context.Context, profile requestProfile) ([]
 		}
 	}
 
-	body, err := io.ReadAll(io.LimitReader(resp.Body, MaxResponseBodySize))
+	body, err := io.ReadAll(io.LimitReader(resp.Body, MaxResponseBodySize+1))
 	if err != nil {
 		return nil, &fetchError{err: fmt.Errorf("failed to read response body: %w", err), retryable: true}
+	}
+	if len(body) > MaxResponseBodySize {
+		return nil, &fetchError{err: fmt.Errorf("response body exceeds the maximum size limit of %d bytes", MaxResponseBodySize), retryable: false}
 	}
 
 	return body, nil
