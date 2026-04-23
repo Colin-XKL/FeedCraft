@@ -8,7 +8,7 @@ require (
 	github.com/JohannesKaufmann/html-to-markdown/v2 v2.4.0
 	github.com/PuerkitoBio/goquery v1.9.1
 	github.com/abadojack/whatlanggo v1.0.1
-	github.com/alicebob/miniredis/v2 v2.36.1
+	github.com/alicebob/miniredis/v2 v2.37.0
 	github.com/avast/retry-go/v4 v4.7.0
 	github.com/getsentry/sentry-go v0.36.1
 	github.com/getsentry/sentry-go/gin v0.34.0
