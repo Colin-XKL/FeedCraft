@@ -38,7 +38,7 @@ Simple proxy for the feed.
 
 ### `guid-fix`
 
-Replaces the RSS item GUID with an MD5 hash of the item's content.
+Replaces the RSS item GUID with an FNV-1a hash of the item's content.
 
 - **Use case:** Some feeds change their GUIDs frequently even when content hasn't changed, causing duplicate unread items in readers. This atom stabilizes the GUID based on content.
 
