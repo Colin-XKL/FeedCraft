@@ -146,6 +146,17 @@ services:
 FeedCraft 的名称和 Logo 参考并致敬两款游戏: MineCraft 和塞尔达, 初衷和愿景是做一个简单易用、同时足够灵活, 能够有更多可能性的 RSS 工具.
 使用问题、建议等欢迎在 Discussion 区讨论交流
 
+## 赞助商
+
+感谢以下项目对 FeedCraft 的赞助
+
+
+| 赞助商                                                                                                                               | 介绍                                                                                                                                                              |
+| --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <img src="https://dn-mars-assets.qbox.me/qiniulogo/img-horizontal-blue-cn.png" alt="qiniu-cloud-logo" width="300">    | **感谢 七牛云 提供 AI Token 支持**<br><br>FeedCraft 公共实例的 AI 服务由七牛云赞助.<br>新用户注册可获得 300 万免费 Token 资源包, 更有 GLM、Qwen 多款免费模型可直接使用.<br>[立即领取](https://s.qiniu.com/7nuaie) |
+| <img src="https://cloudcache.tencent-cloud.cn/qcloud/ui/cloud-community/build/base/images/cloud-logo_f8d.svg" alt="tencent-cloud-logo" width="300" > | **感谢 腾讯云 提供服务器资源支持** <br><br>腾讯云大模型 Token Plan, 面向龙虾和 AI 编码场景设计，覆盖多种主流模型、灵活套餐、极速调用。<br>[立即购买](https://curl.qcloud.com/qJIRe25F)                                      |
+
+
 ## 许可
 
 GPLv3
