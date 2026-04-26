@@ -16,7 +16,7 @@ The **RSS Viewer** (Feed Viewer) allows you to preview any RSS feed as FeedCraft
   2. Enter an RSS/Atom URL.
   3. Click **Preview**.
 - **Purpose**: Verify if FeedCraft can successfully fetch and parse a feed before setting up a recipe.
-- **Note**: The viewer uses the `proxy` craft by default, which simply fetches the feed without modification.
+- **Note**: The viewer uses the `proxy` craft by default, which simply fetches the feed without modification. If an underlying error occurs during extraction (e.g., via browserless), it is clearly presented instead of a generic server error.
 
 ## Feed Compare
 
@@ -41,7 +41,7 @@ The **Craft Dependencies** (System Health) tool visualizes the internal relation
   2. Click **Analyze Craft Dependencies**.
 - **Features**:
   - Generates a tree view of all dependencies.
-  - **Health Check**: Automatically detects missing dependencies (e.g., a Recipe pointing to a deleted FlowCraft).
+  - **Health Check**: Automatically detects missing dependencies (e.g., a Recipe pointing to a deleted FlowCraft). Missing components are highlighted with a prominent warning card and inline red badges for quick identification.
   - **Visual Indicators**: Different colors for Recipes, Flows, Atoms, and missing components.
 
 :::tip
