@@ -42,6 +42,7 @@ The **Craft Dependencies** (System Health) tool visualizes the internal relation
 - **Features**:
   - Generates a tree view of all dependencies.
   - **Health Check**: Automatically detects missing dependencies (e.g., a Recipe pointing to a deleted FlowCraft).
+  - **Missing Crafts Highlighting**: Missing nodes are prominently displayed at the top of the dashboard and styled inline within the tree to quickly identify broken dependencies.
   - **Visual Indicators**: Different colors for Recipes, Flows, Atoms, and missing components.
 
 :::tip
