@@ -71,6 +71,15 @@ const WORKTABLE: AppRouteRecordRaw = {
       },
     },
     {
+      path: 'web-monitor',
+      name: 'WebMonitor',
+      component: () => import('@/views/dashboard/web_monitor/web_monitor.vue'),
+      meta: {
+        locale: 'menu.webMonitor',
+        requiresAuth: true,
+      },
+    },
+    {
       path: 'json-to-rss',
       name: 'JsonToRss',
       component: () => import('@/views/dashboard/curl_to_rss/curl_to_rss.vue'),

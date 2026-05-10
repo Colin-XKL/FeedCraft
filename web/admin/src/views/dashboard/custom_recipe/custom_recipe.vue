@@ -106,18 +106,10 @@
           >
             {{ t('customRecipe.edit') }}
           </a-button>
-          <a-button
-            type="text"
-            size="small"
-            @click="previewRecipe(record)"
-          >
+          <a-button type="text" size="small" @click="previewRecipe(record)">
             {{ t('customRecipe.preview') }}
           </a-button>
-          <a-button
-            type="text"
-            size="small"
-            @click="handleCopyLink(record.id)"
-          >
+          <a-button type="text" size="small" @click="handleCopyLink(record.id)">
             {{ t('customRecipe.copyLink') }}
           </a-button>
           <a-popconfirm
