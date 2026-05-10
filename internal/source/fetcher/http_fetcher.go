@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -54,8 +55,14 @@ func (f *HttpFetcher) Fetch(ctx context.Context) ([]byte, error) {
 		},
 		retry.Context(ctx),
 		retry.Attempts(profile.retryAttempts),
-		retry.Delay(300*time.Millisecond),
-		retry.DelayType(retry.FixedDelay),
+		retry.Delay(500*time.Millisecond),
+		retry.DelayType(func(n uint, err error, config *retry.Config) time.Duration {
+			var fetchErr *fetchError
+			if errors.As(err, &fetchErr) && fetchErr.retryAfter > 0 {
+				return fetchErr.retryAfter
+			}
+			return retry.BackOffDelay(n, err, config)
+		}),
 		retry.RetryIf(isRetryableFetchError),
 		retry.LastErrorOnly(true),
 	)
@@ -97,8 +104,9 @@ func (f *HttpFetcher) doRequest(ctx context.Context, profile requestProfile) ([]
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, &fetchError{
-			err:       fmt.Errorf("http status not ok: %s", resp.Status),
-			retryable: isRetryableStatus(resp.StatusCode),
+			err:        fmt.Errorf("http status not ok: %s", resp.Status),
+			retryable:  isRetryableStatus(resp.StatusCode),
+			retryAfter: parseRetryAfter(resp.Header.Get("Retry-After")),
 		}
 	}
 
@@ -150,8 +158,9 @@ func HTMLDefaultHeaders() map[string]string {
 }
 
 type fetchError struct {
-	err       error
-	retryable bool
+	err        error
+	retryable  bool
+	retryAfter time.Duration
 }
 
 func (e *fetchError) Error() string {
@@ -172,4 +181,21 @@ func isRetryableFetchError(err error) bool {
 
 func isRetryableStatus(statusCode int) bool {
 	return statusCode == http.StatusTooManyRequests || statusCode >= http.StatusInternalServerError
+}
+
+func parseRetryAfter(header string) time.Duration {
+	if header == "" {
+		return 0
+	}
+	if seconds, err := strconv.Atoi(header); err == nil {
+		return time.Duration(seconds) * time.Second
+	}
+	if date, err := http.ParseTime(header); err == nil {
+		d := time.Until(date)
+		if d < 0 {
+			return 0
+		}
+		return d
+	}
+	return 0
 }
