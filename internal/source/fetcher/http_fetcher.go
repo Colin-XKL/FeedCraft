@@ -89,7 +89,13 @@ func (f *HttpFetcher) doRequest(ctx context.Context, profile requestProfile) ([]
 		req.Header.Set(key, value)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	timeout := 30 * time.Second
+	if f.Config.HttpClientTimeout > 0 {
+		timeout = f.Config.HttpClientTimeout
+	}
+	client := &http.Client{Timeout: timeout}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, &fetchError{err: fmt.Errorf("http get failed: %w", err), retryable: true}
 	}
