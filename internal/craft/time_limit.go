@@ -9,7 +9,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func OptionTimeLimit(days int) CraftOption {
+func OptionTimeLimit(days int) LegacyCraftOption {
 	return func(feed *feeds.Feed, payload ExtraPayload) error {
 		items := feed.Items
 		if len(items) == 0 {
@@ -57,13 +57,13 @@ func OptionTimeLimit(days int) CraftOption {
 	}
 }
 
-func GetTimeLimitCraftOption(days int) []CraftOption {
-	return []CraftOption{
+func GetTimeLimitCraftOption(days int) []LegacyCraftOption {
+	return []LegacyCraftOption{
 		OptionTimeLimit(days),
 	}
 }
 
-func timeLimitCraftLoadParams(m map[string]string) []CraftOption {
+func timeLimitCraftLoadParams(m map[string]string) []LegacyCraftOption {
 	daysStr, exist := m["days"]
 	if !exist {
 		daysStr = "7"

@@ -9,7 +9,7 @@ import (
 
 const defaultLimit = 10
 
-func OptionLimit(n int) CraftOption {
+func OptionLimit(n int) LegacyCraftOption {
 	return func(feed *feeds.Feed, payload ExtraPayload) error {
 		items := feed.Items
 		filtered := lo.Slice(items, 0, n)
@@ -18,14 +18,14 @@ func OptionLimit(n int) CraftOption {
 	}
 }
 
-func GetLimitCraftOption(num int) []CraftOption {
-	craftOptions := []CraftOption{
+func GetLimitCraftOption(num int) []LegacyCraftOption {
+	craftOptions := []LegacyCraftOption{
 		OptionLimit(num),
 	}
 	return craftOptions
 }
 
-func limitCraftLoadParams(m map[string]string) []CraftOption {
+func limitCraftLoadParams(m map[string]string) []LegacyCraftOption {
 	numStr, exist := m["num"]
 	if !exist {
 		numStr = "10"

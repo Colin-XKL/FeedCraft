@@ -100,7 +100,7 @@ func NewLLMTextProcessor(processorType constant.ProcessorType, customPrompt stri
 	return &LLMTextProcessor{prompt: prompt, name: string(processorType)}
 }
 
-func GetAddIntroductionCraftOptions(prompt string) []CraftOption {
+func GetAddIntroductionCraftOptions(prompt string) []LegacyCraftOption {
 	transFunc := func(item *feeds.Item) (string, error) {
 		processorType := constant.ProcessorTypeIntroduction
 		processor := NewLLMTextProcessor(processorType, prompt)
@@ -108,13 +108,13 @@ func GetAddIntroductionCraftOptions(prompt string) []CraftOption {
 		return ret, nil
 	}
 	cachedTransformer := GetCommonCachedTransformer(cacheKeyForArticleTitle, transFunc, string(constant.ProcessorTypeIntroduction))
-	craftOption := []CraftOption{
+	craftOption := []LegacyCraftOption{
 		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransformer)),
 	}
 	return craftOption
 }
 
-func introCraftLoadParam(m map[string]string) []CraftOption {
+func introCraftLoadParam(m map[string]string) []LegacyCraftOption {
 	prompt, exist := m["prompt"]
 	if !exist || len(prompt) == 0 {
 		prompt = constant.DefaultPrompts[constant.ProcessorTypeIntroduction]

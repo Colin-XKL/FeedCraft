@@ -30,8 +30,8 @@ func feedItemGuidGenerator(item *feeds.Item) (string, error) {
 	return util.GetTextContentHash(combinedInput), nil
 }
 
-func GetGuidCraftOptions() []CraftOption {
-	craftOptions := []CraftOption{
+func GetGuidCraftOptions() []LegacyCraftOption {
+	craftOptions := []LegacyCraftOption{
 		OptionTransformFeedItem(GetGuidProcessor(feedItemGuidGenerator)),
 	}
 	return craftOptions

@@ -56,7 +56,7 @@ func beautifyArticleContent(content string, prompt string) (string, error) {
 }
 
 // GetBeautifyContentCraftOptions returns the craft options for beautification
-func GetBeautifyContentCraftOptions(prompt string) []CraftOption {
+func GetBeautifyContentCraftOptions(prompt string) []LegacyCraftOption {
 	transFunc := func(item *feeds.Item) (string, error) {
 		content := item.Content
 		if content == "" {
@@ -68,13 +68,13 @@ func GetBeautifyContentCraftOptions(prompt string) []CraftOption {
 	cachedTransformer := GetCommonCachedTransformer(
 		cacheKeyForArticleContent, transFunc, "beautify article content")
 
-	craftOption := []CraftOption{
+	craftOption := []LegacyCraftOption{
 		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransformer)),
 	}
 	return craftOption
 }
 
-func beautifyContentCraftLoadParam(m map[string]string) []CraftOption {
+func beautifyContentCraftLoadParam(m map[string]string) []LegacyCraftOption {
 	prompt, exist := m["prompt"]
 	if !exist || len(prompt) == 0 {
 		prompt = beautifyArticleContentPrompt
