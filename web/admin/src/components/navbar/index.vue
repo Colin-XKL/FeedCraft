@@ -154,6 +154,15 @@
   import useUser from '@/hooks/user';
   import Menu from '@/components/menu/index.vue';
   import logo from '@/assets/logo.png';
+  // const setPopoverVisible = () => {
+  //   const event = new MouseEvent('click', {
+  //     view: window,
+  //     bubbles: true,
+  //     cancelable: true,
+  //   });
+  //   refBtn.value.dispatchEvent(event);
+  // };
+  import { useI18n } from 'vue-i18n';
   // import user from '@/store/modules/user';
 
   const appStore = useAppStore();
@@ -191,15 +200,6 @@
   // };
   // const refBtn = ref();
   const triggerBtn = ref();
-  // const setPopoverVisible = () => {
-  //   const event = new MouseEvent('click', {
-  //     view: window,
-  //     bubbles: true,
-  //     cancelable: true,
-  //   });
-  //   refBtn.value.dispatchEvent(event);
-  // };
-  import { useI18n } from 'vue-i18n';
 
   const { t } = useI18n();
 
