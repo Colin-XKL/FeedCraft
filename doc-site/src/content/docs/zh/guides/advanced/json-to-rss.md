@@ -1,5 +1,5 @@
 ---
-title: 从CURL语句生成RSS
+title: 从 JSON 生成 RSS
 description: 使用 jq 提取字段，并通过可选模板将任意 JSON API 响应转换为 RSS 订阅源。
 sidebar:
   order: 3
@@ -8,7 +8,7 @@ sidebar:
     variant: success
 ---
 
-FeedCraft 包含一个 **从 CURL 语句生成 RSS (CURL to RSS)** 工具，允许你从 JSON API 获取数据，先用 `jq` 提取字段，再通过可选模板将其转换为 RSS 订阅源。
+FeedCraft 包含一个 **从 JSON 生成 RSS (JSON to RSS)** 工具，允许你从 JSON API 获取数据，先用 `jq` 提取字段，再通过可选模板将其转换为 RSS 订阅源。
 
 ## 概览
 
@@ -21,13 +21,13 @@ JSON RSS 生成器可以帮助你：
 
 ## 如何使用
 
-在管理后台导航至 **工作台 > Curl 转 RSS**。
+在管理后台导航至 **工作台 > JSON 转 RSS**。
 
 ### 第一步：请求配置 (Request Configuration)
 
 你需要定义如何获取 JSON 数据。
 
-- **从 Curl 导入 (Import from Curl)**：你可以粘贴 `curl` 命令来自动填充 URL、方法、请求头和请求体。这在你从浏览器开发者工具复制请求时非常有用。
+- **从 cURL 导入 (Import from cURL)**：你可以粘贴 `curl` 命令来自动填充 URL、方法、请求头和请求体。这在你从浏览器开发者工具复制请求时非常有用。
 - **方法 (Method)**：选择 `GET` 或 `POST`。
 - **URL**：API 端点 URL。
 - **Headers**：添加任何必要的请求头（例如 `Authorization`, `Content-Type`）。
@@ -49,6 +49,28 @@ JSON RSS 生成器可以帮助你：
 - **链接模板 (Link Template)**：（可选）当接口没有完整链接时，可以拼接，例如 `https://some-website.com/article/{{ .Item.id }}`。
 - **日期选择器 (Date Selector)**：（可选）发布日期的路径。
 - **内容选择器 (Content Selector)**：（可选）完整内容或摘要的路径。
+
+#### 使用模板 (可选)
+
+你可以使用 [Go Templates](https://pkg.go.dev/text/template) 语法对提取的值进行进一步处理。
+
+**可用变量：**
+
+- `.Fields`：已解析的字段值（例如 `.Fields.Title`, `.Fields.Link`, `.Fields.Date`, `.Fields.Description`）。
+- `.Item`：原始 JSON 列表项对象（例如 `.Item.id`, `.Item.author.name`）。
+
+**内置函数：**
+
+- `trimSpace`：移除首尾的空白字符。
+- `trim`：移除首尾指定的字符。
+- `default`：如果字段为空，提供一个默认值。
+
+**示例：**
+
+- **清理标题空白字符**：`{{ .Fields.Title | trimSpace }}`
+- **拼接完整链接**：`https://example.com/article/{{ .Item.id }}`
+- **移除特定前缀**：`{{ .Fields.Description | trim "Prefix: " }}`
+- **默认值兜底**：`{{ default .Fields.Description "暂无摘要" }}`
 
 点击 **运行预览 (Run Preview)** 验证你的选择器，然后点击 **下一步 (Next Step)**。
 

@@ -93,8 +93,9 @@
                     >
                       {{ t('observability.link') }}
                     </a-link>
+                    <!-- TopicFeed 功能当前仍在开发完善中，先隐藏详情入口；待功能 ready 后再重新开放。 -->
                     <a-button
-                      v-if="record.resource_type === 'topic'"
+                      v-if="false && record.resource_type === 'topic'"
                       type="text"
                       size="small"
                       @click="goToTopicDetail(record.resource_id)"
@@ -376,6 +377,7 @@
     }
   };
 
+  // TopicFeed 功能当前仍在开发完善中，先隐藏详情跳转；待功能 ready 后再重新开放。
   const goToTopicDetail = (id: string) => {
     router.push({ name: 'TopicFeedDetail', params: { id } });
   };

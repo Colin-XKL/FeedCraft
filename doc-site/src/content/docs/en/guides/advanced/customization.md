@@ -65,12 +65,15 @@ You can configure FeedCraft using environment variables in `docker-compose.yml`.
 
 - **FC_PUPPETEER_HTTP_ENDPOINT**: Address of the Browserless/Chrome instance. Required for `fulltext-plus`.
 - **FC_REDIS_URI**: Redis connection address. Used for caching to speed up processing and reduce AI token consumption.
+- **FC_HTTP_USER_AGENT_FEED**: (Optional) Default `User-Agent` for feed-style outbound requests, such as fetching RSS/XML resources. Search provider requests are temporarily grouped into this same rule.
+- **FC_HTTP_USER_AGENT_HTML**: (Optional) Default `User-Agent` for HTML page fetches, such as fulltext extraction and the HTML-to-RSS tooling. **Note:** If the value contains spaces or parentheses, it must be enclosed in quotes.
 - **FC_LLM_API_KEY**: API Key for OpenAI or compatible services (like DeepSeek, Gemini, etc.).
 - **FC_LLM_API_MODEL**: Default model to use (e.g., `gemini-pro`, `gpt-3.5-turbo`). **Multiple Models Support:** You can provide a comma-separated list of models (e.g., `gpt-3.5-turbo,gpt-4`). FeedCraft will randomly select a model for each request and automatically retry with others if a call fails.
 - **FC_LLM_API_BASE**: API endpoint address. For OpenAI-compatible APIs, usually ends with `/v1`.
 - **FC_LLM_API_TYPE**: (Optional) `openai` (default) or `ollama`.
 - **FC_LLM_MAX_CONCURRENCY**: (Optional) Global maximum concurrency for LLM requests (default: `3`). Limits concurrent API calls to prevent rate limits.
 - **FC_DOMAIN_MAX_CONCURRENCY**: (Optional) Maximum concurrent requests per target domain during web scraping like fulltext extraction (default: `3`). Prevents overwhelming target servers.
+- **LOG_LEVEL**: (Optional) Log level for the backend application (e.g., `info`, `debug`, `trace`). Overrides the default level set by `ENV`.
 
 ### External Services
 

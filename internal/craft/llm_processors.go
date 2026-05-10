@@ -325,9 +325,9 @@ func GetCommonCachedArticlePredicate(cacheKeyGenerator ArticleCacheKeyGenerator,
 }
 
 func newArticleTitleContentCacheKeyGenerator(prompt string) ArticleCacheKeyGenerator {
-	promptHash := util.GetMD5Hash(prompt)
+	promptHash := util.GetTextContentHash(prompt)
 	return func(article *model.CraftArticle) (string, error) {
-		payloadHash := util.GetMD5Hash(strings.Join([]string{
+		payloadHash := util.GetTextContentHash(strings.Join([]string{
 			promptHash,
 			strings.TrimSpace(article.Title),
 			strings.TrimSpace(getPrimaryArticleContent(article)),

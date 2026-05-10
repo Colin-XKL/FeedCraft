@@ -65,12 +65,15 @@ sidebar:
 
 - **FC_PUPPETEER_HTTP_ENDPOINT**: Browserless/Chrome 实例的地址。`fulltext-plus` 功能必须。
 - **FC_REDIS_URI**: Redis 连接地址。用于缓存，加快处理速度并减少 AI Token 消耗。
+- **FC_HTTP_USER_AGENT_FEED**: （可选）feed 类外部请求的默认 `User-Agent`，例如抓取 RSS/XML 资源时使用。搜索提供方请求目前也临时归入这一规则。
+- **FC_HTTP_USER_AGENT_HTML**: （可选）HTML 页面抓取的默认 `User-Agent`，例如全文提取和 HTML 转 RSS 工具使用。**注意：** 如果该值包含空格或括号，必须使用引号括起来。
 - **FC_LLM_API_KEY**: OpenAI 或兼容服务（如 DeepSeek, Gemini 等）的 API Key。
 - **FC_LLM_API_MODEL**: 默认使用的模型（如 `gemini-pro`, `gpt-3.5-turbo`）。**支持多个模型：** 你可以提供一个逗号分隔的模型列表（例如 `gpt-3.5-turbo,gpt-4`）。FeedCraft 会为每个请求随机选择一个模型，如果调用失败，会自动重试列表中的其他模型。
 - **FC_LLM_API_BASE**: API 接口地址。如果是兼容 OpenAI 的 API，通常以 `/v1` 结尾。
 - **FC_LLM_API_TYPE**: (可选) `openai` (默认) 或 `ollama`.
 - **FC_LLM_MAX_CONCURRENCY**: (可选) 全局最大 LLM 并发请求数（默认: `3`）。用于限制并发请求数量以防止触发 API 速率限制。
 - **FC_DOMAIN_MAX_CONCURRENCY**: (可选) 网页抓取（如全文提取）时每个目标域名的最大并发数（默认: `3`）。防止抓取目标服务器负载过高。
+- **LOG_LEVEL**: (可选) 后端应用的日志级别 (例如 `info`, `debug`, `trace`)。覆盖 `ENV` 设置的默认级别。
 
 ### 外部服务
 

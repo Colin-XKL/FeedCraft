@@ -25,18 +25,25 @@ func (m *MockProvider) Fetch(ctx context.Context) (*model.CraftFeed, error) {
 }
 
 func TestTopicFeed_Fetch_Success(t *testing.T) {
+	updated1 := time.Date(2026, 4, 1, 10, 0, 0, 0, time.UTC)
+	created1 := time.Date(2026, 4, 1, 9, 0, 0, 0, time.UTC)
+	updated2 := time.Date(2026, 4, 2, 11, 0, 0, 0, time.UTC)
+	created2 := time.Date(2026, 4, 2, 8, 0, 0, 0, time.UTC)
+	updated3 := time.Date(2026, 4, 3, 12, 0, 0, 0, time.UTC)
+	created3 := time.Date(2026, 4, 3, 7, 0, 0, 0, time.UTC)
+
 	provider1 := &MockProvider{
 		Feed: &model.CraftFeed{
 			Articles: []*model.CraftArticle{
-				{Id: "1", Title: "Article 1"},
-				{Id: "2", Title: "Article 2"},
+				{Id: "1", Title: "Article 1", Updated: updated1, Created: created1},
+				{Id: "2", Title: "Article 2", Updated: updated2, Created: created2},
 			},
 		},
 	}
 	provider2 := &MockProvider{
 		Feed: &model.CraftFeed{
 			Articles: []*model.CraftArticle{
-				{Id: "3", Title: "Article 3"},
+				{Id: "3", Title: "Article 3", Updated: updated3, Created: created3},
 			},
 		},
 	}
@@ -53,6 +60,8 @@ func TestTopicFeed_Fetch_Success(t *testing.T) {
 
 	// Should contain 3 articles total
 	assert.Len(t, result.Articles, 3)
+	assert.True(t, result.Updated.Equal(updated3))
+	assert.True(t, result.Created.Equal(created3))
 }
 
 func TestTopicFeed_Fetch_PartialFailure(t *testing.T) {
@@ -83,12 +92,19 @@ func TestTopicFeed_Fetch_PartialFailure(t *testing.T) {
 }
 
 func TestTopicFeed_Fetch_WithAggregator(t *testing.T) {
+	updated1 := time.Date(2026, 4, 1, 10, 0, 0, 0, time.UTC)
+	updated2 := time.Date(2026, 4, 2, 10, 0, 0, 0, time.UTC)
+	updated3 := time.Date(2026, 4, 3, 10, 0, 0, 0, time.UTC)
+	created1 := time.Date(2026, 4, 1, 9, 0, 0, 0, time.UTC)
+	created2 := time.Date(2026, 4, 2, 9, 0, 0, 0, time.UTC)
+	created3 := time.Date(2026, 4, 3, 9, 0, 0, 0, time.UTC)
+
 	provider := &MockProvider{
 		Feed: &model.CraftFeed{
 			Articles: []*model.CraftArticle{
-				{Id: "1", Title: "A"},
-				{Id: "2", Title: "B"},
-				{Id: "3", Title: "C"},
+				{Id: "1", Title: "A", Updated: updated1, Created: created1},
+				{Id: "2", Title: "B", Updated: updated2, Created: created2},
+				{Id: "3", Title: "C", Updated: updated3, Created: created3},
 			},
 		},
 	}
@@ -105,6 +121,8 @@ func TestTopicFeed_Fetch_WithAggregator(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Len(t, result.Articles, 2)
+	assert.True(t, result.Updated.Equal(updated2))
+	assert.True(t, result.Created.Equal(created2))
 }
 
 func TestTopicFeed_Fetch_AllInputsFailed(t *testing.T) {

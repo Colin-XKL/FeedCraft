@@ -2,6 +2,7 @@ package provider
 
 import (
 	"FeedCraft/internal/config"
+	"FeedCraft/internal/util"
 	"context"
 	"fmt"
 	"net/url"
@@ -53,7 +54,10 @@ func (p *SearXNGProvider) Fetch(ctx context.Context, query string) ([]byte, erro
 		p.Client = resty.New().SetTimeout(10 * time.Second)
 	}
 
-	req := p.Client.R().SetContext(ctx)
+	req := p.Client.R().
+		SetContext(ctx).
+		// NOTE: search provider requests are temporarily grouped under feed UA rules.
+		SetHeader("User-Agent", util.DefaultFeedUserAgent())
 
 	// Add Authorization header if API Key is present (useful for private instances with Basic/Bearer auth)
 	if p.Config.APIKey != "" {

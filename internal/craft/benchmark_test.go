@@ -2,24 +2,14 @@ package craft
 
 import (
 	"FeedCraft/internal/util"
-	"fmt"
 	"testing"
 	"time"
 
-	"github.com/alicebob/miniredis/v2"
 	"github.com/mmcdole/gofeed"
 )
 
 func BenchmarkProcessFeed_TranslateTitle_Cached(b *testing.B) {
-	// Setup Miniredis
-	s, err := miniredis.Run()
-	if err != nil {
-		b.Fatalf("Could not start miniredis: %s", err)
-	}
-	defer s.Close()
-
-	// Set Environment Variables
-	b.Setenv("FC_REDIS_URI", fmt.Sprintf("redis://%s", s.Addr()))
+	redis := setupTestRedis(b)
 	b.Setenv("FC_DEFAULT_TARGET_LANG", "zh-CN")
 
 	// Setup DB Path
@@ -32,23 +22,13 @@ func BenchmarkProcessFeed_TranslateTitle_Cached(b *testing.B) {
 
 	// Pre-populate Cache
 	itemTitle := "Hello World"
-	// Calculate MD5
-	md5Hash := util.GetMD5Hash(itemTitle)
-
-	// Key format: web_content_translate title_<MD5>
-	// We use the internal helper to avoid hardcoding the format
-	cacheKey := getCraftCacheKey("translate title", md5Hash)
-
-	// Set in Miniredis
-	_ = s.Set(cacheKey, "你好世界")
-	// Set TTL just in case (CachedFunc sets it)
-	s.SetTTL(cacheKey, time.Hour)
+	hash := util.GetTextContentHash(itemTitle)
+	cacheKey := getCraftCacheKey("translate title", hash)
+	redis.SetString(b, cacheKey, "你好世界", time.Hour)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		b.StopTimer() // Setup per iteration
-
-		// Reset feed item because craft might modify it in place
+		b.StopTimer()
 		feed := &gofeed.Feed{
 			Items: []*gofeed.Item{
 				{
@@ -59,7 +39,6 @@ func BenchmarkProcessFeed_TranslateTitle_Cached(b *testing.B) {
 				},
 			},
 		}
-
 		b.StartTimer()
 
 		_, err := ProcessFeed(feed, feedURL, craftName)

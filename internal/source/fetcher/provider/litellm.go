@@ -2,6 +2,7 @@ package provider
 
 import (
 	"FeedCraft/internal/config"
+	"FeedCraft/internal/util"
 	"context"
 	"fmt"
 	"strings"
@@ -55,6 +56,8 @@ func (p *LiteLLMProvider) Fetch(ctx context.Context, query string) ([]byte, erro
 
 	req := p.Client.R().
 		SetContext(ctx).
+		// NOTE: search provider requests are temporarily grouped under feed UA rules.
+		SetHeader("User-Agent", util.DefaultFeedUserAgent()).
 		SetBody(reqBody)
 
 	if p.Config.APIKey != "" {

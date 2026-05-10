@@ -31,7 +31,7 @@ export default {
   'menu.feedCompare': 'Feed Compare',
   'menu.feedViewer': 'RSS Viewer',
   'menu.rssGenerator': 'HTML to RSS',
-  'menu.curlToRss': 'Curl to RSS',
+  'menu.jsonToRss': 'JSON to RSS',
   'menu.searchToRss': 'Search to RSS',
   'menu.llmDebug': 'LLM Debug',
   'menu.changePassword': 'Change Password',

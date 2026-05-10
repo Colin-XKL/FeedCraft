@@ -31,7 +31,7 @@ export default {
   'menu.feedCompare': 'Feed 对比',
   'menu.feedViewer': 'RSS 预览',
   'menu.rssGenerator': 'HTML 转 RSS',
-  'menu.curlToRss': 'Curl 转 RSS',
+  'menu.jsonToRss': 'JSON 转 RSS',
   'menu.searchToRss': '搜索 转 RSS',
   'menu.llmDebug': 'LLM 调试',
   'menu.adCheckDebug': '广告软文检测',
