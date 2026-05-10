@@ -2,6 +2,7 @@ package config
 
 import (
 	"FeedCraft/internal/constant"
+	"time"
 )
 
 const (
@@ -14,12 +15,13 @@ const (
 // HttpFetcherConfig holds the configuration for an HTTP fetcher.
 // It supports some HTTP methods, headers, and request bodies.
 type HttpFetcherConfig struct {
-	URL            string            `json:"url"`
-	Method         string            `json:"method,omitempty"`
-	Headers        map[string]string `json:"headers,omitempty"`
-	Body           string            `json:"body,omitempty"`
-	UseBrowserless bool              `json:"use_browserless,omitempty"`
-	Purpose        string            `json:"purpose,omitempty"`
+	URL               string            `json:"url"`
+	Method            string            `json:"method,omitempty"`
+	Headers           map[string]string `json:"headers,omitempty"`
+	Body              string            `json:"body,omitempty"`
+	UseBrowserless    bool              `json:"use_browserless,omitempty"`
+	Purpose           string            `json:"purpose,omitempty"`
+	HttpClientTimeout time.Duration     `json:"http_client_timeout,omitempty"`
 }
 
 // SearchFetcherConfig holds the configuration for search-based fetching.
