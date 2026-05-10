@@ -124,6 +124,7 @@ func RegisterRouters(router *gin.Engine) {
 
 		adminApi.POST("/tools/fetch", controller.HtmlFetch)
 		adminApi.POST("/tools/parse", controller.HtmlParse)
+		adminApi.POST("/tools/web-monitor/preview", controller.WebMonitorPreview)
 		adminApi.GET("/tools/feed/preview", controller.PreviewFeedViewer)
 
 		adminApi.POST("/tools/json/fetch", controller.CurlFetch)

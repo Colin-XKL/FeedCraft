@@ -66,3 +66,24 @@ func TestJSONSourceFactorySetsHTMLPurposeByDefault(t *testing.T) {
 		t.Fatalf("expected purpose %q, got %q", config.HttpFetcherPurposeHTML, cfg.HttpFetcher.Purpose)
 	}
 }
+
+func TestWebMonitorSourceFactorySetsHTMLPurposeByDefault(t *testing.T) {
+	cfg := &config.SourceConfig{
+		Type: constant.SourceWebMonitor,
+		HttpFetcher: &config.HttpFetcherConfig{
+			URL: "https://example.com/product",
+		},
+		WebMonitorParser: &config.WebMonitorParserConfig{
+			Extractors: map[string]string{"price": ".price"},
+			KeyFields:  []string{"price"},
+		},
+	}
+
+	_, err := webMonitorSourceFactory(cfg)
+	if err != nil {
+		t.Fatalf("webMonitorSourceFactory returned error: %v", err)
+	}
+	if cfg.HttpFetcher.Purpose != config.HttpFetcherPurposeHTML {
+		t.Fatalf("expected purpose %q, got %q", config.HttpFetcherPurposeHTML, cfg.HttpFetcher.Purpose)
+	}
+}
