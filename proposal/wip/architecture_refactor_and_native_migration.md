@@ -69,7 +69,7 @@ type InputSpec struct {
     - 构建统一的 `InputSpec -> FeedProvider` builder，让 Topic 和 Recipe 共用同一套输入解析逻辑。
 3.  **Phase 3: 引擎与 Craft 原生化 (V3)**
     - 把 `ProcessRecipeByID` 从旧的零散编排迁到新的 Builder runtime。
-    - 将 `internal/craft` 逐步重构为 V3 的 `CraftOption` 闭包架构，移除 `LegacyOptionAdapter`。
+    - 将 `internal/craft` 逐步重构为 V3 的 `CraftOption` 闭包架构，移除旧的 V2 适配层。
     - 让底层 Source 直接返回 `*model.CraftFeed`。
 4.  **Phase 4: 图谱收官**
     - 全面支撑 Topic 嵌套 Recipe、Topic 嵌套 Topic 的运行时逻辑。

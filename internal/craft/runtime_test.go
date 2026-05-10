@@ -40,9 +40,9 @@ func TestResolveCraftAtoms_FlowAndCustomAtom(t *testing.T) {
 	assert.Equal(t, "5", atoms[0].Params["num"])
 }
 
-func TestBuildProcessor_ProxyReturnsIdentityClosure(t *testing.T) {
+func TestBuildOptionChain_ProxyReturnsIdentityClosure(t *testing.T) {
 	db := newCraftRuntimeTestDB(t)
-	processor, err := BuildProcessor(db, "proxy", "https://example.com/feed.xml")
+	processor, err := BuildOptionChain(db, "proxy", "https://example.com/feed.xml")
 	require.NoError(t, err)
 	require.NotNil(t, processor)
 
@@ -52,7 +52,7 @@ func TestBuildProcessor_ProxyReturnsIdentityClosure(t *testing.T) {
 	assert.Same(t, feed, result)
 }
 
-func TestBuildProcessor_KeywordContentScopeUsesContentOnly(t *testing.T) {
+func TestBuildOptionChain_KeywordContentScopeUsesContentOnly(t *testing.T) {
 	db := newCraftRuntimeTestDB(t)
 	require.NoError(t, dao.CreateCraftAtom(db, &dao.CraftAtom{
 		Name:         "keyword-content",
@@ -64,7 +64,7 @@ func TestBuildProcessor_KeywordContentScopeUsesContentOnly(t *testing.T) {
 		},
 	}))
 
-	processor, err := BuildProcessor(db, "keyword-content", "https://example.com/feed.xml")
+	processor, err := BuildOptionChain(db, "keyword-content", "https://example.com/feed.xml")
 	require.NoError(t, err)
 	require.NotNil(t, processor)
 
@@ -79,9 +79,9 @@ func TestBuildProcessor_KeywordContentScopeUsesContentOnly(t *testing.T) {
 	assert.Equal(t, "other", result.Articles[0].Title)
 }
 
-func TestBuildProcessor_MultiAtomChainRunsEndToEnd(t *testing.T) {
+func TestBuildOptionChain_MultiAtomChainRunsEndToEnd(t *testing.T) {
 	db := newCraftRuntimeTestDB(t)
-	processor, err := BuildProcessor(db, "limit,time-limit,guid-fix,relative-link-fix", "https://example.com/feed.xml")
+	processor, err := BuildOptionChain(db, "limit,time-limit,guid-fix,relative-link-fix", "https://example.com/feed.xml")
 	require.NoError(t, err)
 	require.NotNil(t, processor)
 

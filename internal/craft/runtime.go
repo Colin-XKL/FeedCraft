@@ -72,10 +72,6 @@ func BuildOptionChain(db *gorm.DB, craftName string, feedURL string) (engine.Cra
 	return composeEngineOptions(options...), nil
 }
 
-func BuildProcessor(db *gorm.DB, craftName string, feedURL string) (engine.CraftOption, error) {
-	return BuildOptionChain(db, craftName, feedURL)
-}
-
 func ResolveCraftAtoms(db *gorm.DB, craftName string) ([]ResolvedCraftAtom, error) {
 	if db == nil {
 		db = util.GetDatabase()

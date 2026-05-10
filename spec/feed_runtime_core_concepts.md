@@ -4,7 +4,7 @@
 
 - `InputSpec`
 - `FeedProvider`
-- `FeedProcessor`
+- `CraftOption`
 - `CraftFeed`
 - `RecipeFeed`
 - `TopicFeed`
@@ -20,7 +20,7 @@
 FeedCraft 的长期目标不是继续维护多套并行执行流，而是把核心链路收敛为一条统一的数据流：
 
 ```text
-InputSpec -> FeedProvider -> FeedProcessor -> CraftFeed
+InputSpec -> FeedProvider -> CraftOption -> CraftFeed
 ```
 
 这条链路有两个直接价值：
@@ -88,7 +88,7 @@ type FeedProvider interface {
 
 判断一个对象是否属于 `FeedProvider`，关键看它是否“负责产出 feed”，而不是它是否做了抓取。
 
-### 2.3 加工中间件 (CraftOption / FeedProcessor)
+### 2.3 加工中间件 (CraftOption)
 
 在数据加工流水线层面，我们采用轻量的 Functional Options (闭包) 模式作为核心架构（V3 架构）。
 它表示一个“接收 `CraftFeed` 并返回新 `CraftFeed` 的处理函数”。
@@ -216,7 +216,7 @@ flowchart TD
 可以把它理解为：
 
 ```text
-RecipeFeed = 一个输入 FeedProvider + 一个可选 FeedProcessor
+RecipeFeed = 一个输入 FeedProvider + 一个可选 CraftOption
 ```
 
 它的职责很单纯：
@@ -271,7 +271,7 @@ flowchart LR
 
 - `Recipe` 的输入目前通常来自 `SourceConfig`
 - builder 会把它映射成一个可执行输入节点
-- craft 链以 `FeedProcessor` 形式作用在 `CraftFeed` 上
+- craft 链以 `CraftOption` 形式作用在 `CraftFeed` 上
 
 ### 6.2 Topic 数据流
 
@@ -294,7 +294,7 @@ flowchart LR
 
 - 上游既可以是 `RecipeFeed`，也可以是另一个 `TopicFeed`
 - 也可以是外部 `http(s)` RawFeed
-- 聚合器本质上也是 `FeedProcessor`
+- 聚合器本质上也是 `CraftOption`
 
 ### 6.3 系统视角下的统一数据流
 
@@ -303,7 +303,7 @@ flowchart TD
     A[持久化配置 / 公开 URI / 内置输入] --> B[InputSpec]
     B --> C[FeedProvider]
     C --> D[CraftFeed]
-    D --> E[FeedProcessor]
+    D --> E[CraftOption]
     E --> F[CraftFeed]
     F --> G[渲染为 RSS]
 ```
@@ -312,7 +312,7 @@ flowchart TD
 
 - `InputSpec` 负责描述输入
 - `FeedProvider` 负责产出 feed
-- `FeedProcessor` 负责处理 feed
+- `CraftOption` 负责处理 feed
 - `CraftFeed` 是中间统一载体
 
 ## 7. 分层建议
@@ -362,7 +362,7 @@ flowchart TD
 
 判断标准很简单：
 
-- 如果它接收一个 `CraftFeed` 并产出一个新的 `CraftFeed`，它就应当优先被建模为 `FeedProcessor`
+- 如果它接收一个 `CraftFeed` 并产出一个新的 `CraftFeed`，它就应当优先被建模为 `CraftOption`
 
 ### 7.4 输出边界
 
@@ -383,7 +383,7 @@ RSS XML、HTTP 响应、Admin 预览等都属于输出边界。
 - 统一内部数据模型使用 `CraftFeed`
 - 新增运行时输入优先考虑是否应抽象为 `InputSpec`
 - 新增可执行节点优先考虑是否应实现 `FeedProvider`
-- 新增内容处理逻辑优先考虑是否应实现 `FeedProcessor`
+- 新增内容处理逻辑优先考虑是否应实现 `CraftOption`
 - `RecipeFeed` 与 `TopicFeed` 是运行时的一等节点
 - `http(s)` 输入默认按外部 RawFeed 处理
 
@@ -408,7 +408,7 @@ RSS XML、HTTP 响应、Admin 预览等都属于输出边界。
 
 如果是，应优先考虑实现：
 
-- `FeedProcessor`
+- `CraftOption`
 
 ### 9.4 它只是把结果输出给外部吗
 
