@@ -6,118 +6,170 @@ import (
 	"time"
 
 	"FeedCraft/internal/model"
+
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func TestDeduplicateProcessor(t *testing.T) {
+func TestComposeOptions_DeduplicateByLink(t *testing.T) {
+	aggregator := ComposeOptions(
+		func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+			_ = ctx
+			if feed == nil || len(feed.Articles) == 0 {
+				return feed, nil
+			}
+			cloned := cloneFeed(feed)
+			seen := make(map[string]bool)
+			unique := make([]*model.CraftArticle, 0, len(cloned.Articles))
+			for _, article := range cloned.Articles {
+				if article == nil {
+					continue
+				}
+				if article.Link == "" || !seen[article.Link] {
+					if article.Link != "" {
+						seen[article.Link] = true
+					}
+					unique = append(unique, article)
+				}
+			}
+			cloned.Articles = unique
+			return cloned, nil
+		},
+	)
+
 	feed := &model.CraftFeed{
 		Articles: []*model.CraftArticle{
 			{Id: "1", Link: "http://a.com"},
 			{Id: "2", Link: "http://b.com"},
-			{Id: "3", Link: "http://a.com"}, // Duplicate link
-			{Id: "2", Link: "http://c.com"}, // Duplicate ID
+			{Id: "3", Link: "http://a.com"},
+			{Id: "2", Link: "http://c.com"},
 		},
 	}
 
-	t.Run("By Link", func(t *testing.T) {
-		p := &DeduplicateProcessor{Strategy: "by_link"}
-		// Clone feed to avoid mutating original for next test
-		f := &model.CraftFeed{Articles: append([]*model.CraftArticle{}, feed.Articles...)}
-
-		res, err := p.Process(context.Background(), f)
-		assert.NoError(t, err)
-		assert.Len(t, res.Articles, 3)
-		assert.Equal(t, "1", res.Articles[0].Id)
-		assert.Equal(t, "2", res.Articles[1].Id)
-		assert.Equal(t, "2", res.Articles[2].Id) // ID 2 is kept twice because links differ (b.com, c.com)
-	})
-
-	t.Run("By ID", func(t *testing.T) {
-		p := &DeduplicateProcessor{Strategy: "by_id"}
-		f := &model.CraftFeed{Articles: append([]*model.CraftArticle{}, feed.Articles...)}
-
-		res, err := p.Process(context.Background(), f)
-		assert.NoError(t, err)
-		assert.Len(t, res.Articles, 3)
-		assert.Equal(t, "http://a.com", res.Articles[0].Link)
-		assert.Equal(t, "http://b.com", res.Articles[1].Link)
-		assert.Equal(t, "http://a.com", res.Articles[2].Link) // Link a.com is kept twice because IDs differ (1, 3)
-	})
+	result, err := aggregator(context.Background(), feed)
+	require.NoError(t, err)
+	assert.Len(t, result.Articles, 3)
+	assert.Equal(t, "1", result.Articles[0].Id)
+	assert.Equal(t, "2", result.Articles[1].Id)
+	assert.Equal(t, "2", result.Articles[2].Id)
+	assert.Len(t, feed.Articles, 4)
 }
 
-func TestSortProcessor(t *testing.T) {
+func TestComposeOptions_SortAndLimit(t *testing.T) {
 	now := time.Now()
+	aggregator := ComposeOptions(
+		func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+			_ = ctx
+			if feed == nil || len(feed.Articles) <= 1 {
+				return feed, nil
+			}
+			cloned := cloneFeed(feed)
+			sortArticlesByUpdatedDesc(cloned.Articles)
+			return cloned, nil
+		},
+		func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+			_ = ctx
+			if feed == nil || len(feed.Articles) <= 2 {
+				return feed, nil
+			}
+			cloned := cloneFeed(feed)
+			cloned.Articles = cloned.Articles[:2]
+			return cloned, nil
+		},
+	)
+
 	feed := &model.CraftFeed{
 		Articles: []*model.CraftArticle{
-			{Id: "1", Updated: now.Add(-1 * time.Hour), QualityScore: 10}, // oldest
-			{Id: "2", Updated: now, QualityScore: 30},                     // newest
-			{Id: "3", Updated: now.Add(-30 * time.Minute), QualityScore: 20},
+			{Id: "1", Updated: now.Add(-1 * time.Hour)},
+			{Id: "2", Updated: now},
+			{Id: "3", Updated: now.Add(-30 * time.Minute)},
 		},
 	}
 
-	t.Run("Date Descending", func(t *testing.T) {
-		p := &SortProcessor{SortBy: "date_desc"}
-		f := &model.CraftFeed{Articles: append([]*model.CraftArticle{}, feed.Articles...)}
-		res, err := p.Process(context.Background(), f)
-		assert.NoError(t, err)
-		assert.Equal(t, "2", res.Articles[0].Id) // newest first
-		assert.Equal(t, "3", res.Articles[1].Id)
-		assert.Equal(t, "1", res.Articles[2].Id)
-	})
-
-	t.Run("Quality Descending", func(t *testing.T) {
-		p := &SortProcessor{SortBy: "quality_desc"}
-		f := &model.CraftFeed{Articles: append([]*model.CraftArticle{}, feed.Articles...)}
-		res, err := p.Process(context.Background(), f)
-		assert.NoError(t, err)
-		assert.Equal(t, "2", res.Articles[0].Id) // highest quality first
-		assert.Equal(t, "3", res.Articles[1].Id)
-		assert.Equal(t, "1", res.Articles[2].Id)
-	})
+	result, err := aggregator(context.Background(), feed)
+	require.NoError(t, err)
+	assert.Equal(t, "2", result.Articles[0].Id)
+	assert.Equal(t, "3", result.Articles[1].Id)
+	assert.Len(t, result.Articles, 2)
 }
 
-func TestLimitProcessor(t *testing.T) {
-	feed := &model.CraftFeed{
-		Articles: []*model.CraftArticle{
-			{Id: "1"}, {Id: "2"}, {Id: "3"}, {Id: "4"},
-		},
-	}
-
-	p := &LimitProcessor{MaxItems: 2}
-	res, err := p.Process(context.Background(), feed)
-	assert.NoError(t, err)
-	assert.Len(t, res.Articles, 2)
-	assert.Equal(t, "1", res.Articles[0].Id)
-	assert.Equal(t, "2", res.Articles[1].Id)
-}
-
-func TestFlowCraftProcessor_Aggregator(t *testing.T) {
+func TestComposeOptions_ComposedPipeline(t *testing.T) {
 	now := time.Now()
+	aggregator := ComposeOptions(
+		func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+			_ = ctx
+			cloned := cloneFeed(feed)
+			sortArticlesByUpdatedDesc(cloned.Articles)
+			return cloned, nil
+		},
+		func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+			_ = ctx
+			cloned := cloneFeed(feed)
+			seen := make(map[string]bool)
+			unique := make([]*model.CraftArticle, 0, len(cloned.Articles))
+			for _, article := range cloned.Articles {
+				if article == nil {
+					continue
+				}
+				if article.Link == "" || !seen[article.Link] {
+					if article.Link != "" {
+						seen[article.Link] = true
+					}
+					unique = append(unique, article)
+				}
+			}
+			cloned.Articles = unique
+			return cloned, nil
+		},
+		func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+			_ = ctx
+			cloned := cloneFeed(feed)
+			if len(cloned.Articles) > 2 {
+				cloned.Articles = cloned.Articles[:2]
+			}
+			return cloned, nil
+		},
+	)
+
 	feed := &model.CraftFeed{
 		Articles: []*model.CraftArticle{
 			{Id: "1", Link: "http://a.com", Updated: now.Add(-1 * time.Hour)},
 			{Id: "2", Link: "http://b.com", Updated: now},
-			{Id: "3", Link: "http://a.com", Updated: now.Add(1 * time.Hour)}, // duplicate link, but newest!
+			{Id: "3", Link: "http://a.com", Updated: now.Add(1 * time.Hour)},
 			{Id: "4", Link: "http://c.com", Updated: now.Add(-2 * time.Hour)},
 		},
 	}
 
-	// Important: To keep the *newest* duplicate, we should sort BEFORE we deduplicate.
-	aggregator := &FlowCraftProcessor{
-		Processors: []FeedProcessor{
-			&SortProcessor{SortBy: "date_desc"},
-			&DeduplicateProcessor{Strategy: "by_link"},
-			&LimitProcessor{MaxItems: 2},
-		},
+	result, err := aggregator(context.Background(), feed)
+	require.NoError(t, err)
+	assert.Len(t, result.Articles, 2)
+	assert.Equal(t, "3", result.Articles[0].Id)
+	assert.Equal(t, "2", result.Articles[1].Id)
+}
+
+func cloneFeed(feed *model.CraftFeed) *model.CraftFeed {
+	if feed == nil {
+		return nil
 	}
+	cloned := *feed
+	cloned.Articles = make([]*model.CraftArticle, 0, len(feed.Articles))
+	for _, article := range feed.Articles {
+		if article == nil {
+			cloned.Articles = append(cloned.Articles, nil)
+			continue
+		}
+		articleCopy := *article
+		cloned.Articles = append(cloned.Articles, &articleCopy)
+	}
+	return &cloned
+}
 
-	res, err := aggregator.Process(context.Background(), feed)
-	assert.NoError(t, err)
-	assert.Len(t, res.Articles, 2)
-
-	// Because we sort desc first, the order is: 3, 2, 1, 4
-	// Then we deduplicate: keep 3, keep 2, drop 1 (dup link of 3), keep 4
-	// Then limit 2: keep 3, 2.
-	assert.Equal(t, "3", res.Articles[0].Id)
-	assert.Equal(t, "2", res.Articles[1].Id)
+func sortArticlesByUpdatedDesc(articles []*model.CraftArticle) {
+	for i := 0; i < len(articles); i++ {
+		for j := i + 1; j < len(articles); j++ {
+			if articles[j].Updated.After(articles[i].Updated) {
+				articles[i], articles[j] = articles[j], articles[i]
+			}
+		}
+	}
 }

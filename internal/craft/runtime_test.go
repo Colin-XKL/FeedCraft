@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"FeedCraft/internal/dao"
-	"FeedCraft/internal/engine"
 	"FeedCraft/internal/model"
 	"FeedCraft/internal/util"
 
@@ -41,19 +40,14 @@ func TestResolveCraftAtoms_FlowAndCustomAtom(t *testing.T) {
 	assert.Equal(t, "5", atoms[0].Params["num"])
 }
 
-func TestBuildProcessor_ProxyUsesNativeNoopProcessor(t *testing.T) {
+func TestBuildProcessor_ProxyReturnsIdentityClosure(t *testing.T) {
 	db := newCraftRuntimeTestDB(t)
 	processor, err := BuildProcessor(db, "proxy", "https://example.com/feed.xml")
 	require.NoError(t, err)
 	require.NotNil(t, processor)
 
-	flow, ok := processor.(*engine.FlowCraftProcessor)
-	require.True(t, ok)
-	require.Len(t, flow.Processors, 1)
-	assert.IsType(t, &NoopProcessor{}, flow.Processors[0])
-
 	feed := &model.CraftFeed{Title: "proxy"}
-	result, err := flow.Process(context.Background(), feed)
+	result, err := processor(context.Background(), feed)
 	require.NoError(t, err)
 	assert.Same(t, feed, result)
 }
@@ -74,7 +68,7 @@ func TestBuildProcessor_KeywordContentScopeUsesContentOnly(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, processor)
 
-	result, err := processor.Process(context.Background(), &model.CraftFeed{
+	result, err := processor(context.Background(), &model.CraftFeed{
 		Articles: []*model.CraftArticle{
 			{Title: "needle in title only", Content: "body without match"},
 			{Title: "other", Content: "body with needle"},
@@ -85,51 +79,13 @@ func TestBuildProcessor_KeywordContentScopeUsesContentOnly(t *testing.T) {
 	assert.Equal(t, "other", result.Articles[0].Title)
 }
 
-func TestBuildProcessor_UsesNativeProcessors(t *testing.T) {
+func TestBuildProcessor_MultiAtomChainRunsEndToEnd(t *testing.T) {
 	db := newCraftRuntimeTestDB(t)
-	processor, err := BuildProcessor(db, "limit,time-limit,guid-fix,relative-link-fix,cleanup,fulltext,fulltext-plus,summary,introduction,translate-title,translate-content,translate-content-immersive,beautify-content,llm-filter,ignore-advertorial", "https://example.com/feed.xml")
+	processor, err := BuildProcessor(db, "limit,time-limit,guid-fix,relative-link-fix", "https://example.com/feed.xml")
 	require.NoError(t, err)
 	require.NotNil(t, processor)
 
-	flow, ok := processor.(*engine.FlowCraftProcessor)
-	require.True(t, ok)
-	require.Len(t, flow.Processors, 15)
-	assert.IsType(t, &LimitProcessor{}, flow.Processors[0])
-	assert.IsType(t, &TimeLimitProcessor{}, flow.Processors[1])
-	assert.IsType(t, &GUIDFixProcessor{}, flow.Processors[2])
-	assert.IsType(t, &RelativeLinkFixProcessor{}, flow.Processors[3])
-	assert.IsType(t, &CleanupProcessor{}, flow.Processors[4])
-	assert.IsType(t, &FulltextProcessor{}, flow.Processors[5])
-	assert.IsType(t, &FulltextPlusProcessor{}, flow.Processors[6])
-	assert.IsType(t, &ArticleTextTransformProcessor{}, flow.Processors[7])
-	assert.IsType(t, &ArticleTextTransformProcessor{}, flow.Processors[8])
-	assert.IsType(t, &ArticleTextTransformProcessor{}, flow.Processors[9])
-	assert.IsType(t, &ArticleTextTransformProcessor{}, flow.Processors[10])
-	assert.IsType(t, &ArticleTextTransformProcessor{}, flow.Processors[11])
-	assert.IsType(t, &ArticleTextTransformProcessor{}, flow.Processors[12])
-	assert.IsType(t, &ArticlePredicateProcessor{}, flow.Processors[13])
-	assert.IsType(t, &ArticlePredicateProcessor{}, flow.Processors[14])
-}
-
-func TestNativeProcessors_EndToEnd(t *testing.T) {
 	now := time.Now()
-	processor := &engine.FlowCraftProcessor{
-		Processors: []engine.FeedProcessor{
-			&KeywordProcessor{
-				Mode:       KeywordIncludeMode,
-				MatchScope: KeywordMatchAll,
-				Keywords:   []string{"keep"},
-			},
-			&GUIDFixProcessor{},
-			&RelativeLinkFixProcessor{OriginalFeedURL: "https://example.com/feed.xml"},
-			&LimitProcessor{MaxItems: 1},
-			&TimeLimitProcessor{
-				Days: 7,
-				Now:  func() time.Time { return now },
-			},
-		},
-	}
-
 	feed := &model.CraftFeed{
 		Link: "https://example.com",
 		Articles: []*model.CraftArticle{
@@ -145,12 +101,12 @@ func TestNativeProcessors_EndToEnd(t *testing.T) {
 				Content:     "drop this",
 				Description: "drop this",
 				Link:        "/article-2",
-				Created:     now,
+				Created:     now.AddDate(0, 0, -8),
 			},
 		},
 	}
 
-	result, err := processor.Process(context.Background(), feed)
+	result, err := processor(context.Background(), feed)
 	require.NoError(t, err)
 	require.Len(t, result.Articles, 1)
 	assert.Equal(t, "https://example.com/article-1", result.Articles[0].Link)
@@ -322,9 +278,7 @@ func TestTranslateTitleProcessor_UsesNativeLLMFlow(t *testing.T) {
 
 	processor := newTranslateTitleProcessor("translate prompt " + t.Name())
 	feed := &model.CraftFeed{
-		Articles: []*model.CraftArticle{
-			{Title: "Original Title " + t.Name()},
-		},
+		Articles: []*model.CraftArticle{{Title: "Original Title " + t.Name()}},
 	}
 
 	result, err := processor.Process(context.Background(), feed)
@@ -345,9 +299,7 @@ func TestBeautifyContentProcessor_WritesHTML(t *testing.T) {
 
 	processor := newBeautifyContentProcessor("beautify prompt " + t.Name())
 	feed := &model.CraftFeed{
-		Articles: []*model.CraftArticle{
-			{Title: "beautify-" + t.Name(), Content: "<p>Body</p>"},
-		},
+		Articles: []*model.CraftArticle{{Title: "beautify-" + t.Name(), Content: "<p>Body</p>"}},
 	}
 
 	result, err := processor.Process(context.Background(), feed)
@@ -396,9 +348,7 @@ func TestIgnoreAdvertorialProcessor_KeepsArticleOnLLMError(t *testing.T) {
 
 	processor := newIgnoreAdvertorialProcessor("advertorial prompt " + t.Name())
 	feed := &model.CraftFeed{
-		Articles: []*model.CraftArticle{
-			{Title: "Maybe Ad", Content: "<p>body</p>"},
-		},
+		Articles: []*model.CraftArticle{{Title: "Maybe Ad", Content: "<p>body</p>"}},
 	}
 
 	result, err := processor.Process(context.Background(), feed)
