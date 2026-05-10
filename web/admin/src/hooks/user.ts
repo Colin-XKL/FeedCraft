@@ -6,10 +6,10 @@ import { useUserStore } from '@/store';
 export default function useUser() {
   const router = useRouter();
   const userStore = useUserStore();
-  const logout = async (logoutTo?: string) => {
+  const logout = async (logoutTo?: string, msg?: string) => {
     await userStore.logout();
     const currentRoute = router.currentRoute.value;
-    Message.success('登出成功');
+    Message.success(msg || '登出成功');
     router.push({
       name: logoutTo && typeof logoutTo === 'string' ? logoutTo : 'login',
       query: {

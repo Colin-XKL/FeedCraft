@@ -81,6 +81,21 @@
       </li>
 
       <li>
+        <a-tooltip :content="$t('messageBox.logout')">
+          <a-button
+            class="nav-btn"
+            type="outline"
+            :shape="'circle'"
+            @click="handleLogout"
+          >
+            <template #icon>
+              <icon-export />
+            </template>
+          </a-button>
+        </a-tooltip>
+      </li>
+
+      <li>
         <a-dropdown trigger="click">
           <a-avatar
             :size="32"
@@ -139,6 +154,15 @@
   import useUser from '@/hooks/user';
   import Menu from '@/components/menu/index.vue';
   import logo from '@/assets/logo.png';
+  // const setPopoverVisible = () => {
+  //   const event = new MouseEvent('click', {
+  //     view: window,
+  //     bubbles: true,
+  //     cancelable: true,
+  //   });
+  //   refBtn.value.dispatchEvent(event);
+  // };
+  import { useI18n } from 'vue-i18n';
   // import user from '@/store/modules/user';
 
   const appStore = useAppStore();
@@ -176,16 +200,11 @@
   // };
   // const refBtn = ref();
   const triggerBtn = ref();
-  // const setPopoverVisible = () => {
-  //   const event = new MouseEvent('click', {
-  //     view: window,
-  //     bubbles: true,
-  //     cancelable: true,
-  //   });
-  //   refBtn.value.dispatchEvent(event);
-  // };
+
+  const { t } = useI18n();
+
   const handleLogout = () => {
-    logout();
+    logout(undefined, t('messageBox.logoutSuccess'));
   };
   const setDropDownVisible = () => {
     const event = new MouseEvent('click', {

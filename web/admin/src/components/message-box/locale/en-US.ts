@@ -10,4 +10,5 @@ export default {
   'messageBox.userCenter': 'User Center',
   'messageBox.userSettings': 'User Settings',
   'messageBox.logout': 'Logout',
+  'messageBox.logoutSuccess': 'Logout Successful',
 };
