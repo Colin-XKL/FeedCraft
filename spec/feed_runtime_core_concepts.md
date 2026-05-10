@@ -88,35 +88,31 @@ type FeedProvider interface {
 
 判断一个对象是否属于 `FeedProvider`，关键看它是否“负责产出 feed”，而不是它是否做了抓取。
 
-### 2.3 FeedProcessor
+### 2.3 加工中间件 (CraftOption / FeedProcessor)
 
-`FeedProcessor` 表示一个“接收 `CraftFeed` 并返回新 `CraftFeed` 的处理节点”。
+在数据加工流水线层面，我们采用轻量的 Functional Options (闭包) 模式作为核心架构（V3 架构）。
+它表示一个“接收 `CraftFeed` 并返回新 `CraftFeed` 的处理函数”。
 
-接口定义位于：
+核心签名定义位于：
 
-- `internal/engine/interfaces.go`
+- `internal/craft/option.go` (预期位置)
 
 ```go
-type FeedProcessor interface {
-    Process(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error)
-}
+type CraftOption func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error)
 ```
 
-典型的 `FeedProcessor`：
+典型的 `CraftOption`：
 
 - AtomCraft 对应的处理器
-  - `proxy`
-  - `limit`
-  - `cleanup`
-  - `fulltext`
-  - `summary`
-- FlowCraft 对应的处理链
-- Topic 聚合中的聚合器
-  - 去重
-  - 排序
-  - 限量
+  - `WithLimit`
+  - `WithProxy`
+  - `WithSummary`
+  - `WithTranslate`
+- Topic 聚合中的处理器
+  - `WithDedupe` (去重)
+  - `WithSort` (排序)
 
-判断一个对象是否属于 `FeedProcessor`，关键看它是否“处理 feed”，而不是它是否依赖 LLM 或网络。
+判断一个逻辑是否属于加工中间件，关键看它是否单纯“处理并返回 feed”，不需要复杂的结构体状态绑定。这种闭包设计让整个流水线（Pipeline）可以像中间件一样嵌套执行，极致轻量且天然防并发污染。
 
 ### 2.4 CraftFeed
 
@@ -428,4 +424,4 @@ RSS XML、HTTP 响应、Admin 预览等都属于输出边界。
 
 FeedCraft 当前的统一运行时，可以概括为一句话：
 
-> 用 `InputSpec` 描述输入，用 `FeedProvider` 产出 feed，用 `FeedProcessor` 处理 feed，用 `CraftFeed` 贯穿整个执行链路。
+> 用 `InputSpec` 描述输入，用 `FeedProvider` 产出 feed，用 `CraftOption` (闭包) 处理 feed，用 `CraftFeed` 贯穿整个图谱执行链路。
