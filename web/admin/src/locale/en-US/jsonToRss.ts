@@ -88,7 +88,7 @@ export default {
   'jsonToRss.placeholder.recipeId': 'my-json-feed',
   'jsonToRss.placeholder.internalDesc': 'Notes for yourself about this recipe',
   'jsonToRss.placeholder.url': 'https://api.example.com/v1/posts',
-  'jsonToRss.placeholder.body': "{ 'foo': 'bar' }",
+  'jsonToRss.placeholder.body': '{"foo": "bar"}',
   'jsonToRss.placeholder.curl': 'curl -X POST ...',
   'jsonToRss.placeholder.items': '.items',
   'jsonToRss.placeholder.title': '.title',
