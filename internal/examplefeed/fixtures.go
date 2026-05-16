@@ -57,12 +57,12 @@ const mediaPictureFixture = `
 <article>
   <h1>Picture and source fixture</h1>
   <picture>
-    <source media="(min-width: 900px)" srcset="/example-rss-feeds/assets/picture-wide.svg">
-    <source media="(min-width: 480px)" srcset="/example-rss-feeds/assets/picture-medium.svg">
-    <img src="/example-rss-feeds/assets/picture-fallback.svg" width="640" height="320" alt="FeedCraft picture fallback fixture">
+    <source media="(min-width: 900px)" srcset="{{BASE_URL}}/example-rss-feeds/assets/picture-wide.svg">
+    <source media="(min-width: 480px)" srcset="{{BASE_URL}}/example-rss-feeds/assets/picture-medium.svg">
+    <img src="{{BASE_URL}}/example-rss-feeds/assets/picture-fallback.svg" width="640" height="320" alt="FeedCraft picture fallback fixture">
   </picture>
   <figure>
-    <img src="/example-rss-feeds/assets/picture-fallback.svg" srcset="/example-rss-feeds/assets/picture-medium.svg 480w, /example-rss-feeds/assets/picture-wide.svg 900w" sizes="(min-width: 900px) 900px, 100vw" alt="FeedCraft srcset fixture">
+    <img src="{{BASE_URL}}/example-rss-feeds/assets/picture-fallback.svg" srcset="{{BASE_URL}}/example-rss-feeds/assets/picture-medium.svg 480w, {{BASE_URL}}/example-rss-feeds/assets/picture-wide.svg 900w" sizes="(min-width: 900px) 900px, 100vw" alt="FeedCraft srcset fixture">
     <figcaption>Picture, source, img fallback, srcset, sizes, width, height, alt, and caption support.</figcaption>
   </figure>
   <p>Window UUID: <code>{{WINDOW_UUID}}</code></p>

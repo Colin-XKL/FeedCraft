@@ -35,7 +35,7 @@ func RSSHandler(c *gin.Context) {
 		return
 	}
 
-	feed, err := Build(slug, time.Now())
+	feed, err := Build(slug, time.Now(), requestBaseURL(c))
 	if err != nil {
 		if errors.Is(err, ErrUnknownFeed) {
 			c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "Example RSS feed not found"})
@@ -65,4 +65,25 @@ func AssetHandler(c *gin.Context) {
 
 func svgFixture(width string, height string, color string, label string) string {
 	return fmt.Sprintf(`<svg xmlns="http://www.w3.org/2000/svg" width="%s" height="%s" viewBox="0 0 %s %s" role="img" aria-label="%s"><rect width="100%%" height="100%%" fill="%s"/><circle cx="80" cy="80" r="48" fill="rgba(255,255,255,.35)"/><text x="50%%" y="50%%" dominant-baseline="middle" text-anchor="middle" font-family="Arial, sans-serif" font-size="28" fill="white">FeedCraft %s</text></svg>`, width, height, width, height, label, color, label)
+}
+
+func requestBaseURL(c *gin.Context) string {
+	if configured := strings.TrimSpace(util.GetEnvClient().GetString("SITE_BASE_URL")); configured != "" {
+		return normalizeBaseURL(configured)
+	}
+
+	scheme := strings.TrimSpace(c.GetHeader("X-Forwarded-Proto"))
+	if scheme == "" {
+		if c.Request.TLS != nil {
+			scheme = "https"
+		} else {
+			scheme = "http"
+		}
+	}
+
+	host := strings.TrimSpace(c.GetHeader("X-Forwarded-Host"))
+	if host == "" {
+		host = c.Request.Host
+	}
+	return normalizeBaseURL(scheme + "://" + host)
 }

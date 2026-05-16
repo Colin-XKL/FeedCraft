@@ -87,25 +87,27 @@ func Catalog() []FeedMeta {
 	return items
 }
 
-func Build(slug string, now time.Time) (*model.CraftFeed, error) {
+func Build(slug string, now time.Time, baseURL string) (*model.CraftFeed, error) {
 	def, ok := findDefinition(slug)
 	if !ok {
 		return nil, ErrUnknownFeed
 	}
 
+	baseURL = normalizeBaseURL(baseURL)
+	feedURL := absoluteURL(baseURL, def.Path)
 	windowStart := now.UTC().Truncate(uuidWindow)
 	rotatingID := WindowUUID(slug, now)
 	articles := make([]*model.CraftArticle, 0, len(def.sections))
 	for idx, section := range def.sections {
-		articleID := fmt.Sprintf("%s:%s:%s", def.Slug, section.key, rotatingID)
+		articleLink := fmt.Sprintf("%s#%s", feedURL, section.key)
 		articles = append(articles, &model.CraftArticle{
 			Title:       section.title,
-			Link:        fmt.Sprintf("%s/%s.xml#%s", RoutePrefix, def.Slug, section.key),
+			Link:        articleLink,
 			Description: section.description,
-			Id:          articleID,
+			Id:          fmt.Sprintf("%s-%s", articleLink, rotatingID),
 			Created:     windowStart,
 			Updated:     windowStart,
-			Content:     injectWindowID(section.html, rotatingID),
+			Content:     injectPlaceholders(section.html, rotatingID, baseURL),
 			AuthorName:  "FeedCraft",
 		})
 		if idx == 0 && len(def.sections) == 1 {
@@ -115,11 +117,11 @@ func Build(slug string, now time.Time) (*model.CraftFeed, error) {
 
 	return &model.CraftFeed{
 		Title:       def.Title,
-		Link:        def.Path,
+		Link:        feedURL,
 		Description: def.Description,
 		Updated:     windowStart,
 		Created:     windowStart,
-		Id:          def.Path,
+		Id:          feedURL,
 		AuthorName:  "FeedCraft",
 		Articles:    articles,
 	}, nil
@@ -140,6 +142,18 @@ func findDefinition(slug string) (feedDefinition, bool) {
 	return feedDefinition{}, false
 }
 
-func injectWindowID(html string, id string) string {
-	return strings.ReplaceAll(html, "{{WINDOW_UUID}}", id)
+func injectPlaceholders(html string, id string, baseURL string) string {
+	html = strings.ReplaceAll(html, "{{WINDOW_UUID}}", id)
+	return strings.ReplaceAll(html, "{{BASE_URL}}", baseURL)
+}
+
+func absoluteURL(baseURL string, path string) string {
+	if baseURL == "" {
+		return path
+	}
+	return baseURL + path
+}
+
+func normalizeBaseURL(baseURL string) string {
+	return strings.TrimRight(strings.TrimSpace(baseURL), "/")
 }
