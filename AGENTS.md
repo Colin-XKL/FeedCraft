@@ -161,11 +161,11 @@ The system includes numerous built-in craft templates in `internal/craft/entry.g
 
 ### Services
 
-| Service | Port | How to start |
-|---------|------|--------------|
-| Redis | 6379 | `sudo redis-server --daemonize yes` |
-| Go Backend | 8080 | `LISTEN_ADDR=:8080 FC_DB_SQLITE_PATH=./db FC_REDIS_URI=redis://localhost:6379/ ENV=dev go run ./cmd/main.go` |
-| Vue Frontend | 5173 | `cd web/admin && pnpm run dev` |
+| Service      | Port | How to start                                                                                                 |
+| ------------ | ---- | ------------------------------------------------------------------------------------------------------------ |
+| Redis        | 6379 | `sudo redis-server --daemonize yes`                                                                          |
+| Go Backend   | 8080 | `LISTEN_ADDR=:8080 FC_DB_SQLITE_PATH=./db FC_REDIS_URI=redis://localhost:6379/ ENV=dev go run ./cmd/main.go` |
+| Vue Frontend | 5173 | `cd web/admin && pnpm run dev`                                                                               |
 
 ### Key caveats
 
