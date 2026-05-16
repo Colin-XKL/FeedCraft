@@ -121,7 +121,10 @@ func TestBuildProcessor_AIFilterUsesLegacyOptionAdapter(t *testing.T) {
 	flow, ok := processor.(*engine.FlowCraftProcessor)
 	require.True(t, ok)
 	require.Len(t, flow.Processors, 1)
-	assert.IsType(t, &LegacyOptionAdapter{}, flow.Processors[0])
+	legacyFlow, ok := flow.Processors[0].(*engine.FlowCraftProcessor)
+	require.True(t, ok)
+	require.Len(t, legacyFlow.Processors, 1)
+	assert.IsType(t, &LegacyOptionAdapter{}, legacyFlow.Processors[0])
 }
 
 func TestNativeProcessors_EndToEnd(t *testing.T) {
