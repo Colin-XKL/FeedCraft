@@ -2,6 +2,9 @@
 
 FeedCraft is a Go-based RSS feed processing middleware that allows users to transform RSS feeds using various processing "crafts". The application supports AI-powered feed manipulation, including translation, fulltext extraction, summarization, and content filtering.
 
+For development environment setup, dependency installation, local startup, and manual testing notes, see `DEVELOPMENT.md` in the repository root.
+When working on environment-related issues, consult `DEVELOPMENT.md` before changing scripts, dependencies, or runtime configuration.
+
 ## Architecture
 
 ### Core Components
