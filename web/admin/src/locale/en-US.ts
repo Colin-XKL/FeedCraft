@@ -10,6 +10,7 @@ import localeTopic from '@/locale/en-US/topic';
 import localeAllCraftList from '@/locale/en-US/allCraftList';
 import localeFeedCompare from '@/locale/en-US/feedCompare';
 import localeFeedViewer from '@/locale/en-US/feedViewer';
+import localeExampleRssFeeds from '@/locale/en-US/exampleRssFeeds';
 import localeLlmDebug from '@/locale/en-US/llmDebug';
 import localeUrlGenerator from '@/locale/en-US/urlGenerator';
 import localeHtmlToRss from '@/locale/en-US/htmlToRss';
@@ -31,6 +32,7 @@ export default {
   ...localeAllCraftList,
   ...localeFeedCompare,
   ...localeFeedViewer,
+  ...localeExampleRssFeeds,
   ...localeLlmDebug,
   ...localeUrlGenerator,
   ...localeHtmlToRss,

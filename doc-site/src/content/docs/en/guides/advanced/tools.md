@@ -18,6 +18,24 @@ The **RSS Viewer** (Feed Viewer) allows you to preview any RSS feed as FeedCraft
 - **Purpose**: Verify if FeedCraft can successfully fetch and parse a feed before setting up a recipe.
 - **Note**: The viewer uses the `proxy` craft by default, which simply fetches the feed without modification.
 
+## Example RSS Feeds
+
+The **Example RSS Feeds** page provides built-in subscriptions for testing how RSS readers render HTML, CSS, and media content, plus whether they support RSS 1.0, Atom, and JSON Feed documents.
+
+- **Usage**:
+  1. Navigate to **Tools > Example RSS Feeds**.
+  2. Copy one of the subscription URLs, such as `/example-rss-feeds/html-elements.xml`.
+  3. Subscribe to it in your RSS reader.
+- **Available feeds**:
+  - `html-elements.xml`: headings, lists, tables, blockquotes, code blocks, details/summary, figures, and other common HTML5 elements.
+  - `html-styling.xml`: inline color, background, border, spacing, typography, flex, and grid styles.
+  - `media-picture.xml`: `picture`, `source`, `srcset`, `sizes`, fallback images, alt text, and captions.
+  - `all-in-one.xml`: combines the HTML, styling, and media fixtures into one feed.
+  - `rss-1-0.rdf`: a simple RSS 1.0/RDF document.
+  - `atom.xml`: a simple Atom document.
+  - `json-feed.json`: a simple JSON Feed 1.1 document.
+- **Refresh behavior**: The subscription URL stays stable, while item GUIDs rotate every 4 hours so readers can fetch a fresh copy.
+
 ## Feed Compare
 
 The **Feed Compare** tool lets you visualize the effect of a Craft (Atom or Flow) on a feed.

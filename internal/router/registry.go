@@ -4,6 +4,7 @@ import (
 	"FeedCraft/internal/admin"
 	"FeedCraft/internal/controller"
 	"FeedCraft/internal/craft"
+	"FeedCraft/internal/examplefeed"
 	"FeedCraft/internal/middleware"
 	"FeedCraft/internal/recipe"
 	"FeedCraft/internal/util"
@@ -76,6 +77,7 @@ func RegisterRouters(router *gin.Engine) {
 		topicRoutes.GET("/:id", controller.PublicTopicFeed)
 	}
 	router.GET("/system/notifications/rss", controller.SystemNotificationsRSS)
+	examplefeed.RegisterRoutes(router)
 
 	// admin api
 	adminApi := router.Group("/api/admin")

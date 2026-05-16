@@ -30,6 +30,7 @@ export default {
   // tools menus
   'menu.feedCompare': 'Feed Compare',
   'menu.feedViewer': 'RSS Viewer',
+  'menu.exampleRssFeeds': 'Example RSS Feeds',
   'menu.rssGenerator': 'HTML to RSS',
   'menu.jsonToRss': 'JSON to RSS',
   'menu.searchToRss': 'Search to RSS',

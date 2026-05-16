@@ -22,6 +22,15 @@ const TOOLS: AppRouteRecordRaw = {
       },
     },
     {
+      path: 'example_rss_feeds',
+      name: 'ExampleRssFeeds',
+      component: () => import('@/views/dashboard/example_rss_feeds/index.vue'),
+      meta: {
+        locale: 'menu.exampleRssFeeds',
+        requiresAuth: false,
+      },
+    },
+    {
       path: 'feed_compare',
       name: 'FeedCompare',
       component: () =>
