@@ -37,8 +37,8 @@ const (
 
 var aiFilterCraftParamTmpl = []ParamTemplate{
 	{
-		Key:         "filter-content",
-		Description: "Describe which articles should be kept. Example: 只保留科技有关的文章",
+		Key:         "rule",
+		Description: "Rule for deciding which articles should be kept. Example: 只保留科技有关的文章",
 		Default:     "",
 	},
 	{
@@ -49,21 +49,21 @@ var aiFilterCraftParamTmpl = []ParamTemplate{
 }
 
 func aiFilterCraftLoadParam(m map[string]string) []CraftOption {
-	return GetAIFilterCraftOptions(m["filter-content"], m["extra-payload"])
+	return GetAIFilterCraftOptions(m["rule"], m["extra-payload"])
 }
 
-func GetAIFilterCraftOptions(filterContent string, extraPayloadRaw string) []CraftOption {
+func GetAIFilterCraftOptions(rule string, extraPayloadRaw string) []CraftOption {
 	return []CraftOption{
-		OptionAIFilter(filterContent, extraPayloadRaw),
+		OptionAIFilter(rule, extraPayloadRaw),
 	}
 }
 
-func OptionAIFilter(filterContent string, extraPayloadRaw string) CraftOption {
-	filterContent = strings.TrimSpace(filterContent)
+func OptionAIFilter(rule string, extraPayloadRaw string) CraftOption {
+	rule = strings.TrimSpace(rule)
 	payloadTypes := parseAIFilterExtraPayload(extraPayloadRaw)
 	return func(feed *feeds.Feed, payload ExtraPayload) error {
-		if filterContent == "" {
-			return fmt.Errorf("ai-filter requires filter-content param")
+		if rule == "" {
+			return fmt.Errorf("ai-filter requires rule param")
 		}
 		items := feed.Items
 		if len(items) == 0 {
@@ -71,7 +71,7 @@ func OptionAIFilter(filterContent string, extraPayloadRaw string) CraftOption {
 		}
 
 		drops := parallel.Map(items, func(item *feeds.Item, _ int) bool {
-			decision, err := evaluateAIFilterItem(item, filterContent, payloadTypes)
+			decision, err := evaluateAIFilterItem(item, rule, payloadTypes)
 			if err != nil {
 				logrus.Warnf("failed to evaluate ai-filter for article [%s], err: %v", item.Title, err)
 				return false
@@ -86,7 +86,7 @@ func OptionAIFilter(filterContent string, extraPayloadRaw string) CraftOption {
 	}
 }
 
-func evaluateAIFilterItem(item *feeds.Item, filterContent string, payloadTypes []aiFilterExtraPayloadType) (aiFilterDecision, error) {
+func evaluateAIFilterItem(item *feeds.Item, rule string, payloadTypes []aiFilterExtraPayloadType) (aiFilterDecision, error) {
 	summary := ""
 	if lo.Contains(payloadTypes, aiFilterExtraPayloadArticleSummary) {
 		generated, err := generateAIFilterArticleSummary(item)
@@ -101,7 +101,7 @@ func evaluateAIFilterItem(item *feeds.Item, filterContent string, payloadTypes [
 		return aiFilterDecision{}, err
 	}
 
-	result, err := llmContextCaller(buildAIFilterPrompt(filterContent), context, util.ContentProcessOption{
+	result, err := llmContextCaller(buildAIFilterPrompt(rule), context, util.ContentProcessOption{
 		RemoveImage: true,
 		ConvertToMd: true,
 	})
@@ -141,10 +141,10 @@ func parseAIFilterExtraPayload(raw string) []aiFilterExtraPayloadType {
 	return payloadTypes
 }
 
-func buildAIFilterPrompt(filterContent string) string {
+func buildAIFilterPrompt(rule string) string {
 	return fmt.Sprintf(`You are an RSS article filtering assistant.
 
-Filtering rule from user:
+Rule from user:
 %s
 
 Decide whether the article should be kept in the RSS feed or dropped from the RSS feed.
@@ -157,7 +157,7 @@ Output requirements:
 
 Examples:
 {"reason":"The article is about semiconductor technology and matches the rule.","result":"keep"}
-{"reason":"The article is unrelated to the requested topic.","result":"drop"}`, filterContent)
+{"reason":"The article is unrelated to the requested topic.","result":"drop"}`, rule)
 }
 
 func buildAIFilterArticlePayload(item *feeds.Item, payloadTypes []aiFilterExtraPayloadType, articleSummary string) (string, error) {

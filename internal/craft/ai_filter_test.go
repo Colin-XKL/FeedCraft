@@ -109,6 +109,34 @@ func TestOptionAIFilterKeepsArticleOnInvalidLLMResponse(t *testing.T) {
 	assert.Equal(t, "Keep on malformed response", feed.Items[0].Title)
 }
 
+func TestAIFilterCraftLoadParamUsesRuleParam(t *testing.T) {
+	setupTestRedis(t)
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		assert.Contains(t, prompt, "只保留科技有关的文章")
+		return `{"reason":"not a tech article","result":"drop"}`, nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	options := aiFilterCraftLoadParam(map[string]string{
+		"rule":          "只保留科技有关的文章",
+		"extra-payload": "article_content",
+	})
+	require.Len(t, options, 1)
+
+	feed := &feeds.Feed{
+		Items: []*feeds.Item{
+			{Title: "Sports", Content: "<p>football news</p>"},
+		},
+	}
+
+	err := options[0](feed, ExtraPayload{})
+
+	require.NoError(t, err)
+	require.Empty(t, feed.Items)
+}
+
 func TestBuildAIFilterArticlePayloadIncludesRawRSSItemAsJSON(t *testing.T) {
 	item := &feeds.Item{
 		Title:       "Raw item title",
