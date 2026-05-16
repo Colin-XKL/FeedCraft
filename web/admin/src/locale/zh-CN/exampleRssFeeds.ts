@@ -1,0 +1,12 @@
+export default {
+  'exampleRssFeeds.description':
+    '订阅这些 RSS 示例，用来检查阅读器对 HTML、CSS 和媒体内容的渲染支持情况。',
+  'exampleRssFeeds.windowNote':
+    '每个订阅地址保持固定，条目的 GUID 每 4 小时轮换一次，方便 RSS 阅读器拉取新的示例内容。',
+  'exampleRssFeeds.copy': '复制地址',
+  'exampleRssFeeds.open': '打开 RSS',
+  'exampleRssFeeds.preview': '预览',
+  'exampleRssFeeds.copied': '已复制到剪贴板。',
+  'exampleRssFeeds.loadError': '加载 RSS 示例订阅失败。',
+  'exampleRssFeeds.copyError': '复制地址失败。',
+};

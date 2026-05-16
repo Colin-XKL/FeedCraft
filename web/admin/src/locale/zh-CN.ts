@@ -10,6 +10,7 @@ import localeTopic from '@/locale/zh-CN/topic';
 import localeAllCraftList from '@/locale/zh-CN/allCraftList';
 import localeFeedCompare from '@/locale/zh-CN/feedCompare';
 import localeFeedViewer from '@/locale/zh-CN/feedViewer';
+import localeExampleRssFeeds from '@/locale/zh-CN/exampleRssFeeds';
 import localeLlmDebug from '@/locale/zh-CN/llmDebug';
 import localeUrlGenerator from '@/locale/zh-CN/urlGenerator';
 import localeHtmlToRss from '@/locale/zh-CN/htmlToRss';
@@ -31,6 +32,7 @@ export default {
   ...localeAllCraftList,
   ...localeFeedCompare,
   ...localeFeedViewer,
+  ...localeExampleRssFeeds,
   ...localeLlmDebug,
   ...localeUrlGenerator,
   ...localeHtmlToRss,
