@@ -388,6 +388,8 @@ func TestLLMFilterProcessor_RemovesMatchedArticleAndUsesTitleContentPayload(t *t
 }
 
 func TestIgnoreAdvertorialProcessor_KeepsArticleOnLLMError(t *testing.T) {
+	setupTestRedis(t)
+
 	original := llmContextCaller
 	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
 		return "", fmt.Errorf("temporary llm error")
