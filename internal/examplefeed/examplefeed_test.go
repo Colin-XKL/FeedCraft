@@ -168,6 +168,11 @@ func TestRegisterRoutesServesFormatExamples(t *testing.T) {
 		assert.Contains(t, body, `<title>FeedCraft Example RSS Feeds - RSS 0.92</title>`)
 		assert.Contains(t, body, `https://feedcraft.example/example-rss-feeds/rss-0-92.xml#format-support-`)
 		assert.Contains(t, body, `Format support sample`)
+		assert.Contains(t, body, `<h1>Format support sample</h1>`)
+		assert.NotContains(t, body, `&lt;article&gt;`)
+		parsed, err := gofeed.NewParser().ParseString(body)
+		require.NoError(t, err)
+		assert.Equal(t, "FeedCraft Example RSS Feeds - RSS 0.92", parsed.Title)
 	})
 
 	t.Run("atom", func(t *testing.T) {

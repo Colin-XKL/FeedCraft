@@ -36,7 +36,7 @@ The **Example RSS Feeds** page provides built-in subscriptions for testing how R
   - `rss-0-92.xml`: a simple legacy RSS 0.92 document.
   - `atom.xml`: a simple Atom document.
   - `json-feed.json`: a simple JSON Feed 1.1 document.
-- **Refresh behavior**: The subscription URL stays stable, while item GUIDs rotate every 4 hours so readers can fetch a fresh copy.
+- **Refresh behavior**: The subscription URL stays stable. Item GUIDs rotate every 4 hours so readers can fetch a fresh copy; RSS 0.92 rotates the item link instead because it has no GUID field.
 
 ## Feed Compare
 

@@ -145,7 +145,7 @@ func renderRSS092(feed *feeds.Feed) string {
       <description><![CDATA[%s]]></description>
     </item>
   </channel>
-</rss>`, escapeXML(feed.Title), escapeXML(link), escapeXML(feed.Description), escapeXML(itemTitle), escapeXML(itemLink), escapeXML(itemDescription))
+</rss>`, escapeXML(feed.Title), escapeXML(link), escapeXML(feed.Description), escapeXML(itemTitle), escapeXML(itemLink), itemDescription)
 }
 
 func renderRSS1(feed *feeds.Feed) string {
