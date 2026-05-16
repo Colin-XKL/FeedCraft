@@ -211,7 +211,10 @@
 
   const fetchTemplates = async () => {
     const response = await listCraftTemplates();
-    templateOptions.value = response.data.map((template) => ({
+    const sortedTemplates = [...response.data].sort((a, b) =>
+      a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+    );
+    templateOptions.value = sortedTemplates.map((template) => ({
       label: template.name,
       value: template.name,
     }));
