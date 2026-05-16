@@ -24,8 +24,7 @@ const TOOLS: AppRouteRecordRaw = {
     {
       path: 'example_rss_feeds',
       name: 'ExampleRssFeeds',
-      component: () =>
-        import('@/views/dashboard/example_rss_feeds/index.vue'),
+      component: () => import('@/views/dashboard/example_rss_feeds/index.vue'),
       meta: {
         locale: 'menu.exampleRssFeeds',
         requiresAuth: false,
