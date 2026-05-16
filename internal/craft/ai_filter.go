@@ -166,16 +166,16 @@ func buildAIFilterArticlePayload(item *feeds.Item, payloadTypes []aiFilterExtraP
 	}
 
 	var builder strings.Builder
-	builder.WriteString(fmt.Sprintf("Article Title:\n```text\n%s\n```", strings.TrimSpace(item.Title)))
+	fmt.Fprintf(&builder, "Article Title:\n```text\n%s\n```", strings.TrimSpace(item.Title))
 
 	for _, payloadType := range payloadTypes {
 		switch payloadType {
 		case aiFilterExtraPayloadArticleSummary:
 			if strings.TrimSpace(articleSummary) != "" {
-				builder.WriteString(fmt.Sprintf("\n\nArticle Summary:\n```markdown\n%s\n```", strings.TrimSpace(articleSummary)))
+				fmt.Fprintf(&builder, "\n\nArticle Summary:\n```markdown\n%s\n```", strings.TrimSpace(articleSummary))
 			}
 		case aiFilterExtraPayloadArticleContent:
-			builder.WriteString(fmt.Sprintf("\n\nArticle Content:\n```markdown\n%s\n```", strings.TrimSpace(getPrimaryFeedItemContent(item))))
+			fmt.Fprintf(&builder, "\n\nArticle Content:\n```markdown\n%s\n```", strings.TrimSpace(getPrimaryFeedItemContent(item)))
 		case aiFilterExtraPayloadArticleDate:
 			builder.WriteString("\n\nArticle Date:\n```text\n")
 			if !item.Created.IsZero() {
