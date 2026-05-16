@@ -95,6 +95,8 @@ func renderFeed(def feedDefinition, feed *feeds.Feed) (string, string, error) {
 	switch def.outputFormat {
 	case outputRSS1:
 		return renderRSS1(feed), "application/rdf+xml; charset=utf-8", nil
+	case outputRSS092:
+		return renderRSS092(feed), "application/rss+xml; charset=utf-8", nil
 	case outputAtom:
 		body, err := feed.ToAtom()
 		return body, "application/atom+xml; charset=utf-8", err
@@ -107,7 +109,7 @@ func renderFeed(def feedDefinition, feed *feeds.Feed) (string, string, error) {
 	}
 }
 
-func renderRSS1(feed *feeds.Feed) string {
+func renderRSS092(feed *feeds.Feed) string {
 	link := ""
 	if feed.Link != nil {
 		link = feed.Link.Href
@@ -115,10 +117,53 @@ func renderRSS1(feed *feeds.Feed) string {
 	itemTitle := "Format support sample"
 	itemLink := link + "#format-support"
 	itemDescription := "Format support sample"
+	if len(feed.Items) > 0 && feed.Items[0] != nil {
+		item := feed.Items[0]
+		itemTitle = item.Title
+		if item.Id != "" {
+			itemLink = item.Id
+		} else if item.Link != nil && item.Link.Href != "" {
+			itemLink = item.Link.Href
+		}
+		if item.Description != "" {
+			itemDescription = item.Description
+		}
+		if item.Content != "" {
+			itemDescription = item.Content
+		}
+	}
+
+	return fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
+<rss version="0.92">
+  <channel>
+    <title>%s</title>
+    <link>%s</link>
+    <description>%s</description>
+    <item>
+      <title>%s</title>
+      <link>%s</link>
+      <description><![CDATA[%s]]></description>
+    </item>
+  </channel>
+</rss>`, escapeXML(feed.Title), escapeXML(link), escapeXML(feed.Description), escapeXML(itemTitle), escapeXML(itemLink), itemDescription)
+}
+
+func renderRSS1(feed *feeds.Feed) string {
+	link := ""
+	if feed.Link != nil {
+		link = feed.Link.Href
+	}
+	itemTitle := "Format support sample"
+	itemLink := link + "#format-support"
+	itemResource := itemLink
+	itemDescription := "Format support sample"
 	itemContent := formatFixture
 	if len(feed.Items) > 0 && feed.Items[0] != nil {
 		item := feed.Items[0]
 		itemTitle = item.Title
+		if item.Id != "" {
+			itemResource = item.Id
+		}
 		if item.Link != nil && item.Link.Href != "" {
 			itemLink = item.Link.Href
 		}
@@ -148,7 +193,7 @@ func renderRSS1(feed *feeds.Feed) string {
     <description>%s</description>
     <content:encoded><![CDATA[%s]]></content:encoded>
   </item>
-</rdf:RDF>`, escapeXML(link), escapeXML(feed.Title), escapeXML(link), escapeXML(feed.Description), escapeXML(itemLink), escapeXML(itemLink), escapeXML(itemTitle), escapeXML(itemLink), escapeXML(itemDescription), itemContent)
+</rdf:RDF>`, escapeXML(link), escapeXML(feed.Title), escapeXML(link), escapeXML(feed.Description), escapeXML(itemResource), escapeXML(itemResource), escapeXML(itemTitle), escapeXML(itemLink), escapeXML(itemDescription), itemContent)
 }
 
 func escapeXML(value string) string {

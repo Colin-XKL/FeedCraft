@@ -71,7 +71,7 @@ const mediaPictureFixture = `
 const formatFixture = `
 <article>
   <h1>Format support sample</h1>
-  <p>This item is intentionally simple. Subscribe to the sibling RSS 1.0, Atom, and JSON Feed URLs to check which syndication formats your reader accepts.</p>
+  <p>This item is intentionally simple. Subscribe to the sibling RSS 0.92, RSS 1.0, RSS 2.0, Atom, and JSON Feed URLs to check which syndication formats your reader accepts.</p>
   <p>Window UUID: <code>{{WINDOW_UUID}}</code></p>
 </article>`
 
