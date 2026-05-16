@@ -173,6 +173,25 @@ func TestNativeProcessors_EndToEnd(t *testing.T) {
 	assert.NotEmpty(t, result.Articles[0].Id)
 }
 
+func TestLimitProcessor_SortsByCreatedTimeBeforeTruncating(t *testing.T) {
+	now := time.Now()
+	feed := &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Id: "oldest", Created: now.Add(-3 * time.Hour)},
+			{Id: "newest", Created: now},
+			{Id: "middle", Created: now.Add(-1 * time.Hour)},
+		},
+	}
+
+	processor := &LimitProcessor{MaxItems: 2}
+	result, err := processor.Process(context.Background(), feed)
+
+	require.NoError(t, err)
+	require.Len(t, result.Articles, 2)
+	assert.Equal(t, "newest", result.Articles[0].Id)
+	assert.Equal(t, "middle", result.Articles[1].Id)
+}
+
 func TestCleanupProcessor_UsesDescriptionFallback(t *testing.T) {
 	setupTestRedis(t)
 

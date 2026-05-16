@@ -3,6 +3,7 @@ package craft
 import (
 	"context"
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -54,12 +55,27 @@ type LimitProcessor struct {
 }
 
 func (p *LimitProcessor) Process(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
-	if feed == nil || p == nil || p.MaxItems <= 0 || len(feed.Articles) <= p.MaxItems {
+	if feed == nil || p == nil || p.MaxItems <= 0 || len(feed.Articles) == 0 {
 		return feed, nil
 	}
 	cloned := cloneCraftFeed(feed)
-	cloned.Articles = cloned.Articles[:p.MaxItems]
+	sort.SliceStable(cloned.Articles, func(i, j int) bool {
+		return craftArticleTime(cloned.Articles[i]).After(craftArticleTime(cloned.Articles[j]))
+	})
+	if len(cloned.Articles) > p.MaxItems {
+		cloned.Articles = cloned.Articles[:p.MaxItems]
+	}
 	return cloned, nil
+}
+
+func craftArticleTime(article *model.CraftArticle) time.Time {
+	if article == nil {
+		return time.Time{}
+	}
+	if !article.Created.IsZero() {
+		return article.Created
+	}
+	return article.Updated
 }
 
 type TimeLimitProcessor struct {
