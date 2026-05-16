@@ -28,10 +28,22 @@ func feedItemTime(item *feeds.Item) time.Time {
 	if item == nil {
 		return time.Time{}
 	}
-	if !item.Created.IsZero() {
-		return item.Created
+	return earlierNonZeroTime(item.Created, item.Updated)
+}
+
+func earlierNonZeroTime(a, b time.Time) time.Time {
+	if a.IsZero() {
+		return b
 	}
-	return item.Updated
+	if b.IsZero() {
+		return a
+	}
+	// Model conversion may fill missing feed timestamps with time.Now(); the older
+	// non-zero timestamp is usually the real published/updated time from the RSS item.
+	if b.Before(a) {
+		return b
+	}
+	return a
 }
 
 func GetLimitCraftOption(num int) []CraftOption {

@@ -176,6 +176,25 @@ func TestLimitProcessor_SortsByCreatedTimeBeforeTruncating(t *testing.T) {
 	assert.Equal(t, "middle", result.Articles[1].Id)
 }
 
+func TestLimitProcessor_UsesUpdatedTimeWhenCreatedTimeMatches(t *testing.T) {
+	now := time.Now()
+	feed := &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Id: "older-update", Created: now, Updated: now.Add(-3 * time.Hour)},
+			{Id: "newer-update", Created: now, Updated: now.Add(-1 * time.Hour)},
+			{Id: "oldest-update", Created: now, Updated: now.Add(-6 * time.Hour)},
+		},
+	}
+
+	processor := &LimitProcessor{MaxItems: 2}
+	result, err := processor.Process(context.Background(), feed)
+
+	require.NoError(t, err)
+	require.Len(t, result.Articles, 2)
+	assert.Equal(t, "newer-update", result.Articles[0].Id)
+	assert.Equal(t, "older-update", result.Articles[1].Id)
+}
+
 func TestCleanupProcessor_UsesDescriptionFallback(t *testing.T) {
 	setupTestRedis(t)
 

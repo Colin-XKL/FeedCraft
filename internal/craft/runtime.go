@@ -72,10 +72,7 @@ func craftArticleTime(article *model.CraftArticle) time.Time {
 	if article == nil {
 		return time.Time{}
 	}
-	if !article.Created.IsZero() {
-		return article.Created
-	}
-	return article.Updated
+	return earlierNonZeroTime(article.Created, article.Updated)
 }
 
 type TimeLimitProcessor struct {
