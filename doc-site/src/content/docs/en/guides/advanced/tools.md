@@ -20,7 +20,7 @@ The **RSS Viewer** (Feed Viewer) allows you to preview any RSS feed as FeedCraft
 
 ## Example RSS Feeds
 
-The **Example RSS Feeds** page provides built-in subscriptions for testing how RSS readers render HTML, CSS, and media content.
+The **Example RSS Feeds** page provides built-in subscriptions for testing how RSS readers render HTML, CSS, and media content, plus whether they support RSS 1.0, Atom, and JSON Feed documents.
 
 - **Usage**:
   1. Navigate to **Tools > Example RSS Feeds**.
@@ -31,6 +31,9 @@ The **Example RSS Feeds** page provides built-in subscriptions for testing how R
   - `html-styling.xml`: inline color, background, border, spacing, typography, flex, and grid styles.
   - `media-picture.xml`: `picture`, `source`, `srcset`, `sizes`, fallback images, alt text, and captions.
   - `all-in-one.xml`: combines the HTML, styling, and media fixtures into one feed.
+  - `rss-1-0.rdf`: a simple RSS 1.0/RDF document.
+  - `atom.xml`: a simple Atom document.
+  - `json-feed.json`: a simple JSON Feed 1.1 document.
 - **Refresh behavior**: The subscription URL stays stable, while item GUIDs rotate every 4 hours so readers can fetch a fresh copy.
 
 ## Feed Compare

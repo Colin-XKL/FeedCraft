@@ -1,6 +1,8 @@
 package examplefeed
 
 import (
+	"bytes"
+	"encoding/xml"
 	"errors"
 	"fmt"
 	"net/http"
@@ -10,6 +12,7 @@ import (
 	"FeedCraft/internal/util"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/feeds"
 )
 
 var svgAssets = map[string]string{
@@ -29,13 +32,13 @@ func CatalogHandler(c *gin.Context) {
 }
 
 func RSSHandler(c *gin.Context) {
-	slug, ok := strings.CutSuffix(c.Param("slug"), ".xml")
+	def, ok := findDefinitionByPathName(c.Param("slug"))
 	if !ok {
 		c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "Example RSS feed not found"})
 		return
 	}
 
-	feed, err := Build(slug, time.Now(), requestBaseURL(c))
+	feed, err := Build(def.Slug, time.Now(), requestBaseURL(c))
 	if err != nil {
 		if errors.Is(err, ErrUnknownFeed) {
 			c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "Example RSS feed not found"})
@@ -45,12 +48,12 @@ func RSSHandler(c *gin.Context) {
 		return
 	}
 
-	rss, err := feed.ToFeedsFeed().ToRss()
+	body, contentType, err := renderFeed(def, feed.ToFeedsFeed())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: "Failed to render RSS: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: "Failed to render example feed: " + err.Error()})
 		return
 	}
-	c.Data(http.StatusOK, "application/rss+xml; charset=utf-8", []byte(rss))
+	c.Data(http.StatusOK, contentType, []byte(body))
 }
 
 func AssetHandler(c *gin.Context) {
@@ -86,4 +89,72 @@ func requestBaseURL(c *gin.Context) string {
 		host = c.Request.Host
 	}
 	return normalizeBaseURL(scheme + "://" + host)
+}
+
+func renderFeed(def feedDefinition, feed *feeds.Feed) (string, string, error) {
+	switch def.outputFormat {
+	case outputRSS1:
+		return renderRSS1(feed), "application/rdf+xml; charset=utf-8", nil
+	case outputAtom:
+		body, err := feed.ToAtom()
+		return body, "application/atom+xml; charset=utf-8", err
+	case outputJSONFeed:
+		body, err := feed.ToJSON()
+		return body, "application/feed+json; charset=utf-8", err
+	default:
+		body, err := feed.ToRss()
+		return body, "application/rss+xml; charset=utf-8", err
+	}
+}
+
+func renderRSS1(feed *feeds.Feed) string {
+	link := ""
+	if feed.Link != nil {
+		link = feed.Link.Href
+	}
+	itemTitle := "Format support sample"
+	itemLink := link + "#format-support"
+	itemDescription := "Format support sample"
+	itemContent := formatFixture
+	if len(feed.Items) > 0 && feed.Items[0] != nil {
+		item := feed.Items[0]
+		itemTitle = item.Title
+		if item.Link != nil && item.Link.Href != "" {
+			itemLink = item.Link.Href
+		}
+		if item.Description != "" {
+			itemDescription = item.Description
+		}
+		if item.Content != "" {
+			itemContent = item.Content
+		}
+	}
+
+	return fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns="http://purl.org/rss/1.0/" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel rdf:about="%s">
+    <title>%s</title>
+    <link>%s</link>
+    <description>%s</description>
+    <items>
+      <rdf:Seq>
+        <rdf:li rdf:resource="%s"/>
+      </rdf:Seq>
+    </items>
+  </channel>
+  <item rdf:about="%s">
+    <title>%s</title>
+    <link>%s</link>
+    <description>%s</description>
+    <content:encoded><![CDATA[%s]]></content:encoded>
+  </item>
+</rdf:RDF>`, escapeXML(link), escapeXML(feed.Title), escapeXML(link), escapeXML(feed.Description), escapeXML(itemLink), escapeXML(itemLink), escapeXML(itemTitle), escapeXML(itemLink), escapeXML(itemDescription), itemContent)
+}
+
+func escapeXML(value string) string {
+	var buf bytes.Buffer
+	if err := xml.EscapeText(&buf, []byte(value)); err != nil {
+		return value
+	}
+	return buf.String()
 }

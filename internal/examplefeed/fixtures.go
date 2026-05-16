@@ -68,6 +68,13 @@ const mediaPictureFixture = `
   <p>Window UUID: <code>{{WINDOW_UUID}}</code></p>
 </article>`
 
+const formatFixture = `
+<article>
+  <h1>Format support sample</h1>
+  <p>This item is intentionally simple. Subscribe to the sibling RSS 1.0, Atom, and JSON Feed URLs to check which syndication formats your reader accepts.</p>
+  <p>Window UUID: <code>{{WINDOW_UUID}}</code></p>
+</article>`
+
 var (
 	htmlElementsSection = contentSection{
 		key:         "html-elements",
@@ -86,5 +93,11 @@ var (
 		title:       "Picture source fixture",
 		description: "Picture, source, srcset, sizes, and fallback image support.",
 		html:        mediaPictureFixture,
+	}
+	formatSection = contentSection{
+		key:         "format-support",
+		title:       "Format support sample",
+		description: "Simple content for checking feed format support.",
+		html:        formatFixture,
 	}
 )

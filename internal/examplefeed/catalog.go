@@ -30,8 +30,18 @@ type FeedMeta struct {
 
 type feedDefinition struct {
 	FeedMeta
-	sections []contentSection
+	sections     []contentSection
+	outputFormat outputFormat
 }
+
+type outputFormat string
+
+const (
+	outputRSS2     outputFormat = "rss2"
+	outputRSS1     outputFormat = "rss1"
+	outputAtom     outputFormat = "atom"
+	outputJSONFeed outputFormat = "json-feed"
+)
 
 type contentSection struct {
 	key         string
@@ -48,7 +58,8 @@ var feedDefinitions = []feedDefinition{
 			Description: "Exercises common HTML5 elements in RSS item content.",
 			Path:        RoutePrefix + "/html-elements.xml",
 		},
-		sections: []contentSection{htmlElementsSection},
+		sections:     []contentSection{htmlElementsSection},
+		outputFormat: outputRSS2,
 	},
 	{
 		FeedMeta: FeedMeta{
@@ -57,7 +68,8 @@ var feedDefinitions = []feedDefinition{
 			Description: "Exercises common inline CSS styles in RSS item content.",
 			Path:        RoutePrefix + "/html-styling.xml",
 		},
-		sections: []contentSection{htmlStylingSection},
+		sections:     []contentSection{htmlStylingSection},
+		outputFormat: outputRSS2,
 	},
 	{
 		FeedMeta: FeedMeta{
@@ -66,7 +78,8 @@ var feedDefinitions = []feedDefinition{
 			Description: "Exercises picture, source, srcset, image fallback, and captions.",
 			Path:        RoutePrefix + "/media-picture.xml",
 		},
-		sections: []contentSection{mediaPictureSection},
+		sections:     []contentSection{mediaPictureSection},
+		outputFormat: outputRSS2,
 	},
 	{
 		FeedMeta: FeedMeta{
@@ -75,7 +88,38 @@ var feedDefinitions = []feedDefinition{
 			Description: "Combines HTML elements, inline styling, and media tests into one feed.",
 			Path:        RoutePrefix + "/all-in-one.xml",
 		},
-		sections: []contentSection{htmlElementsSection, htmlStylingSection, mediaPictureSection},
+		sections:     []contentSection{htmlElementsSection, htmlStylingSection, mediaPictureSection},
+		outputFormat: outputRSS2,
+	},
+	{
+		FeedMeta: FeedMeta{
+			Slug:        "rss-1-0",
+			Title:       "FeedCraft Example RSS Feeds - RSS 1.0",
+			Description: "A simple RSS 1.0/RDF feed for checking format support.",
+			Path:        RoutePrefix + "/rss-1-0.rdf",
+		},
+		sections:     []contentSection{formatSection},
+		outputFormat: outputRSS1,
+	},
+	{
+		FeedMeta: FeedMeta{
+			Slug:        "atom",
+			Title:       "FeedCraft Example RSS Feeds - Atom",
+			Description: "A simple Atom feed for checking format support.",
+			Path:        RoutePrefix + "/atom.xml",
+		},
+		sections:     []contentSection{formatSection},
+		outputFormat: outputAtom,
+	},
+	{
+		FeedMeta: FeedMeta{
+			Slug:        "json-feed",
+			Title:       "FeedCraft Example RSS Feeds - JSON Feed",
+			Description: "A simple JSON Feed 1.1 document for checking format support.",
+			Path:        RoutePrefix + "/json-feed.json",
+		},
+		sections:     []contentSection{formatSection},
+		outputFormat: outputJSONFeed,
 	},
 }
 
@@ -136,6 +180,15 @@ func WindowUUID(slug string, now time.Time) string {
 func findDefinition(slug string) (feedDefinition, bool) {
 	for _, def := range feedDefinitions {
 		if def.Slug == slug {
+			return def, true
+		}
+	}
+	return feedDefinition{}, false
+}
+
+func findDefinitionByPathName(pathName string) (feedDefinition, bool) {
+	for _, def := range feedDefinitions {
+		if def.Path == RoutePrefix+"/"+pathName {
 			return def, true
 		}
 	}

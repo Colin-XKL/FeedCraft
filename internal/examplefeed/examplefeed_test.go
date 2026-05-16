@@ -1,6 +1,7 @@
 package examplefeed
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -15,12 +16,18 @@ import (
 func TestCatalogListsExampleFeeds(t *testing.T) {
 	items := Catalog()
 
-	require.Len(t, items, 4)
+	require.Len(t, items, 7)
 	assert.Equal(t, "html-elements", items[0].Slug)
 	assert.Equal(t, "/example-rss-feeds/html-elements.xml", items[0].Path)
 	assert.Equal(t, "html-styling", items[1].Slug)
 	assert.Equal(t, "media-picture", items[2].Slug)
 	assert.Equal(t, "all-in-one", items[3].Slug)
+	assert.Equal(t, "rss-1-0", items[4].Slug)
+	assert.Equal(t, "/example-rss-feeds/rss-1-0.rdf", items[4].Path)
+	assert.Equal(t, "atom", items[5].Slug)
+	assert.Equal(t, "/example-rss-feeds/atom.xml", items[5].Path)
+	assert.Equal(t, "json-feed", items[6].Slug)
+	assert.Equal(t, "/example-rss-feeds/json-feed.json", items[6].Path)
 }
 
 func TestWindowUUIDIsStableWithinFourHours(t *testing.T) {
@@ -113,4 +120,64 @@ func TestRegisterRoutesServesRSSAndCatalog(t *testing.T) {
 
 		assert.Equal(t, http.StatusNotFound, recorder.Code)
 	})
+}
+
+func TestRegisterRoutesServesFormatExamples(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	router := gin.New()
+	RegisterRoutes(router)
+
+	t.Run("rss 1.0 rdf", func(t *testing.T) {
+		recorder := requestExampleFeed(router, "/example-rss-feeds/rss-1-0.rdf")
+
+		require.Equal(t, http.StatusOK, recorder.Code)
+		assert.Equal(t, "application/rdf+xml; charset=utf-8", recorder.Header().Get("Content-Type"))
+		body := recorder.Body.String()
+		assert.Contains(t, body, `<rdf:RDF`)
+		assert.Contains(t, body, `xmlns="http://purl.org/rss/1.0/"`)
+		assert.Contains(t, body, `<title>FeedCraft Example RSS Feeds - RSS 1.0</title>`)
+		assert.Contains(t, body, `Format support sample`)
+	})
+
+	t.Run("atom", func(t *testing.T) {
+		recorder := requestExampleFeed(router, "/example-rss-feeds/atom.xml")
+
+		require.Equal(t, http.StatusOK, recorder.Code)
+		assert.Equal(t, "application/atom+xml; charset=utf-8", recorder.Header().Get("Content-Type"))
+		parsed, err := gofeed.NewParser().ParseString(recorder.Body.String())
+		require.NoError(t, err)
+		assert.Equal(t, "FeedCraft Example RSS Feeds - Atom", parsed.Title)
+		require.Len(t, parsed.Items, 1)
+		assert.Contains(t, parsed.Items[0].Content, "Format support sample")
+	})
+
+	t.Run("json feed", func(t *testing.T) {
+		recorder := requestExampleFeed(router, "/example-rss-feeds/json-feed.json")
+
+		require.Equal(t, http.StatusOK, recorder.Code)
+		assert.Equal(t, "application/feed+json; charset=utf-8", recorder.Header().Get("Content-Type"))
+		var payload struct {
+			Version string `json:"version"`
+			Title   string `json:"title"`
+			Items   []struct {
+				ID          string `json:"id"`
+				Title       string `json:"title"`
+				ContentHTML string `json:"content_html"`
+			} `json:"items"`
+		}
+		require.NoError(t, json.Unmarshal(recorder.Body.Bytes(), &payload))
+		assert.Equal(t, "https://jsonfeed.org/version/1.1", payload.Version)
+		assert.Equal(t, "FeedCraft Example RSS Feeds - JSON Feed", payload.Title)
+		require.Len(t, payload.Items, 1)
+		assert.Contains(t, payload.Items[0].ContentHTML, "Format support sample")
+	})
+}
+
+func requestExampleFeed(router *gin.Engine, path string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(http.MethodGet, path, nil)
+	req.Host = "feedcraft.example"
+	req.Header.Set("X-Forwarded-Proto", "https")
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, req)
+	return recorder
 }
