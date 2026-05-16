@@ -179,10 +179,10 @@ func buildAIFilterArticlePayload(item *feeds.Item, payloadTypes []aiFilterExtraP
 		case aiFilterExtraPayloadArticleDate:
 			builder.WriteString("\n\nArticle Date:\n```text\n")
 			if !item.Created.IsZero() {
-				builder.WriteString(fmt.Sprintf("Created: %s\n", item.Created.Format("2006-01-02T15:04:05Z07:00")))
+				fmt.Fprintf(&builder, "Created: %s\n", item.Created.Format("2006-01-02T15:04:05Z07:00"))
 			}
 			if !item.Updated.IsZero() {
-				builder.WriteString(fmt.Sprintf("Updated: %s\n", item.Updated.Format("2006-01-02T15:04:05Z07:00")))
+				fmt.Fprintf(&builder, "Updated: %s\n", item.Updated.Format("2006-01-02T15:04:05Z07:00"))
 			}
 			builder.WriteString("```")
 		case aiFilterExtraPayloadRawRSSItem:
@@ -190,7 +190,7 @@ func buildAIFilterArticlePayload(item *feeds.Item, payloadTypes []aiFilterExtraP
 			if err != nil {
 				return "", err
 			}
-			builder.WriteString(fmt.Sprintf("\n\nRaw RSS Item JSON:\n```json\n%s\n```", rawJSON))
+			fmt.Fprintf(&builder, "\n\nRaw RSS Item JSON:\n```json\n%s\n```", rawJSON)
 		}
 	}
 
