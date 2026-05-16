@@ -156,3 +156,22 @@ The system includes numerous built-in craft templates in `internal/craft/entry.g
 - Pinia for state management
 - Axios for API calls
 - Vite for build tooling
+
+## Cursor Cloud specific instructions
+
+### Services
+
+| Service | Port | How to start |
+|---------|------|--------------|
+| Redis | 6379 | `sudo redis-server --daemonize yes` |
+| Go Backend | 8080 | `LISTEN_ADDR=:8080 FC_DB_SQLITE_PATH=./db FC_REDIS_URI=redis://localhost:6379/ ENV=dev go run ./cmd/main.go` |
+| Vue Frontend | 5173 | `cd web/admin && pnpm run dev` |
+
+### Key caveats
+
+- **Redis is required at runtime**: The app calls `log.Fatalf` if it can't connect to Redis, so Redis must be running before starting the backend. Tests in `internal/craft` also need `FC_REDIS_URI` exported to avoid a fatal exit (other packages use the embedded `miniredis` mock).
+- **Environment variables are NOT auto-loaded from `.env`**: The Taskfile has `dotenv` support, but `go run ./cmd/main.go` does not load `.env`. You must either export the env vars manually or use `task backend-dev` (which loads dotenv via Taskfile).
+- **SQLite DB path must exist**: `FC_DB_SQLITE_PATH` points to a directory (not a file). Create `./db/` before first run if it doesn't exist: `mkdir -p db`.
+- **Default admin credentials**: username `admin`, password `adminadmin`. The login API expects the password as an MD5 hash in the `md5_password` JSON field.
+- **golangci-lint pre-existing warnings**: There are 3 staticcheck warnings in `internal/controller/feed_viewer.go` (capitalized error strings). These are pre-existing and not caused by your changes.
+- **pnpm build scripts**: After `pnpm install`, you may see warnings about ignored build scripts (esbuild, vue-demi, vue-echarts). Despite the warning, Vite dev server and production builds work correctly without running those scripts in this environment.
