@@ -114,11 +114,15 @@ func renderRSS1(feed *feeds.Feed) string {
 	}
 	itemTitle := "Format support sample"
 	itemLink := link + "#format-support"
+	itemResource := itemLink
 	itemDescription := "Format support sample"
 	itemContent := formatFixture
 	if len(feed.Items) > 0 && feed.Items[0] != nil {
 		item := feed.Items[0]
 		itemTitle = item.Title
+		if item.Id != "" {
+			itemResource = item.Id
+		}
 		if item.Link != nil && item.Link.Href != "" {
 			itemLink = item.Link.Href
 		}
@@ -148,7 +152,7 @@ func renderRSS1(feed *feeds.Feed) string {
     <description>%s</description>
     <content:encoded><![CDATA[%s]]></content:encoded>
   </item>
-</rdf:RDF>`, escapeXML(link), escapeXML(feed.Title), escapeXML(link), escapeXML(feed.Description), escapeXML(itemLink), escapeXML(itemLink), escapeXML(itemTitle), escapeXML(itemLink), escapeXML(itemDescription), itemContent)
+</rdf:RDF>`, escapeXML(link), escapeXML(feed.Title), escapeXML(link), escapeXML(feed.Description), escapeXML(itemResource), escapeXML(itemResource), escapeXML(itemTitle), escapeXML(itemLink), escapeXML(itemDescription), itemContent)
 }
 
 func escapeXML(value string) string {

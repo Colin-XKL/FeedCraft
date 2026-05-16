@@ -136,6 +136,7 @@ func TestRegisterRoutesServesFormatExamples(t *testing.T) {
 		assert.Contains(t, body, `<rdf:RDF`)
 		assert.Contains(t, body, `xmlns="http://purl.org/rss/1.0/"`)
 		assert.Contains(t, body, `<title>FeedCraft Example RSS Feeds - RSS 1.0</title>`)
+		assert.Contains(t, body, `rdf:about="https://feedcraft.example/example-rss-feeds/rss-1-0.rdf#format-support-`)
 		assert.Contains(t, body, `Format support sample`)
 	})
 
