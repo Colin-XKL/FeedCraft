@@ -30,9 +30,6 @@
                 <a-button @click="openFeed(feed.path)">
                   {{ t('exampleRssFeeds.open') }}
                 </a-button>
-                <a-button type="primary" @click="previewFeed(feed.path)">
-                  {{ t('exampleRssFeeds.preview') }}
-                </a-button>
               </a-space>
             </template>
           </a-list-item>
@@ -45,7 +42,6 @@
 <script lang="ts" setup>
   import { onMounted, ref } from 'vue';
   import { useI18n } from 'vue-i18n';
-  import { useRouter } from 'vue-router';
   import { Message } from '@arco-design/web-vue';
   import XHeader from '@/components/header/x-header.vue';
   import buildPublicFeedUrl from '@/utils/publicFeedUrl';
@@ -55,7 +51,6 @@
   } from '@/api/example_rss_feeds';
 
   const { t } = useI18n();
-  const router = useRouter();
   const loading = ref(false);
   const feeds = ref<ExampleRssFeed[]>([]);
 
@@ -86,15 +81,6 @@
 
   function openFeed(path: string) {
     window.open(buildFeedUrl(path), '_blank', 'noopener,noreferrer');
-  }
-
-  function previewFeed(path: string) {
-    router.push({
-      name: 'FeedViewer',
-      query: {
-        url: buildFeedUrl(path),
-      },
-    });
   }
 
   onMounted(loadFeeds);
