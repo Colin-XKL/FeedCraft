@@ -16,18 +16,22 @@ import (
 func TestCatalogListsExampleFeeds(t *testing.T) {
 	items := Catalog()
 
-	require.Len(t, items, 7)
+	require.Len(t, items, 9)
 	assert.Equal(t, "html-elements", items[0].Slug)
 	assert.Equal(t, "/example-rss-feeds/html-elements.xml", items[0].Path)
 	assert.Equal(t, "html-styling", items[1].Slug)
 	assert.Equal(t, "media-picture", items[2].Slug)
 	assert.Equal(t, "all-in-one", items[3].Slug)
-	assert.Equal(t, "rss-1-0", items[4].Slug)
-	assert.Equal(t, "/example-rss-feeds/rss-1-0.rdf", items[4].Path)
-	assert.Equal(t, "atom", items[5].Slug)
-	assert.Equal(t, "/example-rss-feeds/atom.xml", items[5].Path)
-	assert.Equal(t, "json-feed", items[6].Slug)
-	assert.Equal(t, "/example-rss-feeds/json-feed.json", items[6].Path)
+	assert.Equal(t, "rss-2-0", items[4].Slug)
+	assert.Equal(t, "/example-rss-feeds/rss-2-0.xml", items[4].Path)
+	assert.Equal(t, "rss-1-0", items[5].Slug)
+	assert.Equal(t, "/example-rss-feeds/rss-1-0.rdf", items[5].Path)
+	assert.Equal(t, "rss-0-92", items[6].Slug)
+	assert.Equal(t, "/example-rss-feeds/rss-0-92.xml", items[6].Path)
+	assert.Equal(t, "atom", items[7].Slug)
+	assert.Equal(t, "/example-rss-feeds/atom.xml", items[7].Path)
+	assert.Equal(t, "json-feed", items[8].Slug)
+	assert.Equal(t, "/example-rss-feeds/json-feed.json", items[8].Path)
 }
 
 func TestWindowUUIDIsStableWithinFourHours(t *testing.T) {
@@ -127,6 +131,20 @@ func TestRegisterRoutesServesFormatExamples(t *testing.T) {
 	router := gin.New()
 	RegisterRoutes(router)
 
+	t.Run("rss 2.0", func(t *testing.T) {
+		recorder := requestExampleFeed(router, "/example-rss-feeds/rss-2-0.xml")
+
+		require.Equal(t, http.StatusOK, recorder.Code)
+		assert.Equal(t, "application/rss+xml; charset=utf-8", recorder.Header().Get("Content-Type"))
+		body := recorder.Body.String()
+		assert.Contains(t, body, `<rss version="2.0"`)
+		assert.Contains(t, body, `<title>FeedCraft Example RSS Feeds - RSS 2.0</title>`)
+		assert.Contains(t, body, `Format support sample`)
+		parsed, err := gofeed.NewParser().ParseString(body)
+		require.NoError(t, err)
+		assert.Equal(t, "FeedCraft Example RSS Feeds - RSS 2.0", parsed.Title)
+	})
+
 	t.Run("rss 1.0 rdf", func(t *testing.T) {
 		recorder := requestExampleFeed(router, "/example-rss-feeds/rss-1-0.rdf")
 
@@ -136,7 +154,25 @@ func TestRegisterRoutesServesFormatExamples(t *testing.T) {
 		assert.Contains(t, body, `<rdf:RDF`)
 		assert.Contains(t, body, `xmlns="http://purl.org/rss/1.0/"`)
 		assert.Contains(t, body, `<title>FeedCraft Example RSS Feeds - RSS 1.0</title>`)
+		assert.Contains(t, body, `rdf:about="https://feedcraft.example/example-rss-feeds/rss-1-0.rdf#format-support-`)
 		assert.Contains(t, body, `Format support sample`)
+	})
+
+	t.Run("rss 0.92", func(t *testing.T) {
+		recorder := requestExampleFeed(router, "/example-rss-feeds/rss-0-92.xml")
+
+		require.Equal(t, http.StatusOK, recorder.Code)
+		assert.Equal(t, "application/rss+xml; charset=utf-8", recorder.Header().Get("Content-Type"))
+		body := recorder.Body.String()
+		assert.Contains(t, body, `<rss version="0.92">`)
+		assert.Contains(t, body, `<title>FeedCraft Example RSS Feeds - RSS 0.92</title>`)
+		assert.Contains(t, body, `https://feedcraft.example/example-rss-feeds/rss-0-92.xml#format-support-`)
+		assert.Contains(t, body, `Format support sample`)
+		assert.Contains(t, body, `<h1>Format support sample</h1>`)
+		assert.NotContains(t, body, `&lt;article&gt;`)
+		parsed, err := gofeed.NewParser().ParseString(body)
+		require.NoError(t, err)
+		assert.Equal(t, "FeedCraft Example RSS Feeds - RSS 0.92", parsed.Title)
 	})
 
 	t.Run("atom", func(t *testing.T) {

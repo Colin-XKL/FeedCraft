@@ -1,10 +1,10 @@
 export default {
   'exampleRssFeeds.description':
-    'Subscribe to example feeds for checking how readers render HTML/CSS/media and whether they support RSS 1.0, Atom, and JSON Feed.',
+    'Subscribe to example feeds for checking how readers render HTML/CSS/media and whether they support RSS 0.92, RSS 1.0, RSS 2.0, Atom, and JSON Feed.',
   'exampleRssFeeds.windowNote':
-    'Each feed keeps a stable URL. Item GUIDs rotate every 4 hours so RSS readers can fetch fresh examples.',
+    'Each feed keeps a stable URL. Item GUIDs rotate every 4 hours; RSS 0.92 rotates the item link instead because it has no GUID field.',
   'exampleRssFeeds.copy': 'Copy URL',
-  'exampleRssFeeds.open': 'Open RSS',
+  'exampleRssFeeds.open': 'Open Feed',
   'exampleRssFeeds.copied': 'Copied to clipboard.',
   'exampleRssFeeds.loadError': 'Failed to load example RSS feeds.',
   'exampleRssFeeds.copyError': 'Failed to copy URL.',
