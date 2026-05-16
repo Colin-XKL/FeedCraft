@@ -111,7 +111,21 @@
                     />
                   </a-col>
                   <a-col :span="14">
+                    <a-select
+                      v-if="
+                        isAIFilterExtraPayloadParam(
+                          editedCraftAtom.template_name,
+                          param.key
+                        )
+                      "
+                      v-model="param.value"
+                      multiple
+                      allow-clear
+                      :options="aiFilterExtraPayloadOptions"
+                      :placeholder="t('craftAtom.form.value')"
+                    />
                     <a-textarea
+                      v-else
                       v-model="param.value"
                       :placeholder="t('craftAtom.form.value')"
                     />
@@ -164,6 +178,13 @@
   import { listCraftTemplates } from '@/api/craft_flow';
   import { namingValidator } from '@/utils/validator';
   import { useI18n } from 'vue-i18n';
+  import {
+    aiFilterExtraPayloadOptions,
+    CraftParamValue,
+    isAIFilterExtraPayloadParam,
+    serializeCraftParamValue,
+    toCraftParamFormValue,
+  } from './paramOptions';
 
   const { t } = useI18n();
 
@@ -176,7 +197,7 @@
     template_name: '',
     params: {},
   });
-  const formParams = ref<{ key: string; value: string }[]>([]);
+  const formParams = ref<{ key: string; value: CraftParamValue }[]>([]);
   const showEditModal = ref(false);
   const isUpdating = ref(false);
 
@@ -224,7 +245,11 @@
     const params = paramTemplates.value[templateName as string] || [];
     formParams.value = params.map((param) => ({
       key: param.key,
-      value: editedCraftAtom.value.params[param.key] || param.default,
+      value: toCraftParamFormValue(
+        templateName as string,
+        param.key,
+        editedCraftAtom.value.params[param.key] || param.default
+      ),
     }));
   };
 
@@ -236,7 +261,10 @@
   const editBtnHandler = (craftAtom: CraftAtom) => {
     editedCraftAtom.value = { ...craftAtom };
     formParams.value = Object.entries(editedCraftAtom.value.params).map(
-      ([key, value]) => ({ key, value })
+      ([key, value]) => ({
+        key,
+        value: toCraftParamFormValue(craftAtom.template_name, key, value),
+      })
     );
     showEditModal.value = true;
     isUpdating.value = true;
@@ -268,8 +296,9 @@
     // Convert formParams to map
     const paramsMap: Record<string, string> = {};
     formParams.value.forEach((param) => {
-      if (param.key && param.value) {
-        paramsMap[param.key] = param.value;
+      const value = serializeCraftParamValue(param.value);
+      if (param.key && value) {
+        paramsMap[param.key] = value;
       }
     });
     editedCraftAtom.value.params = paramsMap;
