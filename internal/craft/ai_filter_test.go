@@ -3,6 +3,7 @@ package craft
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -44,16 +45,21 @@ func TestOptionAIFilterDropsOnlyDropDecisionAndUsesSummaryPayload(t *testing.T) 
 	original := llmContextCaller
 	var filterContexts []string
 	var summaryContexts []string
+	var seenMu sync.Mutex
 	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
 		if strings.Contains(prompt, "professional summarizer") {
+			seenMu.Lock()
 			summaryContexts = append(summaryContexts, context)
+			seenMu.Unlock()
 			if strings.Contains(context, "drop article original") {
 				return "summary says drop", nil
 			}
 			return "summary says keep", nil
 		}
 
+		seenMu.Lock()
 		filterContexts = append(filterContexts, context)
+		seenMu.Unlock()
 		if strings.Contains(context, "summary says drop") {
 			return `{"reason":"summary matched exclusion","result":"drop"}`, nil
 		}
@@ -75,9 +81,10 @@ func TestOptionAIFilterDropsOnlyDropDecisionAndUsesSummaryPayload(t *testing.T) 
 	assert.Equal(t, "Keep", feed.Items[0].Title)
 	require.Len(t, summaryContexts, 2)
 	require.Len(t, filterContexts, 2)
-	assert.Contains(t, filterContexts[0], "Article Summary:")
-	assert.Contains(t, filterContexts[0], "summary says drop")
-	assert.NotContains(t, filterContexts[0], "drop article original")
+	combinedFilterContexts := strings.Join(filterContexts, "\n---\n")
+	assert.Contains(t, combinedFilterContexts, "Article Summary:")
+	assert.Contains(t, combinedFilterContexts, "summary says drop")
+	assert.NotContains(t, combinedFilterContexts, "drop article original")
 }
 
 func TestOptionAIFilterKeepsArticleOnInvalidLLMResponse(t *testing.T) {
