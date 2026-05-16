@@ -1,6 +1,6 @@
 export default {
   'exampleRssFeeds.description':
-    '订阅这些示例 Feed，用来检查阅读器对 HTML/CSS/媒体内容的渲染支持，以及对 RSS 1.0、Atom、JSON Feed 的格式支持。',
+    '订阅这些示例 Feed，用来检查阅读器对 HTML/CSS/媒体内容的渲染支持，以及对 RSS 0.92、RSS 1.0、RSS 2.0、Atom、JSON Feed 的格式支持。',
   'exampleRssFeeds.windowNote':
     '每个订阅地址保持固定，条目的 GUID 每 4 小时轮换一次，方便 RSS 阅读器拉取新的示例内容。',
   'exampleRssFeeds.copy': '复制地址',
