@@ -111,6 +111,22 @@ func TestBuildProcessor_UsesNativeProcessors(t *testing.T) {
 	assert.IsType(t, &ArticlePredicateProcessor{}, flow.Processors[14])
 }
 
+func TestBuildProcessor_AIFilterUsesLegacyOptionAdapter(t *testing.T) {
+	db := newCraftRuntimeTestDB(t)
+
+	processor, err := BuildProcessor(db, "ai-filter", "https://example.com/feed.xml")
+
+	require.NoError(t, err)
+	require.NotNil(t, processor)
+	flow, ok := processor.(*engine.FlowCraftProcessor)
+	require.True(t, ok)
+	require.Len(t, flow.Processors, 1)
+	legacyFlow, ok := flow.Processors[0].(*engine.FlowCraftProcessor)
+	require.True(t, ok)
+	require.Len(t, legacyFlow.Processors, 1)
+	assert.IsType(t, &LegacyOptionAdapter{}, legacyFlow.Processors[0])
+}
+
 func TestNativeProcessors_EndToEnd(t *testing.T) {
 	now := time.Now()
 	processor := &engine.FlowCraftProcessor{
@@ -407,6 +423,8 @@ func TestLLMFilterProcessor_RemovesMatchedArticleAndUsesTitleContentPayload(t *t
 }
 
 func TestIgnoreAdvertorialProcessor_KeepsArticleOnLLMError(t *testing.T) {
+	setupTestRedis(t)
+
 	original := llmContextCaller
 	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
 		return "", fmt.Errorf("temporary llm error")
