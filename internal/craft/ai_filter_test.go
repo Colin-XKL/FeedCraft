@@ -137,6 +137,33 @@ func TestAIFilterCraftLoadParamUsesRuleParam(t *testing.T) {
 	require.Empty(t, feed.Items)
 }
 
+func TestEvaluateAIFilterItemCachesDecision(t *testing.T) {
+	setupTestRedis(t)
+
+	original := llmContextCaller
+	filterCalls := 0
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		filterCalls += 1
+		return `{"reason":"cached decision","result":"keep"}`, nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	item := &feeds.Item{
+		Title:   "Cache Me",
+		Content: "<p>same article content</p>",
+	}
+	payloadTypes := []aiFilterExtraPayloadType{aiFilterExtraPayloadArticleContent}
+
+	first, err := evaluateAIFilterItem(item, "只保留科技有关的文章", payloadTypes)
+	require.NoError(t, err)
+	second, err := evaluateAIFilterItem(item, "只保留科技有关的文章", payloadTypes)
+	require.NoError(t, err)
+
+	assert.Equal(t, aiFilterResultKeep, first.Result)
+	assert.Equal(t, first, second)
+	assert.Equal(t, 1, filterCalls)
+}
+
 func TestBuildAIFilterArticlePayloadIncludesRawRSSItemAsJSON(t *testing.T) {
 	item := &feeds.Item{
 		Title:       "Raw item title",

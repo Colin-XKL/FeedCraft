@@ -101,14 +101,7 @@ func evaluateAIFilterItem(item *feeds.Item, rule string, payloadTypes []aiFilter
 		return aiFilterDecision{}, err
 	}
 
-	result, err := llmContextCaller(buildAIFilterPrompt(rule), context, util.ContentProcessOption{
-		RemoveImage: true,
-		ConvertToMd: true,
-	})
-	if err != nil {
-		return aiFilterDecision{}, err
-	}
-	return parseAIFilterDecision(result)
+	return cachedAIFilterDecision(item.Title, buildAIFilterPrompt(rule), context)
 }
 
 func parseAIFilterExtraPayload(raw string) []aiFilterExtraPayloadType {
@@ -158,6 +151,39 @@ Output requirements:
 Examples:
 {"reason":"The article is about semiconductor technology and matches the rule.","result":"keep"}
 {"reason":"The article is unrelated to the requested topic.","result":"drop"}`, rule)
+}
+
+func cachedAIFilterDecision(title string, prompt string, context string) (aiFilterDecision, error) {
+	hashVal := util.GetTextContentHash(strings.Join([]string{
+		util.GetTextContentHash(prompt),
+		util.GetTextContentHash(context),
+	}, "|"))
+	cacheKey := getCraftCacheKey("ai-filter", hashVal)
+
+	cached, err := util.CachedFuncWithPreLog(cacheKey, func() (string, error) {
+		result, err := llmContextCaller(prompt, context, util.ContentProcessOption{
+			RemoveImage: true,
+			ConvertToMd: true,
+		})
+		if err != nil {
+			return "", err
+		}
+		decision, err := parseAIFilterDecision(result)
+		if err != nil {
+			return "", err
+		}
+		normalized, err := json.Marshal(decision)
+		if err != nil {
+			return "", err
+		}
+		return string(normalized), nil
+	}, func(isCached bool) {
+		logrus.Infof("applying craft [ai-filter] to article [%s], cached: %v", title, isCached)
+	})
+	if err != nil {
+		return aiFilterDecision{}, err
+	}
+	return parseAIFilterDecision(cached)
 }
 
 func buildAIFilterArticlePayload(item *feeds.Item, payloadTypes []aiFilterExtraPayloadType, articleSummary string) (string, error) {
