@@ -63,7 +63,7 @@ sidebar:
 
 你可以在 `docker-compose.yml` 中使用环境变量配置 FeedCraft。
 
-- **FC_BROWSER_PROVIDER**: 浏览器渲染提供方。支持 `browserless`（Browserless REST `/content`）和 `cloakbrowser-cdp`（CloakBrowser `cloakserve` CDP）。
+- **FC_BROWSER_PROVIDER**: 浏览器渲染提供方。支持 `browserless`（Browserless REST `/content`）和 `cdp`（Chrome DevTools Protocol，例如 CloakBrowser `cloakserve`）。
 - **FC_BROWSER_ENDPOINT**: 所选浏览器提供方的地址。`fulltext-plus` 和 HTML 转 RSS 增强模式必须。
 - **FC_PUPPETEER_HTTP_ENDPOINT**: 旧版 Browserless 地址别名。仅在 `FC_BROWSER_ENDPOINT` 为空时继续生效。
 - **FC_REDIS_URI**: Redis 连接地址。用于缓存，加快处理速度并减少 AI Token 消耗。
@@ -111,7 +111,7 @@ services:
 services:
   app.feed-craft:
     environment:
-      FC_BROWSER_PROVIDER: cloakbrowser-cdp
+      FC_BROWSER_PROVIDER: cdp
       FC_BROWSER_ENDPOINT: http://service.cloakbrowser:9222?fingerprint=feedcraft
 
   service.cloakbrowser:

@@ -19,7 +19,7 @@ func TestCheckBrowserProviderUsesCloakBrowserVersionEndpoint(t *testing.T) {
 	defer server.Close()
 
 	env := viper.New()
-	env.Set("BROWSER_PROVIDER", "cloakbrowser-cdp")
+	env.Set("BROWSER_PROVIDER", "cdp")
 	env.Set("BROWSER_ENDPOINT", server.URL+"?fingerprint=feedcraft")
 
 	status := checkBrowserless(env, true)
@@ -27,13 +27,13 @@ func TestCheckBrowserProviderUsesCloakBrowserVersionEndpoint(t *testing.T) {
 	assert.Equal(t, "Browser Provider", status.Name)
 	assert.Equal(t, "Healthy", status.Status)
 	assert.Equal(t, "/json/version", requestedPath)
-	assert.Contains(t, status.Details, "Provider: cloakbrowser-cdp")
+	assert.Contains(t, status.Details, "Provider: cdp")
 	assert.Contains(t, status.Details, server.URL)
 }
 
 func TestCheckBrowserProviderRejectsUnsupportedProvider(t *testing.T) {
 	env := viper.New()
-	env.Set("BROWSER_PROVIDER", "cloakbrowser-cpd")
+	env.Set("BROWSER_PROVIDER", "cdp-typo")
 	env.Set("BROWSER_ENDPOINT", "http://example.com")
 
 	status := checkBrowserless(env, true)

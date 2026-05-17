@@ -172,11 +172,11 @@ func TestClassifyFeedViewerErrorHandlesLowercaseResolveMessage(t *testing.T) {
 
 func TestClassifyFeedViewerErrorHandlesBrowserProviderFailures(t *testing.T) {
 	tests := []string{
-		"cloakbrowser cdp render failed: context deadline exceeded",
-		"cloakbrowser cdp version request failed: Get \"http://cloak/json/version\": connection refused",
-		"failed to decode cloakbrowser cdp version response: invalid character",
-		"cloakbrowser cdp version response missing webSocketDebuggerUrl",
-		"unsupported browser provider \"cloakbrowser-cpd\"",
+		"browser cdp render failed: context deadline exceeded",
+		"browser cdp version request failed: Get \"http://chrome/json/version\": connection refused",
+		"failed to decode browser cdp version response: invalid character",
+		"browser cdp version response missing webSocketDebuggerUrl",
+		"unsupported browser provider \"cdp-typo\"",
 	}
 
 	for _, errMsg := range tests {

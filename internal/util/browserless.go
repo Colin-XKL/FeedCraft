@@ -20,8 +20,8 @@ import (
 )
 
 const (
-	BrowserProviderBrowserless     = "browserless"
-	BrowserProviderCloakBrowserCDP = "cloakbrowser-cdp"
+	BrowserProviderBrowserless = "browserless"
+	BrowserProviderCDP         = "cdp"
 )
 
 type BrowserRenderReq struct {
@@ -74,8 +74,8 @@ func GetBrowserlessContent(websiteUrl string, options BrowserlessOptions) (strin
 	switch cfg.Provider {
 	case BrowserProviderBrowserless, "browserless-rest", "":
 		return getBrowserlessRESTContent(cfg.Endpoint, websiteUrl, options)
-	case BrowserProviderCloakBrowserCDP, "cloakbrowser":
-		return getCloakBrowserCDPContent(cfg.Endpoint, websiteUrl, options)
+	case BrowserProviderCDP:
+		return getCDPContent(cfg.Endpoint, websiteUrl, options)
 	default:
 		return "", fmt.Errorf("unsupported browser provider %q", cfg.Provider)
 	}
@@ -83,7 +83,7 @@ func GetBrowserlessContent(websiteUrl string, options BrowserlessOptions) (strin
 
 func IsSupportedBrowserProvider(provider string) bool {
 	switch strings.ToLower(strings.TrimSpace(provider)) {
-	case BrowserProviderBrowserless, "browserless-rest", BrowserProviderCloakBrowserCDP, "cloakbrowser":
+	case BrowserProviderBrowserless, "browserless-rest", BrowserProviderCDP:
 		return true
 	default:
 		return false
@@ -148,11 +148,11 @@ func getBrowserlessRESTContent(browserURI string, websiteUrl string, options Bro
 	return response.String(), nil
 }
 
-func getCloakBrowserCDPContent(endpoint string, websiteUrl string, options BrowserlessOptions) (string, error) {
+func getCDPContent(endpoint string, websiteUrl string, options BrowserlessOptions) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), options.Timeout)
 	defer cancel()
 
-	wsURL, err := getCloakBrowserWebSocketURL(ctx, endpoint)
+	wsURL, err := getCDPWebSocketURL(ctx, endpoint)
 	if err != nil {
 		return "", err
 	}
@@ -185,7 +185,7 @@ func getCloakBrowserCDPContent(endpoint string, websiteUrl string, options Brows
 	actions = append(actions, chromedp.Evaluate(`document.documentElement.outerHTML`, &html))
 
 	if err := chromedp.Run(browserCtx, actions...); err != nil {
-		return "", fmt.Errorf("cloakbrowser cdp render failed: %w", err)
+		return "", fmt.Errorf("browser cdp render failed: %w", err)
 	}
 	return html, nil
 }
@@ -240,7 +240,7 @@ type cdpVersionResponse struct {
 	WebSocketDebuggerURL string `json:"webSocketDebuggerUrl"`
 }
 
-func getCloakBrowserWebSocketURL(ctx context.Context, endpoint string) (string, error) {
+func getCDPWebSocketURL(ctx context.Context, endpoint string) (string, error) {
 	versionURL, err := BuildEndpointURL(endpoint, "/json/version")
 	if err != nil {
 		return "", err
@@ -253,21 +253,21 @@ func getCloakBrowserWebSocketURL(ctx context.Context, endpoint string) (string, 
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("cloakbrowser cdp version request failed: %w", err)
+		return "", fmt.Errorf("browser cdp version request failed: %w", err)
 	}
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		body, _ := io.ReadAll(io.LimitReader(resp.Body, 200))
-		return "", fmt.Errorf("cloakbrowser cdp service returned status %d: %s", resp.StatusCode, string(body))
+		return "", fmt.Errorf("browser cdp service returned status %d: %s", resp.StatusCode, string(body))
 	}
 
 	var version cdpVersionResponse
 	if err := json.NewDecoder(resp.Body).Decode(&version); err != nil {
-		return "", fmt.Errorf("failed to decode cloakbrowser cdp version response: %w", err)
+		return "", fmt.Errorf("failed to decode browser cdp version response: %w", err)
 	}
 	if version.WebSocketDebuggerURL == "" {
-		return "", fmt.Errorf("cloakbrowser cdp version response missing webSocketDebuggerUrl")
+		return "", fmt.Errorf("browser cdp version response missing webSocketDebuggerUrl")
 	}
 	return version.WebSocketDebuggerURL, nil
 }

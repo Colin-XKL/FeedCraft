@@ -122,7 +122,7 @@ func checkBrowserless(env *viper.Viper, activeCheck bool) DependencyStatus {
 	start := time.Now()
 	client := http.Client{Timeout: 5 * time.Second}
 	checkURL := cfg.Endpoint
-	if cfg.Provider == util.BrowserProviderCloakBrowserCDP || cfg.Provider == "cloakbrowser" {
+	if cfg.Provider == util.BrowserProviderCDP {
 		var err error
 		checkURL, err = util.BuildEndpointURL(cfg.Endpoint, "/json/version")
 		if err != nil {

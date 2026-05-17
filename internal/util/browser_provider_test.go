@@ -66,7 +66,7 @@ func TestGetBrowserlessContentWithCloakBrowserCDP(t *testing.T) {
 		t.Skip("set FC_TEST_CLOAK_BROWSER_ENDPOINT to run the CloakBrowser CDP integration test")
 	}
 
-	t.Setenv("FC_BROWSER_PROVIDER", "cloakbrowser-cdp")
+	t.Setenv("FC_BROWSER_PROVIDER", "cdp")
 	t.Setenv("FC_BROWSER_ENDPOINT", endpoint)
 
 	content, err := GetBrowserlessContent(
