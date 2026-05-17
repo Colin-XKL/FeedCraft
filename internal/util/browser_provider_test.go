@@ -53,6 +53,10 @@ func TestResolveBrowserProviderConfigFallsBackToLegacyBrowserlessEndpoint(t *tes
 	assert.Equal(t, "http://legacy-browserless:3000", cfg.Endpoint)
 }
 
+func TestBrowserlessRestAliasIsNotSupported(t *testing.T) {
+	assert.False(t, IsSupportedBrowserProvider("browserless-rest"))
+}
+
 func TestBuildEndpointURLPreservesCloakBrowserQueryParams(t *testing.T) {
 	got, err := buildEndpointURL("http://service.cloakbrowser:9222?fingerprint=feedcraft&locale=zh-CN", "/json/version")
 

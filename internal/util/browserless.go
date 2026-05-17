@@ -72,7 +72,7 @@ func GetBrowserlessContent(websiteUrl string, options BrowserlessOptions) (strin
 	}
 
 	switch cfg.Provider {
-	case BrowserProviderBrowserlessRESTful, "browserless-rest", "browserless", "":
+	case BrowserProviderBrowserlessRESTful, "browserless", "":
 		return getBrowserlessRESTContent(cfg.Endpoint, websiteUrl, options)
 	case BrowserProviderCDP:
 		return getCDPContent(cfg.Endpoint, websiteUrl, options)
@@ -83,7 +83,7 @@ func GetBrowserlessContent(websiteUrl string, options BrowserlessOptions) (strin
 
 func IsSupportedBrowserProvider(provider string) bool {
 	switch strings.ToLower(strings.TrimSpace(provider)) {
-	case BrowserProviderBrowserlessRESTful, "browserless-rest", "browserless", BrowserProviderCDP:
+	case BrowserProviderBrowserlessRESTful, "browserless", BrowserProviderCDP:
 		return true
 	default:
 		return false
