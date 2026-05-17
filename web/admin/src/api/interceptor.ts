@@ -9,6 +9,7 @@ import {
   buildSessionExpiredRedirectQuery,
   isSessionExpiredAPIResponse,
   isSessionExpiredHTTPStatus,
+  SessionExpiredError,
   SESSION_EXPIRED_MESSAGE,
 } from '@/api/auth-expired';
 
@@ -87,7 +88,7 @@ axios.interceptors.response.use(
     const res = response.data;
     if (isSessionExpiredAPIResponse(res)) {
       showSessionExpiredModal();
-      return Promise.reject(new Error(SESSION_EXPIRED_MESSAGE));
+      return Promise.reject(new SessionExpiredError());
     }
     if (res.code !== 0) {
       Message.error({
@@ -101,7 +102,7 @@ axios.interceptors.response.use(
   (error) => {
     if (isSessionExpiredHTTPStatus(error?.response?.status)) {
       showSessionExpiredModal();
-      return Promise.reject(new Error(SESSION_EXPIRED_MESSAGE));
+      return Promise.reject(new SessionExpiredError());
     }
 
     const respMsg = error?.response?.data?.msg;

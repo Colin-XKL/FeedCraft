@@ -6,6 +6,17 @@ export const SESSION_EXPIRED_MESSAGE = '登录态已过期，请重新登录后�
 
 const SESSION_EXPIRED_CODES = [50008, 50012, 50014];
 
+export class SessionExpiredError extends Error {
+  constructor() {
+    super(SESSION_EXPIRED_MESSAGE);
+    this.name = 'SessionExpiredError';
+  }
+}
+
+export function isSessionExpiredError(error: unknown) {
+  return error instanceof SessionExpiredError;
+}
+
 export function isSessionExpiredHTTPStatus(status?: number) {
   return status === 401;
 }

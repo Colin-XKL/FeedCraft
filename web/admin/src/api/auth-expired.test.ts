@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildSessionExpiredRedirectQuery,
+  isSessionExpiredError,
   isSessionExpiredAPIResponse,
   isSessionExpiredHTTPStatus,
+  SessionExpiredError,
 } from './auth-expired';
 
 describe('auth expired helpers', () => {
@@ -30,5 +32,10 @@ describe('auth expired helpers', () => {
       redirect: '/worktable/craft_atom?page=2&keyword=rss',
       reason: 'session-expired',
     });
+  });
+
+  it('marks only session expiration errors', () => {
+    expect(isSessionExpiredError(new SessionExpiredError())).toBe(true);
+    expect(isSessionExpiredError(new Error('network error'))).toBe(false);
   });
 });
