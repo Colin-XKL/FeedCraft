@@ -230,6 +230,14 @@ func classifyFeedViewerError(err error) (int, string) {
 	switch {
 	case strings.Contains(lowerMsg, "browserless service returned status"):
 		return http.StatusOK, humanizeBrowserlessStatus(msg)
+	case strings.Contains(lowerMsg, "browser cdp render failed"),
+		strings.Contains(lowerMsg, "browser provider not configured"),
+		strings.Contains(lowerMsg, "browser cdp service returned status"),
+		strings.Contains(lowerMsg, "browser cdp version request failed"),
+		strings.Contains(lowerMsg, "failed to decode browser cdp version response"),
+		strings.Contains(lowerMsg, "browser cdp version response missing websocketdebuggerurl"),
+		strings.Contains(lowerMsg, "unsupported browser provider"):
+		return http.StatusOK, "Browser provider failed to render the URL. Please check the address or the browser provider service."
 	case strings.Contains(lowerMsg, "http status not ok:"):
 		return http.StatusOK, humanizeFeedViewerHTTPStatus(msg)
 	case strings.Contains(lowerMsg, "http get failed:"), strings.Contains(lowerMsg, "browserless fetch failed:"), strings.Contains(lowerMsg, "failed to read response body:"), strings.Contains(lowerMsg, "unable to resolve this url"):

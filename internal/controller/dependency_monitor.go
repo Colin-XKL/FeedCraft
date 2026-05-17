@@ -106,28 +106,39 @@ func checkRedis(env *viper.Viper, activeCheck bool) DependencyStatus {
 }
 
 func checkBrowserless(env *viper.Viper, activeCheck bool) DependencyStatus {
-	endpoint := env.GetString("PUPPETEER_HTTP_ENDPOINT")
-	if endpoint == "" {
-		return DependencyStatus{Name: "Browserless", Status: "Not Configured"}
+	cfg := util.ResolveBrowserProviderConfig(env)
+	if cfg.Endpoint == "" {
+		return DependencyStatus{Name: "Browser Provider", Status: "Not Configured"}
 	}
-	details := fmt.Sprintf("Endpoint: %s", endpoint)
+	details := fmt.Sprintf("Provider: %s, Endpoint: %s", cfg.Provider, cfg.Endpoint)
+	if !util.IsSupportedBrowserProvider(cfg.Provider) {
+		return DependencyStatus{Name: "Browser Provider", Status: "Unhealthy", Details: details, Error: fmt.Sprintf("unsupported browser provider %q", cfg.Provider)}
+	}
 
 	if !activeCheck {
-		return DependencyStatus{Name: "Browserless", Status: "Configured", Details: details}
+		return DependencyStatus{Name: "Browser Provider", Status: "Configured", Details: details}
 	}
 
 	start := time.Now()
 	client := http.Client{Timeout: 5 * time.Second}
-	resp, err := client.Get(endpoint)
+	checkURL := cfg.Endpoint
+	if cfg.Provider == util.BrowserProviderCDP {
+		var err error
+		checkURL, err = util.BuildEndpointURL(cfg.Endpoint, "/json/version")
+		if err != nil {
+			return DependencyStatus{Name: "Browser Provider", Status: "Unhealthy", Details: details, Error: err.Error()}
+		}
+	}
+	resp, err := client.Get(checkURL)
 	if err != nil {
-		return DependencyStatus{Name: "Browserless", Status: "Unhealthy", Details: details, Error: err.Error()}
+		return DependencyStatus{Name: "Browser Provider", Status: "Unhealthy", Details: details, Error: err.Error()}
 	}
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		return DependencyStatus{Name: "Browserless", Status: "Healthy", Details: details, Latency: time.Since(start).String()}
+		return DependencyStatus{Name: "Browser Provider", Status: "Healthy", Details: details, Latency: time.Since(start).String()}
 	}
-	return DependencyStatus{Name: "Browserless", Status: "Unhealthy", Details: details, Error: resp.Status}
+	return DependencyStatus{Name: "Browser Provider", Status: "Unhealthy", Details: details, Error: resp.Status}
 }
 
 func checkLLM(env *viper.Viper, activeCheck bool) DependencyStatus {

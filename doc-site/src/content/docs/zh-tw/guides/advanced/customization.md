@@ -45,7 +45,7 @@ sidebar:
 
 - **SQLite**: 資料庫連線。
 - **Redis**: 快取服務連線及延遲。
-- **Browserless**: 無頭瀏覽器服務可用性（全文提取功能必須）。
+- **Browser Provider**: 無頭瀏覽器提供方可用性（瀏覽器全文提取功能必須）。
 - **LLM Service**: 與配置的 AI 供應商的連線。
 - **Search Provider**: 與配置的搜尋引擎的連線。
 
@@ -63,7 +63,9 @@ sidebar:
 
 你可以在 `docker-compose.yml` 中使用環境變數配置 FeedCraft。
 
-- **FC_PUPPETEER_HTTP_ENDPOINT**: Browserless/Chrome 實例的地址。`fulltext-plus` 功能必須。
+- **FC_BROWSER_PROVIDER**: 瀏覽器渲染提供方。支援 `browserless-restful`（Browserless REST `/content`）和 `cdp`（Chrome DevTools Protocol，例如 CloakBrowser `cloakserve`）。
+- **FC_BROWSER_ENDPOINT**: 所選瀏覽器提供方的地址。`fulltext-plus` 和 HTML 轉 RSS 增強模式必須。
+- **FC_PUPPETEER_HTTP_ENDPOINT**: 舊版 Browserless 地址別名。僅在 `FC_BROWSER_ENDPOINT` 為空時繼續生效。
 - **FC_REDIS_URI**: Redis 連線地址。用於快取，加快處理速度並減少 AI Token 消耗。
 - **FC_HTTP_USER_AGENT_FEED**: （可選）feed 類外部請求的預設 `User-Agent`，例如抓取 RSS/XML 資源時使用。搜尋提供方請求目前也暫時歸入這一規則。
 - **FC_HTTP_USER_AGENT_HTML**: （可選）HTML 頁面抓取的預設 `User-Agent`，例如全文提取和 HTML 轉 RSS 工具使用。**注意：** 如果該值包含空格或括號，必須使用引號括起來。
@@ -77,7 +79,7 @@ sidebar:
 
 ### 外部服務
 
-為了發揮 FeedCraft 的全部功能，建議搭配 Redis 和 Browserless 部署。
+為了發揮 FeedCraft 的全部功能，建議搭配 Redis 和瀏覽器渲染提供方部署。
 
 ```yaml
 version: "3"
@@ -85,7 +87,8 @@ services:
   app.feed-craft:
     # ... (參考快速開始)
     environment:
-      FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000
+      FC_BROWSER_PROVIDER: browserless-restful
+      FC_BROWSER_ENDPOINT: http://service.browserless:3000
       FC_REDIS_URI: redis://service.redis:6379/
       # ...
 
@@ -99,6 +102,21 @@ services:
     container_name: feedcraft_browserless
     environment:
       USE_CHROME_STABLE: true
+    restart: unless-stopped
+```
+
+如果要使用 CloakBrowser 替代 Browserless，可以直接連接官方 `cloakserve` 容器：
+
+```yaml
+services:
+  app.feed-craft:
+    environment:
+      FC_BROWSER_PROVIDER: cdp
+      FC_BROWSER_ENDPOINT: http://service.cloakbrowser:9222?fingerprint=feedcraft
+
+  service.cloakbrowser:
+    image: cloakhq/cloakbrowser
+    command: cloakserve --port=9222
     restart: unless-stopped
 ```
 
