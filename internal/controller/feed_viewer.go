@@ -57,7 +57,7 @@ func PreviewFeedViewer(c *gin.Context) {
 	}
 
 	if err := validateFeedViewerURL(req.InputURL); err != nil {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: formatFeedViewerValidationError(err)})
 		return
 	}
 
@@ -189,6 +189,17 @@ func formatFeedViewerISOTime(primary, fallback time.Time) string {
 	return ""
 }
 
+func formatFeedViewerValidationError(err error) string {
+	if err == nil {
+		return ""
+	}
+	msg := err.Error()
+	if msg == "" {
+		return ""
+	}
+	return strings.ToUpper(msg[:1]) + msg[1:]
+}
+
 func validateFeedViewerURL(rawURL string) error {
 	parsedURL, err := url.Parse(rawURL)
 	if err != nil || parsedURL == nil {
@@ -217,17 +228,18 @@ func validateFeedViewerURL(rawURL string) error {
 func classifyFeedViewerError(err error) (int, string) {
 	msg := err.Error()
 	msg = strings.TrimPrefix(msg, "all items failed to process. last error: ")
+	lowerMsg := strings.ToLower(msg)
 
 	switch {
-	case strings.Contains(msg, "browserless service returned status"):
+	case strings.Contains(lowerMsg, "browserless service returned status"):
 		return http.StatusOK, humanizeBrowserlessStatus(msg)
-	case strings.Contains(msg, "http status not ok:"):
+	case strings.Contains(lowerMsg, "http status not ok:"):
 		return http.StatusOK, humanizeFeedViewerHTTPStatus(msg)
-	case strings.Contains(msg, "http get failed:"), strings.Contains(msg, "browserless fetch failed:"), strings.Contains(msg, "failed to read response body:"), strings.Contains(msg, "Unable to resolve this URL"):
+	case strings.Contains(lowerMsg, "http get failed:"), strings.Contains(lowerMsg, "browserless fetch failed:"), strings.Contains(lowerMsg, "failed to read response body:"), strings.Contains(lowerMsg, "unable to resolve this url"):
 		return http.StatusOK, "Unable to fetch this URL. Please check the address and try again."
-	case strings.Contains(msg, "parse failed:"), strings.Contains(msg, "invalid XML"):
+	case strings.Contains(lowerMsg, "parse failed:"), strings.Contains(lowerMsg, "invalid xml"):
 		return http.StatusOK, "The URL is reachable, but it does not appear to be a valid RSS or Atom feed."
-	case strings.Contains(msg, "not a valid craft name"):
+	case strings.Contains(lowerMsg, "not a valid craft name"):
 		return http.StatusBadRequest, "Please select a valid craft before comparing feeds."
 	default:
 		return http.StatusInternalServerError, "Failed to preview this feed due to an internal error."
