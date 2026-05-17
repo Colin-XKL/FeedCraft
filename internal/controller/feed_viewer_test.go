@@ -57,3 +57,15 @@ func TestClassifyFeedViewerErrorExplainsEmbeddingConfiguration(t *testing.T) {
 		t.Fatalf("msg = %q, want %q", msg, want)
 	}
 }
+
+func TestClassifyFeedViewerErrorDoesNotExposeEmbeddingRuntimeError(t *testing.T) {
+	status, msg := classifyFeedViewerError(errors.New("[embedding-filter] all article embeddings failed: embedding call failed after retries (batch [0-1]): provider returned 500 with token detail"))
+
+	if status != http.StatusInternalServerError {
+		t.Fatalf("status = %d, want %d", status, http.StatusInternalServerError)
+	}
+	const want = "Failed to preview this feed due to an internal error."
+	if msg != want {
+		t.Fatalf("msg = %q, want %q", msg, want)
+	}
+}

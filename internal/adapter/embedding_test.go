@@ -187,6 +187,34 @@ func TestLoadEmbeddingConfig_FallsBackToLLMTypeAndModel(t *testing.T) {
 	assert.Equal(t, "nomic-embed-text", cfg.apiModel)
 }
 
+func TestLoadEmbeddingConfig_DoesNotFallbackLLMKeyWhenEmbeddingEndpointIsSet(t *testing.T) {
+	t.Setenv("FC_LLM_API_KEY", "llm-secret")
+	t.Setenv("FC_EMBEDDING_API_TYPE", "openai")
+	t.Setenv("FC_EMBEDDING_API_BASE", "https://embedding.example/v1")
+	t.Setenv("FC_EMBEDDING_API_MODEL", "text-embedding-3-small")
+	t.Setenv("FC_EMBEDDING_API_KEY", "")
+
+	cfg, err := loadEmbeddingConfig()
+
+	assert.NoError(t, err)
+	assert.Empty(t, cfg.apiKey, "LLM key must not be sent to an explicitly configured embedding endpoint")
+}
+
+func TestLoadEmbeddingConfig_RejectsCommaSeparatedFallbackModel(t *testing.T) {
+	t.Setenv("FC_LLM_API_TYPE", "openai")
+	t.Setenv("FC_LLM_API_BASE", "https://api.openai.com/v1")
+	t.Setenv("FC_LLM_API_KEY", "test-key")
+	t.Setenv("FC_LLM_API_MODEL", "gpt-4o,gpt-4o-mini")
+	t.Setenv("FC_EMBEDDING_API_TYPE", "")
+	t.Setenv("FC_EMBEDDING_API_MODEL", "")
+
+	_, err := loadEmbeddingConfig()
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "FC_EMBEDDING_API_MODEL")
+	assert.Contains(t, err.Error(), "single embedding model")
+}
+
 func TestBuildAnchorVectorCacheKeyIncludesProviderAndBase(t *testing.T) {
 	cfgA := embeddingConfig{apiType: "openai", apiBase: "https://provider-a.example/v1", apiModel: "embed-model"}
 	cfgB := embeddingConfig{apiType: "openai", apiBase: "https://provider-b.example/v1", apiModel: "embed-model"}

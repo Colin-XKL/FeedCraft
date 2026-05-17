@@ -351,6 +351,9 @@
       Message.error('Embedding filter requires at least one anchor.');
       return false;
     }
+    if (paramsMap.mode) {
+      paramsMap.mode = paramsMap.mode.trim().toLowerCase();
+    }
     if (paramsMap.mode && !['include', 'exclude'].includes(paramsMap.mode)) {
       Message.error('Embedding filter mode must be include or exclude.');
       return false;

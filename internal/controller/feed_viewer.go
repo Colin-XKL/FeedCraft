@@ -231,7 +231,7 @@ func classifyFeedViewerError(err error) (int, string) {
 	lowerMsg := strings.ToLower(msg)
 
 	switch {
-	case strings.Contains(lowerMsg, "[embedding-filter]"):
+	case isEmbeddingFilterConfigurationError(msg):
 		return http.StatusBadRequest, humanizeEmbeddingFilterError(msg)
 	case strings.Contains(lowerMsg, "browserless service returned status"):
 		return http.StatusOK, humanizeBrowserlessStatus(msg)
@@ -246,6 +246,16 @@ func classifyFeedViewerError(err error) (int, string) {
 	default:
 		return http.StatusInternalServerError, "Failed to preview this feed due to an internal error."
 	}
+}
+
+func isEmbeddingFilterConfigurationError(msg string) bool {
+	lowerMsg := strings.ToLower(msg)
+	if !strings.Contains(lowerMsg, "[embedding-filter]") {
+		return false
+	}
+	return strings.Contains(lowerMsg, "failed to load embedding config") ||
+		strings.Contains(lowerMsg, "fc_embedding_") ||
+		strings.Contains(lowerMsg, "anchors parameter is required")
 }
 
 func humanizeEmbeddingFilterError(msg string) string {
