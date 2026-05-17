@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/chromedp/cdproto/network"
+	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/chromedp"
 	"github.com/go-resty/resty/v2"
 	"github.com/sirupsen/logrus"
@@ -77,6 +78,15 @@ func GetBrowserlessContent(websiteUrl string, options BrowserlessOptions) (strin
 		return getCloakBrowserCDPContent(cfg.Endpoint, websiteUrl, options)
 	default:
 		return "", fmt.Errorf("unsupported browser provider %q", cfg.Provider)
+	}
+}
+
+func IsSupportedBrowserProvider(provider string) bool {
+	switch strings.ToLower(strings.TrimSpace(provider)) {
+	case BrowserProviderBrowserless, "browserless-rest", BrowserProviderCloakBrowserCDP, "cloakbrowser":
+		return true
+	default:
+		return false
 	}
 }
 
@@ -162,7 +172,7 @@ func getCloakBrowserCDPContent(endpoint string, websiteUrl string, options Brows
 		network.SetBlockedURLs([]string{
 			"*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.svg", "*.ico",
 		}),
-		chromedp.Navigate(websiteUrl),
+		navigateAndWaitForPageEventAction(websiteUrl, options.WaitUntil),
 	}
 	if strings.EqualFold(options.WaitUntil, "networkidle0") {
 		actions = append(actions, idleMonitor.waitAction(0, 500*time.Millisecond))
@@ -178,6 +188,52 @@ func getCloakBrowserCDPContent(endpoint string, websiteUrl string, options Brows
 		return "", fmt.Errorf("cloakbrowser cdp render failed: %w", err)
 	}
 	return html, nil
+}
+
+func navigateAndWaitForPageEventAction(websiteURL string, waitUntil string) chromedp.ActionFunc {
+	return func(ctx context.Context) error {
+		waitForDomContent := strings.EqualFold(waitUntil, "domcontentloaded") ||
+			strings.EqualFold(waitUntil, "networkidle0") ||
+			strings.EqualFold(waitUntil, "networkidle2")
+		done := make(chan struct{})
+		var once sync.Once
+		markDone := func() {
+			once.Do(func() {
+				close(done)
+			})
+		}
+
+		chromedp.ListenTarget(ctx, func(ev any) {
+			switch ev.(type) {
+			case *page.EventDomContentEventFired:
+				if waitForDomContent {
+					markDone()
+				}
+			case *page.EventLoadEventFired:
+				if !waitForDomContent {
+					markDone()
+				}
+			}
+		})
+
+		if err := page.Enable().Do(ctx); err != nil {
+			return err
+		}
+		_, _, errorText, _, err := page.Navigate(websiteURL).Do(ctx)
+		if err != nil {
+			return err
+		}
+		if errorText != "" {
+			return fmt.Errorf("navigation failed: %s", errorText)
+		}
+
+		select {
+		case <-done:
+			return nil
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
 }
 
 type cdpVersionResponse struct {

@@ -111,6 +111,9 @@ func checkBrowserless(env *viper.Viper, activeCheck bool) DependencyStatus {
 		return DependencyStatus{Name: "Browser Provider", Status: "Not Configured"}
 	}
 	details := fmt.Sprintf("Provider: %s, Endpoint: %s", cfg.Provider, cfg.Endpoint)
+	if !util.IsSupportedBrowserProvider(cfg.Provider) {
+		return DependencyStatus{Name: "Browser Provider", Status: "Unhealthy", Details: details, Error: fmt.Sprintf("unsupported browser provider %q", cfg.Provider)}
+	}
 
 	if !activeCheck {
 		return DependencyStatus{Name: "Browser Provider", Status: "Configured", Details: details}

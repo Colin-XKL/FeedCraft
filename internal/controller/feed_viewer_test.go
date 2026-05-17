@@ -171,14 +171,23 @@ func TestClassifyFeedViewerErrorHandlesLowercaseResolveMessage(t *testing.T) {
 }
 
 func TestClassifyFeedViewerErrorHandlesBrowserProviderFailures(t *testing.T) {
-	status, msg := classifyFeedViewerError(errors.New("cloakbrowser cdp render failed: context deadline exceeded"))
-
-	if status != http.StatusOK {
-		t.Fatalf("status = %d, want %d", status, http.StatusOK)
+	tests := []string{
+		"cloakbrowser cdp render failed: context deadline exceeded",
+		"cloakbrowser cdp version request failed: Get \"http://cloak/json/version\": connection refused",
+		"failed to decode cloakbrowser cdp version response: invalid character",
+		"cloakbrowser cdp version response missing webSocketDebuggerUrl",
 	}
-	const want = "Browser provider failed to render the URL. Please check the address or the browser provider service."
-	if msg != want {
-		t.Fatalf("msg = %q, want %q", msg, want)
+
+	for _, errMsg := range tests {
+		status, msg := classifyFeedViewerError(errors.New(errMsg))
+
+		if status != http.StatusOK {
+			t.Fatalf("status = %d, want %d for %q", status, http.StatusOK, errMsg)
+		}
+		const want = "Browser provider failed to render the URL. Please check the address or the browser provider service."
+		if msg != want {
+			t.Fatalf("msg = %q, want %q for %q", msg, want, errMsg)
+		}
 	}
 }
 
