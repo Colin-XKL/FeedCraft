@@ -156,6 +156,7 @@
     { label: 'include', value: 'include' },
     { label: 'exclude', value: 'exclude' },
   ];
+  const maxContentLengthLimit = 8000;
 
   const form = reactive({
     inputUrl: '',
@@ -175,23 +176,47 @@
   const isTesting = ref(false);
   const isSaving = ref(false);
   const hasCompared = computed(
-    () => Boolean(originalFeedContent.value) || Boolean(filteredFeedContent.value)
+    () =>
+      Boolean(originalFeedContent.value) || Boolean(filteredFeedContent.value)
   );
 
   function hasRequiredInput() {
     return Boolean(form.inputUrl.trim() && form.anchors.trim());
   }
 
-  function buildPreviewRequest(): EmbeddingFilterPreviewRequest {
+  function normalizeAnchors() {
+    return form.anchors
+      .split('\n')
+      .map((anchor) => anchor.trim())
+      .filter(Boolean)
+      .join('\n');
+  }
+
+  function buildPreviewRequest(): EmbeddingFilterPreviewRequest | null {
+    const threshold = Number(form.threshold);
+    const maxContentLength = Number(form.maxContentLength);
+    if (!Number.isFinite(threshold) || threshold < 0 || threshold > 1) {
+      Message.warning('Threshold must be between 0 and 1.');
+      return null;
+    }
+    if (
+      !Number.isFinite(maxContentLength) ||
+      maxContentLength < 1 ||
+      maxContentLength > maxContentLengthLimit
+    ) {
+      Message.warning(
+        `Max content length must be between 1 and ${maxContentLengthLimit}.`
+      );
+      return null;
+    }
+
     return {
       input_url: form.inputUrl.trim(),
-      anchors: form.anchors,
-      threshold: form.threshold,
-      mode: form.mode,
-      max_content_length: form.maxContentLength,
+      anchors: normalizeAnchors(),
+      threshold,
+      mode: form.mode.trim().toLowerCase() as 'include' | 'exclude',
+      max_content_length: maxContentLength,
       instruction: form.instruction.trim(),
-      atom_craft_name: form.atomName.trim(),
-      atom_craft_description: form.atomDescription.trim(),
     };
   }
 
@@ -209,14 +234,16 @@
   }
 
   async function testFilter() {
+    if (isTesting.value) return;
     if (!hasRequiredInput()) {
       Message.warning(t('embeddingFilterDebug.message.inputRequired'));
       return;
     }
+    const previewRequest = buildPreviewRequest();
+    if (!previewRequest) return;
 
     isTesting.value = true;
     clearResults();
-    const previewRequest = buildPreviewRequest();
     const [originalResult, filteredResult] = await Promise.allSettled([
       previewFeed(previewRequest.input_url),
       previewEmbeddingFilter(previewRequest),
@@ -237,6 +264,7 @@
   }
 
   async function saveAtomCraft() {
+    if (isSaving.value) return;
     if (!hasRequiredInput()) {
       Message.warning(t('embeddingFilterDebug.message.inputRequired'));
       return;
@@ -245,6 +273,8 @@
       Message.warning(t('embeddingFilterDebug.message.atomNameRequired'));
       return;
     }
+    const previewRequest = buildPreviewRequest();
+    if (!previewRequest) return;
 
     isSaving.value = true;
     try {
@@ -253,11 +283,11 @@
         description: form.atomDescription.trim(),
         template_name: 'embedding-filter',
         params: {
-          anchors: form.anchors,
-          threshold: String(form.threshold),
-          mode: form.mode,
-          max_content_length: String(form.maxContentLength),
-          instruction: form.instruction.trim(),
+          anchors: previewRequest.anchors,
+          threshold: String(previewRequest.threshold),
+          mode: previewRequest.mode,
+          max_content_length: String(previewRequest.max_content_length),
+          instruction: previewRequest.instruction || '',
         },
       });
       Message.success(t('embeddingFilterDebug.message.saved'));

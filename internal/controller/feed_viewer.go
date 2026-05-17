@@ -30,8 +30,6 @@ type EmbeddingFilterPreviewReq struct {
 	Mode             string   `json:"mode"`
 	MaxContentLength *int     `json:"max_content_length"`
 	Instruction      string   `json:"instruction"`
-	AtomCraftName    string   `json:"atom_craft_name"`
-	AtomCraftDesc    string   `json:"atom_craft_description"`
 }
 
 type embeddingFilterPreviewConfig struct {
@@ -41,9 +39,15 @@ type embeddingFilterPreviewConfig struct {
 	mode             craft.EmbeddingFilterMode
 	maxContentLength int
 	instruction      string
-	atomCraftName    string
-	atomCraftDesc    string
 }
+
+const (
+	maxEmbeddingFilterPreviewAnchors           = 20
+	maxEmbeddingFilterPreviewAnchorLength      = 500
+	maxEmbeddingFilterPreviewInstructionLength = 1000
+	maxEmbeddingFilterPreviewContentLength     = 8000
+	maxEmbeddingFilterPreviewItems             = 80
+)
 
 type FeedViewerPreview struct {
 	Title       string                  `json:"title"`
@@ -126,14 +130,22 @@ func PreviewEmbeddingFilter(c *gin.Context) {
 		c.JSON(status, util.APIResponse[any]{StatusCode: -1, Msg: msg})
 		return
 	}
+	if len(feed.Articles) > maxEmbeddingFilterPreviewItems {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{
+			StatusCode: -1,
+			Msg:        fmt.Sprintf("embedding filter preview supports at most %d feed items", maxEmbeddingFilterPreviewItems),
+		})
+		return
+	}
 
-	craftedFeed, err := buildCraftPreviewWithOptions(feed, cfg.inputURL, craft.GetEmbeddingFilterOptions(
+	craftedFeed, err := buildCraftPreviewWithOptions(feed, cfg.inputURL, []craft.CraftOption{craft.OptionEmbeddingFilterWithContext(
+		c.Request.Context(),
 		cfg.anchors,
 		cfg.threshold,
 		cfg.maxContentLength,
 		cfg.instruction,
 		cfg.mode,
-	))
+	)})
 	if err != nil {
 		status, msg := classifyFeedViewerError(err)
 		c.JSON(status, util.APIResponse[any]{StatusCode: -1, Msg: msg})
@@ -188,18 +200,25 @@ func normalizeEmbeddingFilterPreviewRequest(req EmbeddingFilterPreviewReq) (embe
 		mode:             craft.EmbeddingIncludeMode,
 		maxContentLength: 2000,
 		instruction:      strings.TrimSpace(req.Instruction),
-		atomCraftName:    strings.TrimSpace(req.AtomCraftName),
-		atomCraftDesc:    strings.TrimSpace(req.AtomCraftDesc),
 	}
 
 	for _, rawAnchor := range strings.Split(req.Anchors, "\n") {
 		anchor := strings.TrimSpace(rawAnchor)
 		if anchor != "" {
+			if len([]rune(anchor)) > maxEmbeddingFilterPreviewAnchorLength {
+				return cfg, fmt.Errorf("anchors must be at most %d characters each", maxEmbeddingFilterPreviewAnchorLength)
+			}
 			cfg.anchors = append(cfg.anchors, anchor)
 		}
 	}
 	if len(cfg.anchors) == 0 {
 		return cfg, errors.New("anchors parameter is required")
+	}
+	if len(cfg.anchors) > maxEmbeddingFilterPreviewAnchors {
+		return cfg, fmt.Errorf("anchors supports at most %d entries", maxEmbeddingFilterPreviewAnchors)
+	}
+	if len([]rune(cfg.instruction)) > maxEmbeddingFilterPreviewInstructionLength {
+		return cfg, fmt.Errorf("instruction must be at most %d characters", maxEmbeddingFilterPreviewInstructionLength)
 	}
 
 	if req.Threshold != nil {
@@ -222,6 +241,9 @@ func normalizeEmbeddingFilterPreviewRequest(req EmbeddingFilterPreviewReq) (embe
 	if req.MaxContentLength != nil {
 		if *req.MaxContentLength <= 0 {
 			return cfg, errors.New("max_content_length must be greater than 0")
+		}
+		if *req.MaxContentLength > maxEmbeddingFilterPreviewContentLength {
+			return cfg, fmt.Errorf("max_content_length must be at most %d", maxEmbeddingFilterPreviewContentLength)
 		}
 		cfg.maxContentLength = *req.MaxContentLength
 	}

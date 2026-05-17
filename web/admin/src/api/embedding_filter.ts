@@ -9,8 +9,6 @@ export interface EmbeddingFilterPreviewRequest {
   mode: 'include' | 'exclude';
   max_content_length?: number;
   instruction?: string;
-  atom_craft_name?: string;
-  atom_craft_description?: string;
 }
 
 export function previewEmbeddingFilter(

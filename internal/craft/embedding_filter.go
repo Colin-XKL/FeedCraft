@@ -43,6 +43,10 @@ var (
 // instruction: 传递给 Embedding 模型的 instruction 参数
 // mode: include（匹配即保留，默认）或 exclude（匹配即移除，反选）
 func OptionEmbeddingFilter(anchors []string, threshold float64, maxContentLen int, instruction string, mode EmbeddingFilterMode) CraftOption {
+	return OptionEmbeddingFilterWithContext(context.Background(), anchors, threshold, maxContentLen, instruction, mode)
+}
+
+func OptionEmbeddingFilterWithContext(ctx context.Context, anchors []string, threshold float64, maxContentLen int, instruction string, mode EmbeddingFilterMode) CraftOption {
 	return func(feed *feeds.Feed, payload ExtraPayload) error {
 		items := feed.Items
 		if len(items) == 0 {
@@ -63,8 +67,6 @@ func OptionEmbeddingFilter(anchors []string, threshold float64, maxContentLen in
 		if len(anchors) == 0 {
 			return errEmbeddingFilterAnchorsRequired
 		}
-
-		ctx := context.Background()
 
 		// 2. 获取或计算锚点向量（带内存缓存）
 		anchorVectors, err := adapter.GetOrComputeAnchorVectors(ctx, anchors, instruction)

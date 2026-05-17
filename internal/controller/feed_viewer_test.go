@@ -142,8 +142,6 @@ func TestNormalizeEmbeddingFilterPreviewRequest(t *testing.T) {
 		Mode:             "EXCLUDE",
 		MaxContentLength: &maxContentLength,
 		Instruction:      "Represent this text for topic filtering",
-		AtomCraftName:    "ai-filter",
-		AtomCraftDesc:    "AI filter",
 	})
 
 	if err != nil {
@@ -166,9 +164,6 @@ func TestNormalizeEmbeddingFilterPreviewRequest(t *testing.T) {
 	}
 	if cfg.instruction != "Represent this text for topic filtering" {
 		t.Fatalf("instruction = %q", cfg.instruction)
-	}
-	if cfg.atomCraftName != "ai-filter" || cfg.atomCraftDesc != "AI filter" {
-		t.Fatalf("atom craft metadata = %q / %q", cfg.atomCraftName, cfg.atomCraftDesc)
 	}
 }
 
@@ -204,6 +199,37 @@ func TestNormalizeEmbeddingFilterPreviewRequestDefaultsAndValidation(t *testing.
 		Anchors:  "  \n ",
 	}); err == nil || !strings.Contains(err.Error(), "anchors") {
 		t.Fatalf("expected anchors validation error, got %v", err)
+	}
+}
+
+func TestNormalizeEmbeddingFilterPreviewRequestResourceLimits(t *testing.T) {
+	tooManyAnchors := make([]string, maxEmbeddingFilterPreviewAnchors+1)
+	for i := range tooManyAnchors {
+		tooManyAnchors[i] = "anchor"
+	}
+	if _, err := normalizeEmbeddingFilterPreviewRequest(EmbeddingFilterPreviewReq{
+		InputURL: "http://example.com/feed.xml",
+		Anchors:  strings.Join(tooManyAnchors, "\n"),
+	}); err == nil || !strings.Contains(err.Error(), "anchors") {
+		t.Fatalf("expected anchors limit error, got %v", err)
+	}
+
+	longInstruction := strings.Repeat("x", maxEmbeddingFilterPreviewInstructionLength+1)
+	if _, err := normalizeEmbeddingFilterPreviewRequest(EmbeddingFilterPreviewReq{
+		InputURL:    "http://example.com/feed.xml",
+		Anchors:     "AI",
+		Instruction: longInstruction,
+	}); err == nil || !strings.Contains(err.Error(), "instruction") {
+		t.Fatalf("expected instruction limit error, got %v", err)
+	}
+
+	tooLongContent := maxEmbeddingFilterPreviewContentLength + 1
+	if _, err := normalizeEmbeddingFilterPreviewRequest(EmbeddingFilterPreviewReq{
+		InputURL:         "http://example.com/feed.xml",
+		Anchors:          "AI",
+		MaxContentLength: &tooLongContent,
+	}); err == nil || !strings.Contains(err.Error(), "max_content_length") {
+		t.Fatalf("expected max_content_length limit error, got %v", err)
 	}
 }
 
