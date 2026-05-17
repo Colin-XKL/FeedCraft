@@ -176,6 +176,7 @@ func TestClassifyFeedViewerErrorHandlesBrowserProviderFailures(t *testing.T) {
 		"cloakbrowser cdp version request failed: Get \"http://cloak/json/version\": connection refused",
 		"failed to decode cloakbrowser cdp version response: invalid character",
 		"cloakbrowser cdp version response missing webSocketDebuggerUrl",
+		"unsupported browser provider \"cloakbrowser-cpd\"",
 	}
 
 	for _, errMsg := range tests {

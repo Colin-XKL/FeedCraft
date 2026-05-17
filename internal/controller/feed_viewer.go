@@ -235,7 +235,8 @@ func classifyFeedViewerError(err error) (int, string) {
 		strings.Contains(lowerMsg, "cloakbrowser cdp service returned status"),
 		strings.Contains(lowerMsg, "cloakbrowser cdp version request failed"),
 		strings.Contains(lowerMsg, "failed to decode cloakbrowser cdp version response"),
-		strings.Contains(lowerMsg, "cloakbrowser cdp version response missing websocketdebuggerurl"):
+		strings.Contains(lowerMsg, "cloakbrowser cdp version response missing websocketdebuggerurl"),
+		strings.Contains(lowerMsg, "unsupported browser provider"):
 		return http.StatusOK, "Browser provider failed to render the URL. Please check the address or the browser provider service."
 	case strings.Contains(lowerMsg, "http status not ok:"):
 		return http.StatusOK, humanizeFeedViewerHTTPStatus(msg)
