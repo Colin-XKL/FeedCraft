@@ -16,17 +16,6 @@ func TestSimpleLLMCallRetriesDifferentModelsBeforeRepeating(t *testing.T) {
 	t.Cleanup(func() {
 		llmClients = sync.Map{}
 	})
-	originalAttemptsPerModel := llmRetryAttemptsPerModel
-	originalDelay := llmRetryDelay
-	originalMaxDelay := llmRetryMaxDelay
-	llmRetryAttemptsPerModel = 1
-	llmRetryDelay = time.Nanosecond
-	llmRetryMaxDelay = time.Nanosecond
-	t.Cleanup(func() {
-		llmRetryAttemptsPerModel = originalAttemptsPerModel
-		llmRetryDelay = originalDelay
-		llmRetryMaxDelay = originalMaxDelay
-	})
 
 	var mu sync.Mutex
 	requestedModels := make([]string, 0)
@@ -59,11 +48,49 @@ func TestSimpleLLMCallRetriesDifferentModelsBeforeRepeating(t *testing.T) {
 	t.Setenv("FC_LLM_API_KEY", "test-key")
 	t.Setenv("FC_LLM_API_MODEL", "")
 
-	_, err := SimpleLLMCall("model-a,model-b", "hello")
+	_, err := simpleLLMCall("model-a, model-a, model-b", "hello", llmRetryConfig{
+		attemptsPerModel: 2,
+		delay:            time.Nanosecond,
+		maxDelay:         time.Nanosecond,
+	})
 	require.Error(t, err)
 
 	mu.Lock()
 	defer mu.Unlock()
-	require.GreaterOrEqual(t, len(requestedModels), 2)
-	require.NotEqual(t, requestedModels[0], requestedModels[1], "retry should try another configured model before repeating the same model")
+	require.Len(t, requestedModels, 4)
+
+	modelCounts := map[string]int{}
+	for i, requestedModel := range requestedModels {
+		modelCounts[requestedModel]++
+		if i > 0 {
+			require.NotEqual(t, requestedModels[i-1], requestedModel, "retry should try another configured model before repeating the same model")
+		}
+	}
+	require.Equal(t, map[string]int{"model-a": 2, "model-b": 2}, modelCounts)
+}
+
+func TestSimpleLLMCallRetriesNextModelWithoutBackoff(t *testing.T) {
+	llmClients = sync.Map{}
+	t.Cleanup(func() {
+		llmClients = sync.Map{}
+	})
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Error(w, "temporary upstream failure", http.StatusBadGateway)
+	}))
+	t.Cleanup(server.Close)
+
+	t.Setenv("FC_LLM_API_TYPE", "openai")
+	t.Setenv("FC_LLM_API_BASE", server.URL)
+	t.Setenv("FC_LLM_API_KEY", "test-key")
+	t.Setenv("FC_LLM_API_MODEL", "")
+
+	start := time.Now()
+	_, err := simpleLLMCall("model-a,model-b", "hello", llmRetryConfig{
+		attemptsPerModel: 1,
+		delay:            100 * time.Millisecond,
+		maxDelay:         200 * time.Millisecond,
+	})
+	require.Error(t, err)
+	require.Less(t, time.Since(start), 150*time.Millisecond, "switching to another configured model should not wait for backoff")
 }
