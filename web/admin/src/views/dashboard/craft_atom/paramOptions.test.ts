@@ -9,7 +9,9 @@ import {
 
 describe('craft atom param options', () => {
   it('treats ai-content-process extra-payload like ai-filter extra-payload', () => {
-    expect(isAIFilterExtraPayloadParam('ai-filter', 'extra-payload')).toBe(true);
+    expect(isAIFilterExtraPayloadParam('ai-filter', 'extra-payload')).toBe(
+      true
+    );
     expect(
       isAIFilterExtraPayloadParam('ai-content-process', 'extra-payload')
     ).toBe(true);
@@ -26,14 +28,14 @@ describe('craft atom param options', () => {
   });
 
   it('exposes ai-content-process placement as a single-select option set', () => {
-    expect(isAIContentProcessPlacementParam('ai-content-process', 'placement')).toBe(
-      true
-    );
+    expect(
+      isAIContentProcessPlacementParam('ai-content-process', 'placement')
+    ).toBe(true);
     expect(isAIContentProcessPlacementParam('ai-filter', 'placement')).toBe(
       false
     );
-    expect(aiContentProcessPlacementOptions.map((option) => option.value)).toEqual(
-      ['prepend', 'replace', 'append']
-    );
+    expect(
+      aiContentProcessPlacementOptions.map((option) => option.value)
+    ).toEqual(['prepend', 'replace', 'append']);
   });
 });
