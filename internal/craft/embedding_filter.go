@@ -221,7 +221,7 @@ var embeddingFilterParamTmpl = []ParamTemplate{
 	},
 	{
 		Key:         "max_content_length",
-		Description: "文章正文截取的最大字符数，用于控制 Embedding 输入长度。默认 2000。",
+		Description: "文章正文截取的最大字符数。最终发送给 Embedding 服务的单条输入还会受 FC_EMBEDDING_MAX_INPUT_CHARS 保护。默认 2000。",
 		Default:     "2000",
 	},
 	{

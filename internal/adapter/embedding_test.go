@@ -1,7 +1,9 @@
 package adapter
 
 import (
+	"strings"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -29,6 +31,21 @@ func TestLoadEmbeddingConfig_ReturnsNoFatal(t *testing.T) {
 	cfg, err := loadEmbeddingConfig()
 	assert.NoError(t, err)
 	assert.NotEmpty(t, cfg.apiType)
+}
+
+func TestLoadEmbeddingConfig_DefaultMaxInputChars(t *testing.T) {
+	cfg, err := loadEmbeddingConfig()
+	assert.NoError(t, err)
+	assert.Equal(t, defaultEmbeddingMaxInputChars, cfg.maxInputChars)
+}
+
+func TestLoadEmbeddingConfig_CustomMaxInputChars(t *testing.T) {
+	t.Setenv("FC_EMBEDDING_MAX_INPUT_CHARS", "4096")
+
+	cfg, err := loadEmbeddingConfig()
+
+	assert.NoError(t, err)
+	assert.Equal(t, 4096, cfg.maxInputChars)
 }
 
 // --- getOrCreateEmbedder 测试 ---
@@ -247,6 +264,26 @@ func TestBuildAnchorVectorCacheKeyIncludesProviderAndBase(t *testing.T) {
 
 	assert.NotEqual(t, keyA, keyB, "different API bases must not share cached anchor vectors")
 	assert.NotEqual(t, keyA, keyC, "different API types must not share cached anchor vectors")
+}
+
+func TestPrepareEmbeddingTextsTruncatesProcessedText(t *testing.T) {
+	cfg := embeddingConfig{maxInputChars: 10}
+
+	texts := prepareEmbeddingTexts([]string{strings.Repeat("你", 20)}, "", cfg)
+
+	assert.Len(t, texts, 1)
+	assert.Equal(t, 10, utf8.RuneCountInString(texts[0]))
+	assert.True(t, utf8.ValidString(texts[0]))
+}
+
+func TestPrepareEmbeddingTextsTruncatesInstructionAndTextTogether(t *testing.T) {
+	cfg := embeddingConfig{maxInputChars: 12}
+
+	texts := prepareEmbeddingTexts([]string{"abcdefghijklmnopqrstuvwxyz"}, "topic", cfg)
+
+	assert.Len(t, texts, 1)
+	assert.Equal(t, 12, utf8.RuneCountInString(texts[0]))
+	assert.True(t, strings.HasPrefix(texts[0], "topic: "))
 }
 
 // --- resolveInstruction 测试（需求 1）---

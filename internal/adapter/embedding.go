@@ -23,10 +23,11 @@ import (
  */
 
 const (
-	defaultEmbeddingModel     = "text-embedding-3-small"
-	embeddingCallTimeout      = 2 * time.Minute
-	embeddingTotalTimeout     = 5 * time.Minute // 全局超时预算，所有重试在此预算内执行
-	defaultEmbeddingBatchSize = 5               // 每批发送给 Embedding 服务的默认最大文本数
+	defaultEmbeddingModel         = "text-embedding-3-small"
+	embeddingCallTimeout          = 2 * time.Minute
+	embeddingTotalTimeout         = 5 * time.Minute // 全局超时预算，所有重试在此预算内执行
+	defaultEmbeddingBatchSize     = 5               // 每批发送给 Embedding 服务的默认最大文本数
+	defaultEmbeddingMaxInputChars = 8000            // 每条文本发送给 Embedding 服务前的默认字符上限（包含 instruction 前缀）
 )
 
 var (
@@ -39,12 +40,13 @@ var (
 
 // embeddingConfig 从环境变量读取的 Embedding 配置
 type embeddingConfig struct {
-	apiType     string
-	apiBase     string
-	apiKey      string
-	apiModel    string
-	instruction string // 全局默认 instruction
-	batchSize   int    // 每批发送给 Embedding 服务的最大文本数，用户可根据模型和硬件自行调整
+	apiType       string
+	apiBase       string
+	apiKey        string
+	apiModel      string
+	instruction   string // 全局默认 instruction
+	batchSize     int    // 每批发送给 Embedding 服务的最大文本数，用户可根据模型和硬件自行调整
+	maxInputChars int    // 每条 Embedding 输入的最大字符数，避免超过模型上下文限制
 }
 
 // loadEmbeddingConfig 读取 Embedding 环境变量，未配置时回退使用 LLM 配置
@@ -72,6 +74,15 @@ func loadEmbeddingConfig() (embeddingConfig, error) {
 		} else {
 			cfg.batchSize = parsed
 			logrus.Debugf("Embedding batch size set to %d from FC_EMBEDDING_BATCH_SIZE", parsed)
+		}
+	}
+	cfg.maxInputChars = defaultEmbeddingMaxInputChars
+	if maxInputCharsStr := envClient.GetString("EMBEDDING_MAX_INPUT_CHARS"); maxInputCharsStr != "" {
+		if parsed, parseErr := strconv.Atoi(maxInputCharsStr); parseErr != nil || parsed <= 0 {
+			logrus.Warnf("FC_EMBEDDING_MAX_INPUT_CHARS value [%s] is invalid, using default %d", maxInputCharsStr, defaultEmbeddingMaxInputChars)
+		} else {
+			cfg.maxInputChars = parsed
+			logrus.Debugf("Embedding max input chars set to %d from FC_EMBEDDING_MAX_INPUT_CHARS", parsed)
 		}
 	}
 
@@ -212,6 +223,29 @@ func resolveInstruction(instruction string, cfg embeddingConfig) string {
 	return cfg.instruction
 }
 
+func truncateTextByRunes(text string, maxRunes int) string {
+	if maxRunes <= 0 || len(text) == 0 {
+		return text
+	}
+	runes := []rune(text)
+	if len(runes) <= maxRunes {
+		return text
+	}
+	return string(runes[:maxRunes])
+}
+
+func prepareEmbeddingTexts(texts []string, effectiveInstruction string, cfg embeddingConfig) []string {
+	processedTexts := make([]string, len(texts))
+	prefix := ""
+	if effectiveInstruction != "" {
+		prefix = effectiveInstruction + ": "
+	}
+	for i, text := range texts {
+		processedTexts[i] = truncateTextByRunes(prefix+text, cfg.maxInputChars)
+	}
+	return processedTexts
+}
+
 // EmbedTexts 统一的 Embedding 接口，将文本列表编码为向量
 // instruction 参数：对于支持 instruction 的模型会拼接到文本前面，不支持的静默忽略
 // 返回 [][]float64 以便后续余弦相似度计算
@@ -223,14 +257,7 @@ func EmbedTexts(ctx context.Context, texts []string, instruction string) ([][]fl
 
 	// 解析最终生效的 instruction（调用方传入优先，为空时 fallback 到全局配置）
 	effectiveInstruction := resolveInstruction(instruction, cfg)
-
-	processedTexts := texts
-	if effectiveInstruction != "" {
-		processedTexts = make([]string, len(texts))
-		for i, t := range texts {
-			processedTexts[i] = effectiveInstruction + ": " + t
-		}
-	}
+	processedTexts := prepareEmbeddingTexts(texts, effectiveInstruction, cfg)
 
 	embedder, embedErr := getOrCreateEmbedder(cfg)
 	if embedErr != nil {

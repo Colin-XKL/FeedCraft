@@ -174,6 +174,7 @@ FC_EMBEDDING_API_BASE=https://api.openai.com/v1
 FC_EMBEDDING_API_KEY=sk-your-api-key
 FC_EMBEDDING_API_MODEL=text-embedding-3-small
 FC_EMBEDDING_BATCH_SIZE=5
+FC_EMBEDDING_MAX_INPUT_CHARS=8000
 ```
 
 `FC_EMBEDDING_API_TYPE` 支持：
@@ -183,6 +184,8 @@ FC_EMBEDDING_BATCH_SIZE=5
 - `ollama`: 本地 Ollama Embedding 模型。请设置 `FC_EMBEDDING_API_BASE`，例如 `http://localhost:11434`，并使用 `nomic-embed-text` 或 `bge-m3` 这类 Embedding 模型。
 
 如果 `FC_EMBEDDING_API_TYPE`、`FC_EMBEDDING_API_BASE`、`FC_EMBEDDING_API_KEY` 都没有设置，FeedCraft 会回退到对应的 `FC_LLM_API_TYPE`、`FC_LLM_API_BASE`、`FC_LLM_API_KEY`。Embedding 模型名是独立的：请将 `FC_EMBEDDING_API_MODEL` 设置为真正的 Embedding 模型；如果 API 类型是 `openai` 且未设置该变量，FeedCraft 会使用默认 Embedding 模型。FeedCraft 不会复用 `FC_LLM_API_MODEL`，因为它通常是聊天模型。
+
+`FC_EMBEDDING_MAX_INPUT_CHARS` 是发送给 Embedding 服务前的最终安全上限，包含 `instruction` 前缀。它是字符预算，不是精确的 tokenizer token 数。建议按模型 token 窗口设置保守值，例如 8k token 的 Embedding 模型可从 `8000` 开始。
 
 #### 参数
 
@@ -196,7 +199,7 @@ FC_EMBEDDING_BATCH_SIZE=5
 
 - `threshold` (默认: `0.6`): 余弦相似度阈值，范围 `0` 到 `1`。值越高越严格。建议从 `0.6` 开始；漏掉相关文章时调低，混入无关文章时调高。
 - `mode` (默认: `include`): `include` 保留匹配项；`exclude` 移除匹配项。
-- `max_content_length` (默认: `2000`): 发送给 Embedding 模型的文章正文最大字符数。
+- `max_content_length` (默认: `2000`): 当前 AtomCraft 使用的文章正文最大字符数；最终发送前还会受 `FC_EMBEDDING_MAX_INPUT_CHARS` 保护。
 - `instruction` (可选): 会作为文本前缀拼接到每条 Embedding 输入前。除非你的模型确实需要固定任务前缀，否则建议留空。
 
 #### 管理后台使用流程
@@ -219,3 +222,4 @@ FC_EMBEDDING_BATCH_SIZE=5
 - **"FC_EMBEDDING_API_MODEL must be set"**: 请配置单个 Embedding 模型。聊天模型不适合这个功能。
 - **所有文章都被移除**: 降低 `threshold`，增加更宽泛的锚点，或增大 `max_content_length`。
 - **无关文章仍然保留**: 提高 `threshold`，让锚点更具体，或用代表性短语替代宽泛分类名。
+- **服务商提示输入过长**: 降低 `FC_EMBEDDING_MAX_INPUT_CHARS`，降低 `max_content_length`，或缩短 `instruction`。
