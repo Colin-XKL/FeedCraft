@@ -174,6 +174,68 @@ func checkLLM(env *viper.Viper, activeCheck bool) DependencyStatus {
 	return DependencyStatus{Name: "LLM Service", Status: "Healthy", Details: details, Latency: time.Since(start).String()}
 }
 
+func checkEmbedding(activeCheck bool) DependencyStatus {
+	env := util.GetEnvClient()
+	embeddingType := env.GetString("EMBEDDING_API_TYPE")
+	embeddingBase := env.GetString("EMBEDDING_API_BASE")
+	embeddingKey := env.GetString("EMBEDDING_API_KEY")
+	embeddingModel := env.GetString("EMBEDDING_API_MODEL")
+	hasEmbeddingEndpointConfig := embeddingType != "" || embeddingBase != "" || embeddingKey != ""
+
+	if !hasEmbeddingEndpointConfig {
+		embeddingType = env.GetString("LLM_API_TYPE")
+		embeddingBase = env.GetString("LLM_API_BASE")
+		embeddingKey = env.GetString("LLM_API_KEY")
+	}
+	if embeddingType == "" {
+		embeddingType = "openai"
+	}
+	if embeddingModel == "" && embeddingType == "openai" {
+		embeddingModel = "text-embedding-3-small"
+	}
+
+	details := fmt.Sprintf("Type: %s, Model: %s, Base: %s", embeddingType, embeddingModel, embeddingBase)
+	if embeddingKey != "" {
+		details += fmt.Sprintf(", Key: %s", maskString(embeddingKey))
+	}
+
+	if embeddingModel == "" {
+		return DependencyStatus{Name: "Embedding Service", Status: "Not Configured", Details: details, Error: "FC_EMBEDDING_API_MODEL not set"}
+	}
+	if strings.Contains(embeddingModel, ",") {
+		return DependencyStatus{Name: "Embedding Service", Status: "Not Configured", Details: details, Error: "FC_EMBEDDING_API_MODEL must be a single embedding model"}
+	}
+	switch embeddingType {
+	case "ollama":
+		if embeddingBase == "" {
+			return DependencyStatus{Name: "Embedding Service", Status: "Not Configured", Details: details, Error: "FC_EMBEDDING_API_BASE not set"}
+		}
+	case "gemini":
+		if embeddingBase == "" {
+			return DependencyStatus{Name: "Embedding Service", Status: "Not Configured", Details: details, Error: "FC_EMBEDDING_API_BASE not set"}
+		}
+		if embeddingKey == "" {
+			return DependencyStatus{Name: "Embedding Service", Status: "Not Configured", Details: details, Error: "FC_EMBEDDING_API_KEY not set"}
+		}
+	default:
+		if embeddingKey == "" {
+			return DependencyStatus{Name: "Embedding Service", Status: "Not Configured", Details: details, Error: "FC_EMBEDDING_API_KEY not set"}
+		}
+	}
+
+	if !activeCheck {
+		return DependencyStatus{Name: "Embedding Service", Status: "Configured", Details: details}
+	}
+
+	start := time.Now()
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if _, err := adapter.EmbedTexts(ctx, []string{"FeedCraft embedding health check"}, ""); err != nil {
+		return DependencyStatus{Name: "Embedding Service", Status: "Unhealthy", Details: details, Error: err.Error()}
+	}
+	return DependencyStatus{Name: "Embedding Service", Status: "Healthy", Details: details, Latency: time.Since(start).String()}
+}
+
 func checkSearchProvider(activeCheck bool) DependencyStatus {
 	db := util.GetDatabase()
 	var cfg config.SearchProviderConfig
@@ -222,6 +284,7 @@ func getStatuses(activeCheck bool) []DependencyStatus {
 		checkRedis(envClient, activeCheck),
 		checkBrowserless(envClient, activeCheck),
 		checkLLM(envClient, activeCheck),
+		checkEmbedding(activeCheck),
 		checkSearchProvider(activeCheck),
 	}
 }

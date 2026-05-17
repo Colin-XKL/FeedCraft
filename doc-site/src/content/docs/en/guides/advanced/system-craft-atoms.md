@@ -154,3 +154,71 @@ Generic LLM-based filter. You define the condition for **exclusion**. The LLM ev
 - **Parameters:**
   - `filter_condition`: A natural language question/condition. If the LLM answers "yes" (true), the item is **removed**.
   - _Example:_ "Is this article about sports?" (Removes sports articles).
+
+### `embedding-filter`
+
+Semantic topic filtering powered by an embedding model. Instead of asking a chat model to judge every item, FeedCraft converts both your topic anchors and each article into vectors, compares them with cosine similarity, and then keeps or removes matching items.
+
+:::tip
+Use `embedding-filter` when you need fast, repeatable topic filtering such as "keep AI infrastructure news" or "remove sports articles". Use `llm-filter` when the rule needs nuanced reasoning, policy interpretation, or structured decisions.
+:::
+
+#### Environment variables
+
+Set a dedicated embedding endpoint when possible:
+
+```bash
+FC_EMBEDDING_API_TYPE=openai
+FC_EMBEDDING_API_BASE=https://api.openai.com/v1
+FC_EMBEDDING_API_KEY=sk-your-api-key
+FC_EMBEDDING_API_MODEL=text-embedding-3-small
+FC_EMBEDDING_BATCH_SIZE=5
+FC_EMBEDDING_MAX_INPUT_CHARS=8000
+```
+
+Supported `FC_EMBEDDING_API_TYPE` values:
+
+- `openai`: OpenAI or OpenAI-compatible embedding endpoint.
+- `gemini`: Gemini through its OpenAI-compatible embedding endpoint. Set `FC_EMBEDDING_API_BASE` and `FC_EMBEDDING_API_MODEL` explicitly.
+- `ollama`: Local Ollama embedding model. Set `FC_EMBEDDING_API_BASE`, for example `http://localhost:11434`, and an embedding model such as `nomic-embed-text` or `bge-m3`.
+
+If `FC_EMBEDDING_API_TYPE`, `FC_EMBEDDING_API_BASE`, and `FC_EMBEDDING_API_KEY` are not set, FeedCraft falls back to the matching `FC_LLM_API_TYPE`, `FC_LLM_API_BASE`, and `FC_LLM_API_KEY` values. The embedding model name is independent: set `FC_EMBEDDING_API_MODEL` to a real embedding model, or FeedCraft uses its OpenAI default when the API type is `openai`. FeedCraft does not reuse `FC_LLM_API_MODEL` because that value is usually a chat model.
+
+`FC_EMBEDDING_MAX_INPUT_CHARS` is a final safety cap applied to every text sent to the embedding service, including any `instruction` prefix. It is a character budget, not an exact tokenizer count. Keep it at or below a conservative value for your model's token window, for example `8000` for an 8k-token embedding model.
+
+#### Parameters
+
+- `anchors` (**required**): One topic anchor per line. Each anchor should describe what you want to match, for example:
+
+  ```text
+  artificial intelligence infrastructure
+  machine learning research
+  large language model deployment
+  ```
+
+- `threshold` (default: `0.6`): Cosine similarity threshold from `0` to `1`. Higher values are stricter. Start with `0.6`, lower it if relevant articles are missing, and raise it if unrelated articles slip through.
+- `mode` (default: `include`): `include` keeps matching items; `exclude` removes matching items.
+- `max_content_length` (default: `2000`): Maximum article content characters used by this AtomCraft before the final `FC_EMBEDDING_MAX_INPUT_CHARS` safety cap is applied.
+- `instruction` (optional): Text prefix prepended to every embedding input. Leave it empty unless your model benefits from a fixed task prefix.
+
+#### Admin UI workflow
+
+1. Open **Worktable → AtomCraft**.
+2. Create a new AtomCraft, for example `ai-news-only`.
+3. Select template `embedding-filter`.
+4. Fill `anchors` with one topic per line.
+5. Keep `mode=include` to keep matching items, or switch to `exclude` to remove matching items.
+6. Save the AtomCraft.
+7. Use it in a FlowCraft, Recipe, Feed Compare, or directly:
+
+```text
+/craft/ai-news-only?input_url=https%3A%2F%2Fexample.com%2Ffeed.xml
+```
+
+#### Troubleshooting
+
+- **"anchors parameter is required"**: Add at least one non-empty line to `anchors`.
+- **"FC_EMBEDDING_API_MODEL must be set"**: Configure a single embedding model. Chat models are not suitable here.
+- **All items are removed**: Lower `threshold`, add broader anchors, or increase `max_content_length`.
+- **Too many unrelated items remain**: Raise `threshold`, make anchors more specific, or switch from broad category names to representative phrases.
+- **Provider says the input is too long**: Lower `FC_EMBEDDING_MAX_INPUT_CHARS`, lower `max_content_length`, or shorten `instruction`.

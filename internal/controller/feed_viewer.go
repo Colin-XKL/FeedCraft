@@ -23,6 +23,32 @@ type FeedViewerPreviewReq struct {
 	CraftName string `json:"craft_name" form:"craft_name"`
 }
 
+type EmbeddingFilterPreviewReq struct {
+	InputURL         string   `json:"input_url" binding:"required"`
+	Anchors          string   `json:"anchors" binding:"required"`
+	Threshold        *float64 `json:"threshold"`
+	Mode             string   `json:"mode"`
+	MaxContentLength *int     `json:"max_content_length"`
+	Instruction      string   `json:"instruction"`
+}
+
+type embeddingFilterPreviewConfig struct {
+	inputURL         string
+	anchors          []string
+	threshold        float64
+	mode             craft.EmbeddingFilterMode
+	maxContentLength int
+	instruction      string
+}
+
+const (
+	maxEmbeddingFilterPreviewAnchors           = 20
+	maxEmbeddingFilterPreviewAnchorLength      = 500
+	maxEmbeddingFilterPreviewInstructionLength = 1000
+	maxEmbeddingFilterPreviewContentLength     = 8000
+	maxEmbeddingFilterPreviewItems             = 80
+)
+
 type FeedViewerPreview struct {
 	Title       string                  `json:"title"`
 	Description string                  `json:"description"`
@@ -81,6 +107,57 @@ func PreviewFeedViewer(c *gin.Context) {
 	})
 }
 
+func PreviewEmbeddingFilter(c *gin.Context) {
+	var req EmbeddingFilterPreviewReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
+		return
+	}
+
+	cfg, err := normalizeEmbeddingFilterPreviewRequest(req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
+		return
+	}
+	if err := validateFeedViewerURL(cfg.inputURL); err != nil {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: formatFeedViewerValidationError(err)})
+		return
+	}
+
+	feed, err := loadFeedViewerPreview(c, FeedViewerPreviewReq{InputURL: cfg.inputURL})
+	if err != nil {
+		status, msg := classifyFeedViewerError(err)
+		c.JSON(status, util.APIResponse[any]{StatusCode: -1, Msg: msg})
+		return
+	}
+	if len(feed.Articles) > maxEmbeddingFilterPreviewItems {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{
+			StatusCode: -1,
+			Msg:        fmt.Sprintf("embedding filter preview supports at most %d feed items", maxEmbeddingFilterPreviewItems),
+		})
+		return
+	}
+
+	craftedFeed, err := buildCraftPreviewWithOptions(feed, cfg.inputURL, []craft.CraftOption{craft.OptionEmbeddingFilterWithContext(
+		c.Request.Context(),
+		cfg.anchors,
+		cfg.threshold,
+		cfg.maxContentLength,
+		cfg.instruction,
+		cfg.mode,
+	)})
+	if err != nil {
+		status, msg := classifyFeedViewerError(err)
+		c.JSON(status, util.APIResponse[any]{StatusCode: -1, Msg: msg})
+		return
+	}
+
+	c.JSON(http.StatusOK, util.APIResponse[FeedViewerPreview]{
+		StatusCode: 0,
+		Data:       buildFeedViewerPreview(craftedFeed, cfg.inputURL),
+	})
+}
+
 func loadFeedViewerPreview(c *gin.Context, req FeedViewerPreviewReq) (*model.CraftFeed, error) {
 	cfg := &config.SourceConfig{
 		Type: constant.SourceRSS,
@@ -116,6 +193,64 @@ func loadFeedViewerPreview(c *gin.Context, req FeedViewerPreviewReq) (*model.Cra
 	return craftedFeed, nil
 }
 
+func normalizeEmbeddingFilterPreviewRequest(req EmbeddingFilterPreviewReq) (embeddingFilterPreviewConfig, error) {
+	cfg := embeddingFilterPreviewConfig{
+		inputURL:         strings.TrimSpace(req.InputURL),
+		threshold:        0.6,
+		mode:             craft.EmbeddingIncludeMode,
+		maxContentLength: 2000,
+		instruction:      strings.TrimSpace(req.Instruction),
+	}
+
+	for _, rawAnchor := range strings.Split(req.Anchors, "\n") {
+		anchor := strings.TrimSpace(rawAnchor)
+		if anchor != "" {
+			if len([]rune(anchor)) > maxEmbeddingFilterPreviewAnchorLength {
+				return cfg, fmt.Errorf("anchors must be at most %d characters each", maxEmbeddingFilterPreviewAnchorLength)
+			}
+			cfg.anchors = append(cfg.anchors, anchor)
+		}
+	}
+	if len(cfg.anchors) == 0 {
+		return cfg, errors.New("anchors parameter is required")
+	}
+	if len(cfg.anchors) > maxEmbeddingFilterPreviewAnchors {
+		return cfg, fmt.Errorf("anchors supports at most %d entries", maxEmbeddingFilterPreviewAnchors)
+	}
+	if len([]rune(cfg.instruction)) > maxEmbeddingFilterPreviewInstructionLength {
+		return cfg, fmt.Errorf("instruction must be at most %d characters", maxEmbeddingFilterPreviewInstructionLength)
+	}
+
+	if req.Threshold != nil {
+		if *req.Threshold < 0 || *req.Threshold > 1 {
+			return cfg, errors.New("threshold must be between 0 and 1")
+		}
+		cfg.threshold = *req.Threshold
+	}
+
+	mode := strings.ToLower(strings.TrimSpace(req.Mode))
+	switch mode {
+	case "", "include":
+		cfg.mode = craft.EmbeddingIncludeMode
+	case "exclude":
+		cfg.mode = craft.EmbeddingExcludeMode
+	default:
+		return cfg, errors.New("mode must be include or exclude")
+	}
+
+	if req.MaxContentLength != nil {
+		if *req.MaxContentLength <= 0 {
+			return cfg, errors.New("max_content_length must be greater than 0")
+		}
+		if *req.MaxContentLength > maxEmbeddingFilterPreviewContentLength {
+			return cfg, fmt.Errorf("max_content_length must be at most %d", maxEmbeddingFilterPreviewContentLength)
+		}
+		cfg.maxContentLength = *req.MaxContentLength
+	}
+
+	return cfg, nil
+}
+
 func buildCraftPreview(feed *model.CraftFeed, inputURL, craftName string) (*model.CraftFeed, error) {
 	atomXML, err := feed.ToFeedsFeed().ToAtom()
 	if err != nil {
@@ -133,6 +268,25 @@ func buildCraftPreview(feed *model.CraftFeed, inputURL, craftName string) (*mode
 	}
 
 	return model.FromFeedsFeed(craftedFeed), nil
+}
+
+func buildCraftPreviewWithOptions(feed *model.CraftFeed, inputURL string, options []craft.CraftOption) (*model.CraftFeed, error) {
+	atomXML, err := feed.ToFeedsFeed().ToAtom()
+	if err != nil {
+		return nil, err
+	}
+
+	parsedFeed, err := gofeed.NewParser().ParseString(atomXML)
+	if err != nil {
+		return nil, err
+	}
+
+	craftedFeed, err := craft.NewCraftedFeedFromGofeed(parsedFeed, inputURL, options...)
+	if err != nil {
+		return nil, err
+	}
+
+	return model.FromFeedsFeed(craftedFeed.OutputFeed), nil
 }
 
 func buildFeedViewerPreview(feed *model.CraftFeed, inputURL string) FeedViewerPreview {
@@ -228,6 +382,8 @@ func classifyFeedViewerError(err error) (int, string) {
 	lowerMsg := strings.ToLower(msg)
 
 	switch {
+	case isEmbeddingFilterConfigurationError(msg):
+		return http.StatusBadRequest, humanizeEmbeddingFilterError(msg)
 	case strings.Contains(lowerMsg, "browserless service returned status"):
 		return http.StatusOK, humanizeBrowserlessStatus(msg)
 	case strings.Contains(lowerMsg, "browser cdp render failed"),
@@ -249,6 +405,40 @@ func classifyFeedViewerError(err error) (int, string) {
 	default:
 		return http.StatusInternalServerError, "Failed to preview this feed due to an internal error."
 	}
+}
+
+func isEmbeddingFilterConfigurationError(msg string) bool {
+	lowerMsg := strings.ToLower(msg)
+	if !strings.Contains(lowerMsg, "[embedding-filter]") {
+		return false
+	}
+	return strings.Contains(lowerMsg, "failed to load embedding config") ||
+		strings.Contains(lowerMsg, "fc_embedding_") ||
+		strings.Contains(lowerMsg, "anchors parameter is required")
+}
+
+func humanizeEmbeddingFilterError(msg string) string {
+	detail := strings.TrimSpace(msg)
+	prefixes := []string{
+		"[embedding-filter] failed to compute anchor vectors:",
+		"failed to compute anchor vectors:",
+		"failed to load embedding config:",
+		"[embedding-filter]",
+	}
+	for {
+		trimmed := detail
+		for _, prefix := range prefixes {
+			trimmed = strings.TrimSpace(strings.TrimPrefix(trimmed, prefix))
+		}
+		if trimmed == detail {
+			break
+		}
+		detail = trimmed
+	}
+	if detail == "" {
+		return "Embedding filter is not configured correctly."
+	}
+	return "Embedding filter is not configured correctly: " + detail
 }
 
 func humanizeBrowserlessStatus(msg string) string {
