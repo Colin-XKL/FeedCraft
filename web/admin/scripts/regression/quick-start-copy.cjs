@@ -35,12 +35,48 @@ if (!component.includes("t('urlGenerator.copyError')")) {
   );
 }
 
+if (!component.includes('generatedInputUrl')) {
+  failures.push(
+    'quick_start should remember the input URL used for generation'
+  );
+}
+
+if (!component.includes('generatedCraft')) {
+  failures.push('quick_start should remember the craft used for generation');
+}
+
+if (!component.includes('isResultStale')) {
+  failures.push('quick_start should expose stale result state');
+}
+
+if (!component.includes('canCopyResult')) {
+  failures.push('quick_start should gate copying on a fresh generated result');
+}
+
+if (!component.includes(':disabled="!canCopyResult"')) {
+  failures.push(
+    'copy button should be disabled when the generated URL is stale'
+  );
+}
+
+if (!component.includes("t('urlGenerator.staleResultTip')")) {
+  failures.push('quick_start should explain stale generated URLs in the UI');
+}
+
 if (!zhLocale.includes("'urlGenerator.copyError'")) {
   failures.push('zh-CN locale should define urlGenerator.copyError');
 }
 
 if (!enLocale.includes("'urlGenerator.copyError'")) {
   failures.push('en-US locale should define urlGenerator.copyError');
+}
+
+if (!zhLocale.includes("'urlGenerator.staleResultTip'")) {
+  failures.push('zh-CN locale should define urlGenerator.staleResultTip');
+}
+
+if (!enLocale.includes("'urlGenerator.staleResultTip'")) {
+  failures.push('en-US locale should define urlGenerator.staleResultTip');
 }
 
 if (failures.length > 0) {
