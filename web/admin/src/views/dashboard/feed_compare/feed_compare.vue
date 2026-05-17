@@ -1,34 +1,41 @@
 <template>
-  <div class="py-8 px-16">
+  <div class="py-8 px-[clamp(20px,4vw,64px)] max-md:py-6 max-md:px-4">
     <x-header
       :title="t('menu.feedCompare')"
       :description="t('feedCompare.description')"
     ></x-header>
 
     <a-card class="my-2" :title="t('feedCompare.inputLink')">
-      <a-space>
+      <div
+        class="grid grid-cols-[minmax(20rem,1fr)_minmax(14rem,20rem)_auto] items-center gap-3 max-md:grid-cols-1"
+      >
         <a-input
           v-model="feedUrl"
           type="text"
-          class="min-w-48"
+          class="w-full min-w-0"
           :placeholder="t('feedCompare.placeholder')"
+          allow-clear
           @input="clearErrors"
           @keyup.enter="compareFeeds"
         />
         <CraftFlowSelect
           v-model="selectedCraft"
           mode="single"
-          class="min-w-48"
+          class="w-full min-w-0"
           @change="clearErrors"
         />
-        <a-button :loading="isLoading" type="primary" @click="compareFeeds"
+        <a-button
+          class="max-md:w-full"
+          :loading="isLoading"
+          type="primary"
+          @click="compareFeeds"
           >{{ t('feedCompare.compare') }}
         </a-button>
-      </a-space>
+      </div>
     </a-card>
 
-    <a-row :gutter="24">
-      <a-col :span="12">
+    <a-row :gutter="[24, 24]">
+      <a-col :span="12" :xs="24" :lg="12">
         <a-card :title="t('feedCompare.originalFeed')" :loading="isLoading">
           <a-alert v-if="originalFeedError" type="error" class="mb-4" show-icon>
             {{ originalFeedError }}
@@ -39,7 +46,7 @@
           <a-empty v-else-if="!originalFeedError" />
         </a-card>
       </a-col>
-      <a-col :span="12">
+      <a-col :span="12" :xs="24" :lg="12">
         <a-card :title="t('feedCompare.craftAppliedFeed')" :loading="isLoading">
           <a-alert
             v-if="craftAppliedFeedError"

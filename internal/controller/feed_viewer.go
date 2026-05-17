@@ -9,7 +9,6 @@ import (
 	"FeedCraft/internal/util"
 	"errors"
 	"fmt"
-	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -49,10 +48,18 @@ type FeedViewerPreviewItem struct {
 	ContentSnippet string `json:"contentSnippet"`
 }
 
+const feedViewerInvalidURLMessage = "Please enter a valid http(s) feed URL"
+const feedViewerInvalidURLError = "please enter a valid http(s) feed URL"
+
 func PreviewFeedViewer(c *gin.Context) {
+	if c.Request.Method != http.MethodGet {
+		c.JSON(http.StatusMethodNotAllowed, util.APIResponse[any]{StatusCode: -1, Msg: "Only GET requests are allowed for feed preview"})
+		return
+	}
+
 	var req FeedViewerPreviewReq
 	if err := c.ShouldBindQuery(&req); err != nil {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "Please enter a valid http(s) feed URL"})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: feedViewerInvalidURLMessage})
 		return
 	}
 
@@ -203,23 +210,13 @@ func formatFeedViewerValidationError(err error) string {
 func validateFeedViewerURL(rawURL string) error {
 	parsedURL, err := url.Parse(rawURL)
 	if err != nil || parsedURL == nil {
-		return errors.New("please enter a valid http(s) feed URL")
+		return errors.New(feedViewerInvalidURLError)
 	}
 	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
-		return errors.New("please enter a valid http(s) feed URL")
+		return errors.New(feedViewerInvalidURLError)
 	}
 	if parsedURL.Hostname() == "" {
-		return errors.New("please enter a valid http(s) feed URL")
-	}
-
-	ips, err := net.LookupIP(parsedURL.Hostname())
-	if err != nil {
-		return fmt.Errorf("unable to resolve this URL: %w", err)
-	}
-	for _, ip := range ips {
-		if ip.IsLoopback() || ip.IsPrivate() {
-			return fmt.Errorf("access to private IP %s is forbidden", ip.String())
-		}
+		return errors.New(feedViewerInvalidURLError)
 	}
 
 	return nil
@@ -240,7 +237,7 @@ func classifyFeedViewerError(err error) (int, string) {
 	case strings.Contains(lowerMsg, "http get failed:"), strings.Contains(lowerMsg, "browserless fetch failed:"), strings.Contains(lowerMsg, "failed to read response body:"), strings.Contains(lowerMsg, "unable to resolve this url"):
 		return http.StatusOK, "Unable to fetch this URL. Please check the address and try again."
 	case strings.Contains(lowerMsg, "parse failed:"), strings.Contains(lowerMsg, "invalid xml"):
-		return http.StatusOK, "The URL is reachable, but it does not appear to be a valid RSS or Atom feed."
+		return http.StatusOK, "The URL is reachable, but it does not appear to be a valid RSS, Atom, or JSON feed."
 	case strings.Contains(lowerMsg, "not a valid craft name"):
 		return http.StatusBadRequest, "Please select a valid craft before comparing feeds."
 	default:
