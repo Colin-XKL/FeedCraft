@@ -1,13 +1,26 @@
 package util
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
+	"strings"
+	"sync"
 	"time"
 
+	"github.com/chromedp/cdproto/network"
+	"github.com/chromedp/chromedp"
 	"github.com/go-resty/resty/v2"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
+)
+
+const (
+	BrowserProviderBrowserless     = "browserless"
+	BrowserProviderCloakBrowserCDP = "cloakbrowser-cdp"
 )
 
 type BrowserRenderReq struct {
@@ -33,19 +46,19 @@ type BrowserlessOptions struct {
 	WaitUntil string
 }
 
-// GetBrowserlessContent fetches the rendered HTML content of a URL using the browserless service.
-// It relies on the PUPPETEER_HTTP_ENDPOINT environment variable.
+type BrowserProviderConfig struct {
+	Provider string
+	Endpoint string
+}
+
+// GetBrowserlessContent fetches rendered HTML using the configured browser provider.
 func GetBrowserlessContent(websiteUrl string, options BrowserlessOptions) (string, error) {
 	envClient := GetEnvClient()
-	browserURI := envClient.GetString("PUPPETEER_HTTP_ENDPOINT")
-	if browserURI == "" {
-		// Log warning instead of fatal, as this might be called in contexts where we want to handle the error
-		logrus.Errorf("puppeteer websocket endpoint PUPPETEER_HTTP_ENDPOINT not found in env")
-		return "", fmt.Errorf("browserless service not configured (PUPPETEER_HTTP_ENDPOINT missing)")
+	cfg := ResolveBrowserProviderConfig(envClient)
+	if cfg.Endpoint == "" {
+		logrus.Errorf("browser provider endpoint not found in env")
+		return "", fmt.Errorf("browser provider not configured (FC_BROWSER_ENDPOINT or FC_PUPPETEER_HTTP_ENDPOINT missing)")
 	}
-	// Since we are moving to a utility, returning an error is better.
-	// But if the env is missing, it's a configuration error.
-	// I'll stick to error return.
 
 	_, err := url.Parse(websiteUrl)
 	if err != nil {
@@ -53,6 +66,40 @@ func GetBrowserlessContent(websiteUrl string, options BrowserlessOptions) (strin
 		return "", err
 	}
 
+	if options.Timeout <= 0 {
+		options.Timeout = 30 * time.Second
+	}
+
+	switch cfg.Provider {
+	case BrowserProviderBrowserless, "browserless-rest", "":
+		return getBrowserlessRESTContent(cfg.Endpoint, websiteUrl, options)
+	case BrowserProviderCloakBrowserCDP, "cloakbrowser":
+		return getCloakBrowserCDPContent(cfg.Endpoint, websiteUrl, options)
+	default:
+		return "", fmt.Errorf("unsupported browser provider %q", cfg.Provider)
+	}
+}
+
+func ResolveBrowserProviderConfig(env *viper.Viper) BrowserProviderConfig {
+	provider := strings.ToLower(strings.TrimSpace(env.GetString("BROWSER_PROVIDER")))
+	endpoint := strings.TrimSpace(env.GetString("BROWSER_ENDPOINT"))
+	if endpoint == "" {
+		endpoint = strings.TrimSpace(env.GetString("PUPPETEER_HTTP_ENDPOINT"))
+	}
+	if provider == "" {
+		provider = BrowserProviderBrowserless
+	}
+	return BrowserProviderConfig{
+		Provider: provider,
+		Endpoint: endpoint,
+	}
+}
+
+func resolveBrowserProviderConfig(env *viper.Viper) BrowserProviderConfig {
+	return ResolveBrowserProviderConfig(env)
+}
+
+func getBrowserlessRESTContent(browserURI string, websiteUrl string, options BrowserlessOptions) (string, error) {
 	client := resty.New().SetBaseURL(browserURI)
 	client.SetTimeout(options.Timeout)
 
@@ -89,4 +136,155 @@ func GetBrowserlessContent(websiteUrl string, options BrowserlessOptions) (strin
 	}
 
 	return response.String(), nil
+}
+
+func getCloakBrowserCDPContent(endpoint string, websiteUrl string, options BrowserlessOptions) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), options.Timeout)
+	defer cancel()
+
+	wsURL, err := getCloakBrowserWebSocketURL(ctx, endpoint)
+	if err != nil {
+		return "", err
+	}
+
+	allocCtx, cancelAlloc := chromedp.NewRemoteAllocator(ctx, wsURL)
+	defer cancelAlloc()
+
+	browserCtx, cancelBrowser := chromedp.NewContext(allocCtx)
+	defer cancelBrowser()
+
+	idleMonitor := newNetworkIdleMonitor()
+	chromedp.ListenTarget(browserCtx, idleMonitor.handleEvent)
+
+	var html string
+	actions := []chromedp.Action{
+		network.Enable(),
+		network.SetBlockedURLs([]string{
+			"*.png", "*.jpg", "*.jpeg", "*.gif", "*.webp", "*.svg", "*.ico",
+		}),
+		chromedp.Navigate(websiteUrl),
+	}
+	if strings.EqualFold(options.WaitUntil, "networkidle0") {
+		actions = append(actions, idleMonitor.waitAction(0, 500*time.Millisecond))
+	} else if strings.EqualFold(options.WaitUntil, "networkidle2") {
+		actions = append(actions, idleMonitor.waitAction(2, 500*time.Millisecond))
+	}
+	if options.WaitTime > 0 {
+		actions = append(actions, chromedp.Sleep(options.WaitTime))
+	}
+	actions = append(actions, chromedp.Evaluate(`document.documentElement.outerHTML`, &html))
+
+	if err := chromedp.Run(browserCtx, actions...); err != nil {
+		return "", fmt.Errorf("cloakbrowser cdp render failed: %w", err)
+	}
+	return html, nil
+}
+
+type cdpVersionResponse struct {
+	WebSocketDebuggerURL string `json:"webSocketDebuggerUrl"`
+}
+
+func getCloakBrowserWebSocketURL(ctx context.Context, endpoint string) (string, error) {
+	versionURL, err := BuildEndpointURL(endpoint, "/json/version")
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, versionURL, nil)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("cloakbrowser cdp version request failed: %w", err)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		body, _ := io.ReadAll(io.LimitReader(resp.Body, 200))
+		return "", fmt.Errorf("cloakbrowser cdp service returned status %d: %s", resp.StatusCode, string(body))
+	}
+
+	var version cdpVersionResponse
+	if err := json.NewDecoder(resp.Body).Decode(&version); err != nil {
+		return "", fmt.Errorf("failed to decode cloakbrowser cdp version response: %w", err)
+	}
+	if version.WebSocketDebuggerURL == "" {
+		return "", fmt.Errorf("cloakbrowser cdp version response missing webSocketDebuggerUrl")
+	}
+	return version.WebSocketDebuggerURL, nil
+}
+
+func BuildEndpointURL(endpoint string, path string) (string, error) {
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return "", err
+	}
+	basePath := strings.TrimRight(u.Path, "/")
+	nextPath := "/" + strings.TrimLeft(path, "/")
+	if basePath == "" {
+		u.Path = nextPath
+	} else {
+		u.Path = basePath + nextPath
+	}
+	return u.String(), nil
+}
+
+func buildEndpointURL(endpoint string, path string) (string, error) {
+	return BuildEndpointURL(endpoint, path)
+}
+
+type networkIdleMonitor struct {
+	mu       sync.Mutex
+	inflight map[network.RequestID]struct{}
+}
+
+func newNetworkIdleMonitor() *networkIdleMonitor {
+	return &networkIdleMonitor{inflight: make(map[network.RequestID]struct{})}
+}
+
+func (m *networkIdleMonitor) handleEvent(ev any) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	switch e := ev.(type) {
+	case *network.EventRequestWillBeSent:
+		m.inflight[e.RequestID] = struct{}{}
+	case *network.EventLoadingFinished:
+		delete(m.inflight, e.RequestID)
+	case *network.EventLoadingFailed:
+		delete(m.inflight, e.RequestID)
+	}
+}
+
+func (m *networkIdleMonitor) waitAction(maxInflight int, idleFor time.Duration) chromedp.ActionFunc {
+	return func(ctx context.Context) error {
+		ticker := time.NewTicker(100 * time.Millisecond)
+		defer ticker.Stop()
+
+		var idleSince time.Time
+		for {
+			m.mu.Lock()
+			inflight := len(m.inflight)
+			m.mu.Unlock()
+
+			if inflight <= maxInflight {
+				if idleSince.IsZero() {
+					idleSince = time.Now()
+				}
+				if time.Since(idleSince) >= idleFor {
+					return nil
+				}
+			} else {
+				idleSince = time.Time{}
+			}
+
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			case <-ticker.C:
+			}
+		}
+	}
 }

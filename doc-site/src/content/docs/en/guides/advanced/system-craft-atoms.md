@@ -21,7 +21,7 @@ Extracts the full content of the article from the original webpage.
 Extracts full content using a headless browser (Puppeteer).
 
 - **Use case:** For websites that require JavaScript to render content or have strong anti-bot protections.
-- **Mechanism:** Connects to the configured Browserless/Puppeteer service to render the page. Slower but more robust.
+- **Mechanism:** Connects to the configured browser provider (`browserless` or `cloakbrowser-cdp`) to render the page. Slower but more robust.
 - **Parameters:**
   - `mode` (default: `networkidle2`): Wait condition.
     - `load`: Wait for the `load` event.
