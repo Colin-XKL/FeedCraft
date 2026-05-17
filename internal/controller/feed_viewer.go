@@ -231,6 +231,8 @@ func classifyFeedViewerError(err error) (int, string) {
 	lowerMsg := strings.ToLower(msg)
 
 	switch {
+	case strings.Contains(lowerMsg, "[embedding-filter]"):
+		return http.StatusBadRequest, humanizeEmbeddingFilterError(msg)
 	case strings.Contains(lowerMsg, "browserless service returned status"):
 		return http.StatusOK, humanizeBrowserlessStatus(msg)
 	case strings.Contains(lowerMsg, "http status not ok:"):
@@ -244,6 +246,30 @@ func classifyFeedViewerError(err error) (int, string) {
 	default:
 		return http.StatusInternalServerError, "Failed to preview this feed due to an internal error."
 	}
+}
+
+func humanizeEmbeddingFilterError(msg string) string {
+	detail := strings.TrimSpace(msg)
+	prefixes := []string{
+		"[embedding-filter] failed to compute anchor vectors:",
+		"failed to compute anchor vectors:",
+		"failed to load embedding config:",
+		"[embedding-filter]",
+	}
+	for {
+		trimmed := detail
+		for _, prefix := range prefixes {
+			trimmed = strings.TrimSpace(strings.TrimPrefix(trimmed, prefix))
+		}
+		if trimmed == detail {
+			break
+		}
+		detail = trimmed
+	}
+	if detail == "" {
+		return "Embedding filter is not configured correctly."
+	}
+	return "Embedding filter is not configured correctly: " + detail
 }
 
 func humanizeBrowserlessStatus(msg string) string {

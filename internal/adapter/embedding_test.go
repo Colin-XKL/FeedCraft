@@ -171,6 +171,35 @@ func TestLoadEmbeddingConfig_OpenAIDefaultModel(t *testing.T) {
 	assert.Equal(t, defaultEmbeddingModel, cfg.apiModel, "openai should use default model when not set")
 }
 
+func TestLoadEmbeddingConfig_FallsBackToLLMTypeAndModel(t *testing.T) {
+	t.Setenv("FC_LLM_API_TYPE", "ollama")
+	t.Setenv("FC_LLM_API_BASE", "http://localhost:11434")
+	t.Setenv("FC_LLM_API_MODEL", "nomic-embed-text")
+	t.Setenv("FC_EMBEDDING_API_TYPE", "")
+	t.Setenv("FC_EMBEDDING_API_BASE", "")
+	t.Setenv("FC_EMBEDDING_API_MODEL", "")
+
+	cfg, err := loadEmbeddingConfig()
+
+	assert.NoError(t, err)
+	assert.Equal(t, "ollama", cfg.apiType)
+	assert.Equal(t, "http://localhost:11434", cfg.apiBase)
+	assert.Equal(t, "nomic-embed-text", cfg.apiModel)
+}
+
+func TestBuildAnchorVectorCacheKeyIncludesProviderAndBase(t *testing.T) {
+	cfgA := embeddingConfig{apiType: "openai", apiBase: "https://provider-a.example/v1", apiModel: "embed-model"}
+	cfgB := embeddingConfig{apiType: "openai", apiBase: "https://provider-b.example/v1", apiModel: "embed-model"}
+	cfgC := embeddingConfig{apiType: "ollama", apiBase: "https://provider-a.example/v1", apiModel: "embed-model"}
+
+	keyA := buildAnchorVectorCacheKey("anchor text", cfgA, "instruction")
+	keyB := buildAnchorVectorCacheKey("anchor text", cfgB, "instruction")
+	keyC := buildAnchorVectorCacheKey("anchor text", cfgC, "instruction")
+
+	assert.NotEqual(t, keyA, keyB, "different API bases must not share cached anchor vectors")
+	assert.NotEqual(t, keyA, keyC, "different API types must not share cached anchor vectors")
+}
+
 // --- resolveInstruction 测试（需求 1）---
 
 func TestResolveInstruction_ExplicitInstruction(t *testing.T) {

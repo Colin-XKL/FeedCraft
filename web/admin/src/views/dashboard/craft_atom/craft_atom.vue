@@ -124,10 +124,55 @@
                       :options="aiFilterExtraPayloadOptions"
                       :placeholder="t('craftAtom.form.value')"
                     />
+                    <a-select
+                      v-else-if="
+                        isEmbeddingFilterModeParam(
+                          editedCraftAtom.template_name,
+                          param.key
+                        )
+                      "
+                      v-model="param.value"
+                      :options="embeddingFilterModeOptions"
+                      :placeholder="t('craftAtom.form.value')"
+                    />
+                    <a-input-number
+                      v-else-if="
+                        isEmbeddingFilterThresholdParam(
+                          editedCraftAtom.template_name,
+                          param.key
+                        )
+                      "
+                      v-model="param.value"
+                      :min="0"
+                      :max="1"
+                      :step="0.05"
+                      :precision="2"
+                      :placeholder="t('craftAtom.form.value')"
+                    />
+                    <a-input-number
+                      v-else-if="
+                        isEmbeddingFilterMaxContentLengthParam(
+                          editedCraftAtom.template_name,
+                          param.key
+                        )
+                      "
+                      v-model="param.value"
+                      :min="1"
+                      :step="100"
+                      :placeholder="t('craftAtom.form.value')"
+                    />
                     <a-textarea
                       v-else
                       v-model="param.value"
                       :placeholder="t('craftAtom.form.value')"
+                      :auto-size="
+                        isEmbeddingFilterAnchorsParam(
+                          editedCraftAtom.template_name,
+                          param.key
+                        )
+                          ? { minRows: 4, maxRows: 8 }
+                          : { minRows: 2, maxRows: 4 }
+                      "
                     />
                   </a-col>
                   <a-col :span="2">
@@ -178,10 +223,16 @@
   import { listCraftTemplates } from '@/api/craft_flow';
   import { namingValidator } from '@/utils/validator';
   import { useI18n } from 'vue-i18n';
+  import { Message } from '@arco-design/web-vue';
   import {
     aiFilterExtraPayloadOptions,
     CraftParamValue,
+    embeddingFilterModeOptions,
     isAIFilterExtraPayloadParam,
+    isEmbeddingFilterAnchorsParam,
+    isEmbeddingFilterMaxContentLengthParam,
+    isEmbeddingFilterModeParam,
+    isEmbeddingFilterThresholdParam,
     serializeCraftParamValue,
     toCraftParamFormValue,
   } from './paramOptions';
@@ -292,6 +343,21 @@
     formParams.value.splice(index, 1);
   };
 
+  const validateEmbeddingFilterParams = (paramsMap: Record<string, string>) => {
+    if (editedCraftAtom.value.template_name !== 'embedding-filter') {
+      return true;
+    }
+    if (!paramsMap.anchors?.trim()) {
+      Message.error('Embedding filter requires at least one anchor.');
+      return false;
+    }
+    if (paramsMap.mode && !['include', 'exclude'].includes(paramsMap.mode)) {
+      Message.error('Embedding filter mode must be include or exclude.');
+      return false;
+    }
+    return true;
+  };
+
   const saveCraftAtom = async () => {
     const res = await formRef.value?.validate();
     if (res) return;
@@ -304,6 +370,9 @@
         paramsMap[param.key] = value;
       }
     });
+    if (!validateEmbeddingFilterParams(paramsMap)) {
+      return;
+    }
     editedCraftAtom.value.params = paramsMap;
 
     if (isUpdating.value) {

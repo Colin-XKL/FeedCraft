@@ -32,7 +32,7 @@ var (
 	// embeddingClients 缓存已创建的 Embedding 客户端实例（惰性单例）
 	embeddingClients sync.Map
 
-	// anchorVectorCache 锚点向量内存缓存，key = MD5(锚点文本) + "|" + 模型名称
+	// anchorVectorCache 锚点向量内存缓存，key 包含 provider/base/model/instruction/锚点文本
 	anchorVectorCache sync.Map
 )
 
@@ -75,6 +75,12 @@ func loadEmbeddingConfig() (embeddingConfig, error) {
 
 	// 2. 回退逻辑：未配置时使用 LLM 配置
 	if cfg.apiType == "" {
+		cfg.apiType = envClient.GetString("LLM_API_TYPE")
+		if cfg.apiType != "" {
+			logrus.Debug("FC_EMBEDDING_API_TYPE not set, falling back to FC_LLM_API_TYPE")
+		}
+	}
+	if cfg.apiType == "" {
 		cfg.apiType = "openai"
 	}
 
@@ -93,6 +99,13 @@ func loadEmbeddingConfig() (embeddingConfig, error) {
 	}
 
 	if cfg.apiModel == "" {
+		cfg.apiModel = envClient.GetString("LLM_API_MODEL")
+		if cfg.apiModel != "" {
+			logrus.Debug("FC_EMBEDDING_API_MODEL not set, falling back to FC_LLM_API_MODEL")
+		}
+	}
+
+	if cfg.apiModel == "" {
 		switch cfg.apiType {
 		case "ollama", "gemini":
 			return embeddingConfig{}, fmt.Errorf("FC_EMBEDDING_API_MODEL must be set when using FC_EMBEDDING_API_TYPE='%s'", cfg.apiType)
@@ -103,6 +116,17 @@ func loadEmbeddingConfig() (embeddingConfig, error) {
 	}
 
 	return cfg, nil
+}
+
+func buildAnchorVectorCacheKey(anchor string, cfg embeddingConfig, effectiveInstruction string) string {
+	return fmt.Sprintf(
+		"anchor|%s|%s|%s|%s|%s",
+		cfg.apiType,
+		cfg.apiBase,
+		cfg.apiModel,
+		util.GetMD5Hash(effectiveInstruction),
+		util.GetMD5Hash(anchor),
+	)
 }
 
 // getOrCreateEmbedder 获取或创建 Embedding 客户端（带缓存）
@@ -281,10 +305,8 @@ func GetOrComputeAnchorVectors(ctx context.Context, anchors []string, instructio
 	if err != nil {
 		return nil, fmt.Errorf("failed to load embedding config: %w", err)
 	}
-	modelName := cfg.apiModel
 	// 使用 resolveInstruction 解析最终生效的 instruction，确保缓存 key 与 EmbedTexts 实际使用的一致
 	effectiveInstruction := resolveInstruction(instruction, cfg)
-	instructionHash := util.GetMD5Hash(effectiveInstruction)
 
 	// 检查哪些锚点已缓存，哪些需要计算
 	result := make([][]float64, len(anchors))
@@ -292,7 +314,7 @@ func GetOrComputeAnchorVectors(ctx context.Context, anchors []string, instructio
 	var uncachedTexts []string
 
 	for i, anchor := range anchors {
-		cacheKey := fmt.Sprintf("anchor|%s|%s|%s", util.GetMD5Hash(anchor), modelName, instructionHash)
+		cacheKey := buildAnchorVectorCacheKey(anchor, cfg, effectiveInstruction)
 		if cached, ok := anchorVectorCache.Load(cacheKey); ok {
 			result[i] = cached.([]float64)
 		} else {
@@ -322,7 +344,7 @@ func GetOrComputeAnchorVectors(ctx context.Context, anchors []string, instructio
 
 	// 将新计算的向量写入缓存和结果
 	for j, idx := range uncachedIndices {
-		cacheKey := fmt.Sprintf("anchor|%s|%s|%s", util.GetMD5Hash(anchors[idx]), modelName, instructionHash)
+		cacheKey := buildAnchorVectorCacheKey(anchors[idx], cfg, effectiveInstruction)
 		anchorVectorCache.Store(cacheKey, newVectors[j])
 		result[idx] = newVectors[j]
 	}

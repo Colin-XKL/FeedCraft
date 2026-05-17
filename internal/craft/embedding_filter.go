@@ -4,6 +4,7 @@ import (
 	"FeedCraft/internal/adapter"
 	"FeedCraft/internal/util"
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -24,6 +25,8 @@ const (
 	defaultEmbeddingThreshold = 0.6
 	defaultMaxContentLength   = 2000
 )
+
+var errEmbeddingFilterAnchorsRequired = errors.New("[embedding-filter] anchors parameter is required")
 
 // EmbeddingFilterMode 定义 Embedding 过滤器的工作模式
 type EmbeddingFilterMode string
@@ -58,8 +61,7 @@ func OptionEmbeddingFilter(anchors []string, threshold float64, maxContentLen in
 
 		// 1. 校验锚点
 		if len(anchors) == 0 {
-			logrus.Warn("[embedding-filter] anchors list is empty, skipping filter (returning all items)")
-			return nil
+			return errEmbeddingFilterAnchorsRequired
 		}
 
 		ctx := context.Background()
@@ -222,7 +224,7 @@ var embeddingFilterParamTmpl = []ParamTemplate{
 	},
 	{
 		Key:         "instruction",
-		Description: "传递给 Embedding 模型的 instruction 参数（如果模型支持）。留空则使用全局配置。",
+		Description: "作为文本前缀拼接到每条 Embedding 输入前。留空则使用全局配置。",
 		Default:     "",
 	},
 }
@@ -233,7 +235,7 @@ func embeddingFilterLoadParam(m map[string]string) []CraftOption {
 	anchorsStr := m["anchors"]
 	if anchorsStr == "" {
 		logrus.Warn("[embedding-filter] anchors parameter is empty")
-		return []CraftOption{}
+		return []CraftOption{embeddingFilterConfigError(errEmbeddingFilterAnchorsRequired)}
 	}
 	rawAnchors := strings.Split(anchorsStr, "\n")
 	var anchors []string
@@ -245,7 +247,7 @@ func embeddingFilterLoadParam(m map[string]string) []CraftOption {
 	}
 	if len(anchors) == 0 {
 		logrus.Warn("[embedding-filter] no valid anchors after parsing")
-		return []CraftOption{}
+		return []CraftOption{embeddingFilterConfigError(errEmbeddingFilterAnchorsRequired)}
 	}
 
 	// 解析阈值
@@ -287,4 +289,10 @@ func embeddingFilterLoadParam(m map[string]string) []CraftOption {
 	instruction := m["instruction"]
 
 	return GetEmbeddingFilterOptions(anchors, threshold, maxContentLen, instruction, mode)
+}
+
+func embeddingFilterConfigError(err error) CraftOption {
+	return func(feed *feeds.Feed, payload ExtraPayload) error {
+		return err
+	}
 }

@@ -45,3 +45,15 @@ func TestClassifyFeedViewerErrorHandlesLowercaseResolveMessage(t *testing.T) {
 		t.Fatalf("msg = %q, want %q", msg, want)
 	}
 }
+
+func TestClassifyFeedViewerErrorExplainsEmbeddingConfiguration(t *testing.T) {
+	status, msg := classifyFeedViewerError(errors.New("[embedding-filter] failed to compute anchor vectors: failed to load embedding config: FC_EMBEDDING_API_MODEL must be set when using FC_EMBEDDING_API_TYPE='ollama'"))
+
+	if status != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d", status, http.StatusBadRequest)
+	}
+	const want = "Embedding filter is not configured correctly: FC_EMBEDDING_API_MODEL must be set when using FC_EMBEDDING_API_TYPE='ollama'"
+	if msg != want {
+		t.Fatalf("msg = %q, want %q", msg, want)
+	}
+}
