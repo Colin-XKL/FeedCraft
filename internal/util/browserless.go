@@ -20,8 +20,8 @@ import (
 )
 
 const (
-	BrowserProviderBrowserlessREST = "browserless-rest"
-	BrowserProviderCDP             = "cdp"
+	BrowserProviderBrowserlessRESTful = "browserless-restful"
+	BrowserProviderCDP                = "cdp"
 )
 
 type BrowserRenderReq struct {
@@ -72,7 +72,7 @@ func GetBrowserlessContent(websiteUrl string, options BrowserlessOptions) (strin
 	}
 
 	switch cfg.Provider {
-	case BrowserProviderBrowserlessREST, "browserless", "":
+	case BrowserProviderBrowserlessRESTful, "browserless-rest", "browserless", "":
 		return getBrowserlessRESTContent(cfg.Endpoint, websiteUrl, options)
 	case BrowserProviderCDP:
 		return getCDPContent(cfg.Endpoint, websiteUrl, options)
@@ -83,7 +83,7 @@ func GetBrowserlessContent(websiteUrl string, options BrowserlessOptions) (strin
 
 func IsSupportedBrowserProvider(provider string) bool {
 	switch strings.ToLower(strings.TrimSpace(provider)) {
-	case BrowserProviderBrowserlessREST, "browserless", BrowserProviderCDP:
+	case BrowserProviderBrowserlessRESTful, "browserless-rest", "browserless", BrowserProviderCDP:
 		return true
 	default:
 		return false
@@ -97,7 +97,7 @@ func ResolveBrowserProviderConfig(env *viper.Viper) BrowserProviderConfig {
 		endpoint = strings.TrimSpace(env.GetString("PUPPETEER_HTTP_ENDPOINT"))
 	}
 	if provider == "" {
-		provider = BrowserProviderBrowserlessREST
+		provider = BrowserProviderBrowserlessRESTful
 	}
 	return BrowserProviderConfig{
 		Provider: provider,

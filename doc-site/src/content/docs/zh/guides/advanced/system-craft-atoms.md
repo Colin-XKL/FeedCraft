@@ -21,7 +21,7 @@ FeedCraft 内置了一系列“原子工艺 (AtomCrafts)”，用于对订阅源
 使用无头浏览器 (Puppeteer) 提取全文。
 
 - **适用场景:** 针对通过 JavaScript 动态渲染内容或有较强反爬虫措施的网站。
-- **机制:** 连接到配置的浏览器提供方（`browserless-rest` 或 `cdp`）来渲染页面。速度较慢但兼容性更强。
+- **机制:** 连接到配置的浏览器提供方（`browserless-restful` 或 `cdp`）来渲染页面。速度较慢但兼容性更强。
 - **参数:**
   - `mode` (默认: `networkidle2`): 页面加载等待模式。
     - `load`: 等待 `load` 事件。

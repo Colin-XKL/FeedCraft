@@ -23,7 +23,7 @@ func TestGetBrowserlessContentUsesBrowserEndpointForBrowserlessProvider(t *testi
 	}))
 	defer server.Close()
 
-	t.Setenv("FC_BROWSER_PROVIDER", "browserless-rest")
+	t.Setenv("FC_BROWSER_PROVIDER", "browserless-restful")
 	t.Setenv("FC_BROWSER_ENDPOINT", server.URL)
 	t.Setenv("FC_PUPPETEER_HTTP_ENDPOINT", "")
 
@@ -49,7 +49,7 @@ func TestResolveBrowserProviderConfigFallsBackToLegacyBrowserlessEndpoint(t *tes
 
 	cfg := resolveBrowserProviderConfig(GetEnvClient())
 
-	assert.Equal(t, BrowserProviderBrowserlessREST, cfg.Provider)
+	assert.Equal(t, BrowserProviderBrowserlessRESTful, cfg.Provider)
 	assert.Equal(t, "http://legacy-browserless:3000", cfg.Endpoint)
 }
 
