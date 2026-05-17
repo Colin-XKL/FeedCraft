@@ -369,7 +369,7 @@
     const paramsMap: Record<string, string> = {};
     formParams.value.forEach((param) => {
       const value = serializeCraftParamValue(param.value);
-      if (param.key && value) {
+      if (param.key && value !== '') {
         paramsMap[param.key] = value;
       }
     });
