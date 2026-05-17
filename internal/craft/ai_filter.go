@@ -105,9 +105,13 @@ func evaluateAIFilterItem(item *feeds.Item, rule string, payloadTypes []aiFilter
 }
 
 func parseAIFilterExtraPayload(raw string) []aiFilterExtraPayloadType {
+	return parseAIFilterExtraPayloadWithDefault(raw, []aiFilterExtraPayloadType{aiFilterExtraPayloadArticleSummary})
+}
+
+func parseAIFilterExtraPayloadWithDefault(raw string, defaultPayloadTypes []aiFilterExtraPayloadType) []aiFilterExtraPayloadType {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
-		return []aiFilterExtraPayloadType{aiFilterExtraPayloadArticleSummary}
+		return defaultPayloadTypes
 	}
 
 	normalized := strings.NewReplacer("|", ",", "\n", ",", "\t", ",").Replace(raw)
@@ -129,7 +133,7 @@ func parseAIFilterExtraPayload(raw string) []aiFilterExtraPayloadType {
 		}
 	}
 	if len(payloadTypes) == 0 {
-		return []aiFilterExtraPayloadType{aiFilterExtraPayloadArticleSummary}
+		return defaultPayloadTypes
 	}
 	return payloadTypes
 }
@@ -164,6 +168,7 @@ func cachedAIFilterDecision(title string, prompt string, context string) (aiFilt
 		result, err := llmContextCaller(prompt, context, util.ContentProcessOption{
 			RemoveImage: true,
 			ConvertToMd: true,
+			Temperature: util.LowestLLMTemperaturePtr(),
 		})
 		if err != nil {
 			return "", err
@@ -247,7 +252,9 @@ func generateAIFilterArticleSummary(item *feeds.Item) (string, error) {
 		if strings.TrimSpace(cleanedContent) != "" {
 			processedContent = cleanedContent
 		}
-		return llmContextCaller(summaryPrompt, processedContent, util.ContentProcessOption{})
+		return llmContextCaller(summaryPrompt, processedContent, util.ContentProcessOption{
+			Temperature: util.LowestLLMTemperaturePtr(),
+		})
 	}, func(isCached bool) {
 		logrus.Infof("generating ai-filter article summary for article [%s], cached: %v", item.Title, isCached)
 	})

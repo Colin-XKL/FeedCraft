@@ -74,10 +74,18 @@ type llmModelClient struct {
 }
 
 func SimpleLLMCall(model string, promptInput string) (string, error) {
-	return simpleLLMCall(model, promptInput, defaultLLMRetryConfig)
+	return simpleLLMCallWithOptions(model, promptInput, defaultLLMRetryConfig, nil)
+}
+
+func SimpleLLMCallWithOptions(model string, promptInput string, callOptions ...llms.CallOption) (string, error) {
+	return simpleLLMCallWithOptions(model, promptInput, defaultLLMRetryConfig, callOptions)
 }
 
 func simpleLLMCall(model string, promptInput string, retryConfig llmRetryConfig) (string, error) {
+	return simpleLLMCallWithOptions(model, promptInput, retryConfig, nil)
+}
+
+func simpleLLMCallWithOptions(model string, promptInput string, retryConfig llmRetryConfig, callOptions []llms.CallOption) (string, error) {
 	envClient := util.GetEnvClient()
 	if envClient == nil {
 		log.Fatalf("get env client error.")
@@ -209,7 +217,7 @@ func simpleLLMCall(model string, promptInput string, retryConfig llmRetryConfig)
 					llms.TextParts(llms.ChatMessageTypeHuman, promptInput),
 				}
 
-				resp, err := modelClient.llm.GenerateContent(ctx, content)
+				resp, err := modelClient.llm.GenerateContent(ctx, content, callOptions...)
 				if err != nil {
 					return "", err
 				}

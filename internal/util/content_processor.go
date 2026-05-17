@@ -16,6 +16,14 @@ type ContentProcessOption struct {
 	RemoveLinks bool
 	RemoveImage bool
 	ConvertToMd bool
+	Temperature *float64
+}
+
+const LowestLLMTemperature = 0.0
+
+func LowestLLMTemperaturePtr() *float64 {
+	temperature := LowestLLMTemperature
+	return &temperature
 }
 
 func ProcessContent(content string, option ContentProcessOption) string {

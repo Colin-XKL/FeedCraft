@@ -110,7 +110,15 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		Name:                "ai-filter",
 		Description:         "使用 LLM 根据自定义规则判断文章应保留还是排除，要求返回 JSON",
 		ParamTemplateDefine: aiFilterCraftParamTmpl,
+		TemplateOnly:        true,
 		OptionFunc:          aiFilterCraftLoadParam,
+	}
+	sysCraftTempList["ai-content-process"] = CraftTemplate{
+		Name:                "ai-content-process",
+		Description:         "使用 LLM 根据自定义规则处理文章内容，可追加到开头、替换原文或追加到末尾",
+		ParamTemplateDefine: aiContentProcessCraftParamTmpl,
+		TemplateOnly:        true,
+		OptionFunc:          aiContentProcessCraftLoadParam,
 	}
 	sysCraftTempList["translate-title"] = CraftTemplate{
 		Name:                "translate-title",

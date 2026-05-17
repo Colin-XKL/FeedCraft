@@ -7,6 +7,7 @@ type CraftTemplate struct {
 	Name                string                                `json:"name" binding:"required"`
 	Description         string                                `json:"description"`
 	ParamTemplateDefine []ParamTemplate                       `json:"param_template_define"` // param 格式, 主要给用户填写时提供参考
+	TemplateOnly        bool                                  `json:"template_only"`         // 仅作为用户自定义 AtomCraft 的模板，不应直接作为可选 craft 使用
 	OptionFunc          func(map[string]string) []CraftOption `json:"-"`
 }
 

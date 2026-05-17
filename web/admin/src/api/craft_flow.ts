@@ -79,6 +79,7 @@ interface CraftTemplate {
   name: string;
   description?: string;
   param_template_define: ParamTemplate[];
+  template_only?: boolean;
 }
 
 export function listCraftTemplates(): Promise<APIResponse<CraftTemplate[]>> {
