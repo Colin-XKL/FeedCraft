@@ -175,7 +175,8 @@
   const isTesting = ref(false);
   const isSaving = ref(false);
   const hasCompared = computed(
-    () => Boolean(originalFeedContent.value) || Boolean(filteredFeedContent.value)
+    () =>
+      Boolean(originalFeedContent.value) || Boolean(filteredFeedContent.value)
   );
 
   function hasRequiredInput() {
