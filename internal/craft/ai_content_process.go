@@ -139,9 +139,9 @@ func applyAIContentProcessPlacement(originalHTML string, generatedMarkdown strin
 	case aiContentProcessPlacementReplace:
 		return generatedHTML
 	case aiContentProcessPlacementAppend:
-		return fmt.Sprintf(`<div><div>%s</div><hr/><br/><div>%s</div></div>`, originalHTML, generatedHTML)
+		return combineArticleHTMLFragments(originalHTML, generatedHTML)
 	default:
-		return combineArticleHTMLWithGeneratedMarkdown(originalHTML, generatedMarkdown)
+		return combineArticleHTMLFragments(generatedHTML, originalHTML)
 	}
 }
 

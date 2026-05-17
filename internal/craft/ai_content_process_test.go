@@ -87,6 +87,21 @@ func TestOptionAIContentProcessSupportsReplaceAndAppendPlacements(t *testing.T) 
 	assert.Less(t, strings.Index(content, "original body"), strings.Index(content, "replacement or appendix"))
 }
 
+func TestApplyAIContentProcessPlacementOmitsSeparatorWhenOriginalEmpty(t *testing.T) {
+	generatedMarkdown := "## Generated\n\nNo original content"
+
+	prepended := applyAIContentProcessPlacement("", generatedMarkdown, aiContentProcessPlacementPrepend)
+	appended := applyAIContentProcessPlacement("", generatedMarkdown, aiContentProcessPlacementAppend)
+
+	for _, content := range []string{prepended, appended} {
+		assert.Contains(t, content, "<h2")
+		assert.Contains(t, content, "No original content")
+		assert.NotContains(t, content, "<hr")
+		assert.NotContains(t, content, "<br")
+	}
+	assert.Equal(t, prepended, appended)
+}
+
 func TestOptionAIContentProcessCacheKeyIncludesPlacement(t *testing.T) {
 	setupTestRedis(t)
 
