@@ -46,9 +46,10 @@ const showSessionExpiredModal = () => {
   sessionExpiredModalVisible = true;
   Modal.warning({
     title: '登录态已过期',
-    content: `${SESSION_EXPIRED_MESSAGE}点击“前往登录”可立即重新登录。`,
+    content: `${SESSION_EXPIRED_MESSAGE}你可以先关闭弹窗留在当前页，复制或保存未完成的内容；也可以点击“前往登录”重新登录。`,
+    closable: true,
     okText: '前往登录',
-    cancelText: '稍后处理',
+    cancelText: '留在当前页',
     onOk() {
       sessionExpiredModalVisible = false;
       return redirectToLogin();

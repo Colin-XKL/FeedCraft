@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  buildLoginRedirectQueryAfterUserInfoFailure,
   buildSessionExpiredRedirectQuery,
   isSessionExpiredError,
   isSessionExpiredAPIResponse,
@@ -37,5 +38,28 @@ describe('auth expired helpers', () => {
   it('marks only session expiration errors', () => {
     expect(isSessionExpiredError(new SessionExpiredError())).toBe(true);
     expect(isSessionExpiredError(new Error('network error'))).toBe(false);
+  });
+
+  it('keeps the current page when user info fails from session expiration', () => {
+    expect(
+      buildLoginRedirectQueryAfterUserInfoFailure(
+        new SessionExpiredError(),
+        { draft: '1' },
+        'CraftAtom'
+      )
+    ).toBeUndefined();
+  });
+
+  it('redirects to login for non-session-expiration user info failures', () => {
+    expect(
+      buildLoginRedirectQueryAfterUserInfoFailure(
+        new Error('network error'),
+        { draft: '1' },
+        'CraftAtom'
+      )
+    ).toEqual({
+      redirect: 'CraftAtom',
+      draft: '1',
+    });
   });
 });

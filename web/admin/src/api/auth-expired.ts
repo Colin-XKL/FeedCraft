@@ -1,4 +1,4 @@
-import type { LocationQueryRaw } from 'vue-router';
+import type { LocationQueryRaw, RouteRecordName } from 'vue-router';
 import type { APIResponse } from '@/api/types';
 
 export const SESSION_EXPIRED_REASON = 'session-expired';
@@ -40,4 +40,19 @@ export function buildSessionExpiredRedirectQuery(
     redirect,
     reason: SESSION_EXPIRED_REASON,
   };
+}
+
+export function buildLoginRedirectQueryAfterUserInfoFailure(
+  error: unknown,
+  currentQuery: LocationQueryRaw,
+  redirect?: RouteRecordName | null
+): LocationQueryRaw | undefined {
+  if (isSessionExpiredError(error)) {
+    return undefined;
+  }
+
+  return {
+    redirect,
+    ...currentQuery,
+  } as LocationQueryRaw;
 }
