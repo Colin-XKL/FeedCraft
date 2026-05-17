@@ -141,6 +141,16 @@ FeedCraft 內建了一系列「原子工藝 (AtomCrafts)」，用於對訂閱源
 
 利用語義理解進行進階過濾。
 
+### `embedding-filter` (主題向量過濾)
+
+使用 Embedding 模型按主題過濾文章（零樣本分類）。支援 `include`（保留匹配項）和 `exclude`（移除匹配項）兩種模式。
+
+- **參數:**
+  - `anchors`: 自然語言描述的主題錨點文字，每行一條。文章與任一錨點相似度超過閾值即被視為匹配。
+  - `threshold` (預設: `0.6`): 餘弦相似度閾值（0-1），越高越嚴格。
+  - `mode` (預設: `include`): 過濾模式：`include` (保留匹配項) 或 `exclude` (移除匹配項)。
+  - `max_content_length` (預設: `2000`): 文章正文截取的最大字元數，用於控制 Embedding 輸入長度。
+
 ### `ignore-advertorial` (軟文過濾)
 
 使用 LLM 檢測文章是否為軟文或廣告（綜合評估標題和內容），並將其移除。

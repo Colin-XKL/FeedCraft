@@ -140,6 +140,16 @@ Re-formats the article using LLM to fix layout, remove ads, and standardizing Ma
 
 Advanced filtering using semantic understanding.
 
+### `embedding-filter`
+
+Uses an Embedding model to filter articles by topic (zero-shot classification). Supports `include` (keep matches) and `exclude` (remove matches) modes.
+
+- **Parameters:**
+  - `anchors`: Topic anchor texts described in natural language, one per line. An article is considered a match if its similarity to any anchor exceeds the threshold.
+  - `threshold` (Default: `0.6`): Cosine similarity threshold (0-1), higher is stricter.
+  - `mode` (Default: `include`): Filter mode: `include` (keep matches) or `exclude` (remove matches).
+  - `max_content_length` (Default: `2000`): Maximum number of characters extracted from the article content to control the Embedding input length.
+
 ### `ignore-advertorial`
 
 Uses LLM to detect if an article is an advertorial or soft advertisement (evaluating both title and content) and removes it.
