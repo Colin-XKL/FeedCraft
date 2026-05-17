@@ -20,7 +20,7 @@ FeedCraft 提供了一些内置工具来帮助您调试 RSS 源并监控系统�
 
 ## RSS 示例订阅 (Example RSS Feeds)
 
-**RSS 示例订阅** 页面提供内置订阅地址，用来测试 RSS 阅读器对 HTML、CSS 和媒体内容的渲染支持情况，以及对 RSS 0.92、RSS 1.0、RSS 2.0、Atom、JSON Feed 文档的格式支持。
+**RSS 示例订阅** 页面提供内置订阅地址，用来测试 RSS 阅读器对 HTML、CSS 和媒体内容的渲染支持情况，以及对 RSS 1.0、RSS 2.0、Atom、JSON Feed 文档的格式支持。
 
 - **使用方法**:
   1. 导航至 **工具 > RSS 示例订阅**。
@@ -33,10 +33,9 @@ FeedCraft 提供了一些内置工具来帮助您调试 RSS 源并监控系统�
   - `all-in-one.xml`: 将 HTML、样式和媒体示例合并到一个 Feed 中。
   - `rss-2-0.xml`: 简单的 RSS 2.0 文档。
   - `rss-1-0.rdf`: 简单的 RSS 1.0/RDF 文档。
-  - `rss-0-92.xml`: 简单的旧版 RSS 0.92 文档。
   - `atom.xml`: 简单的 Atom 文档。
   - `json-feed.json`: 简单的 JSON Feed 1.1 文档。
-- **刷新行为**: 订阅地址保持稳定，条目 GUID 每 4 小时轮换一次，方便阅读器拉取新的示例内容；RSS 0.92 没有 GUID 字段，因此会轮换条目链接。
+- **刷新行为**: 订阅地址保持稳定，条目 GUID 每 4 小时轮换一次，方便阅读器拉取新的示例内容。
 
 ## Feed 对比 (Feed Compare)
 

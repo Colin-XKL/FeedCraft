@@ -39,7 +39,6 @@ type outputFormat string
 const (
 	outputRSS2     outputFormat = "rss2"
 	outputRSS1     outputFormat = "rss1"
-	outputRSS092   outputFormat = "rss0.92"
 	outputAtom     outputFormat = "atom"
 	outputJSONFeed outputFormat = "json-feed"
 )
@@ -111,16 +110,6 @@ var feedDefinitions = []feedDefinition{
 		},
 		sections:     []contentSection{formatSection},
 		outputFormat: outputRSS1,
-	},
-	{
-		FeedMeta: FeedMeta{
-			Slug:        "rss-0-92",
-			Title:       "FeedCraft Example RSS Feeds - RSS 0.92",
-			Description: "A simple legacy RSS 0.92 feed for checking reader compatibility.",
-			Path:        RoutePrefix + "/rss-0-92.xml",
-		},
-		sections:     []contentSection{formatSection},
-		outputFormat: outputRSS092,
 	},
 	{
 		FeedMeta: FeedMeta{

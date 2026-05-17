@@ -16,7 +16,7 @@ import (
 func TestCatalogListsExampleFeeds(t *testing.T) {
 	items := Catalog()
 
-	require.Len(t, items, 9)
+	require.Len(t, items, 8)
 	assert.Equal(t, "html-elements", items[0].Slug)
 	assert.Equal(t, "/example-rss-feeds/html-elements.xml", items[0].Path)
 	assert.Equal(t, "html-styling", items[1].Slug)
@@ -26,12 +26,10 @@ func TestCatalogListsExampleFeeds(t *testing.T) {
 	assert.Equal(t, "/example-rss-feeds/rss-2-0.xml", items[4].Path)
 	assert.Equal(t, "rss-1-0", items[5].Slug)
 	assert.Equal(t, "/example-rss-feeds/rss-1-0.rdf", items[5].Path)
-	assert.Equal(t, "rss-0-92", items[6].Slug)
-	assert.Equal(t, "/example-rss-feeds/rss-0-92.xml", items[6].Path)
-	assert.Equal(t, "atom", items[7].Slug)
-	assert.Equal(t, "/example-rss-feeds/atom.xml", items[7].Path)
-	assert.Equal(t, "json-feed", items[8].Slug)
-	assert.Equal(t, "/example-rss-feeds/json-feed.json", items[8].Path)
+	assert.Equal(t, "atom", items[6].Slug)
+	assert.Equal(t, "/example-rss-feeds/atom.xml", items[6].Path)
+	assert.Equal(t, "json-feed", items[7].Slug)
+	assert.Equal(t, "/example-rss-feeds/json-feed.json", items[7].Path)
 }
 
 func TestWindowUUIDIsStableWithinFourHours(t *testing.T) {
@@ -158,21 +156,10 @@ func TestRegisterRoutesServesFormatExamples(t *testing.T) {
 		assert.Contains(t, body, `Format support sample`)
 	})
 
-	t.Run("rss 0.92", func(t *testing.T) {
+	t.Run("rss 0.92 is not provided", func(t *testing.T) {
 		recorder := requestExampleFeed(router, "/example-rss-feeds/rss-0-92.xml")
 
-		require.Equal(t, http.StatusOK, recorder.Code)
-		assert.Equal(t, "application/rss+xml; charset=utf-8", recorder.Header().Get("Content-Type"))
-		body := recorder.Body.String()
-		assert.Contains(t, body, `<rss version="0.92">`)
-		assert.Contains(t, body, `<title>FeedCraft Example RSS Feeds - RSS 0.92</title>`)
-		assert.Contains(t, body, `https://feedcraft.example/example-rss-feeds/rss-0-92.xml#format-support-`)
-		assert.Contains(t, body, `Format support sample`)
-		assert.Contains(t, body, `<h1>Format support sample</h1>`)
-		assert.NotContains(t, body, `&lt;article&gt;`)
-		parsed, err := gofeed.NewParser().ParseString(body)
-		require.NoError(t, err)
-		assert.Equal(t, "FeedCraft Example RSS Feeds - RSS 0.92", parsed.Title)
+		assert.Equal(t, http.StatusNotFound, recorder.Code)
 	})
 
 	t.Run("atom", func(t *testing.T) {
