@@ -79,6 +79,7 @@ func cachedAIContentProcessItem(item *feeds.Item, prompt string, payloadTypes []
 		result, callErr := llmContextCaller(prompt, context, util.ContentProcessOption{
 			RemoveImage: true,
 			ConvertToMd: true,
+			Temperature: util.LowestLLMTemperaturePtr(),
 		})
 		if callErr != nil {
 			return "", callErr

@@ -92,6 +92,8 @@ func TestOptionAIFilterKeepsArticleOnInvalidLLMResponse(t *testing.T) {
 
 	original := llmContextCaller
 	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		require.NotNil(t, option.Temperature)
+		assert.Equal(t, 0.0, *option.Temperature)
 		return "not json", nil
 	}
 	t.Cleanup(func() { llmContextCaller = original })

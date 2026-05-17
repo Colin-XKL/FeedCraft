@@ -26,6 +26,7 @@ func CheckConditionWithLLM(title string, content string, conditionPrompt string)
 	option := util.ContentProcessOption{
 		RemoveImage: true,
 		ConvertToMd: true,
+		Temperature: util.LowestLLMTemperaturePtr(),
 	}
 
 	// 如果 prompt 没有明确包含 true/false 的指令，建议调用者在传入前拼接好。

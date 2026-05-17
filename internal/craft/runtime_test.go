@@ -397,6 +397,8 @@ func TestLLMFilterProcessor_RemovesMatchedArticleAndUsesTitleContentPayload(t *t
 	original := llmContextCaller
 	var seen []string
 	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		require.NotNil(t, option.Temperature)
+		assert.Equal(t, 0.0, *option.Temperature)
 		seen = append(seen, context)
 		if strings.Contains(context, "Drop Me "+t.Name()) {
 			return "true", nil

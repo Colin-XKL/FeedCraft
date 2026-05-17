@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	"github.com/tmc/langchaingo/llms"
 )
 
 func TestSimpleLLMCallRetriesDifferentModelsBeforeRepeating(t *testing.T) {
@@ -93,4 +94,46 @@ func TestSimpleLLMCallRetriesNextModelWithoutBackoff(t *testing.T) {
 	})
 	require.Error(t, err)
 	require.Less(t, time.Since(start), 150*time.Millisecond, "switching to another configured model should not wait for backoff")
+}
+
+func TestSimpleLLMCallWithOptionsSendsTemperature(t *testing.T) {
+	llmClients = sync.Map{}
+	t.Cleanup(func() {
+		llmClients = sync.Map{}
+	})
+
+	var capturedTemperature float64
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/chat/completions" {
+			t.Errorf("unexpected request path: %s", r.URL.Path)
+			http.Error(w, "unexpected path", http.StatusNotFound)
+			return
+		}
+
+		var payload struct {
+			Model       string  `json:"model"`
+			Temperature float64 `json:"temperature"`
+		}
+		if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+			t.Errorf("decode request body: %v", err)
+			http.Error(w, "bad request", http.StatusBadRequest)
+			return
+		}
+		capturedTemperature = payload.Temperature
+
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"choices":[{"message":{"content":"ok"}}],"usage":{"total_tokens":1}}`))
+	}))
+	t.Cleanup(server.Close)
+
+	t.Setenv("FC_LLM_API_TYPE", "openai")
+	t.Setenv("FC_LLM_API_BASE", server.URL)
+	t.Setenv("FC_LLM_API_KEY", "test-key")
+	t.Setenv("FC_LLM_API_MODEL", "")
+
+	result, err := SimpleLLMCallWithOptions("model-a", "hello", llms.WithTemperature(0))
+
+	require.NoError(t, err)
+	require.Equal(t, "ok", result)
+	require.Equal(t, 0.0, capturedTemperature)
 }

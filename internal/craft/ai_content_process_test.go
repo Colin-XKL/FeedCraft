@@ -23,6 +23,8 @@ func TestOptionAIContentProcessPrependsGeneratedMarkdownAsHTML(t *testing.T) {
 		seenContext = context
 		assert.True(t, option.ConvertToMd)
 		assert.True(t, option.RemoveImage)
+		require.NotNil(t, option.Temperature)
+		assert.Equal(t, 0.0, *option.Temperature)
 		return "## AI Takeaway\n\n- Generated insight", nil
 	}
 	t.Cleanup(func() { llmContextCaller = original })
