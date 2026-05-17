@@ -1,5 +1,5 @@
 <template>
-  <div class="feed-viewer-page">
+  <div class="py-8 px-[clamp(20px,4vw,64px)] max-md:py-6 max-md:px-4">
     <x-header
       :title="t('menu.feedViewer')"
       :description="t('feedViewer.description')"
@@ -8,11 +8,13 @@
 
     <a-card class="my-2" :title="t('feedViewer.inputLink')">
       <p>{{ t('feedViewer.inputTip') }}</p>
-      <div class="feed-viewer-controls">
+      <div
+        class="mt-3 grid grid-cols-[minmax(20rem,1fr)_auto] items-center gap-3 max-md:grid-cols-1"
+      >
         <a-input
           v-model="feedUrl"
           type="text"
-          class="feed-viewer-url"
+          class="w-full min-w-0"
           :placeholder="t('feedViewer.placeholder')"
           allow-clear
           @input="errorMessage = ''"
@@ -89,32 +91,3 @@
     name: 'FeedViewer',
   };
 </script>
-
-<style scoped>
-  .feed-viewer-page {
-    padding: 32px clamp(20px, 4vw, 64px);
-  }
-
-  .feed-viewer-controls {
-    display: grid;
-    grid-template-columns: minmax(20rem, 1fr) auto;
-    gap: 12px;
-    align-items: center;
-    margin-top: 12px;
-  }
-
-  .feed-viewer-url {
-    width: 100%;
-    min-width: 0;
-  }
-
-  @media (max-width: 768px) {
-    .feed-viewer-page {
-      padding: 24px 16px;
-    }
-
-    .feed-viewer-controls {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>

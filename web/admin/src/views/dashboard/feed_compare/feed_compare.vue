@@ -1,16 +1,18 @@
 <template>
-  <div class="feed-compare-page">
+  <div class="py-8 px-[clamp(20px,4vw,64px)] max-md:py-6 max-md:px-4">
     <x-header
       :title="t('menu.feedCompare')"
       :description="t('feedCompare.description')"
     ></x-header>
 
     <a-card class="my-2" :title="t('feedCompare.inputLink')">
-      <div class="feed-compare-controls">
+      <div
+        class="grid grid-cols-[minmax(20rem,1fr)_minmax(14rem,20rem)_auto] items-center gap-3 max-md:grid-cols-1"
+      >
         <a-input
           v-model="feedUrl"
           type="text"
-          class="feed-compare-url"
+          class="w-full min-w-0"
           :placeholder="t('feedCompare.placeholder')"
           allow-clear
           @input="clearErrors"
@@ -19,11 +21,11 @@
         <CraftFlowSelect
           v-model="selectedCraft"
           mode="single"
-          class="feed-compare-craft"
+          class="w-full min-w-0"
           @change="clearErrors"
         />
         <a-button
-          class="feed-compare-action"
+          class="max-md:w-full"
           :loading="isLoading"
           type="primary"
           @click="compareFeeds"
@@ -131,36 +133,3 @@
     name: 'FeedCompare',
   };
 </script>
-
-<style scoped>
-  .feed-compare-page {
-    padding: 32px clamp(20px, 4vw, 64px);
-  }
-
-  .feed-compare-controls {
-    display: grid;
-    grid-template-columns: minmax(20rem, 1fr) minmax(14rem, 20rem) auto;
-    gap: 12px;
-    align-items: center;
-  }
-
-  .feed-compare-url,
-  .feed-compare-craft {
-    width: 100%;
-    min-width: 0;
-  }
-
-  @media (max-width: 768px) {
-    .feed-compare-page {
-      padding: 24px 16px;
-    }
-
-    .feed-compare-controls {
-      grid-template-columns: 1fr;
-    }
-
-    .feed-compare-action {
-      width: 100%;
-    }
-  }
-</style>
