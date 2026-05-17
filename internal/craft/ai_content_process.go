@@ -7,6 +7,7 @@ import (
 	"FeedCraft/internal/util"
 
 	"github.com/gorilla/feeds"
+	"github.com/sirupsen/logrus"
 )
 
 type aiContentProcessPlacement string
@@ -49,42 +50,48 @@ func OptionAIContentProcess(rule string, extraPayloadRaw string, placementRaw st
 	rule = strings.TrimSpace(rule)
 	payloadTypes := parseAIFilterExtraPayloadWithDefault(extraPayloadRaw, []aiFilterExtraPayloadType{aiFilterExtraPayloadArticleContent})
 	placement := parseAIContentProcessPlacement(placementRaw)
+	prompt := buildAIContentProcessPrompt(rule)
 
 	transFunc := func(item *feeds.Item) (string, error) {
 		if rule == "" {
 			return "", fmt.Errorf("ai-content-process requires rule param")
 		}
-		original := getPrimaryFeedItemContent(item)
-		generated, err := processAIContentForItem(item, rule, payloadTypes)
-		if err != nil {
-			return "", err
-		}
-		return applyAIContentProcessPlacement(original, generated, placement), nil
+		return cachedAIContentProcessItem(item, prompt, payloadTypes, placement)
 	}
 
-	cachedTransformer := GetCommonCachedTransformer(
-		newAIContentProcessCacheKeyGenerator(rule, payloadTypes, placement),
-		transFunc,
-		"ai-content-process",
-	)
-	return OptionTransformFeedItem(GetArticleContentProcessor(cachedTransformer))
+	return OptionTransformFeedItem(GetArticleContentProcessor(transFunc))
 }
 
-func processAIContentForItem(item *feeds.Item, rule string, payloadTypes []aiFilterExtraPayloadType) (string, error) {
+func cachedAIContentProcessItem(item *feeds.Item, prompt string, payloadTypes []aiFilterExtraPayloadType, placement aiContentProcessPlacement) (string, error) {
+	original := getPrimaryFeedItemContent(item)
 	context, err := buildAIContentProcessArticlePayload(item, payloadTypes)
 	if err != nil {
 		return "", err
 	}
+	cacheKey := getCraftCacheKey("ai-content-process-result", util.GetTextContentHash(strings.Join([]string{
+		util.GetTextContentHash(prompt),
+		util.GetTextContentHash(context),
+		string(placement),
+		util.GetTextContentHash(original),
+	}, "|")))
 
-	prompt := buildAIContentProcessPrompt(rule)
-	result, err := llmContextCaller(prompt, context, util.ContentProcessOption{
-		RemoveImage: true,
-		ConvertToMd: true,
+	return util.CachedFuncWithPreLog(cacheKey, func() (string, error) {
+		result, callErr := llmContextCaller(prompt, context, util.ContentProcessOption{
+			RemoveImage: true,
+			ConvertToMd: true,
+		})
+		if callErr != nil {
+			return "", callErr
+		}
+		generated := normalizeAIContentProcessMarkdown(result)
+		return applyAIContentProcessPlacement(original, generated, placement), nil
+	}, func(isCached bool) {
+		title := ""
+		if item != nil {
+			title = item.Title
+		}
+		logrus.Infof("applying craft [ai-content-process] to article [%s], cached: %v", title, isCached)
 	})
-	if err != nil {
-		return "", err
-	}
-	return normalizeAIContentProcessMarkdown(result), nil
 }
 
 func buildAIContentProcessArticlePayload(item *feeds.Item, payloadTypes []aiFilterExtraPayloadType) (string, error) {
@@ -148,7 +155,7 @@ func normalizeAIContentProcessMarkdown(raw string) string {
 	if len(lines) < 3 {
 		return trimmed
 	}
-	infoString := strings.TrimSpace(strings.TrimPrefix(lines[0], "```"))
+	infoString := strings.ToLower(strings.TrimSpace(strings.TrimPrefix(lines[0], "```")))
 	if infoString != "" && infoString != "markdown" && infoString != "md" {
 		return trimmed
 	}
@@ -156,28 +163,6 @@ func normalizeAIContentProcessMarkdown(raw string) string {
 		return trimmed
 	}
 	return strings.TrimSpace(strings.Join(lines[1:len(lines)-1], "\n"))
-}
-
-func newAIContentProcessCacheKeyGenerator(rule string, payloadTypes []aiFilterExtraPayloadType, placement aiContentProcessPlacement) ContentCacheKeyGenerator {
-	ruleHash := util.GetTextContentHash(rule)
-	payloadHash := util.GetTextContentHash(strings.Join(aiFilterPayloadTypesToStrings(payloadTypes), ","))
-	return func(item *feeds.Item) (string, error) {
-		return util.GetTextContentHash(strings.Join([]string{
-			ruleHash,
-			payloadHash,
-			string(placement),
-			strings.TrimSpace(item.Title),
-			util.GetTextContentHash(getPrimaryFeedItemContent(item)),
-		}, "|")), nil
-	}
-}
-
-func aiFilterPayloadTypesToStrings(payloadTypes []aiFilterExtraPayloadType) []string {
-	values := make([]string, 0, len(payloadTypes))
-	for _, payloadType := range payloadTypes {
-		values = append(values, string(payloadType))
-	}
-	return values
 }
 
 func loContainsAIFilterPayload(payloadTypes []aiFilterExtraPayloadType, target aiFilterExtraPayloadType) bool {

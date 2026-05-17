@@ -3,6 +3,7 @@ package craft
 import (
 	"strings"
 	"testing"
+	"time"
 
 	"FeedCraft/internal/util"
 
@@ -115,6 +116,50 @@ func TestOptionAIContentProcessCacheKeyIncludesPlacement(t *testing.T) {
 	assert.Less(t, strings.Index(appendFeed.Items[0].Content, "same original body"), strings.Index(appendFeed.Items[0].Content, "Generated note"))
 }
 
+func TestOptionAIContentProcessCacheKeyIncludesArticleDatePayload(t *testing.T) {
+	setupTestRedis(t)
+
+	original := llmContextCaller
+	calls := 0
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		calls += 1
+		if strings.Contains(context, "2026-05-02") {
+			return "Generated for May 2", nil
+		}
+		return "Generated for May 1", nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	firstFeed := &feeds.Feed{
+		Items: []*feeds.Item{
+			{
+				Title:   "Same date payload " + t.Name(),
+				Content: "<p>same body</p>",
+				Created: time.Date(2026, 5, 1, 10, 0, 0, 0,
+					time.UTC),
+			},
+		},
+	}
+	err := OptionAIContentProcess("按日期生成说明", "article_date", string(aiContentProcessPlacementReplace))(firstFeed, ExtraPayload{})
+	require.NoError(t, err)
+	assert.Contains(t, firstFeed.Items[0].Content, "Generated for May 1")
+
+	secondFeed := &feeds.Feed{
+		Items: []*feeds.Item{
+			{
+				Title:   "Same date payload " + t.Name(),
+				Content: "<p>same body</p>",
+				Created: time.Date(2026, 5, 2, 10, 0, 0, 0,
+					time.UTC),
+			},
+		},
+	}
+	err = OptionAIContentProcess("按日期生成说明", "article_date", string(aiContentProcessPlacementReplace))(secondFeed, ExtraPayload{})
+	require.NoError(t, err)
+	assert.Contains(t, secondFeed.Items[0].Content, "Generated for May 2")
+	assert.Equal(t, 2, calls)
+}
+
 func TestAIContentProcessCraftLoadParamUsesDefaultsAndRegistersTemplate(t *testing.T) {
 	setupTestRedis(t)
 
@@ -150,6 +195,12 @@ func TestAIContentProcessCraftLoadParamUsesDefaultsAndRegistersTemplate(t *testi
 
 func TestNormalizeAIContentProcessMarkdownRemovesCodeFence(t *testing.T) {
 	result := normalizeAIContentProcessMarkdown("```markdown\n# Title\n\nBody\n```")
+
+	assert.Equal(t, "# Title\n\nBody", result)
+}
+
+func TestNormalizeAIContentProcessMarkdownRemovesCaseInsensitiveMarkdownFence(t *testing.T) {
+	result := normalizeAIContentProcessMarkdown("```Markdown\n# Title\n\nBody\n```")
 
 	assert.Equal(t, "# Title\n\nBody", result)
 }
