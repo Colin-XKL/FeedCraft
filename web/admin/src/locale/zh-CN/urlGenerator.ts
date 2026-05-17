@@ -10,6 +10,7 @@ export default {
   'urlGenerator.resultUrl': '结果 URL:',
   'urlGenerator.copyUrl': '复制 URL',
   'urlGenerator.copied': '已复制!',
+  'urlGenerator.copyError': '复制 URL 失败',
   'urlGenerator.tabGenerate': '生成 URL',
   'urlGenerator.tabParse': '解析 URL',
   'urlGenerator.inputFeedCraftUrl': '输入 FeedCraft URL',

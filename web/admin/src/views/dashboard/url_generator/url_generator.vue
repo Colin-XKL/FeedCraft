@@ -47,6 +47,7 @@
               <a-button
                 id="copyButton"
                 class="px-2 py-0.5 rounded ml-0.5"
+                :disabled="!resultUrl"
                 @click="copyUrl"
                 >{{ copyButtonText }}
               </a-button>
@@ -123,6 +124,7 @@
   import CraftFlowSelect from '@/views/dashboard/craft_flow/CraftFlowSelect.vue';
   import { useI18n } from 'vue-i18n';
   import { Message } from '@arco-design/web-vue';
+  import { useClipboard } from '@vueuse/core';
 
   const { t } = useI18n();
 
@@ -132,6 +134,11 @@
   const inputUrl = ref('');
   const resultUrl = ref('');
   const copyButtonText = ref(t('urlGenerator.copyUrl'));
+  const { copy: copyResultUrl } = useClipboard({
+    source: resultUrl,
+    legacy: true,
+    copiedDuring: 1500,
+  });
 
   const generateUrl = () => {
     const currentSelectedCraft = customCraft.value
@@ -144,16 +151,16 @@
     copyButtonText.value = t('urlGenerator.copyUrl');
   };
 
-  const copyUrl = () => {
-    if (resultUrl.value) {
-      navigator.clipboard
-        .writeText(resultUrl.value)
-        .then(() => {
-          copyButtonText.value = t('urlGenerator.copied');
-        })
-        .catch(() => {
-          Message.error(t('urlGenerator.parseError'));
-        });
+  const copyUrl = async () => {
+    if (!resultUrl.value) {
+      return;
+    }
+
+    try {
+      await copyResultUrl();
+      copyButtonText.value = t('urlGenerator.copied');
+    } catch {
+      Message.error(t('urlGenerator.copyError'));
     }
   };
 

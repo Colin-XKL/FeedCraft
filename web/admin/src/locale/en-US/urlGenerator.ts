@@ -9,6 +9,7 @@ export default {
   'urlGenerator.resultUrl': 'Crafted URL',
   'urlGenerator.copyUrl': 'Copy',
   'urlGenerator.copied': 'Copied to clipboard!',
+  'urlGenerator.copyError': 'Failed to copy URL.',
   'urlGenerator.tabGenerate': 'Generate URL',
   'urlGenerator.tabParse': 'Parse URL',
   'urlGenerator.inputFeedCraftUrl': 'Input FeedCraft URL',
