@@ -192,22 +192,22 @@ func formatFeedViewerISOTime(primary, fallback time.Time) string {
 func validateFeedViewerURL(rawURL string) error {
 	parsedURL, err := url.Parse(rawURL)
 	if err != nil || parsedURL == nil {
-		return errors.New("Please enter a valid http(s) feed URL")
+		return errors.New("please enter a valid http(s) feed URL")
 	}
 	if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
-		return errors.New("Please enter a valid http(s) feed URL")
+		return errors.New("please enter a valid http(s) feed URL")
 	}
 	if parsedURL.Hostname() == "" {
-		return errors.New("Please enter a valid http(s) feed URL")
+		return errors.New("please enter a valid http(s) feed URL")
 	}
 
 	ips, err := net.LookupIP(parsedURL.Hostname())
 	if err != nil {
-		return fmt.Errorf("Unable to resolve this URL: %w", err)
+		return fmt.Errorf("unable to resolve this URL: %w", err)
 	}
 	for _, ip := range ips {
 		if ip.IsLoopback() || ip.IsPrivate() {
-			return fmt.Errorf("Access to private IP %s is forbidden", ip.String())
+			return fmt.Errorf("access to private IP %s is forbidden", ip.String())
 		}
 	}
 
