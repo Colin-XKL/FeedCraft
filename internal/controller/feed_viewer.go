@@ -23,6 +23,28 @@ type FeedViewerPreviewReq struct {
 	CraftName string `json:"craft_name" form:"craft_name"`
 }
 
+type EmbeddingFilterPreviewReq struct {
+	InputURL         string   `json:"input_url" binding:"required"`
+	Anchors          string   `json:"anchors" binding:"required"`
+	Threshold        *float64 `json:"threshold"`
+	Mode             string   `json:"mode"`
+	MaxContentLength *int     `json:"max_content_length"`
+	Instruction      string   `json:"instruction"`
+	AtomCraftName    string   `json:"atom_craft_name"`
+	AtomCraftDesc    string   `json:"atom_craft_description"`
+}
+
+type embeddingFilterPreviewConfig struct {
+	inputURL         string
+	anchors          []string
+	threshold        float64
+	mode             craft.EmbeddingFilterMode
+	maxContentLength int
+	instruction      string
+	atomCraftName    string
+	atomCraftDesc    string
+}
+
 type FeedViewerPreview struct {
 	Title       string                  `json:"title"`
 	Description string                  `json:"description"`
@@ -81,6 +103,49 @@ func PreviewFeedViewer(c *gin.Context) {
 	})
 }
 
+func PreviewEmbeddingFilter(c *gin.Context) {
+	var req EmbeddingFilterPreviewReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
+		return
+	}
+
+	cfg, err := normalizeEmbeddingFilterPreviewRequest(req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
+		return
+	}
+	if err := validateFeedViewerURL(cfg.inputURL); err != nil {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: formatFeedViewerValidationError(err)})
+		return
+	}
+
+	feed, err := loadFeedViewerPreview(c, FeedViewerPreviewReq{InputURL: cfg.inputURL})
+	if err != nil {
+		status, msg := classifyFeedViewerError(err)
+		c.JSON(status, util.APIResponse[any]{StatusCode: -1, Msg: msg})
+		return
+	}
+
+	craftedFeed, err := buildCraftPreviewWithOptions(feed, cfg.inputURL, craft.GetEmbeddingFilterOptions(
+		cfg.anchors,
+		cfg.threshold,
+		cfg.maxContentLength,
+		cfg.instruction,
+		cfg.mode,
+	))
+	if err != nil {
+		status, msg := classifyFeedViewerError(err)
+		c.JSON(status, util.APIResponse[any]{StatusCode: -1, Msg: msg})
+		return
+	}
+
+	c.JSON(http.StatusOK, util.APIResponse[FeedViewerPreview]{
+		StatusCode: 0,
+		Data:       buildFeedViewerPreview(craftedFeed, cfg.inputURL),
+	})
+}
+
 func loadFeedViewerPreview(c *gin.Context, req FeedViewerPreviewReq) (*model.CraftFeed, error) {
 	cfg := &config.SourceConfig{
 		Type: constant.SourceRSS,
@@ -116,6 +181,54 @@ func loadFeedViewerPreview(c *gin.Context, req FeedViewerPreviewReq) (*model.Cra
 	return craftedFeed, nil
 }
 
+func normalizeEmbeddingFilterPreviewRequest(req EmbeddingFilterPreviewReq) (embeddingFilterPreviewConfig, error) {
+	cfg := embeddingFilterPreviewConfig{
+		inputURL:         strings.TrimSpace(req.InputURL),
+		threshold:        0.6,
+		mode:             craft.EmbeddingIncludeMode,
+		maxContentLength: 2000,
+		instruction:      strings.TrimSpace(req.Instruction),
+		atomCraftName:    strings.TrimSpace(req.AtomCraftName),
+		atomCraftDesc:    strings.TrimSpace(req.AtomCraftDesc),
+	}
+
+	for _, rawAnchor := range strings.Split(req.Anchors, "\n") {
+		anchor := strings.TrimSpace(rawAnchor)
+		if anchor != "" {
+			cfg.anchors = append(cfg.anchors, anchor)
+		}
+	}
+	if len(cfg.anchors) == 0 {
+		return cfg, errors.New("anchors parameter is required")
+	}
+
+	if req.Threshold != nil {
+		if *req.Threshold < 0 || *req.Threshold > 1 {
+			return cfg, errors.New("threshold must be between 0 and 1")
+		}
+		cfg.threshold = *req.Threshold
+	}
+
+	mode := strings.ToLower(strings.TrimSpace(req.Mode))
+	switch mode {
+	case "", "include":
+		cfg.mode = craft.EmbeddingIncludeMode
+	case "exclude":
+		cfg.mode = craft.EmbeddingExcludeMode
+	default:
+		return cfg, errors.New("mode must be include or exclude")
+	}
+
+	if req.MaxContentLength != nil {
+		if *req.MaxContentLength <= 0 {
+			return cfg, errors.New("max_content_length must be greater than 0")
+		}
+		cfg.maxContentLength = *req.MaxContentLength
+	}
+
+	return cfg, nil
+}
+
 func buildCraftPreview(feed *model.CraftFeed, inputURL, craftName string) (*model.CraftFeed, error) {
 	atomXML, err := feed.ToFeedsFeed().ToAtom()
 	if err != nil {
@@ -133,6 +246,25 @@ func buildCraftPreview(feed *model.CraftFeed, inputURL, craftName string) (*mode
 	}
 
 	return model.FromFeedsFeed(craftedFeed), nil
+}
+
+func buildCraftPreviewWithOptions(feed *model.CraftFeed, inputURL string, options []craft.CraftOption) (*model.CraftFeed, error) {
+	atomXML, err := feed.ToFeedsFeed().ToAtom()
+	if err != nil {
+		return nil, err
+	}
+
+	parsedFeed, err := gofeed.NewParser().ParseString(atomXML)
+	if err != nil {
+		return nil, err
+	}
+
+	craftedFeed, err := craft.NewCraftedFeedFromGofeed(parsedFeed, inputURL, options...)
+	if err != nil {
+		return nil, err
+	}
+
+	return model.FromFeedsFeed(craftedFeed.OutputFeed), nil
 }
 
 func buildFeedViewerPreview(feed *model.CraftFeed, inputURL string) FeedViewerPreview {

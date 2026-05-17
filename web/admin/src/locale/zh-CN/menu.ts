@@ -29,6 +29,7 @@ export default {
   'menu.dashboard.welcome': '欢迎页',
   // 调试菜单
   'menu.feedCompare': 'Feed 对比',
+  'menu.embeddingFilterDebug': 'Embedding 过滤器',
   'menu.feedViewer': 'RSS 预览',
   'menu.exampleRssFeeds': 'RSS 示例订阅',
   'menu.rssGenerator': 'HTML 转 RSS',

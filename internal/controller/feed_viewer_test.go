@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"FeedCraft/internal/craft"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -127,6 +129,81 @@ func TestPreviewFeedViewerDoesNotReturnDataForInvalidFeedResponse(t *testing.T) 
 func TestValidateFeedViewerURLAllowsPrivateIPLiteral(t *testing.T) {
 	if err := validateFeedViewerURL("http://172.21.0.13/feed.xml"); err != nil {
 		t.Fatalf("expected private IP literal to be allowed, got %v", err)
+	}
+}
+
+func TestNormalizeEmbeddingFilterPreviewRequest(t *testing.T) {
+	threshold := 0.72
+	maxContentLength := 1500
+	cfg, err := normalizeEmbeddingFilterPreviewRequest(EmbeddingFilterPreviewReq{
+		InputURL:         "http://example.com/feed.xml",
+		Anchors:          " AI infrastructure \n\n machine learning ",
+		Threshold:        &threshold,
+		Mode:             "EXCLUDE",
+		MaxContentLength: &maxContentLength,
+		Instruction:      "Represent this text for topic filtering",
+		AtomCraftName:    "ai-filter",
+		AtomCraftDesc:    "AI filter",
+	})
+
+	if err != nil {
+		t.Fatalf("expected valid config, got %v", err)
+	}
+	if cfg.inputURL != "http://example.com/feed.xml" {
+		t.Fatalf("inputURL = %q", cfg.inputURL)
+	}
+	if strings.Join(cfg.anchors, "|") != "AI infrastructure|machine learning" {
+		t.Fatalf("anchors = %#v", cfg.anchors)
+	}
+	if cfg.threshold != threshold {
+		t.Fatalf("threshold = %f", cfg.threshold)
+	}
+	if cfg.mode != craft.EmbeddingExcludeMode {
+		t.Fatalf("mode = %q", cfg.mode)
+	}
+	if cfg.maxContentLength != maxContentLength {
+		t.Fatalf("maxContentLength = %d", cfg.maxContentLength)
+	}
+	if cfg.instruction != "Represent this text for topic filtering" {
+		t.Fatalf("instruction = %q", cfg.instruction)
+	}
+	if cfg.atomCraftName != "ai-filter" || cfg.atomCraftDesc != "AI filter" {
+		t.Fatalf("atom craft metadata = %q / %q", cfg.atomCraftName, cfg.atomCraftDesc)
+	}
+}
+
+func TestNormalizeEmbeddingFilterPreviewRequestDefaultsAndValidation(t *testing.T) {
+	cfg, err := normalizeEmbeddingFilterPreviewRequest(EmbeddingFilterPreviewReq{
+		InputURL: "http://example.com/feed.xml",
+		Anchors:  "AI",
+	})
+	if err != nil {
+		t.Fatalf("expected defaults to be valid, got %v", err)
+	}
+	if cfg.threshold != 0.6 {
+		t.Fatalf("threshold default = %f", cfg.threshold)
+	}
+	if cfg.mode != craft.EmbeddingIncludeMode {
+		t.Fatalf("mode default = %q", cfg.mode)
+	}
+	if cfg.maxContentLength != 2000 {
+		t.Fatalf("max content length default = %d", cfg.maxContentLength)
+	}
+
+	badThreshold := 1.5
+	if _, err := normalizeEmbeddingFilterPreviewRequest(EmbeddingFilterPreviewReq{
+		InputURL:  "http://example.com/feed.xml",
+		Anchors:   "AI",
+		Threshold: &badThreshold,
+	}); err == nil || !strings.Contains(err.Error(), "threshold") {
+		t.Fatalf("expected threshold validation error, got %v", err)
+	}
+
+	if _, err := normalizeEmbeddingFilterPreviewRequest(EmbeddingFilterPreviewReq{
+		InputURL: "http://example.com/feed.xml",
+		Anchors:  "  \n ",
+	}); err == nil || !strings.Contains(err.Error(), "anchors") {
+		t.Fatalf("expected anchors validation error, got %v", err)
 	}
 }
 
