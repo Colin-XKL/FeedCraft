@@ -48,6 +48,7 @@ const showSessionExpiredModal = () => {
     title: '登录态已过期',
     content: `${SESSION_EXPIRED_MESSAGE}你可以先关闭弹窗留在当前页，复制或保存未完成的内容；也可以点击“前往登录”重新登录。`,
     closable: true,
+    hideCancel: false,
     okText: '前往登录',
     cancelText: '留在当前页',
     onOk() {
