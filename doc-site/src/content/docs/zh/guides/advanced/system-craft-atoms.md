@@ -182,7 +182,7 @@ FC_EMBEDDING_BATCH_SIZE=5
 - `gemini`: 通过 Gemini 的 OpenAI 兼容 Embedding 接口调用。请显式设置 `FC_EMBEDDING_API_BASE` 和 `FC_EMBEDDING_API_MODEL`。
 - `ollama`: 本地 Ollama Embedding 模型。请设置 `FC_EMBEDDING_API_BASE`，例如 `http://localhost:11434`，并使用 `nomic-embed-text` 或 `bge-m3` 这类 Embedding 模型。
 
-如果 `FC_EMBEDDING_API_TYPE`、`FC_EMBEDDING_API_BASE`、`FC_EMBEDDING_API_KEY`、`FC_EMBEDDING_API_MODEL` 都没有设置，FeedCraft 会回退到对应的 `FC_LLM_*` 配置。这对 OpenAI 兼容部署比较方便，但仍建议单独设置 `FC_EMBEDDING_API_MODEL` 为真正的 Embedding 模型。如果你的 LLM 模型配置是逗号分隔的多个聊天模型，请单独配置 `FC_EMBEDDING_API_MODEL`。
+如果 `FC_EMBEDDING_API_TYPE`、`FC_EMBEDDING_API_BASE`、`FC_EMBEDDING_API_KEY` 都没有设置，FeedCraft 会回退到对应的 `FC_LLM_API_TYPE`、`FC_LLM_API_BASE`、`FC_LLM_API_KEY`。Embedding 模型名是独立的：请将 `FC_EMBEDDING_API_MODEL` 设置为真正的 Embedding 模型；如果 API 类型是 `openai` 且未设置该变量，FeedCraft 会使用默认 Embedding 模型。FeedCraft 不会复用 `FC_LLM_API_MODEL`，因为它通常是聊天模型。
 
 #### 参数
 

@@ -62,7 +62,7 @@ func loadEmbeddingConfig() (embeddingConfig, error) {
 	cfg.apiKey = envClient.GetString("EMBEDDING_API_KEY")
 	cfg.apiModel = envClient.GetString("EMBEDDING_API_MODEL")
 	cfg.instruction = envClient.GetString("EMBEDDING_INSTRUCTION")
-	hasEmbeddingEndpointConfig := cfg.apiType != "" || cfg.apiBase != "" || cfg.apiKey != "" || cfg.apiModel != ""
+	hasEmbeddingEndpointConfig := cfg.apiType != "" || cfg.apiBase != "" || cfg.apiKey != ""
 
 	// 读取批次大小配置，未配置或无效时使用默认值
 	cfg.batchSize = defaultEmbeddingBatchSize
@@ -75,8 +75,8 @@ func loadEmbeddingConfig() (embeddingConfig, error) {
 		}
 	}
 
-	// 2. 回退逻辑：仅当 Embedding 端点完全未配置时整体使用 LLM 配置。
-	// 如果用户显式设置了任一 FC_EMBEDDING_API_*，不要混入 LLM secret。
+	// 2. 端点回退逻辑：仅当 Embedding 端点完全未配置时整体使用 LLM 端点配置。
+	// FC_EMBEDDING_API_MODEL 只控制模型名，不会阻止端点继承。
 	if !hasEmbeddingEndpointConfig {
 		cfg.apiType = envClient.GetString("LLM_API_TYPE")
 		if cfg.apiType != "" {
@@ -92,11 +92,6 @@ func loadEmbeddingConfig() (embeddingConfig, error) {
 		if cfg.apiKey != "" {
 			logrus.Debug("FC_EMBEDDING_API_KEY not set, falling back to FC_LLM_API_KEY")
 		}
-
-		cfg.apiModel = envClient.GetString("LLM_API_MODEL")
-		if cfg.apiModel != "" {
-			logrus.Debug("FC_EMBEDDING_API_MODEL not set, falling back to FC_LLM_API_MODEL")
-		}
 	}
 
 	if cfg.apiType == "" {
@@ -104,7 +99,7 @@ func loadEmbeddingConfig() (embeddingConfig, error) {
 	}
 
 	if strings.Contains(cfg.apiModel, ",") {
-		return embeddingConfig{}, fmt.Errorf("FC_EMBEDDING_API_MODEL must be set to a single embedding model when FC_LLM_API_MODEL contains multiple models")
+		return embeddingConfig{}, fmt.Errorf("FC_EMBEDDING_API_MODEL must be set to a single embedding model")
 	}
 
 	if cfg.apiModel == "" {

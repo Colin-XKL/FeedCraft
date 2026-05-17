@@ -181,7 +181,7 @@ Supported `FC_EMBEDDING_API_TYPE` values:
 - `gemini`: Gemini through its OpenAI-compatible embedding endpoint. Set `FC_EMBEDDING_API_BASE` and `FC_EMBEDDING_API_MODEL` explicitly.
 - `ollama`: Local Ollama embedding model. Set `FC_EMBEDDING_API_BASE`, for example `http://localhost:11434`, and an embedding model such as `nomic-embed-text` or `bge-m3`.
 
-If none of `FC_EMBEDDING_API_TYPE`, `FC_EMBEDDING_API_BASE`, `FC_EMBEDDING_API_KEY`, or `FC_EMBEDDING_API_MODEL` is set, FeedCraft falls back to the matching `FC_LLM_*` values. This is convenient for OpenAI-compatible deployments, but you should still set `FC_EMBEDDING_API_MODEL` to a real embedding model. If your LLM model config contains multiple comma-separated chat models, configure `FC_EMBEDDING_API_MODEL` separately.
+If `FC_EMBEDDING_API_TYPE`, `FC_EMBEDDING_API_BASE`, and `FC_EMBEDDING_API_KEY` are not set, FeedCraft falls back to the matching `FC_LLM_API_TYPE`, `FC_LLM_API_BASE`, and `FC_LLM_API_KEY` values. The embedding model name is independent: set `FC_EMBEDDING_API_MODEL` to a real embedding model, or FeedCraft uses its OpenAI default when the API type is `openai`. FeedCraft does not reuse `FC_LLM_API_MODEL` because that value is usually a chat model.
 
 #### Parameters
 
