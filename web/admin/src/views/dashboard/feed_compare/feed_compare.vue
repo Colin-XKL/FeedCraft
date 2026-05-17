@@ -1,34 +1,39 @@
 <template>
-  <div class="py-8 px-16">
+  <div class="feed-compare-page">
     <x-header
       :title="t('menu.feedCompare')"
       :description="t('feedCompare.description')"
     ></x-header>
 
     <a-card class="my-2" :title="t('feedCompare.inputLink')">
-      <a-space>
+      <div class="feed-compare-controls">
         <a-input
           v-model="feedUrl"
           type="text"
-          class="min-w-48"
+          class="feed-compare-url"
           :placeholder="t('feedCompare.placeholder')"
+          allow-clear
           @input="clearErrors"
           @keyup.enter="compareFeeds"
         />
         <CraftFlowSelect
           v-model="selectedCraft"
           mode="single"
-          class="min-w-48"
+          class="feed-compare-craft"
           @change="clearErrors"
         />
-        <a-button :loading="isLoading" type="primary" @click="compareFeeds"
+        <a-button
+          class="feed-compare-action"
+          :loading="isLoading"
+          type="primary"
+          @click="compareFeeds"
           >{{ t('feedCompare.compare') }}
         </a-button>
-      </a-space>
+      </div>
     </a-card>
 
-    <a-row :gutter="24">
-      <a-col :span="12">
+    <a-row :gutter="[24, 24]">
+      <a-col :span="12" :xs="24" :lg="12">
         <a-card :title="t('feedCompare.originalFeed')" :loading="isLoading">
           <a-alert v-if="originalFeedError" type="error" class="mb-4" show-icon>
             {{ originalFeedError }}
@@ -39,7 +44,7 @@
           <a-empty v-else-if="!originalFeedError" />
         </a-card>
       </a-col>
-      <a-col :span="12">
+      <a-col :span="12" :xs="24" :lg="12">
         <a-card :title="t('feedCompare.craftAppliedFeed')" :loading="isLoading">
           <a-alert
             v-if="craftAppliedFeedError"
@@ -120,6 +125,39 @@
     isLoading.value = false;
   }
 </script>
+
+<style scoped>
+  .feed-compare-page {
+    padding: 32px clamp(20px, 4vw, 64px);
+  }
+
+  .feed-compare-controls {
+    display: grid;
+    grid-template-columns: minmax(20rem, 1fr) minmax(14rem, 20rem) auto;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .feed-compare-url,
+  .feed-compare-craft {
+    width: 100%;
+    min-width: 0;
+  }
+
+  @media (max-width: 768px) {
+    .feed-compare-page {
+      padding: 24px 16px;
+    }
+
+    .feed-compare-controls {
+      grid-template-columns: 1fr;
+    }
+
+    .feed-compare-action {
+      width: 100%;
+    }
+  }
+</style>
 
 <script lang="ts">
   export default {

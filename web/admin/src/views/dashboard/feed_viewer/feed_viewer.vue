@@ -1,5 +1,5 @@
 <template>
-  <div class="py-8 px-16">
+  <div class="feed-viewer-page">
     <x-header
       :title="t('menu.feedViewer')"
       :description="t('feedViewer.description')"
@@ -8,10 +8,11 @@
 
     <a-card class="my-2" :title="t('feedViewer.inputLink')">
       <p>{{ t('feedViewer.inputTip') }}</p>
-      <a-space>
+      <div class="feed-viewer-controls">
         <a-input
           v-model="feedUrl"
           type="text"
+          class="feed-viewer-url"
           :placeholder="t('feedViewer.placeholder')"
           allow-clear
           @input="errorMessage = ''"
@@ -23,7 +24,7 @@
           @click="fetchFeed"
           >{{ t('feedViewer.preview') }}</a-button
         >
-      </a-space>
+      </div>
     </a-card>
     <a-card
       :title="t('feedViewer.resultPreview')"
@@ -82,6 +83,35 @@
     }
   });
 </script>
+
+<style scoped>
+  .feed-viewer-page {
+    padding: 32px clamp(20px, 4vw, 64px);
+  }
+
+  .feed-viewer-controls {
+    display: grid;
+    grid-template-columns: minmax(20rem, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    margin-top: 12px;
+  }
+
+  .feed-viewer-url {
+    width: 100%;
+    min-width: 0;
+  }
+
+  @media (max-width: 768px) {
+    .feed-viewer-page {
+      padding: 24px 16px;
+    }
+
+    .feed-viewer-controls {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
 
 <script lang="ts">
   export default {
