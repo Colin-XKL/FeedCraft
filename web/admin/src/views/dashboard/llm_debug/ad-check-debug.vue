@@ -83,6 +83,12 @@
   }
 </script>
 
+<script lang="ts">
+  export default {
+    name: 'LLMDebug',
+  };
+</script>
+
 <style scoped>
   .ad-check-page {
     padding: 32px clamp(20px, 4vw, 64px);
@@ -119,9 +125,3 @@
     }
   }
 </style>
-
-<script lang="ts">
-  export default {
-    name: 'LLMDebug',
-  };
-</script>

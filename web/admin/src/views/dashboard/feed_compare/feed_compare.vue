@@ -126,6 +126,12 @@
   }
 </script>
 
+<script lang="ts">
+  export default {
+    name: 'FeedCompare',
+  };
+</script>
+
 <style scoped>
   .feed-compare-page {
     padding: 32px clamp(20px, 4vw, 64px);
@@ -158,9 +164,3 @@
     }
   }
 </style>
-
-<script lang="ts">
-  export default {
-    name: 'FeedCompare',
-  };
-</script>

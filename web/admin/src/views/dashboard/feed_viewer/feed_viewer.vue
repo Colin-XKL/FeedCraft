@@ -84,6 +84,12 @@
   });
 </script>
 
+<script lang="ts">
+  export default {
+    name: 'FeedViewer',
+  };
+</script>
+
 <style scoped>
   .feed-viewer-page {
     padding: 32px clamp(20px, 4vw, 64px);
@@ -112,9 +118,3 @@
     }
   }
 </style>
-
-<script lang="ts">
-  export default {
-    name: 'FeedViewer',
-  };
-</script>
