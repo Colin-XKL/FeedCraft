@@ -98,7 +98,7 @@ services:
     volumes:
       - ./feed-craft-db:/usr/local/feed-craft/db # db file
     environment:
-      FC_BROWSER_PROVIDER: browserless # browserless 或 cdp
+      FC_BROWSER_PROVIDER: browserless-rest # browserless-rest 或 cdp
       FC_BROWSER_ENDPOINT: http://service.browserless:3000 # 替换为你的浏览器渲染服务地址
       FC_REDIS_URI: redis://service.redis:6379/ # 替换为你自己的redis 实例地址
       FC_LLM_API_BASE: https://xxxxxx # LLM API 接口路径，需要以 “/v1” 结尾
@@ -122,7 +122,7 @@ services:
     volumes:
       - ./feed-craft-db:/usr/local/feed-craft/db # db file
     environment:
-      FC_BROWSER_PROVIDER: browserless # browserless 或 cdp
+      FC_BROWSER_PROVIDER: browserless-rest # browserless-rest 或 cdp
       FC_BROWSER_ENDPOINT: http://service.browserless:3000 # 替换为你的浏览器渲染服务地址
       FC_REDIS_URI: redis://service.redis:6379/ # 替换为你自己的redis 实例地址
       FC_LLM_API_BASE: https://xxxxxx # LLM API 接口路径，需要以 “/v1” 结尾

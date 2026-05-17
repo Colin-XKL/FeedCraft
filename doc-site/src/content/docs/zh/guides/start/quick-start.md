@@ -75,7 +75,7 @@ services:
     volumes:
       - ./feed-craft-db:/usr/local/feed-craft/db
     environment:
-      # FC_BROWSER_PROVIDER: browserless # browserless 或 cdp
+      # FC_BROWSER_PROVIDER: browserless-rest # browserless-rest 或 cdp
       # FC_BROWSER_ENDPOINT: http://service.browserless:3000 # fulltext-plus 和增强模式必需
       FC_REDIS_URI: redis://service.redis:6379/
       FC_LLM_API_KEY: skxxxxxx

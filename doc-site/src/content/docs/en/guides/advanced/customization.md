@@ -63,7 +63,7 @@ For monitoring internal Craft dependencies (Recipes, Flows, Atoms), use the [Cra
 
 You can configure FeedCraft using environment variables in `docker-compose.yml`.
 
-- **FC_BROWSER_PROVIDER**: Browser rendering provider. Supported values: `browserless` (Browserless REST `/content`) and `cdp` (Chrome DevTools Protocol, such as CloakBrowser `cloakserve`).
+- **FC_BROWSER_PROVIDER**: Browser rendering provider. Supported values: `browserless-rest` (Browserless REST `/content`) and `cdp` (Chrome DevTools Protocol, such as CloakBrowser `cloakserve`).
 - **FC_BROWSER_ENDPOINT**: Endpoint of the selected browser provider. Required for `fulltext-plus` and HTML-to-RSS Enhanced Mode.
 - **FC_PUPPETEER_HTTP_ENDPOINT**: Legacy Browserless endpoint alias. Still supported when `FC_BROWSER_ENDPOINT` is empty.
 - **FC_REDIS_URI**: Redis connection address. Used for caching to speed up processing and reduce AI token consumption.
@@ -87,7 +87,7 @@ services:
   app.feed-craft:
     # ... (Refer to Quick Start)
     environment:
-      FC_BROWSER_PROVIDER: browserless
+      FC_BROWSER_PROVIDER: browserless-rest
       FC_BROWSER_ENDPOINT: http://service.browserless:3000
       FC_REDIS_URI: redis://service.redis:6379/
       # ...
