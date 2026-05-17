@@ -1,5 +1,5 @@
 <template>
-  <div class="py-8 px-16">
+  <div class="py-8 px-[clamp(20px,4vw,64px)] max-md:py-6 max-md:px-4">
     <x-header
       :title="t('menu.feedViewer')"
       :description="t('feedViewer.description')"
@@ -8,10 +8,13 @@
 
     <a-card class="my-2" :title="t('feedViewer.inputLink')">
       <p>{{ t('feedViewer.inputTip') }}</p>
-      <a-space>
+      <div
+        class="mt-3 grid grid-cols-[minmax(20rem,1fr)_auto] items-center gap-3 max-md:grid-cols-1"
+      >
         <a-input
           v-model="feedUrl"
           type="text"
+          class="w-full min-w-0"
           :placeholder="t('feedViewer.placeholder')"
           allow-clear
           @input="errorMessage = ''"
@@ -23,7 +26,7 @@
           @click="fetchFeed"
           >{{ t('feedViewer.preview') }}</a-button
         >
-      </a-space>
+      </div>
     </a-card>
     <a-card
       :title="t('feedViewer.resultPreview')"
