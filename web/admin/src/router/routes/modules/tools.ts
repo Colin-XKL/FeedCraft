@@ -41,6 +41,16 @@ const TOOLS: AppRouteRecordRaw = {
       },
     },
     {
+      path: 'embedding-filter',
+      name: 'EmbeddingFilterDebug',
+      component: () =>
+        import('@/views/dashboard/embedding_filter_debug/index.vue'),
+      meta: {
+        requiresAuth: true,
+        locale: 'menu.embeddingFilterDebug',
+      },
+    },
+    {
       path: 'ad-check-debug',
       name: 'AdCheckDebug',
       component: () => import('@/views/dashboard/llm_debug/ad-check-debug.vue'),

@@ -2,12 +2,15 @@ package util
 
 import (
 	"fmt"
-	"net/http"
 	"net/url"
 	"time"
 
-	"github.com/go-resty/resty/v2"
 	"github.com/sirupsen/logrus"
+)
+
+const (
+	BrowserProviderBrowserlessRESTful = "browserless-restful"
+	BrowserProviderCDP                = "cdp"
 )
 
 type BrowserRenderReq struct {
@@ -33,19 +36,19 @@ type BrowserlessOptions struct {
 	WaitUntil string
 }
 
-// GetBrowserlessContent fetches the rendered HTML content of a URL using the browserless service.
-// It relies on the PUPPETEER_HTTP_ENDPOINT environment variable.
+type BrowserProviderConfig struct {
+	Provider string
+	Endpoint string
+}
+
+// GetBrowserlessContent fetches rendered HTML using the configured browser provider.
 func GetBrowserlessContent(websiteUrl string, options BrowserlessOptions) (string, error) {
 	envClient := GetEnvClient()
-	browserURI := envClient.GetString("PUPPETEER_HTTP_ENDPOINT")
-	if browserURI == "" {
-		// Log warning instead of fatal, as this might be called in contexts where we want to handle the error
-		logrus.Errorf("puppeteer websocket endpoint PUPPETEER_HTTP_ENDPOINT not found in env")
-		return "", fmt.Errorf("browserless service not configured (PUPPETEER_HTTP_ENDPOINT missing)")
+	cfg := ResolveBrowserProviderConfig(envClient)
+	if cfg.Endpoint == "" {
+		logrus.Errorf("browser provider endpoint not found in env")
+		return "", fmt.Errorf("browser provider not configured (FC_BROWSER_ENDPOINT or FC_PUPPETEER_HTTP_ENDPOINT missing)")
 	}
-	// Since we are moving to a utility, returning an error is better.
-	// But if the env is missing, it's a configuration error.
-	// I'll stick to error return.
 
 	_, err := url.Parse(websiteUrl)
 	if err != nil {
@@ -53,40 +56,16 @@ func GetBrowserlessContent(websiteUrl string, options BrowserlessOptions) (strin
 		return "", err
 	}
 
-	client := resty.New().SetBaseURL(browserURI)
-	client.SetTimeout(options.Timeout)
-
-	headers := map[string]string{
-		"Cache-Control": "no-cache",
-		"Content-Type":  "application/json",
-	}
-	reqBody := BrowserRenderReq{
-		URL:                 websiteUrl,
-		RejectResourceTypes: []string{"image"},
-		WaitFor:             int(options.WaitTime.Milliseconds()),
+	if options.Timeout <= 0 {
+		options.Timeout = 30 * time.Second
 	}
 
-	if options.WaitUntil != "" {
-		reqBody.GotoOptions = &GotoOptions{
-			WaitUntil: options.WaitUntil,
-		}
+	switch cfg.Provider {
+	case BrowserProviderBrowserlessRESTful, "browserless", "":
+		return getBrowserlessRESTContent(cfg.Endpoint, websiteUrl, options)
+	case BrowserProviderCDP:
+		return getCDPContent(cfg.Endpoint, websiteUrl, options)
+	default:
+		return "", fmt.Errorf("unsupported browser provider %q", cfg.Provider)
 	}
-
-	response, err := client.R().SetHeaders(headers).SetBody(reqBody).Post("/content")
-	if err != nil {
-		return "", err
-	}
-
-	if response.StatusCode() != http.StatusOK {
-		respStr := response.String()
-		logrus.Errorf("browserless service returned status %d. URL: %s, response body: %s", response.StatusCode(), websiteUrl, respStr)
-
-		truncLen := 200
-		if len(respStr) > truncLen {
-			respStr = respStr[:truncLen] + "..."
-		}
-		return "", fmt.Errorf("browserless service returned status %d: %s", response.StatusCode(), respStr)
-	}
-
-	return response.String(), nil
 }

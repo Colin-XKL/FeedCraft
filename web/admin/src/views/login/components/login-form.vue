@@ -2,6 +2,14 @@
   <div class="login-form-wrapper">
     <div class="login-form-title">{{ $t('login.form.title') }}</div>
     <div class="login-form-sub-title">{{ $t('login.form.title') }}</div>
+    <a-alert
+      v-if="sessionExpiredMessage"
+      class="login-form-session-alert"
+      type="warning"
+      show-icon
+    >
+      {{ sessionExpiredMessage }}
+    </a-alert>
     <div class="login-form-error-msg">{{ errorMessage }}</div>
     <a-form
       ref="loginForm"
@@ -64,8 +72,8 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive } from 'vue';
-  import { useRouter } from 'vue-router';
+  import { computed, ref, reactive } from 'vue';
+  import { useRoute, useRouter } from 'vue-router';
   import { Message } from '@arco-design/web-vue';
   import { ValidatedError } from '@arco-design/web-vue/es/form/interface';
   import { useI18n } from 'vue-i18n';
@@ -73,12 +81,20 @@
   import { useUserStore } from '@/store';
   import useLoading from '@/hooks/loading';
   import type { LoginData } from '@/api/user';
+  import {
+    SESSION_EXPIRED_MESSAGE,
+    SESSION_EXPIRED_REASON,
+  } from '@/api/auth-expired';
 
   const router = useRouter();
+  const route = useRoute();
   const { t } = useI18n();
   const errorMessage = ref('');
   const { loading, setLoading } = useLoading();
   const userStore = useUserStore();
+  const sessionExpiredMessage = computed(() =>
+    route.query.reason === SESSION_EXPIRED_REASON ? SESSION_EXPIRED_MESSAGE : ''
+  );
 
   const loginConfig: any = useStorage('login-config', {
     rememberPassword: false,
@@ -102,12 +118,16 @@
       try {
         await userStore.login(values as LoginData);
         const { redirect, ...othersQuery } = router.currentRoute.value.query;
-        router.push({
-          name: (redirect as string) || 'Welcome',
-          query: {
-            ...othersQuery,
-          },
-        });
+        if (typeof redirect === 'string' && redirect.startsWith('/')) {
+          router.push(redirect);
+        } else {
+          router.push({
+            name: (redirect as string) || 'Welcome',
+            query: {
+              ...othersQuery,
+            },
+          });
+        }
         Message.success(t('login.form.login.success'));
         const { rememberPassword } = loginConfig.value;
         const { username, password } = values;
@@ -144,6 +164,10 @@
       color: var(--color-text-3);
       font-size: 16px;
       line-height: 24px;
+    }
+
+    &-session-alert {
+      margin-top: 16px;
     }
 
     &-error-msg {

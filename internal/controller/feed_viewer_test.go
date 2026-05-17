@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"FeedCraft/internal/craft"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -130,6 +132,107 @@ func TestValidateFeedViewerURLAllowsPrivateIPLiteral(t *testing.T) {
 	}
 }
 
+func TestNormalizeEmbeddingFilterPreviewRequest(t *testing.T) {
+	threshold := 0.72
+	maxContentLength := 1500
+	cfg, err := normalizeEmbeddingFilterPreviewRequest(EmbeddingFilterPreviewReq{
+		InputURL:         "http://example.com/feed.xml",
+		Anchors:          " AI infrastructure \n\n machine learning ",
+		Threshold:        &threshold,
+		Mode:             "EXCLUDE",
+		MaxContentLength: &maxContentLength,
+		Instruction:      "Represent this text for topic filtering",
+	})
+
+	if err != nil {
+		t.Fatalf("expected valid config, got %v", err)
+	}
+	if cfg.inputURL != "http://example.com/feed.xml" {
+		t.Fatalf("inputURL = %q", cfg.inputURL)
+	}
+	if strings.Join(cfg.anchors, "|") != "AI infrastructure|machine learning" {
+		t.Fatalf("anchors = %#v", cfg.anchors)
+	}
+	if cfg.threshold != threshold {
+		t.Fatalf("threshold = %f", cfg.threshold)
+	}
+	if cfg.mode != craft.EmbeddingExcludeMode {
+		t.Fatalf("mode = %q", cfg.mode)
+	}
+	if cfg.maxContentLength != maxContentLength {
+		t.Fatalf("maxContentLength = %d", cfg.maxContentLength)
+	}
+	if cfg.instruction != "Represent this text for topic filtering" {
+		t.Fatalf("instruction = %q", cfg.instruction)
+	}
+}
+
+func TestNormalizeEmbeddingFilterPreviewRequestDefaultsAndValidation(t *testing.T) {
+	cfg, err := normalizeEmbeddingFilterPreviewRequest(EmbeddingFilterPreviewReq{
+		InputURL: "http://example.com/feed.xml",
+		Anchors:  "AI",
+	})
+	if err != nil {
+		t.Fatalf("expected defaults to be valid, got %v", err)
+	}
+	if cfg.threshold != 0.6 {
+		t.Fatalf("threshold default = %f", cfg.threshold)
+	}
+	if cfg.mode != craft.EmbeddingIncludeMode {
+		t.Fatalf("mode default = %q", cfg.mode)
+	}
+	if cfg.maxContentLength != 2000 {
+		t.Fatalf("max content length default = %d", cfg.maxContentLength)
+	}
+
+	badThreshold := 1.5
+	if _, err := normalizeEmbeddingFilterPreviewRequest(EmbeddingFilterPreviewReq{
+		InputURL:  "http://example.com/feed.xml",
+		Anchors:   "AI",
+		Threshold: &badThreshold,
+	}); err == nil || !strings.Contains(err.Error(), "threshold") {
+		t.Fatalf("expected threshold validation error, got %v", err)
+	}
+
+	if _, err := normalizeEmbeddingFilterPreviewRequest(EmbeddingFilterPreviewReq{
+		InputURL: "http://example.com/feed.xml",
+		Anchors:  "  \n ",
+	}); err == nil || !strings.Contains(err.Error(), "anchors") {
+		t.Fatalf("expected anchors validation error, got %v", err)
+	}
+}
+
+func TestNormalizeEmbeddingFilterPreviewRequestResourceLimits(t *testing.T) {
+	tooManyAnchors := make([]string, maxEmbeddingFilterPreviewAnchors+1)
+	for i := range tooManyAnchors {
+		tooManyAnchors[i] = "anchor"
+	}
+	if _, err := normalizeEmbeddingFilterPreviewRequest(EmbeddingFilterPreviewReq{
+		InputURL: "http://example.com/feed.xml",
+		Anchors:  strings.Join(tooManyAnchors, "\n"),
+	}); err == nil || !strings.Contains(err.Error(), "anchors") {
+		t.Fatalf("expected anchors limit error, got %v", err)
+	}
+
+	longInstruction := strings.Repeat("x", maxEmbeddingFilterPreviewInstructionLength+1)
+	if _, err := normalizeEmbeddingFilterPreviewRequest(EmbeddingFilterPreviewReq{
+		InputURL:    "http://example.com/feed.xml",
+		Anchors:     "AI",
+		Instruction: longInstruction,
+	}); err == nil || !strings.Contains(err.Error(), "instruction") {
+		t.Fatalf("expected instruction limit error, got %v", err)
+	}
+
+	tooLongContent := maxEmbeddingFilterPreviewContentLength + 1
+	if _, err := normalizeEmbeddingFilterPreviewRequest(EmbeddingFilterPreviewReq{
+		InputURL:         "http://example.com/feed.xml",
+		Anchors:          "AI",
+		MaxContentLength: &tooLongContent,
+	}); err == nil || !strings.Contains(err.Error(), "max_content_length") {
+		t.Fatalf("expected max_content_length limit error, got %v", err)
+	}
+}
+
 func TestFormatFeedViewerValidationErrorPreservesUserFacingCapitalization(t *testing.T) {
 	tests := []struct {
 		name string
@@ -167,6 +270,52 @@ func TestClassifyFeedViewerErrorHandlesLowercaseResolveMessage(t *testing.T) {
 	const want = "Unable to fetch this URL. Please check the address and try again."
 	if msg != want {
 		t.Fatalf("msg = %q, want %q", msg, want)
+	}
+}
+
+func TestClassifyFeedViewerErrorExplainsEmbeddingConfiguration(t *testing.T) {
+	status, msg := classifyFeedViewerError(errors.New("[embedding-filter] failed to compute anchor vectors: failed to load embedding config: FC_EMBEDDING_API_MODEL must be set when using FC_EMBEDDING_API_TYPE='ollama'"))
+
+	if status != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d", status, http.StatusBadRequest)
+	}
+	const want = "Embedding filter is not configured correctly: FC_EMBEDDING_API_MODEL must be set when using FC_EMBEDDING_API_TYPE='ollama'"
+	if msg != want {
+		t.Fatalf("msg = %q, want %q", msg, want)
+	}
+}
+
+func TestClassifyFeedViewerErrorDoesNotExposeEmbeddingRuntimeError(t *testing.T) {
+	status, msg := classifyFeedViewerError(errors.New("[embedding-filter] all article embeddings failed: embedding call failed after retries (batch [0-1]): provider returned 500 with token detail"))
+
+	if status != http.StatusInternalServerError {
+		t.Fatalf("status = %d, want %d", status, http.StatusInternalServerError)
+	}
+	const want = "Failed to preview this feed due to an internal error."
+	if msg != want {
+		t.Fatalf("msg = %q, want %q", msg, want)
+	}
+}
+
+func TestClassifyFeedViewerErrorHandlesBrowserProviderFailures(t *testing.T) {
+	tests := []string{
+		"browser cdp render failed: context deadline exceeded",
+		"browser cdp version request failed: Get \"http://chrome/json/version\": connection refused",
+		"failed to decode browser cdp version response: invalid character",
+		"browser cdp version response missing webSocketDebuggerUrl",
+		"unsupported browser provider \"cdp-typo\"",
+	}
+
+	for _, errMsg := range tests {
+		status, msg := classifyFeedViewerError(errors.New(errMsg))
+
+		if status != http.StatusOK {
+			t.Fatalf("status = %d, want %d for %q", status, http.StatusOK, errMsg)
+		}
+		const want = "Browser provider failed to render the URL. Please check the address or the browser provider service."
+		if msg != want {
+			t.Fatalf("msg = %q, want %q for %q", msg, want, errMsg)
+		}
 	}
 }
 
