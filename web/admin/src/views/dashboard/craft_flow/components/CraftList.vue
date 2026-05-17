@@ -89,7 +89,9 @@
 
   const searchText = ref('');
   const craftFlows = ref<CraftFlow[]>([]);
-  const sysCraftAtomList = ref<{ name: string; description?: string }[]>([]);
+  const sysCraftAtomList = ref<
+    { name: string; description?: string; template_only?: boolean }[]
+  >([]);
   const craftAtomList = ref<{ name: string; description?: string }[]>([]);
 
   // Fetch data
@@ -102,7 +104,9 @@
           listCraftAtoms(),
         ]);
       craftFlows.value = craftFlowsResponse.data || [];
-      sysCraftAtomList.value = sysCraftAtomsResponse.data || [];
+      sysCraftAtomList.value = (sysCraftAtomsResponse.data || []).filter(
+        (template) => !template.template_only
+      );
       craftAtomList.value = craftAtomsResponse.data || [];
     } catch (error) {
       // eslint-disable-next-line no-console

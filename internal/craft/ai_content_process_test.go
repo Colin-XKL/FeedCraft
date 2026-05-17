@@ -210,6 +210,14 @@ func TestAIContentProcessCraftLoadParamUsesDefaultsAndRegistersTemplate(t *testi
 	assert.Contains(t, seenContext, "Article Content:")
 }
 
+func TestParameterizedSystemCraftTemplatesAreMarkedTemplateOnly(t *testing.T) {
+	templates := GetSysCraftTemplateDict()
+
+	assert.True(t, templates["ai-filter"].TemplateOnly)
+	assert.True(t, templates["ai-content-process"].TemplateOnly)
+	assert.False(t, templates["summary"].TemplateOnly)
+}
+
 func TestNormalizeAIContentProcessMarkdownRemovesCodeFence(t *testing.T) {
 	result := normalizeAIContentProcessMarkdown("```markdown\n# Title\n\nBody\n```")
 
