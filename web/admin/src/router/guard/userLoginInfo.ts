@@ -3,6 +3,7 @@ import NProgress from 'nprogress'; // progress bar
 
 import { useUserStore } from '@/store';
 import { isLogin } from '@/utils/auth';
+import { buildSessionExpiredRedirectQuery } from '@/api/auth-expired';
 
 export default function setupUserLoginInfoGuard(router: Router) {
   router.beforeEach(async (to, from, next) => {
@@ -19,10 +20,7 @@ export default function setupUserLoginInfoGuard(router: Router) {
           await userStore.logout();
           next({
             name: 'login',
-            query: {
-              redirect: to.name,
-              ...to.query,
-            } as LocationQueryRaw,
+            query: buildSessionExpiredRedirectQuery(to.query, to.fullPath),
           });
         }
       }

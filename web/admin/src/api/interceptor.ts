@@ -3,12 +3,63 @@ import type { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { Message, Modal } from '@arco-design/web-vue';
 import { useUserStore } from '@/store';
 import { getToken } from '@/utils/auth';
-import { useRouter } from 'vue-router';
+import router from '@/router';
 import { APIResponse } from '@/api/types';
+import {
+  buildSessionExpiredRedirectQuery,
+  isSessionExpiredAPIResponse,
+  isSessionExpiredHTTPStatus,
+  SESSION_EXPIRED_MESSAGE,
+} from '@/api/auth-expired';
 
 if (import.meta.env.VITE_API_BASE_URL) {
   axios.defaults.baseURL = import.meta.env.VITE_API_BASE_URL;
 }
+
+let sessionExpiredModalVisible = false;
+
+const redirectToLogin = () => {
+  const currentRoute = router.currentRoute.value;
+  if (currentRoute.name === 'login') return Promise.resolve();
+
+  return router.push({
+    name: 'login',
+    query: buildSessionExpiredRedirectQuery(
+      currentRoute.query,
+      currentRoute.fullPath
+    ),
+  });
+};
+
+const showSessionExpiredModal = () => {
+  const userStore = useUserStore();
+  userStore.logoutCallBack();
+
+  if (
+    sessionExpiredModalVisible ||
+    router.currentRoute.value.name === 'login'
+  ) {
+    return;
+  }
+
+  sessionExpiredModalVisible = true;
+  Modal.warning({
+    title: '登录态已过期',
+    content: `${SESSION_EXPIRED_MESSAGE}点击“前往登录”可立即重新登录。`,
+    okText: '前往登录',
+    cancelText: '稍后处理',
+    onOk() {
+      sessionExpiredModalVisible = false;
+      return redirectToLogin();
+    },
+    onCancel() {
+      sessionExpiredModalVisible = false;
+    },
+    onClose() {
+      sessionExpiredModalVisible = false;
+    },
+  });
+};
 
 axios.interceptors.request.use(
   (config: AxiosRequestConfig) => {
@@ -34,39 +85,25 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   (response: AxiosResponse<APIResponse>) => {
     const res = response.data;
-    if (res.status && res.status >= 400 && res.status <= 500) {
-      Message.error('login required');
-      const router = useRouter();
-      router.push({ name: 'login' });
+    if (isSessionExpiredAPIResponse(res)) {
+      showSessionExpiredModal();
+      return Promise.reject(new Error(SESSION_EXPIRED_MESSAGE));
     }
     if (res.code !== 0) {
       Message.error({
         content: res.msg || 'Error',
         duration: 5 * 1000,
       });
-      // 50008: Illegal token; 50012: Other clients logged in; 50014: Token expired;
-      if (
-        [50008, 50012, 50014].includes(res.code) &&
-        response.config.url !== '/api/admin/user/info'
-      ) {
-        Modal.error({
-          title: 'Confirm logout',
-          content:
-            'You have been logged out, you can cancel to stay on this page, or log in again',
-          okText: 'Re-Login',
-          async onOk() {
-            const userStore = useUserStore();
-
-            await userStore.logout();
-            window.location.reload();
-          },
-        });
-      }
       return Promise.reject(new Error(res.msg || 'Error'));
     }
     return response;
   },
   (error) => {
+    if (isSessionExpiredHTTPStatus(error?.response?.status)) {
+      showSessionExpiredModal();
+      return Promise.reject(new Error(SESSION_EXPIRED_MESSAGE));
+    }
+
     const respMsg = error?.response?.data?.msg;
     Message.error({
       content: respMsg || error.message || 'Request Error',
