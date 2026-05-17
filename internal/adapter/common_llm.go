@@ -26,6 +26,10 @@ const UseDefaultModel = ""
 
 var llmCallTimeout = 10 * time.Minute
 var (
+	llmRetryAttemptsPerModel = uint(3)
+	llmRetryDelay            = 2 * time.Second
+	llmRetryMaxDelay         = 10 * time.Second
+
 	// llmClients acts as a lazy-loaded singleton registry, NOT a traditional acquire/release connection pool.
 	// It maps configuration keys to a single llms.Model instance.
 	// We reuse these instances so the underlying http.Transport can naturally maintain TCP Keep-Alive connections.
@@ -54,6 +58,11 @@ func getLLMDispatcher() *util.PriorityDispatcher[string] {
 		logrus.Infof("LLM Global Priority Dispatcher initialized with max concurrency: %d", concurrency)
 	})
 	return llmDispatcher
+}
+
+type llmModelClient struct {
+	model string
+	llm   llms.Model
 }
 
 func SimpleLLMCall(model string, promptInput string) (string, error) {
@@ -107,18 +116,20 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 		}
 	}
 
-	modelList := strings.Split(llmApiModel, ",")
+	modelList := make([]string, 0)
+	for _, currentModel := range strings.Split(llmApiModel, ",") {
+		currentModel = strings.TrimSpace(currentModel)
+		if currentModel != "" {
+			modelList = append(modelList, currentModel)
+		}
+	}
 	rand.Shuffle(len(modelList), func(i, j int) {
 		modelList[i], modelList[j] = modelList[j], modelList[i]
 	})
 
 	var lastErr error
+	modelClients := make([]llmModelClient, 0, len(modelList))
 	for _, currentModel := range modelList {
-		currentModel = strings.TrimSpace(currentModel)
-		if currentModel == "" {
-			continue
-		}
-
 		cacheKey := fmt.Sprintf("%s|%s|%s|%s", llmApiType, llmApiBase, llmApiKey, currentModel)
 		var llm llms.Model
 
@@ -150,48 +161,59 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 			llmClients.Store(cacheKey, llm)
 		}
 
-		dispatcher := getLLMDispatcher()
-
-		// try to execute
-		isUrgent := false // Will be set to true on retry
-
-		result, err := retry.DoWithData(
-			func() (string, error) {
-				return dispatcher.Execute(context.Background(), isUrgent, func(ctx context.Context) (string, error) {
-					ctx, cancel := context.WithTimeout(ctx, llmCallTimeout)
-					defer cancel()
-
-					content := []llms.MessageContent{
-						llms.TextParts(llms.ChatMessageTypeHuman, promptInput),
-					}
-
-					resp, err := llm.GenerateContent(ctx, content)
-					if err != nil {
-						return "", err
-					}
-					if len(resp.Choices) > 0 {
-						return resp.Choices[0].Content, nil
-					}
-					return "", fmt.Errorf("empty llm call response")
-				})
-			},
-			retry.Attempts(3),
-			retry.DelayType(retry.BackOffDelay),
-			retry.Delay(2*time.Second),
-			retry.MaxDelay(10*time.Second),
-			retry.OnRetry(func(n uint, err error) {
-				isUrgent = true // Elevate priority on retry
-				logrus.Warnf("Retrying LLM call (attempt %d) with model %s, err: %v", n+1, currentModel, err)
-			}),
-		)
-
-		if err == nil {
-			return result, nil
-		}
-
-		lastErr = err
-		logrus.Warnf("LLM call failed with model %s after retries: %v", currentModel, err)
+		modelClients = append(modelClients, llmModelClient{model: currentModel, llm: llm})
 	}
 
+	if len(modelClients) == 0 {
+		return "", fmt.Errorf("all models failed, last error: %v", lastErr)
+	}
+
+	dispatcher := getLLMDispatcher()
+	isUrgent := false // Will be set to true on retry
+	attemptIndex := 0
+	currentModel := ""
+	maxAttempts := uint(len(modelClients)) * llmRetryAttemptsPerModel
+
+	result, err := retry.DoWithData(
+		func() (string, error) {
+			modelClient := modelClients[attemptIndex%len(modelClients)]
+			attemptIndex++
+			currentModel = modelClient.model
+
+			return dispatcher.Execute(context.Background(), isUrgent, func(ctx context.Context) (string, error) {
+				ctx, cancel := context.WithTimeout(ctx, llmCallTimeout)
+				defer cancel()
+
+				content := []llms.MessageContent{
+					llms.TextParts(llms.ChatMessageTypeHuman, promptInput),
+				}
+
+				resp, err := modelClient.llm.GenerateContent(ctx, content)
+				if err != nil {
+					return "", err
+				}
+				if len(resp.Choices) > 0 {
+					return resp.Choices[0].Content, nil
+				}
+				return "", fmt.Errorf("empty llm call response")
+			})
+		},
+		retry.Attempts(maxAttempts),
+		retry.DelayType(retry.BackOffDelay),
+		retry.Delay(llmRetryDelay),
+		retry.MaxDelay(llmRetryMaxDelay),
+		retry.OnRetry(func(n uint, err error) {
+			isUrgent = true // Elevate priority on retry
+			nextModel := modelClients[attemptIndex%len(modelClients)].model
+			logrus.Warnf("Retrying LLM call (attempt %d) with model %s, err from previous model %s: %v", n+1, nextModel, currentModel, err)
+		}),
+	)
+
+	if err == nil {
+		return result, nil
+	}
+
+	lastErr = err
+	logrus.Warnf("LLM call failed after retries: %v", err)
 	return "", fmt.Errorf("all models failed, last error: %v", lastErr)
 }
