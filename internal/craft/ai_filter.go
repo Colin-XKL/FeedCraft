@@ -105,9 +105,13 @@ func evaluateAIFilterItem(item *feeds.Item, rule string, payloadTypes []aiFilter
 }
 
 func parseAIFilterExtraPayload(raw string) []aiFilterExtraPayloadType {
+	return parseAIFilterExtraPayloadWithDefault(raw, []aiFilterExtraPayloadType{aiFilterExtraPayloadArticleSummary})
+}
+
+func parseAIFilterExtraPayloadWithDefault(raw string, defaultPayloadTypes []aiFilterExtraPayloadType) []aiFilterExtraPayloadType {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
-		return []aiFilterExtraPayloadType{aiFilterExtraPayloadArticleSummary}
+		return defaultPayloadTypes
 	}
 
 	normalized := strings.NewReplacer("|", ",", "\n", ",", "\t", ",").Replace(raw)
@@ -129,7 +133,7 @@ func parseAIFilterExtraPayload(raw string) []aiFilterExtraPayloadType {
 		}
 	}
 	if len(payloadTypes) == 0 {
-		return []aiFilterExtraPayloadType{aiFilterExtraPayloadArticleSummary}
+		return defaultPayloadTypes
 	}
 	return payloadTypes
 }
