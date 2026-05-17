@@ -4,6 +4,7 @@ export default {
   'allCraftList.query': 'Query',
   'allCraftList.table.name': 'Name',
   'allCraftList.table.type': 'Type',
+  'allCraftList.table.templateOnly': 'Template Only',
   'allCraftList.table.description': 'Description',
   'allCraftList.message.fetchFailed': 'Failed to fetch all Crafts',
 };

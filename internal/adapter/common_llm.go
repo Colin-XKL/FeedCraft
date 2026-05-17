@@ -37,6 +37,18 @@ var (
 	llmDispOnce   sync.Once
 )
 
+type llmRetryConfig struct {
+	attemptsPerModel uint
+	delay            time.Duration
+	maxDelay         time.Duration
+}
+
+var defaultLLMRetryConfig = llmRetryConfig{
+	attemptsPerModel: 3,
+	delay:            2 * time.Second,
+	maxDelay:         10 * time.Second,
+}
+
 func getLLMDispatcher() *util.PriorityDispatcher[string] {
 	llmDispOnce.Do(func() {
 		envClient := util.GetEnvClient()
@@ -56,10 +68,30 @@ func getLLMDispatcher() *util.PriorityDispatcher[string] {
 	return llmDispatcher
 }
 
+type llmModelClient struct {
+	model string
+	llm   llms.Model
+}
+
 func SimpleLLMCall(model string, promptInput string) (string, error) {
+	return simpleLLMCallWithOptions(model, promptInput, defaultLLMRetryConfig, nil)
+}
+
+func SimpleLLMCallWithOptions(model string, promptInput string, callOptions ...llms.CallOption) (string, error) {
+	return simpleLLMCallWithOptions(model, promptInput, defaultLLMRetryConfig, callOptions)
+}
+
+func simpleLLMCall(model string, promptInput string, retryConfig llmRetryConfig) (string, error) {
+	return simpleLLMCallWithOptions(model, promptInput, retryConfig, nil)
+}
+
+func simpleLLMCallWithOptions(model string, promptInput string, retryConfig llmRetryConfig, callOptions []llms.CallOption) (string, error) {
 	envClient := util.GetEnvClient()
 	if envClient == nil {
 		log.Fatalf("get env client error.")
+	}
+	if retryConfig.attemptsPerModel == 0 {
+		retryConfig.attemptsPerModel = defaultLLMRetryConfig.attemptsPerModel
 	}
 
 	// 1. Load new standard env vars
@@ -107,18 +139,26 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 		}
 	}
 
-	modelList := strings.Split(llmApiModel, ",")
+	modelList := make([]string, 0)
+	seenModels := make(map[string]struct{})
+	for _, currentModel := range strings.Split(llmApiModel, ",") {
+		currentModel = strings.TrimSpace(currentModel)
+		if currentModel == "" {
+			continue
+		}
+		if _, ok := seenModels[currentModel]; ok {
+			continue
+		}
+		seenModels[currentModel] = struct{}{}
+		modelList = append(modelList, currentModel)
+	}
 	rand.Shuffle(len(modelList), func(i, j int) {
 		modelList[i], modelList[j] = modelList[j], modelList[i]
 	})
 
 	var lastErr error
+	modelClients := make([]llmModelClient, 0, len(modelList))
 	for _, currentModel := range modelList {
-		currentModel = strings.TrimSpace(currentModel)
-		if currentModel == "" {
-			continue
-		}
-
 		cacheKey := fmt.Sprintf("%s|%s|%s|%s", llmApiType, llmApiBase, llmApiKey, currentModel)
 		var llm llms.Model
 
@@ -150,48 +190,71 @@ func SimpleLLMCall(model string, promptInput string) (string, error) {
 			llmClients.Store(cacheKey, llm)
 		}
 
-		dispatcher := getLLMDispatcher()
-
-		// try to execute
-		isUrgent := false // Will be set to true on retry
-
-		result, err := retry.DoWithData(
-			func() (string, error) {
-				return dispatcher.Execute(context.Background(), isUrgent, func(ctx context.Context) (string, error) {
-					ctx, cancel := context.WithTimeout(ctx, llmCallTimeout)
-					defer cancel()
-
-					content := []llms.MessageContent{
-						llms.TextParts(llms.ChatMessageTypeHuman, promptInput),
-					}
-
-					resp, err := llm.GenerateContent(ctx, content)
-					if err != nil {
-						return "", err
-					}
-					if len(resp.Choices) > 0 {
-						return resp.Choices[0].Content, nil
-					}
-					return "", fmt.Errorf("empty llm call response")
-				})
-			},
-			retry.Attempts(3),
-			retry.DelayType(retry.BackOffDelay),
-			retry.Delay(2*time.Second),
-			retry.MaxDelay(10*time.Second),
-			retry.OnRetry(func(n uint, err error) {
-				isUrgent = true // Elevate priority on retry
-				logrus.Warnf("Retrying LLM call (attempt %d) with model %s, err: %v", n+1, currentModel, err)
-			}),
-		)
-
-		if err == nil {
-			return result, nil
-		}
-
-		lastErr = err
-		logrus.Warnf("LLM call failed with model %s after retries: %v", currentModel, err)
+		modelClients = append(modelClients, llmModelClient{model: currentModel, llm: llm})
 	}
 
+	if len(modelClients) == 0 {
+		return "", fmt.Errorf("all models failed, last error: %v", lastErr)
+	}
+
+	dispatcher := getLLMDispatcher()
+	isUrgent := false // Will be set to true on retry
+	attemptIndex := 0
+	currentModel := ""
+	maxAttempts := uint(len(modelClients)) * retryConfig.attemptsPerModel
+
+	result, err := retry.DoWithData(
+		func() (string, error) {
+			modelClient := modelClients[attemptIndex%len(modelClients)]
+			attemptIndex++
+			currentModel = modelClient.model
+
+			return dispatcher.Execute(context.Background(), isUrgent, func(ctx context.Context) (string, error) {
+				ctx, cancel := context.WithTimeout(ctx, llmCallTimeout)
+				defer cancel()
+
+				content := []llms.MessageContent{
+					llms.TextParts(llms.ChatMessageTypeHuman, promptInput),
+				}
+
+				resp, err := modelClient.llm.GenerateContent(ctx, content, callOptions...)
+				if err != nil {
+					return "", err
+				}
+				if len(resp.Choices) > 0 {
+					return resp.Choices[0].Content, nil
+				}
+				return "", fmt.Errorf("empty llm call response")
+			})
+		},
+		retry.Attempts(maxAttempts),
+		retry.DelayType(modelRotationBackoffDelay(len(modelClients))),
+		retry.Delay(retryConfig.delay),
+		retry.MaxDelay(retryConfig.maxDelay),
+		retry.OnRetry(func(n uint, err error) {
+			isUrgent = true // Elevate priority on retry
+			nextModel := modelClients[attemptIndex%len(modelClients)].model
+			logrus.Warnf("Retrying LLM call (attempt %d) with model %s, err from previous model %s: %v", n+1, nextModel, currentModel, err)
+		}),
+	)
+
+	if err == nil {
+		return result, nil
+	}
+
+	lastErr = err
+	logrus.Warnf("LLM call failed after retries: %v", err)
 	return "", fmt.Errorf("all models failed, last error: %v", lastErr)
+}
+
+func modelRotationBackoffDelay(modelCount int) retry.DelayTypeFunc {
+	return func(n uint, err error, config *retry.Config) time.Duration {
+		if modelCount <= 1 {
+			return retry.BackOffDelay(n, err, config)
+		}
+		if n%uint(modelCount) != 0 {
+			return 0
+		}
+		return retry.BackOffDelay(n/uint(modelCount), err, config)
+	}
 }

@@ -383,5 +383,17 @@ func getArticleContentForPrompt(article *model.CraftArticle, original string) st
 
 func combineArticleHTMLWithGeneratedMarkdown(originalHTML string, generatedMarkdown string) string {
 	processedHTML := util.Markdown2HTML(generatedMarkdown)
-	return fmt.Sprintf(`<div><div>%s</div><hr/><br/><div>%s</div></div>`, processedHTML, originalHTML)
+	return combineArticleHTMLFragments(processedHTML, originalHTML)
+}
+
+func combineArticleHTMLFragments(firstHTML string, secondHTML string) string {
+	firstHTML = strings.TrimSpace(firstHTML)
+	secondHTML = strings.TrimSpace(secondHTML)
+	if firstHTML == "" {
+		return secondHTML
+	}
+	if secondHTML == "" {
+		return firstHTML
+	}
+	return fmt.Sprintf(`<div><div>%s</div><hr/><br/><div>%s</div></div>`, firstHTML, secondHTML)
 }

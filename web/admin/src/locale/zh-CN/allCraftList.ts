@@ -4,6 +4,7 @@ export default {
   'allCraftList.query': '查询',
   'allCraftList.table.name': '名称',
   'allCraftList.table.type': '类型',
+  'allCraftList.table.templateOnly': '仅模板',
   'allCraftList.table.description': '描述',
   'allCraftList.message.fetchFailed': '获取所有 Craft 失败',
 };

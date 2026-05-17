@@ -45,7 +45,7 @@ It monitors the status of:
 
 - **SQLite**: Database connectivity.
 - **Redis**: Cache service connectivity and latency.
-- **Browserless**: Headless browser service availability (required for fulltext extraction).
+- **Browser Provider**: Headless browser provider availability (required for browser-based fulltext extraction).
 - **LLM Service**: Connectivity to the configured AI provider.
 - **Search Provider**: Connectivity to the configured search engine.
 
@@ -63,7 +63,9 @@ For monitoring internal Craft dependencies (Recipes, Flows, Atoms), use the [Cra
 
 You can configure FeedCraft using environment variables in `docker-compose.yml`.
 
-- **FC_PUPPETEER_HTTP_ENDPOINT**: Address of the Browserless/Chrome instance. Required for `fulltext-plus`.
+- **FC_BROWSER_PROVIDER**: Browser rendering provider. Supported values: `browserless-restful` (Browserless REST `/content`) and `cdp` (Chrome DevTools Protocol, such as CloakBrowser `cloakserve`).
+- **FC_BROWSER_ENDPOINT**: Endpoint of the selected browser provider. Required for `fulltext-plus` and HTML-to-RSS Enhanced Mode.
+- **FC_PUPPETEER_HTTP_ENDPOINT**: Legacy Browserless endpoint alias. Still supported when `FC_BROWSER_ENDPOINT` is empty.
 - **FC_REDIS_URI**: Redis connection address. Used for caching to speed up processing and reduce AI token consumption.
 - **FC_HTTP_USER_AGENT_FEED**: (Optional) Default `User-Agent` for feed-style outbound requests, such as fetching RSS/XML resources. Search provider requests are temporarily grouped into this same rule.
 - **FC_HTTP_USER_AGENT_HTML**: (Optional) Default `User-Agent` for HTML page fetches, such as fulltext extraction and the HTML-to-RSS tooling. **Note:** If the value contains spaces or parentheses, it must be enclosed in quotes.
@@ -77,7 +79,7 @@ You can configure FeedCraft using environment variables in `docker-compose.yml`.
 
 ### External Services
 
-To leverage the full power of FeedCraft, it is recommended to deploy with Redis and Browserless.
+To leverage the full power of FeedCraft, it is recommended to deploy with Redis and a browser provider.
 
 ```yaml
 version: "3"
@@ -85,7 +87,8 @@ services:
   app.feed-craft:
     # ... (Refer to Quick Start)
     environment:
-      FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000
+      FC_BROWSER_PROVIDER: browserless-restful
+      FC_BROWSER_ENDPOINT: http://service.browserless:3000
       FC_REDIS_URI: redis://service.redis:6379/
       # ...
 
@@ -99,6 +102,21 @@ services:
     container_name: feedcraft_browserless
     environment:
       USE_CHROME_STABLE: true
+    restart: unless-stopped
+```
+
+To use CloakBrowser instead of Browserless, point FeedCraft to the official `cloakserve` container:
+
+```yaml
+services:
+  app.feed-craft:
+    environment:
+      FC_BROWSER_PROVIDER: cdp
+      FC_BROWSER_ENDPOINT: http://service.cloakbrowser:9222?fingerprint=feedcraft
+
+  service.cloakbrowser:
+    image: cloakhq/cloakbrowser
+    command: cloakserve --port=9222
     restart: unless-stopped
 ```
 

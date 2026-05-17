@@ -41,7 +41,7 @@ URL 生成器現在支援「解析模式」。你可以貼上一個現有的 Fee
 - **proxy**: 簡易 RSS 代理，不作任何處理。
 - **limit**: 限制文章數量（預設最新 10 篇）。
 - **fulltext**: 提取文章全文。
-- **fulltext-plus**: 模擬瀏覽器渲染並提取全文（需要 Browserless，在最小化部署中不可用）。
+- **fulltext-plus**: 模擬瀏覽器渲染並提取全文（需要瀏覽器提供方，在最小化部署中不可用）。
 - **introduction**: 調用 AI 為文章生成導讀，附加在開頭。
 - **summary**: 調用 AI 總結文章主要內容。
 - **translate-title**: 調用 AI 翻譯文章標題。
@@ -75,7 +75,8 @@ services:
     volumes:
       - ./feed-craft-db:/usr/local/feed-craft/db
     environment:
-      # FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000 # fulltext-plus 和增強模式必需
+      # FC_BROWSER_PROVIDER: browserless-restful # browserless-restful 或 cdp
+      # FC_BROWSER_ENDPOINT: http://service.browserless:3000 # fulltext-plus 和增強模式必需
       FC_REDIS_URI: redis://service.redis:6379/
       FC_LLM_API_KEY: skxxxxxx
       FC_LLM_API_MODEL: gemini-pro
@@ -89,7 +90,7 @@ services:
     restart: always
 ```
 
-**關於 Browserless 的說明：** 最小化部署不包含無頭瀏覽器 (Browserless)。依賴此服務的特性（如 **fulltext-plus** 原子工藝和 HTML 轉 RSS 中的**增強模式**）將無法運行。請參考[進階定制](../../advanced/customization/#外部服務)指南來啟用這些功能。
+**關於瀏覽器提供方的說明：** 最小化部署不包含瀏覽器渲染提供方。依賴此服務的特性（如 **fulltext-plus** 原子工藝和 HTML 轉 RSS 中的**增強模式**）將無法運行。請參考[進階定制](../../advanced/customization/#外部服務)指南啟用 Browserless 或 CloakBrowser。
 
 保存為 `docker-compose.yml` 並執行 `docker-compose up -d`。
 訪問 `http://localhost:10088` 進入後台管理介面。

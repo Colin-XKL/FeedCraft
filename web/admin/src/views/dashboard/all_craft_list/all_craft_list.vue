@@ -32,6 +32,7 @@
     name: string;
     description: string;
     type: string;
+    template_only?: boolean;
   }
 
   const isLoading = ref(false);
@@ -40,6 +41,7 @@
   const columns = [
     { title: t('allCraftList.table.name'), dataIndex: 'name' },
     { title: t('allCraftList.table.type'), dataIndex: 'type' },
+    { title: t('allCraftList.table.templateOnly'), dataIndex: 'template_only' },
     { title: t('allCraftList.table.description'), dataIndex: 'description' },
   ];
 

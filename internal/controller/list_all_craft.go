@@ -18,9 +18,10 @@ var (
 )
 
 type CraftItem struct {
-	Type        CraftType `json:"type"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
+	Type         CraftType `json:"type"`
+	Name         string    `json:"name"`
+	Description  string    `json:"description"`
+	TemplateOnly bool      `json:"template_only"`
 }
 
 func ListAllCraft(c *gin.Context) {
@@ -31,9 +32,10 @@ func ListAllCraft(c *gin.Context) {
 	sysCraftTemplates := craft.GetSysCraftTemplateDict()
 	for _, tmpl := range sysCraftTemplates {
 		allCrafts = append(allCrafts, CraftItem{
-			Type:        SysDefinedCraftAtom,
-			Name:        tmpl.Name,
-			Description: tmpl.Description,
+			Type:         SysDefinedCraftAtom,
+			Name:         tmpl.Name,
+			Description:  tmpl.Description,
+			TemplateOnly: tmpl.TemplateOnly,
 		})
 	}
 
