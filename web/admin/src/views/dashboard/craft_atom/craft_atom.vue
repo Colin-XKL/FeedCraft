@@ -126,6 +126,17 @@
                     />
                     <a-select
                       v-else-if="
+                        isAIContentProcessPlacementParam(
+                          editedCraftAtom.template_name,
+                          param.key
+                        )
+                      "
+                      v-model="param.value"
+                      :options="aiContentProcessPlacementOptions"
+                      :placeholder="t('craftAtom.form.value')"
+                    />
+                    <a-select
+                      v-else-if="
                         isEmbeddingFilterModeParam(
                           editedCraftAtom.template_name,
                           param.key
@@ -225,9 +236,11 @@
   import { useI18n } from 'vue-i18n';
   import { Message } from '@arco-design/web-vue';
   import {
+    aiContentProcessPlacementOptions,
     aiFilterExtraPayloadOptions,
     CraftParamValue,
     embeddingFilterModeOptions,
+    isAIContentProcessPlacementParam,
     isAIFilterExtraPayloadParam,
     isEmbeddingFilterAnchorsParam,
     isEmbeddingFilterMaxContentLengthParam,
