@@ -93,6 +93,16 @@ var feedDefinitions = []feedDefinition{
 	},
 	{
 		FeedMeta: FeedMeta{
+			Slug:        "rss-2-0",
+			Title:       "FeedCraft Example RSS Feeds - RSS 2.0",
+			Description: "A simple RSS 2.0 feed for checking format support.",
+			Path:        RoutePrefix + "/rss-2-0.xml",
+		},
+		sections:     []contentSection{formatSection},
+		outputFormat: outputRSS2,
+	},
+	{
+		FeedMeta: FeedMeta{
 			Slug:        "rss-1-0",
 			Title:       "FeedCraft Example RSS Feeds - RSS 1.0",
 			Description: "A simple RSS 1.0/RDF feed for checking format support.",

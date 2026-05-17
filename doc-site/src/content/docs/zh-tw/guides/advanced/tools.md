@@ -20,7 +20,7 @@ FeedCraft 提供了一些內建工具來幫助您除錯 RSS 來源並監控系�
 
 ## RSS 範例訂閱 (Example RSS Feeds)
 
-**RSS 範例訂閱** 頁面提供內建訂閱地址，用來測試 RSS 閱讀器對 HTML、CSS 和媒體內容的渲染支援情況，以及對 RSS 1.0、Atom、JSON Feed 文件的格式支援。
+**RSS 範例訂閱** 頁面提供內建訂閱地址，用來測試 RSS 閱讀器對 HTML、CSS 和媒體內容的渲染支援情況，以及對 RSS 1.0、RSS 2.0、Atom、JSON Feed 文件的格式支援。
 
 - **使用方法**:
   1. 導航至 **工具 > RSS 範例訂閱**。
@@ -31,6 +31,7 @@ FeedCraft 提供了一些內建工具來幫助您除錯 RSS 來源並監控系�
   - `html-styling.xml`: 內聯顏色、背景、邊框、間距、排版、flex 和 grid 樣式。
   - `media-picture.xml`: `picture`、`source`、`srcset`、`sizes`、備援圖片、alt 文字和說明文字。
   - `all-in-one.xml`: 將 HTML、樣式和媒體範例合併到一個 Feed 中。
+  - `rss-2-0.xml`: 簡單的 RSS 2.0 文件。
   - `rss-1-0.rdf`: 簡單的 RSS 1.0/RDF 文件。
   - `atom.xml`: 簡單的 Atom 文件。
   - `json-feed.json`: 簡單的 JSON Feed 1.1 文件。
