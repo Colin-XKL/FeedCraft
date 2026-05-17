@@ -112,8 +112,13 @@ func DeleteCraftFlow(c *gin.Context) {
 		return
 	}
 
-	if err := db.Delete(craftFlow).Error; err != nil {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
+	result := db.Delete(craftFlow)
+	if result.Error != nil {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: result.Error.Error()})
+		return
+	}
+	if result.RowsAffected == 0 {
+		c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "CraftFlow not found"})
 		return
 	}
 

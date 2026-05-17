@@ -19,6 +19,9 @@ func htmlSourceFactory(cfg *config.SourceConfig) (Source, error) {
 	if cfg.HtmlParser == nil {
 		return nil, fmt.Errorf("html_parser config is required for html source")
 	}
+	if cfg.HttpFetcher.Purpose == "" {
+		cfg.HttpFetcher.Purpose = config.HttpFetcherPurposeHTML
+	}
 
 	return &PipelineSource{
 		Config:  cfg,

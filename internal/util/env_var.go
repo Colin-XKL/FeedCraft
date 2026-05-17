@@ -5,11 +5,33 @@ import (
 	"sync"
 
 	"github.com/sirupsen/logrus"
+	"strings"
+
 	"github.com/spf13/viper"
 	"github.com/subosito/gotenv"
 )
 
 var loadEnvOnce sync.Once
+const (
+	defaultFeedUserAgent = "FeedCraft/2.0"
+	htmlDefaultUserAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
+)
+
+func DefaultFeedUserAgent() string {
+	value := strings.TrimSpace(GetEnvClient().GetString("HTTP_USER_AGENT_FEED"))
+	if value == "" {
+		return defaultFeedUserAgent
+	}
+	return value
+}
+
+func DefaultHTMLUserAgent() string {
+	value := strings.TrimSpace(GetEnvClient().GetString("HTTP_USER_AGENT_HTML"))
+	if value == "" {
+		return htmlDefaultUserAgent
+	}
+	return value
+}
 
 func GetEnvClient() *viper.Viper {
 	// 确保 .env 文件仅加载一次，避免高频调用时的重复文件 I/O

@@ -14,6 +14,7 @@
           type="text"
           :placeholder="t('feedViewer.placeholder')"
           allow-clear
+          @input="errorMessage = ''"
           @keyup.enter="fetchFeed"
         />
         <a-button
@@ -29,48 +30,46 @@
       class="my-4"
       :loading="isLoading"
     >
+      <a-alert v-if="errorMessage" type="error" class="mb-4" show-icon>
+        {{ errorMessage }}
+      </a-alert>
       <div v-if="feedContent">
         <FeedViewContainer :feed-data="feedContent" />
       </div>
-      <a-empty v-else />
+      <a-empty v-else-if="!errorMessage" />
     </a-card>
   </div>
 </template>
 
 <script lang="ts" setup>
   import { ref, onMounted } from 'vue';
-  import Parser from 'rss-parser';
-  import { Message } from '@arco-design/web-vue';
   import FeedViewContainer from '@/views/dashboard/feed_viewer/feed_view_container.vue';
   import XHeader from '@/components/header/x-header.vue';
   import { useI18n } from 'vue-i18n';
   import { useRoute } from 'vue-router';
+  import { previewFeed, type FeedViewerPreview } from '@/api/feed_viewer';
 
   const { t } = useI18n();
   const route = useRoute();
 
   const feedUrl = ref('');
-  const feedContent = ref<any>(null);
+  const feedContent = ref<FeedViewerPreview | null>(null);
+  const errorMessage = ref('');
   const isLoading = ref(false);
-  const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '';
 
   async function fetchFeed() {
     if (!feedUrl.value) return;
     isLoading.value = true;
-    const requestUrl = `${baseUrl}/craft/proxy?input_url=${encodeURIComponent(
-      feedUrl.value
-    )}`;
+    errorMessage.value = '';
     try {
-      const parser = new Parser();
-      const resp = await fetch(requestUrl);
-      const feed = await parser.parseString(await resp?.text()).then((resp) => {
-        return resp;
-      });
-      feedContent.value = feed;
+      const response = await previewFeed(feedUrl.value);
+      feedContent.value = response.data;
     } catch (error) {
-      Message.warning(
-        error?.toString() ?? t('feedViewer.message.unknownError')
-      );
+      feedContent.value = null;
+      errorMessage.value =
+        error instanceof Error
+          ? error.message
+          : t('feedViewer.message.unknownError');
     } finally {
       isLoading.value = false;
     }

@@ -57,6 +57,11 @@ You can configure processors for a Topic Feed to automatically handle the combin
 - **Limit**: Keeps only the most recent items.
 
 **Managing Topic Feeds:**
+
+:::caution
+The Topic Feed feature is currently under active development. Its UI entry point in the admin dashboard has been temporarily hidden until the feature is stable and ready for general use.
+:::
+
 Navigate to **Worktable > Topic Feed** to create and manage topics.
 
 - **Create**: Define a title, add multiple input URIs (e.g. `feedcraft://recipe/my-recipe` or external RSS URLs), and set your aggregator config.

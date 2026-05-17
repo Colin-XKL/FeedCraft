@@ -12,25 +12,26 @@ const WORKTABLE: AppRouteRecordRaw = {
     order: 1,
   },
   children: [
-    {
-      path: 'topic_feed',
-      name: 'TopicFeed',
-      component: () => import('@/views/dashboard/topic_feed/topic_feed.vue'),
-      meta: {
-        requiresAuth: true,
-        locale: 'menu.topicFeed',
-      },
-    },
-    {
-      path: 'topic_feed/:id',
-      name: 'TopicFeedDetail',
-      component: () => import('@/views/dashboard/topic_feed/detail.vue'),
-      meta: {
-        requiresAuth: true,
-        locale: 'menu.topicFeed',
-        hideInMenu: true,
-      },
-    },
+    // TopicFeed 功能当前仍在开发完善中，先隐藏入口；待功能 ready 后再重新开放。
+    // {
+    //   path: 'topic_feed',
+    //   name: 'TopicFeed',
+    //   component: () => import('@/views/dashboard/topic_feed/topic_feed.vue'),
+    //   meta: {
+    //     requiresAuth: true,
+    //     locale: 'menu.topicFeed',
+    //   },
+    // },
+    // {
+    //   path: 'topic_feed/:id',
+    //   name: 'TopicFeedDetail',
+    //   component: () => import('@/views/dashboard/topic_feed/detail.vue'),
+    //   meta: {
+    //     requiresAuth: true,
+    //     locale: 'menu.topicFeed',
+    //     hideInMenu: true,
+    //   },
+    // },
     {
       path: 'custom_recipe',
       name: 'CustomRecipe',
@@ -70,11 +71,11 @@ const WORKTABLE: AppRouteRecordRaw = {
       },
     },
     {
-      path: 'curl-to-rss',
-      name: 'CurlToRss',
+      path: 'json-to-rss',
+      name: 'JsonToRss',
       component: () => import('@/views/dashboard/curl_to_rss/curl_to_rss.vue'),
       meta: {
-        locale: 'menu.curlToRss',
+        locale: 'menu.jsonToRss',
         requiresAuth: true,
       },
     },

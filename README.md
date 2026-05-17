@@ -19,17 +19,17 @@ Doc: [English](https://feed-craft-doc.vercel.app/en) | [简体中文](https://fe
 
 **FeedCraft** is a simple, powerful RSS feed processing tool.  
 It can serve as middleware to handle your RSS feeds; you can use it to extract the main text, perform intelligent translation, generate article summaries through AI, filter articles using natural language, and more.  
-It includes a built-in visual RSS generator (HTML/Curl/Search to RSS) that can turn web pages, API responses, or search results into RSS feeds.
+It includes a built-in visual RSS generator (HTML/JSON/Search to RSS) that can turn web pages, JSON API responses, or search results into RSS feeds.
 
 **FeedCraft** 是一个简单、强大的 RSS 源处理工具.
 他可以作为一个中间件处理你的 RSS 源, 你可以用它来提取正文、智能翻译、通过 AI 生成文章摘要、通过自然语言筛选文章等.
-它内置了可视化 RSS 生成器 (HTML/Curl/Search to RSS)，支持将网页、API (Curl) 或搜索结果转换为 RSS 订阅源。
+它内置了可视化 RSS 生成器 (HTML/JSON/Search to RSS)，支持将网页、JSON API (Curl) 或搜索结果转换为 RSS 订阅源。
 
 ## 核心特性
 
 - 开源可自部署. 可以作为中间件与现有的任何 RSS 阅读器协同使用
 - AI Power, 可以接入 Open AI 接口兼容的 LLM 对 RSS 进行处理, 可自定义 prompt
-- **HTML/Curl/Search to RSS**: 内置可视化 RSS 生成器，支持将网页、API (Curl) 或搜索结果转换为 RSS 订阅源
+- **HTML/JSON/Search to RSS**: 内置可视化 RSS 生成器，支持将网页、JSON API (支持 Curl 语句导入) 或搜索结果转换为 RSS 订阅源
 - 支持**便携模式**(portable mode, 即用即走, 只需要在原 RSS 地址前面加个前缀即可), 和**高级模式**(dock mode,
   在后台页面自定义 RSS 地址和各类深度加工参数)
 
@@ -87,7 +87,6 @@ https://feed-craft.colinx.one
 控制台默认账号`admin`, 密码 `adminadmin`, 登陆后请尽快修改默认密码
 
 ```yaml
-version: "3"
 services:
   app.feed-craft:
     image: ghcr.io/colin-xkl/feed-craft
@@ -129,6 +128,7 @@ services:
       FC_LLM_API_MODEL: gemini-pro/chatgpt-3.5/... # 默认使用的模型
       FC_LLM_API_TYPE: openai # openai 或 ollama
       FC_DEFAULT_TARGET_LANG: zh-CN # (Optional) LLM 处理任务的默认目标语言
+      LOG_LEVEL: info # (Optional) 日志级别，如 info, debug, trace
   service.redis:
     image: redis:6-alpine
     container_name: feedcraft_redis
@@ -145,6 +145,17 @@ services:
 
 FeedCraft 的名称和 Logo 参考并致敬两款游戏: MineCraft 和塞尔达, 初衷和愿景是做一个简单易用、同时足够灵活, 能够有更多可能性的 RSS 工具.
 使用问题、建议等欢迎在 Discussion 区讨论交流
+
+## 赞助商
+
+感谢以下项目对 FeedCraft 的赞助
+
+
+| 赞助商                                                                                                                               | 介绍                                                                                                                                                              |
+| --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <img src="https://dn-mars-assets.qbox.me/qiniulogo/img-horizontal-blue-cn.png" alt="qiniu-cloud-logo" width="300">    | **感谢 七牛云 提供 AI Token 支持**<br><br>FeedCraft 公共实例的 AI 服务由七牛云赞助.<br>新用户注册可获得 300 万免费 Token 资源包, 更有 GLM、Qwen 多款免费模型可直接使用.<br>[立即领取](https://s.qiniu.com/7nuaie) |
+| <img src="https://cloudcache.tencent-cloud.cn/qcloud/ui/cloud-community/build/base/images/cloud-logo_f8d.svg" alt="tencent-cloud-logo" width="300" > | **感谢 腾讯云 提供服务器资源支持** <br><br>腾讯云大模型 Token Plan, 面向龙虾和 AI 编码场景设计，覆盖多种主流模型、灵活套餐、极速调用。<br>[立即购买](https://curl.qcloud.com/qJIRe25F)                                      |
+
 
 ## 许可
 

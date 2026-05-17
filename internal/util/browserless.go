@@ -78,7 +78,14 @@ func GetBrowserlessContent(websiteUrl string, options BrowserlessOptions) (strin
 	}
 
 	if response.StatusCode() != http.StatusOK {
-		return "", fmt.Errorf("browserless service returned status %d: %s", response.StatusCode(), response.String())
+		respStr := response.String()
+		logrus.Errorf("browserless service returned status %d. URL: %s, response body: %s", response.StatusCode(), websiteUrl, respStr)
+
+		truncLen := 200
+		if len(respStr) > truncLen {
+			respStr = respStr[:truncLen] + "..."
+		}
+		return "", fmt.Errorf("browserless service returned status %d: %s", response.StatusCode(), respStr)
 	}
 
 	return response.String(), nil

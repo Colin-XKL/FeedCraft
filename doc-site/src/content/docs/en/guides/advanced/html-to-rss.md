@@ -11,7 +11,7 @@ sidebar:
 FeedCraft includes a visual **HTML to RSS** tool that allows you to generate selectors for creating RSS feeds from websites that don't provide them natively.
 
 :::note
-This tool is designed for HTML pages. If you need to process a JSON API, use the [CURL to RSS](/en/guides/advanced/curl-to-rss/) instead.
+This tool is designed for HTML pages. If you need to process a JSON API, use the [JSON to RSS](/en/guides/advanced/json-to-rss/) instead.
 :::
 
 ## Overview

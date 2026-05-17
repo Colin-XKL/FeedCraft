@@ -35,10 +35,10 @@ func translateArticleContent(content string, prompt string) (string, error) {
 type ContentCacheKeyGenerator TransFunc
 
 func cacheKeyForArticleTitle(item *feeds.Item) (string, error) {
-	return util.GetMD5Hash(item.Title), nil
+	return util.GetTextContentHash(item.Title), nil
 }
 func cacheKeyForArticleContent(item *feeds.Item) (string, error) {
-	return util.GetMD5Hash(item.Description), nil
+	return util.GetTextContentHash(item.Description), nil
 }
 func cacheKeyForArticleLink(item *feeds.Item) (string, error) {
 	uniqLinkStr := item.Title
@@ -48,7 +48,7 @@ func cacheKeyForArticleLink(item *feeds.Item) (string, error) {
 	} else if item.Source != nil {
 		uniqLinkStr += item.Source.Href
 	}
-	return util.GetMD5Hash(uniqLinkStr), nil
+	return util.GetTextContentHash(uniqLinkStr), nil
 }
 
 // =======================================

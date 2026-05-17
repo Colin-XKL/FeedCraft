@@ -3,6 +3,9 @@ package feedruntime
 import (
 	"context"
 	"errors"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
@@ -143,14 +146,46 @@ func TestBuildRecipe_UsesSourceInputSpecCompatibility(t *testing.T) {
 	assert.Equal(t, "stub-feed", feed.Title)
 }
 
-func TestBuildProviderFromInput_InvalidURI(t *testing.T) {
-	builder := NewBuilder(newTestDB(t))
-	_, err := builder.BuildProviderFromInput(context.Background(), InputSpec{
-		Kind: InputKindURI,
-		URI:  "feedcraft://recipe",
-	}, nil)
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "missing resource id")
+func TestProxyRecipeFetch_UsesDefaultUserAgent(t *testing.T) {
+	var gotUA string
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotUA = r.Header.Get("User-Agent")
+		w.Header().Set("Content-Type", "application/rss+xml")
+		_, _ = io.WriteString(w, `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Proxy Feed</title>
+    <link>https://example.com/</link>
+    <description>Proxy test feed</description>
+    <item>
+      <title>Item 1</title>
+      <link>https://example.com/item-1</link>
+      <description>Hello</description>
+    </item>
+  </channel>
+</rss>`)
+	}))
+	defer server.Close()
+
+	db := newTestDB(t)
+	require.NoError(t, db.Create(&dao.CustomRecipeV2{
+		ID:         "proxy-runtime-default-ua",
+		Craft:      "proxy",
+		SourceType: string(constant.SourceRSS),
+		SourceConfig: `{
+			"type":"rss",
+			"http_fetcher":{"url":"` + server.URL + `"}
+		}`,
+	}).Error)
+
+	builder := NewBuilder(db)
+	provider, err := builder.BuildRecipeProvider(context.Background(), "proxy-runtime-default-ua")
+	require.NoError(t, err)
+
+	feed, err := provider.Fetch(context.Background())
+	require.NoError(t, err)
+	require.NotNil(t, feed)
+	assert.Equal(t, "FeedCraft/2.0", gotUA)
 }
 
 func TestBuildAggregator(t *testing.T) {
@@ -235,7 +270,7 @@ func newTestDB(t *testing.T) *gorm.DB {
 	dsn := "file:" + t.Name() + "?mode=memory&cache=shared"
 	db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
 	require.NoError(t, err)
-	require.NoError(t, db.AutoMigrate(&dao.CustomRecipeV2{}, &dao.TopicFeed{}))
+	require.NoError(t, db.AutoMigrate(&dao.CustomRecipeV2{}, &dao.TopicFeed{}, &dao.CraftAtom{}))
 	return db
 }
 

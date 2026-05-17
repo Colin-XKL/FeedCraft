@@ -74,10 +74,9 @@ func (t *TopicFeed) Fetch(ctx context.Context) (*model.CraftFeed, error) {
 		Title:       t.Title,
 		Description: t.Description,
 		Link:        t.Link,
-		Updated:     time.Now(),
-		Created:     time.Now(),
 		Articles:    allArticles,
 	}
+	applyTopicFeedTimestamps(mergedFeed)
 
 	// If there's an aggregator pipeline (e.g., deduplicate -> sort -> limit), run it.
 	if t.Aggregator != nil {
@@ -99,6 +98,7 @@ func (t *TopicFeed) Fetch(ctx context.Context) (*model.CraftFeed, error) {
 			})
 			return nil, err
 		}
+		applyTopicFeedTimestamps(processedFeed)
 		if len(processedFeed.Articles) == 0 && len(failedInputs) > 0 {
 			reportTopicResult(ctx, t, processedFeed, failedInputs, startedAt)
 			return nil, errors.New("topic failed because all upstream providers failed or produced no items")
@@ -114,6 +114,34 @@ func (t *TopicFeed) Fetch(ctx context.Context) (*model.CraftFeed, error) {
 
 	reportTopicResult(ctx, t, mergedFeed, failedInputs, startedAt)
 	return mergedFeed, nil
+}
+
+func applyTopicFeedTimestamps(feed *model.CraftFeed) {
+	if feed == nil {
+		return
+	}
+
+	var latestUpdated time.Time
+	var latestCreated time.Time
+
+	for _, article := range feed.Articles {
+		if article == nil {
+			continue
+		}
+		if article.Updated.After(latestUpdated) {
+			latestUpdated = article.Updated
+		}
+		if article.Created.After(latestCreated) {
+			latestCreated = article.Created
+		}
+	}
+
+	if !latestUpdated.IsZero() {
+		feed.Updated = latestUpdated
+	}
+	if !latestCreated.IsZero() {
+		feed.Created = latestCreated
+	}
 }
 
 func reportTopicResult(ctx context.Context, topic *TopicFeed, feed *model.CraftFeed, failedInputs []map[string]any, startedAt time.Time) {

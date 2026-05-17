@@ -1,5 +1,5 @@
 ---
-title: CURL to RSS
+title: JSON to RSS
 description: Convert any JSON API response into an RSS feed with jq selectors and optional templates.
 sidebar:
   order: 3
@@ -8,11 +8,11 @@ sidebar:
     variant: success
 ---
 
-FeedCraft includes a **CURL to RSS** tool that allows you to fetch data from JSON APIs, extract fields with `jq`, and optionally post-process them with templates before generating an RSS feed.
+FeedCraft includes a **JSON to RSS** tool that allows you to fetch data from JSON APIs, extract fields with `jq`, and optionally post-process them with templates before generating an RSS feed.
 
 ## Overview
 
-The CURL to RSS tool helps you:
+The JSON to RSS tool helps you:
 
 1.  **Fetch** JSON data from an API endpoint (supporting custom headers and methods).
 2.  **Parse** the JSON structure using `jq` syntax, then optionally use templates to build the final RSS fields.
@@ -21,13 +21,13 @@ The CURL to RSS tool helps you:
 
 ## How to use
 
-Navigate to **Worktable > Curl to RSS** in the admin dashboard.
+Navigate to **Worktable > JSON to RSS** in the admin dashboard.
 
 ### Step 1: Request Configuration
 
 You need to define how to fetch the JSON data.
 
-- **Import from Curl**: You can paste a `curl` command to automatically populate the URL, method, headers, and body. This is useful if you copy the request from your browser's Developer Tools.
+- **Import from cURL**: You can paste a `curl` command to automatically populate the URL, method, headers, and body. This is useful if you copy the request from your browser's Developer Tools.
 - **Method**: Select `GET` or `POST`.
 - **URL**: The API endpoint URL.
 - **Headers**: Add any necessary headers (e.g., `Authorization`, `Content-Type`).
@@ -49,6 +49,28 @@ The tool uses **[jq](https://jqlang.github.io/jq/)** syntax for querying JSON, a
 - **Link Template**: Optional. Useful when the API only returns an ID, for example `https://some-website.com/article/{{ .Item.id }}`.
 - **Date Selector**: (Optional) Path to the publication date.
 - **Content Selector**: (Optional) Path to the full content or summary.
+
+#### Using Templates (Optional)
+
+You can use [Go Templates](https://pkg.go.dev/text/template) to further process extracted values.
+
+**Available Variables:**
+
+- `.Fields`: The parsed field values (e.g., `.Fields.Title`, `.Fields.Link`, `.Fields.Date`, `.Fields.Description`).
+- `.Item`: The raw JSON item object (e.g., `.Item.id`, `.Item.author.name`).
+
+**Built-in Functions:**
+
+- `trimSpace`: Removes leading and trailing whitespace.
+- `trim`: Removes specified leading and trailing characters.
+- `default`: Provides a fallback value if the field is empty.
+
+**Examples:**
+
+- **Clean up whitespace in title**: `{{ .Fields.Title | trimSpace }}`
+- **Build absolute URLs**: `https://example.com/article/{{ .Item.id }}`
+- **Remove specific prefixes**: `{{ .Fields.Description | trim "Prefix: " }}`
+- **Fallback values**: `{{ default .Fields.Description "No summary available" }}`
 
 Click **Run Preview** to verify your selectors, then click **Next Step**.
 

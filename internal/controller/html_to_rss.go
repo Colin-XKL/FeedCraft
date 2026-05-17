@@ -2,6 +2,7 @@ package controller
 
 import (
 	"FeedCraft/internal/craft"
+	fetcherpkg "FeedCraft/internal/source/fetcher"
 	"FeedCraft/internal/util"
 	"fmt"
 	"net"
@@ -67,19 +68,13 @@ func fetchHTML(targetURL string, useBrowserless bool) (string, error) {
 		})
 	}
 
-	// Try standard HTTP request (simulating a browser user agent)
 	client := resty.New()
 	client.SetTimeout(craft.DefaultExtractFulltextTimeout)
-	resp, err := client.R().
-		SetHeader("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36").
-		SetHeader("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7").
-		SetHeader("Accept-Language", "en-US,en;q=0.9").
-		SetHeader("Upgrade-Insecure-Requests", "1").
-		SetHeader("Sec-Fetch-Dest", "document").
-		SetHeader("Sec-Fetch-Mode", "navigate").
-		SetHeader("Sec-Fetch-Site", "none").
-		SetHeader("Sec-Fetch-User", "?1").
-		Get(targetURL)
+	req := client.R()
+	for key, value := range fetcherpkg.HTMLDefaultHeaders() {
+		req.SetHeader(key, value)
+	}
+	resp, err := req.Get(targetURL)
 
 	if err != nil {
 		return "", fmt.Errorf("fetch failed: %w", err)

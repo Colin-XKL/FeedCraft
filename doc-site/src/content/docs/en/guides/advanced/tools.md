@@ -48,6 +48,21 @@ The **Craft Dependencies** (System Health) tool visualizes the internal relation
 If you encounter errors like "Craft not found", use this tool to trace the broken link in your configuration.
 :::
 
+## System Runtime
+
+The **System Runtime** (Observability) tool provides a comprehensive dashboard for monitoring the health and execution status of your resources.
+
+- **Usage**:
+  1. Navigate to **Tools > System Runtime**.
+- **Features**:
+  - **Resource Health**: View the current status (Healthy, Degraded, Paused) of Recipes and other components, including consecutive failures.
+  - **Execution Logs**: Track detailed execution history, success rates, and specific error types (e.g., Timeout, Network, Parse) across all runs.
+  - **System Notifications**: Review automated alerts regarding resource state transitions (e.g., when a Recipe becomes degraded). You can also subscribe to these alerts via the built-in RSS feed at `/system/notifications/rss`.
+
+:::tip
+If a Recipe fails repeatedly and becomes "Paused", you can use the System Runtime dashboard to manually "Resume" it after fixing the underlying issue.
+:::
+
 ## Debug Tools
 
 ### LLM Debug

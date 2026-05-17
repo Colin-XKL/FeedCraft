@@ -111,6 +111,10 @@ func DeleteCustomRecipe(c *gin.Context) {
 	db := util.GetDatabase()
 
 	if err := dao.DeleteCustomRecipeV2(db, id); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, util.APIResponse[any]{Msg: "Recipe not found"})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}

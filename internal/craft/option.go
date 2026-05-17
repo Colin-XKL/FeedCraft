@@ -1,14 +1,18 @@
 package craft
 
 import (
+	"FeedCraft/internal/config"
+	"FeedCraft/internal/source/fetcher"
+	"bytes"
+	"context"
 	"fmt"
 	"github.com/gorilla/feeds"
 	"github.com/mmcdole/gofeed"
 	"github.com/samber/lo"
 	"github.com/samber/lo/parallel"
 	"github.com/sirupsen/logrus"
-
 	"strings"
+	"time"
 )
 
 type CraftedFeed struct {
@@ -26,8 +30,19 @@ type CraftOption func(*feeds.Feed, ExtraPayload) error
 func NewCraftedFeedFromUrl(feedUrl string, options ...CraftOption) (CraftedFeed, error) {
 	ingredient := CraftedFeed{originalFeedUrl: feedUrl}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	raw, err := (&fetcher.HttpFetcher{Config: &config.HttpFetcherConfig{
+		URL:     feedUrl,
+		Purpose: config.HttpFetcherPurposeFeed,
+	}}).Fetch(ctx)
+	if err != nil {
+		return ingredient, err
+	}
+
 	fp := gofeed.NewParser()
-	parsedFeed, err := fp.ParseURL(feedUrl)
+	parsedFeed, err := fp.Parse(bytes.NewReader(raw))
 	if err != nil {
 		return ingredient, err
 	}

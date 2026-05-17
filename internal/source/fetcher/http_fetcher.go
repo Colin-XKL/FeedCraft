@@ -4,12 +4,22 @@ import (
 	"FeedCraft/internal/config"
 	"FeedCraft/internal/util"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"strings"
 	"time"
+
+	retry "github.com/avast/retry-go/v4"
 )
+
+const MaxResponseBodySize = 10 * 1024 * 1024 // 10MB
+
+type requestProfile struct {
+	defaultHeaders map[string]string
+	retryAttempts  uint
+}
 
 // HttpFetcher is a simple fetcher based on http.Get.
 type HttpFetcher struct {
@@ -31,9 +41,35 @@ func (f *HttpFetcher) Fetch(ctx context.Context) ([]byte, error) {
 		return []byte(content), nil
 	}
 
+	profile := resolveRequestProfile(f.Config)
+	var body []byte
+	err := retry.Do(
+		func() error {
+			result, err := f.doRequest(ctx, profile)
+			if err != nil {
+				return err
+			}
+			body = result
+			return nil
+		},
+		retry.Context(ctx),
+		retry.Attempts(profile.retryAttempts),
+		retry.Delay(300*time.Millisecond),
+		retry.DelayType(retry.FixedDelay),
+		retry.RetryIf(isRetryableFetchError),
+		retry.LastErrorOnly(true),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
+func (f *HttpFetcher) doRequest(ctx context.Context, profile requestProfile) ([]byte, error) {
 	method := f.Config.Method
 	if method == "" {
-		method = "GET"
+		method = http.MethodGet
 	}
 
 	var bodyReader io.Reader
@@ -46,27 +82,32 @@ func (f *HttpFetcher) Fetch(ctx context.Context) ([]byte, error) {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	// It is good practice to set a user-agent.
-	req.Header.Set("User-Agent", "FeedCraft/2.0")
-
-	// Set custom headers from config
+	for key, value := range profile.defaultHeaders {
+		req.Header.Set(key, value)
+	}
 	for key, value := range f.Config.Headers {
 		req.Header.Set(key, value)
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("http get failed: %w", err)
+		return nil, &fetchError{err: fmt.Errorf("http get failed: %w", err), retryable: true}
 	}
 	defer func() { _ = resp.Body.Close() }()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("http status not ok: %s", resp.Status)
+		return nil, &fetchError{
+			err:       fmt.Errorf("http status not ok: %s", resp.Status),
+			retryable: isRetryableStatus(resp.StatusCode),
+		}
 	}
 
-	body, err := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(io.LimitReader(resp.Body, MaxResponseBodySize+1))
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
+		return nil, &fetchError{err: fmt.Errorf("failed to read response body: %w", err), retryable: true}
+	}
+	if len(body) > MaxResponseBodySize {
+		return nil, &fetchError{err: fmt.Errorf("response body exceeds the maximum size limit of %d bytes", MaxResponseBodySize), retryable: false}
 	}
 
 	return body, nil
@@ -77,4 +118,58 @@ func (f *HttpFetcher) BaseURL() string {
 		return ""
 	}
 	return f.Config.URL
+}
+
+func resolveRequestProfile(cfg *config.HttpFetcherConfig) requestProfile {
+	if cfg != nil && cfg.Purpose == config.HttpFetcherPurposeHTML {
+		return requestProfile{
+			defaultHeaders: HTMLDefaultHeaders(),
+			retryAttempts:  3,
+		}
+	}
+
+	return requestProfile{
+		defaultHeaders: map[string]string{
+			"User-Agent": util.DefaultFeedUserAgent(),
+		},
+		retryAttempts: 1,
+	}
+}
+
+func HTMLDefaultHeaders() map[string]string {
+	return map[string]string{
+		"User-Agent":                util.DefaultHTMLUserAgent(),
+		"Accept":                    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+		"Accept-Language":           "en-US,en;q=0.9",
+		"Upgrade-Insecure-Requests": "1",
+		"Sec-Fetch-Dest":            "document",
+		"Sec-Fetch-Mode":            "navigate",
+		"Sec-Fetch-Site":            "none",
+		"Sec-Fetch-User":            "?1",
+	}
+}
+
+type fetchError struct {
+	err       error
+	retryable bool
+}
+
+func (e *fetchError) Error() string {
+	return e.err.Error()
+}
+
+func (e *fetchError) Unwrap() error {
+	return e.err
+}
+
+func isRetryableFetchError(err error) bool {
+	var fetchErr *fetchError
+	if !errors.As(err, &fetchErr) {
+		return false
+	}
+	return fetchErr.retryable
+}
+
+func isRetryableStatus(statusCode int) bool {
+	return statusCode == http.StatusTooManyRequests || statusCode >= http.StatusInternalServerError
 }

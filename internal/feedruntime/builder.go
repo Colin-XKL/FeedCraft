@@ -173,7 +173,6 @@ func (b *Builder) BuildRecipe(ctx context.Context, recipeData *dao.CustomRecipeV
 	if err != nil {
 		return nil, err
 	}
-
 	provider, err := b.BuildProviderFromInput(ctx, inputSpec, nil)
 	if err != nil {
 		return nil, err

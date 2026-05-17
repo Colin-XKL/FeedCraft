@@ -4,6 +4,11 @@ import (
 	"FeedCraft/internal/constant"
 )
 
+const (
+	HttpFetcherPurposeFeed = "feed"
+	HttpFetcherPurposeHTML = "html"
+)
+
 // --- Fetcher-specific Configurations ---
 
 // HttpFetcherConfig holds the configuration for an HTTP fetcher.
@@ -14,6 +19,7 @@ type HttpFetcherConfig struct {
 	Headers        map[string]string `json:"headers,omitempty"`
 	Body           string            `json:"body,omitempty"`
 	UseBrowserless bool              `json:"use_browserless,omitempty"`
+	Purpose        string            `json:"purpose,omitempty"`
 }
 
 // SearchFetcherConfig holds the configuration for search-based fetching.

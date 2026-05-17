@@ -158,6 +158,8 @@ func TestNativeProcessors_EndToEnd(t *testing.T) {
 }
 
 func TestCleanupProcessor_UsesDescriptionFallback(t *testing.T) {
+	setupTestRedis(t)
+
 	original := cleanupTransformFunc
 	cleanupTransformFunc = func(content string, domain string) (string, error) {
 		return fmt.Sprintf("%s|%s", domain, content), nil
@@ -168,8 +170,8 @@ func TestCleanupProcessor_UsesDescriptionFallback(t *testing.T) {
 	feed := &model.CraftFeed{
 		Articles: []*model.CraftArticle{
 			{
-				Title:       "article",
-				Link:        "https://example.com/post",
+				Title:       "article-" + t.Name(),
+				Link:        "https://example.com/post/" + t.Name(),
 				Description: "<p>fallback</p>",
 			},
 		},
@@ -184,6 +186,8 @@ func TestCleanupProcessor_UsesDescriptionFallback(t *testing.T) {
 }
 
 func TestFulltextProcessor_PartialFailureAndRelativeLinkFix(t *testing.T) {
+	setupTestRedis(t)
+
 	original := fulltextExtractFunc
 	fulltextExtractFunc = func(url string, timeout time.Duration) (string, error) {
 		if url == "https://example.com/fail" {
@@ -197,8 +201,8 @@ func TestFulltextProcessor_PartialFailureAndRelativeLinkFix(t *testing.T) {
 	feed := &model.CraftFeed{
 		Link: "https://example.com",
 		Articles: []*model.CraftArticle{
-			{Title: "ok", Link: "/ok"},
-			{Title: "bad", Link: "/fail"},
+			{Title: "ok-" + t.Name(), Link: "/ok"},
+			{Title: "bad-" + t.Name(), Link: "/fail"},
 		},
 	}
 
@@ -213,6 +217,8 @@ func TestFulltextProcessor_PartialFailureAndRelativeLinkFix(t *testing.T) {
 }
 
 func TestFulltextProcessor_AllFailureReturnsError(t *testing.T) {
+	setupTestRedis(t)
+
 	original := fulltextExtractFunc
 	fulltextExtractFunc = func(url string, timeout time.Duration) (string, error) {
 		return "", fmt.Errorf("always fail")
@@ -223,8 +229,8 @@ func TestFulltextProcessor_AllFailureReturnsError(t *testing.T) {
 	feed := &model.CraftFeed{
 		Link: "https://example.com",
 		Articles: []*model.CraftArticle{
-			{Title: "a", Link: "/a"},
-			{Title: "b", Link: "/b"},
+			{Title: "a-" + t.Name(), Link: "/a"},
+			{Title: "b-" + t.Name(), Link: "/b"},
 		},
 	}
 
@@ -234,6 +240,8 @@ func TestFulltextProcessor_AllFailureReturnsError(t *testing.T) {
 }
 
 func TestFulltextPlusProcessor_UsesConfiguredOptions(t *testing.T) {
+	setupTestRedis(t)
+
 	original := fulltextPlusExtractFunc
 	var capturedURL string
 	var capturedOptions util.BrowserlessOptions
@@ -274,6 +282,8 @@ func TestBuildLLMArticlePayload_IncludesTitleAndContent(t *testing.T) {
 }
 
 func TestSummaryProcessor_UsesDescriptionFallback(t *testing.T) {
+	setupTestRedis(t)
+
 	original := llmContextCaller
 	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
 		assert.Contains(t, context, "Article Title:")
@@ -286,8 +296,8 @@ func TestSummaryProcessor_UsesDescriptionFallback(t *testing.T) {
 	feed := &model.CraftFeed{
 		Articles: []*model.CraftArticle{
 			{
-				Title:       "summary article",
-				Link:        "https://example.com/post",
+				Title:       "summary article " + t.Name(),
+				Link:        "https://example.com/post/" + t.Name(),
 				Description: "<p>fallback body</p>",
 			},
 		},
@@ -301,6 +311,8 @@ func TestSummaryProcessor_UsesDescriptionFallback(t *testing.T) {
 }
 
 func TestTranslateTitleProcessor_UsesNativeLLMFlow(t *testing.T) {
+	setupTestRedis(t)
+
 	original := llmContextCaller
 	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
 		assert.Contains(t, context, "Original Title")
@@ -311,17 +323,19 @@ func TestTranslateTitleProcessor_UsesNativeLLMFlow(t *testing.T) {
 	processor := newTranslateTitleProcessor("translate prompt " + t.Name())
 	feed := &model.CraftFeed{
 		Articles: []*model.CraftArticle{
-			{Title: "Original Title"},
+			{Title: "Original Title " + t.Name()},
 		},
 	}
 
 	result, err := processor.Process(context.Background(), feed)
 	require.NoError(t, err)
 	assert.Equal(t, "Translated Title", result.Articles[0].Title)
-	assert.Equal(t, "Original Title", feed.Articles[0].Title)
+	assert.Equal(t, "Original Title "+t.Name(), feed.Articles[0].Title)
 }
 
 func TestBeautifyContentProcessor_WritesHTML(t *testing.T) {
+	setupTestRedis(t)
+
 	original := llmCaller
 	llmCaller = func(model string, promptInput string) (string, error) {
 		assert.Contains(t, promptInput, "<p>Body</p>")
@@ -332,7 +346,7 @@ func TestBeautifyContentProcessor_WritesHTML(t *testing.T) {
 	processor := newBeautifyContentProcessor("beautify prompt " + t.Name())
 	feed := &model.CraftFeed{
 		Articles: []*model.CraftArticle{
-			{Title: "beautify", Content: "<p>Body</p>"},
+			{Title: "beautify-" + t.Name(), Content: "<p>Body</p>"},
 		},
 	}
 
@@ -343,6 +357,8 @@ func TestBeautifyContentProcessor_WritesHTML(t *testing.T) {
 }
 
 func TestLLMFilterProcessor_RemovesMatchedArticleAndUsesTitleContentPayload(t *testing.T) {
+	setupTestRedis(t)
+
 	original := llmContextCaller
 	var seen []string
 	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
