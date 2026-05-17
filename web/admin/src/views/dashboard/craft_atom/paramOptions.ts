@@ -20,7 +20,9 @@ export const aiFilterExtraPayloadOptions = [
 ];
 
 const AI_FILTER_TEMPLATE = 'ai-filter';
+const AI_CONTENT_PROCESS_TEMPLATE = 'ai-content-process';
 const AI_FILTER_EXTRA_PAYLOAD_PARAM = 'extra-payload';
+const AI_CONTENT_PROCESS_PLACEMENT_PARAM = 'placement';
 const EMBEDDING_FILTER_TEMPLATE = 'embedding-filter';
 const EMBEDDING_FILTER_ANCHORS_PARAM = 'anchors';
 const EMBEDDING_FILTER_MODE_PARAM = 'mode';
@@ -38,13 +40,38 @@ export const embeddingFilterModeOptions = [
   },
 ];
 
+export const aiContentProcessPlacementOptions = [
+  {
+    label: 'prepend',
+    value: 'prepend',
+  },
+  {
+    label: 'replace',
+    value: 'replace',
+  },
+  {
+    label: 'append',
+    value: 'append',
+  },
+];
+
 export function isAIFilterExtraPayloadParam(
   templateName: string,
   paramKey: string
 ) {
   return (
-    templateName === AI_FILTER_TEMPLATE &&
+    [AI_FILTER_TEMPLATE, AI_CONTENT_PROCESS_TEMPLATE].includes(templateName) &&
     paramKey === AI_FILTER_EXTRA_PAYLOAD_PARAM
+  );
+}
+
+export function isAIContentProcessPlacementParam(
+  templateName: string,
+  paramKey: string
+) {
+  return (
+    templateName === AI_CONTENT_PROCESS_TEMPLATE &&
+    paramKey === AI_CONTENT_PROCESS_PLACEMENT_PARAM
   );
 }
 
