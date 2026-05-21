@@ -127,6 +127,15 @@ Generates a short introduction or "lead-in" for the article.
 - **Parameters:**
   - `prompt`: Custom prompt.
 
+### `ai-content-process`
+
+Process article content using LLM according to custom rules and insert the generated result at a specified position.
+
+- **Parameters:**
+  - `rule` (**Required**): Instruction for processing each article content. Example: "Summarize key points and list action items."
+  - `extra-payload` (Default: `article_content`): Comma-separated list of extra information to send to the LLM. Supported: `article_summary`, `article_content`, `article_date`, `raw_rss_item`.
+  - `placement` (Default: `prepend`): Where to write the generated content. Supported: `prepend`, `replace`, `append`.
+
 ### `beautify-content`
 
 Re-formats the article using LLM to fix layout, remove ads, and standardizing Markdown, then converts back to clean HTML.
