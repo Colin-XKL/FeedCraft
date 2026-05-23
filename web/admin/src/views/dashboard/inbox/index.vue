@@ -42,6 +42,9 @@
             >
               {{ t('inbox.btn.guide') }}
             </a-button>
+            <a-button type="text" size="small" @click="previewInbox(record.id)">
+              {{ t('inbox.btn.preview') }}
+            </a-button>
             <a-popconfirm
               :content="t('inbox.deleteConfirm')"
               @ok="handleDelete(record.id)"
@@ -194,6 +197,7 @@ curl -X POST "{{ pushUrl }}" \
 <script setup lang="ts">
   import { ref, reactive, onMounted, computed } from 'vue';
   import { useI18n } from 'vue-i18n';
+  import { useRouter } from 'vue-router';
   import { Message } from '@arco-design/web-vue';
   import {
     listInboxes,
@@ -212,6 +216,7 @@ curl -X POST "{{ pushUrl }}" \
   } from '@arco-design/web-vue/es/icon';
 
   const { t } = useI18n();
+  const router = useRouter();
   const loading = ref(false);
   const inboxes = ref<Inbox[]>([]);
 
@@ -302,6 +307,13 @@ curl -X POST "{{ pushUrl }}" \
   const handleShowGuide = (record: Inbox) => {
     selectedInbox.value = record;
     showGuideModal.value = true;
+  };
+
+  const previewInbox = (id: string) => {
+    router.push({
+      name: 'FeedViewer',
+      query: { target: 'inbox', id },
+    });
   };
 
   const handleSubmit = async () => {

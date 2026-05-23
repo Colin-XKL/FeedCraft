@@ -513,8 +513,10 @@
   };
 
   const previewRecipe = (record: CustomRecipe) => {
-    const feedUrl = buildRecipeFeedUrl(record.id);
-    router.push({ name: 'FeedViewer', query: { url: feedUrl } });
+    router.push({
+      name: 'FeedViewer',
+      query: { target: 'recipe', id: record.id },
+    });
   };
 
   function resetForm() {

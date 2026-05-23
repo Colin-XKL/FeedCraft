@@ -8,10 +8,13 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"time"
 
 	"FeedCraft/internal/craft"
+	"FeedCraft/internal/dao"
 
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/require"
 )
 
 func TestPreviewFeedViewerAllowsInternalFeedURL(t *testing.T) {
@@ -129,6 +132,84 @@ func TestPreviewFeedViewerDoesNotReturnDataForInvalidFeedResponse(t *testing.T) 
 func TestValidateFeedViewerURLAllowsPrivateIPLiteral(t *testing.T) {
 	if err := validateFeedViewerURL("http://172.21.0.13/feed.xml"); err != nil {
 		t.Fatalf("expected private IP literal to be allowed, got %v", err)
+	}
+}
+
+func TestPreviewFeedViewerSupportsRecipeURI(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	db := topicFeedTestDatabase(t)
+	require.NoError(t, db.AutoMigrate(&dao.CustomRecipeV2{}, &dao.TopicFeed{}))
+	recipeID := uniqueTestID("preview-recipe")
+	createTopicTestRecipe(t, db, recipeID)
+
+	recorder := performFeedViewerPreviewRequest(t, http.MethodGet, "feedcraft://recipe/"+recipeID)
+
+	assertFeedViewerPreviewSuccess(t, recorder, "Test Feed", "Hello Topic")
+}
+
+func TestPreviewFeedViewerSupportsTopicURI(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	db := topicFeedTestDatabase(t)
+	require.NoError(t, db.AutoMigrate(&dao.CustomRecipeV2{}, &dao.TopicFeed{}))
+	recipeID := uniqueTestID("preview-topic-recipe")
+	topicID := uniqueTestID("preview-topic")
+	createTopicTestRecipe(t, db, recipeID)
+	createTopicTestTopic(t, db, &dao.TopicFeed{
+		ID:          topicID,
+		Title:       "Preview Topic",
+		Description: "Topic preview",
+		InputURIs:   []string{"feedcraft://recipe/" + recipeID},
+	})
+
+	recorder := performFeedViewerPreviewRequest(t, http.MethodGet, "feedcraft://topic/"+topicID)
+
+	assertFeedViewerPreviewSuccess(t, recorder, "Preview Topic", "Hello Topic")
+}
+
+func TestPreviewFeedViewerSupportsInboxURI(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	db := topicFeedTestDatabase(t)
+	require.NoError(t, db.AutoMigrate(&dao.Inbox{}, &dao.InboxItem{}))
+	require.NoError(t, dao.CreateInbox(db, &dao.Inbox{
+		ID:          "alerts",
+		Title:       "Alerts Inbox",
+		Description: "Incoming alerts",
+		MaxItems:    100,
+	}))
+	require.NoError(t, db.Create(&dao.InboxItem{
+		InboxID:     "alerts",
+		ItemID:      "alert-1",
+		Title:       "CPU usage high",
+		URL:         "https://example.com/alerts/1",
+		Content:     "<p>CPU usage exceeded threshold.</p>",
+		Summary:     "CPU alert",
+		Author:      "monitor",
+		PublishedAt: time.Unix(1700000000, 0),
+		CreatedAt:   time.Unix(1700000000, 0),
+	}).Error)
+
+	recorder := performFeedViewerPreviewRequest(t, http.MethodGet, "feedcraft://inbox/alerts")
+
+	assertFeedViewerPreviewSuccess(t, recorder, "Alerts Inbox", "CPU usage high")
+}
+
+func TestPreviewFeedViewerRejectsCraftNameForInternalURI(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	recorder := performFeedViewerPreviewRequestWithCraft(t, http.MethodGet, "feedcraft://recipe/example", "summary")
+
+	if recorder.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d: %s", http.StatusBadRequest, recorder.Code, recorder.Body.String())
+	}
+	var response struct {
+		Code int    `json:"code"`
+		Msg  string `json:"msg"`
+	}
+	if err := json.Unmarshal(recorder.Body.Bytes(), &response); err != nil {
+		t.Fatalf("failed to decode response: %v", err)
+	}
+	if !strings.Contains(response.Msg, "craft_name is only supported for external URLs") {
+		t.Fatalf("expected craft_name validation message, got %q", response.Msg)
 	}
 }
 
@@ -321,12 +402,52 @@ func TestClassifyFeedViewerErrorHandlesBrowserProviderFailures(t *testing.T) {
 
 func performFeedViewerPreviewRequest(t *testing.T, method, inputURL string) *httptest.ResponseRecorder {
 	t.Helper()
+	return performFeedViewerPreviewRequestWithCraft(t, method, inputURL, "")
+}
+
+func performFeedViewerPreviewRequestWithCraft(t *testing.T, method, inputURL, craftName string) *httptest.ResponseRecorder {
+	t.Helper()
 
 	router := gin.New()
 	router.Handle(method, "/preview", PreviewFeedViewer)
 
-	request := httptest.NewRequest(method, "/preview?input_url="+url.QueryEscape(inputURL), nil)
+	query := url.Values{}
+	query.Set("input_url", inputURL)
+	if craftName != "" {
+		query.Set("craft_name", craftName)
+	}
+	request := httptest.NewRequest(method, "/preview?"+query.Encode(), nil)
 	recorder := httptest.NewRecorder()
 	router.ServeHTTP(recorder, request)
 	return recorder
+}
+
+func assertFeedViewerPreviewSuccess(t *testing.T, recorder *httptest.ResponseRecorder, expectedTitle, expectedItemTitle string) {
+	t.Helper()
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d: %s", http.StatusOK, recorder.Code, recorder.Body.String())
+	}
+
+	var response struct {
+		Code int `json:"code"`
+		Data struct {
+			Title string `json:"title"`
+			Items []struct {
+				Title string `json:"title"`
+			} `json:"items"`
+		} `json:"data"`
+		Msg string `json:"msg"`
+	}
+	if err := json.Unmarshal(recorder.Body.Bytes(), &response); err != nil {
+		t.Fatalf("failed to decode response: %v", err)
+	}
+	if response.Code != 0 {
+		t.Fatalf("expected success code, got %d with msg %q", response.Code, response.Msg)
+	}
+	if response.Data.Title != expectedTitle {
+		t.Fatalf("expected title %q, got %q", expectedTitle, response.Data.Title)
+	}
+	if len(response.Data.Items) != 1 || response.Data.Items[0].Title != expectedItemTitle {
+		t.Fatalf("expected one item titled %q, got %+v", expectedItemTitle, response.Data.Items)
+	}
 }

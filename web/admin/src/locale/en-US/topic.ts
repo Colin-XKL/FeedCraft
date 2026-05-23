@@ -29,6 +29,7 @@ export default {
   'topic.copyLinkFailed': 'Failed to copy link',
   'topic.viewFeed': 'Open Feed',
   'topic.viewDetails': 'View Details',
+  'topic.preview': 'Preview',
   'topic.editAction': 'Edit',
   'topic.deleteAction': 'Delete',
   'topic.deleteConfirm': 'Are you sure you want to delete this topic?',

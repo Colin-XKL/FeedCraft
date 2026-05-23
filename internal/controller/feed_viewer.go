@@ -1,11 +1,9 @@
 package controller
 
 import (
-	"FeedCraft/internal/config"
-	"FeedCraft/internal/constant"
 	"FeedCraft/internal/craft"
+	"FeedCraft/internal/feedruntime"
 	"FeedCraft/internal/model"
-	"FeedCraft/internal/source"
 	"FeedCraft/internal/util"
 	"errors"
 	"fmt"
@@ -16,6 +14,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/mmcdole/gofeed"
+	"gorm.io/gorm"
 )
 
 type FeedViewerPreviewReq struct {
@@ -76,6 +75,7 @@ type FeedViewerPreviewItem struct {
 
 const feedViewerInvalidURLMessage = "Please enter a valid http(s) feed URL"
 const feedViewerInvalidURLError = "please enter a valid http(s) feed URL"
+const feedViewerInvalidInputError = "please enter a valid feed input URI"
 
 func PreviewFeedViewer(c *gin.Context) {
 	if c.Request.Method != http.MethodGet {
@@ -89,8 +89,12 @@ func PreviewFeedViewer(c *gin.Context) {
 		return
 	}
 
-	if err := validateFeedViewerURL(req.InputURL); err != nil {
+	if err := validateFeedViewerInputURI(req.InputURL); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: formatFeedViewerValidationError(err)})
+		return
+	}
+	if req.CraftName != "" && req.CraftName != "proxy" && isFeedViewerInternalURI(req.InputURL) {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: "craft_name is only supported for external URLs"})
 		return
 	}
 
@@ -159,24 +163,15 @@ func PreviewEmbeddingFilter(c *gin.Context) {
 }
 
 func loadFeedViewerPreview(c *gin.Context, req FeedViewerPreviewReq) (*model.CraftFeed, error) {
-	cfg := &config.SourceConfig{
-		Type: constant.SourceRSS,
-		HttpFetcher: &config.HttpFetcherConfig{
-			URL: req.InputURL,
-		},
-	}
-
-	factory, err := source.Get(constant.SourceRSS)
+	provider, err := feedruntime.BuildProviderFromInput(c.Request.Context(), feedruntime.InputSpec{
+		Kind: feedruntime.InputKindURI,
+		URI:  req.InputURL,
+	}, nil)
 	if err != nil {
-		return nil, fmt.Errorf("factory not found: %w", err)
+		return nil, err
 	}
 
-	src, err := factory(cfg)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create source: %w", err)
-	}
-
-	feed, err := src.Fetch(c.Request.Context())
+	feed, err := provider.Fetch(c.Request.Context())
 	if err != nil {
 		return nil, err
 	}
@@ -376,7 +371,38 @@ func validateFeedViewerURL(rawURL string) error {
 	return nil
 }
 
+func validateFeedViewerInputURI(rawURI string) error {
+	parsedURI, err := url.Parse(rawURI)
+	if err != nil || parsedURI == nil {
+		return errors.New(feedViewerInvalidInputError)
+	}
+	switch parsedURI.Scheme {
+	case "http", "https":
+		return validateFeedViewerURL(rawURI)
+	case "feedcraft":
+		resourceType := strings.TrimSpace(parsedURI.Host)
+		resourceID := strings.Trim(strings.TrimSpace(parsedURI.Path), "/")
+		if resourceType != "recipe" && resourceType != "topic" && resourceType != "inbox" {
+			return errors.New(feedViewerInvalidInputError)
+		}
+		if resourceID == "" || strings.Contains(resourceID, "/") {
+			return errors.New(feedViewerInvalidInputError)
+		}
+		return nil
+	default:
+		return errors.New(feedViewerInvalidInputError)
+	}
+}
+
+func isFeedViewerInternalURI(rawURI string) bool {
+	parsedURI, err := url.Parse(rawURI)
+	return err == nil && parsedURI != nil && parsedURI.Scheme == "feedcraft"
+}
+
 func classifyFeedViewerError(err error) (int, string) {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return http.StatusNotFound, "The selected preview target was not found."
+	}
 	msg := err.Error()
 	msg = strings.TrimPrefix(msg, "all items failed to process. last error: ")
 	lowerMsg := strings.ToLower(msg)

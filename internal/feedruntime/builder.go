@@ -35,6 +35,7 @@ const (
 	internalScheme             = "feedcraft"
 	internalResourceTypeRecipe = "recipe"
 	internalResourceTypeTopic  = "topic"
+	internalResourceTypeInbox  = "inbox"
 )
 
 // InputSpec is the unified runtime input model for RecipeFeed and TopicFeed.
@@ -235,6 +236,8 @@ func (b *Builder) buildProviderFromURI(ctx context.Context, rawURI string, stack
 			return b.buildRecipeProvider(ctx, resourceID, observability.TriggerTopicAggregation)
 		case internalResourceTypeTopic:
 			return b.buildTopicProvider(ctx, resourceID, stack)
+		case internalResourceTypeInbox:
+			return &InboxProvider{DB: b.db(), InboxID: resourceID}, nil
 		default:
 			return nil, fmt.Errorf("unsupported internal resource type %q", resourceType)
 		}
@@ -436,6 +439,56 @@ func parseInternalResourceURI(parsed *url.URL) (string, string, error) {
 		return "", "", errors.New("resource id must be a single path segment")
 	}
 	return resourceType, resourceID, nil
+}
+
+// InboxProvider adapts inbox items into a feed without requiring an intermediate recipe.
+type InboxProvider struct {
+	DB      *gorm.DB
+	InboxID string
+}
+
+func (p *InboxProvider) Fetch(ctx context.Context) (*model.CraftFeed, error) {
+	_ = ctx
+	db := p.DB
+	if db == nil {
+		db = util.GetDatabase()
+	}
+
+	inbox, err := dao.GetInboxByID(db, p.InboxID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get inbox %s: %w", p.InboxID, err)
+	}
+
+	items, err := dao.ListInboxItems(db, p.InboxID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list inbox items: %w", err)
+	}
+
+	feed := &model.CraftFeed{
+		Title:       inbox.Title,
+		Description: inbox.Description,
+		Id:          fmt.Sprintf("inbox:%s", p.InboxID),
+		Link:        p.BaseURL(),
+		Articles:    make([]*model.CraftArticle, 0, len(items)),
+	}
+	for _, item := range items {
+		feed.Articles = append(feed.Articles, &model.CraftArticle{
+			Title:       item.Title,
+			Link:        item.URL,
+			Content:     item.Content,
+			Description: item.Summary,
+			Id:          item.ItemID,
+			AuthorName:  item.Author,
+			Created:     item.PublishedAt,
+			Updated:     item.PublishedAt,
+		})
+	}
+
+	return feed, nil
+}
+
+func (p *InboxProvider) BaseURL() string {
+	return fmt.Sprintf("feedcraft://inbox/%s", p.InboxID)
 }
 
 // RecipeProvider adapts a runtime RecipeFeed and adds execution metadata.

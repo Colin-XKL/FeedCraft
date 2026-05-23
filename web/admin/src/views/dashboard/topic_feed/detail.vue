@@ -55,6 +55,9 @@
                 <a-button size="mini" @click="copyPublicUrl">
                   {{ t('topic.copyLink') }}
                 </a-button>
+                <a-button size="mini" type="primary" @click="previewTopic">
+                  {{ t('topic.preview') }}
+                </a-button>
               </a-space>
             </a-descriptions-item>
             <a-descriptions-item :label="t('topic.detail.lastSuccess')">
@@ -205,7 +208,7 @@
   import { computed, onMounted, ref } from 'vue';
   import { Message } from '@arco-design/web-vue';
   import { useI18n } from 'vue-i18n';
-  import { useRoute } from 'vue-router';
+  import { useRoute, useRouter } from 'vue-router';
   import XHeader from '@/components/header/x-header.vue';
   import {
     formatObservabilityErrorKind,
@@ -217,6 +220,7 @@
 
   const { t } = useI18n();
   const route = useRoute();
+  const router = useRouter();
   const loading = ref(false);
   const detail = ref<TopicDetail | null>(null);
   const detailsModalVisible = ref(false);
@@ -275,6 +279,14 @@
       console.error(err);
       Message.error(t('topic.copyLinkFailed'));
     }
+  };
+
+  const previewTopic = () => {
+    if (!detail.value) return;
+    router.push({
+      name: 'FeedViewer',
+      query: { target: 'topic', id: detail.value.topic.id },
+    });
   };
 
   const buildExecutionDetails = (
