@@ -7,6 +7,7 @@ export default {
   'inbox.btn.edit': 'Edit Inbox',
   'inbox.btn.delete': 'Delete',
   'inbox.btn.guide': 'Integration Guide',
+  'inbox.btn.preview': 'Preview',
   'inbox.id': 'Inbox ID',
   'inbox.id.placeholder': 'Enter unique Inbox ID (e.g., test-inbox)',
   'inbox.name': 'Title',

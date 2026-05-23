@@ -28,6 +28,7 @@ export default {
   'topic.copyLinkFailed': '复制链接失败',
   'topic.viewFeed': '查看订阅',
   'topic.viewDetails': '查看详情',
+  'topic.preview': '预览',
   'topic.editAction': '编辑',
   'topic.deleteAction': '删除',
   'topic.deleteConfirm': '确定要删除这个主题吗？',

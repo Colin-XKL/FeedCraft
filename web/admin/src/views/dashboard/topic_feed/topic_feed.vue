@@ -61,6 +61,13 @@
                 >
                   {{ t('topic.viewDetails') }}
                 </a-button>
+                <a-button
+                  type="text"
+                  size="small"
+                  @click="previewTopic(record.id)"
+                >
+                  {{ t('topic.preview') }}
+                </a-button>
                 <a-button type="text" size="small" @click="handleEdit(record)">
                   {{ t('topic.editAction') }}
                 </a-button>
@@ -378,6 +385,13 @@
   };
 
   const buildTopicFeedUrl = (id: string) => buildPublicFeedUrl(`/topic/${id}`);
+
+  const previewTopic = (id: string) => {
+    router.push({
+      name: 'FeedViewer',
+      query: { target: 'topic', id },
+    });
+  };
 
   const handleAdd = () => {
     isEdit.value = false;

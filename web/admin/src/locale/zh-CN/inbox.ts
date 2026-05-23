@@ -7,6 +7,7 @@ export default {
   'inbox.btn.edit': '编辑收件箱',
   'inbox.btn.delete': '删除',
   'inbox.btn.guide': '集成指南',
+  'inbox.btn.preview': '预览',
   'inbox.id': '收件箱 ID',
   'inbox.id.placeholder': '请输入唯一的收件箱 ID (例如: test-inbox)',
   'inbox.name': '标题',

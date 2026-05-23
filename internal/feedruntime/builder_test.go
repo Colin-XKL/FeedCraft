@@ -67,6 +67,41 @@ func TestBuildProviderFromInput_HTTPURL(t *testing.T) {
 	assert.Equal(t, "https://example.com/feed.xml", rawProvider.URL)
 }
 
+func TestBuildProviderFromInput_InboxURIUsesBuilderDB(t *testing.T) {
+	db := newTestDB(t)
+	require.NoError(t, db.AutoMigrate(&dao.Inbox{}, &dao.InboxItem{}))
+	require.NoError(t, dao.CreateInbox(db, &dao.Inbox{
+		ID:          "inbox-1",
+		Title:       "Inbox Feed",
+		Description: "Inbox description",
+		MaxItems:    100,
+	}))
+	require.NoError(t, db.Create(&dao.InboxItem{
+		InboxID:     "inbox-1",
+		ItemID:      "item-1",
+		Title:       "Inbox Item",
+		URL:         "https://example.com/inbox-item",
+		Content:     "<p>Inbox content</p>",
+		Summary:     "Inbox summary",
+		PublishedAt: time.Unix(1700000000, 0),
+		CreatedAt:   time.Unix(1700000000, 0),
+	}).Error)
+
+	provider, err := NewBuilder(db).BuildProviderFromInput(context.Background(), InputSpec{
+		Kind: InputKindURI,
+		URI:  "feedcraft://inbox/inbox-1",
+	}, nil)
+	require.NoError(t, err)
+	assert.IsType(t, &InboxProvider{}, provider)
+
+	feed, err := provider.Fetch(context.Background())
+	require.NoError(t, err)
+	require.NotNil(t, feed)
+	assert.Equal(t, "Inbox Feed", feed.Title)
+	require.Len(t, feed.Articles, 1)
+	assert.Equal(t, "Inbox Item", feed.Articles[0].Title)
+}
+
 func TestBuildProviderFromInput_SourceConfig(t *testing.T) {
 	const testSourceType = constant.SourceType("unit_test_source")
 	registerTestSource(t, testSourceType, func(cfg *config.SourceConfig) (source.Source, error) {
