@@ -99,6 +99,8 @@ func RegisterRouters(router *gin.Engine) {
 		adminApi.GET("/inboxes/:id", controller.GetInbox)
 		adminApi.PUT("/inboxes/:id", controller.UpdateInbox)
 		adminApi.DELETE("/inboxes/:id", controller.DeleteInbox)
+		adminApi.GET("/inboxes/gc/stats", controller.GetInboxGCStats)
+		adminApi.POST("/inboxes/gc/cleanup", controller.TriggerInboxGCCleanup)
 
 		// SystemAuthToken admin CRUD
 		adminApi.POST("/system-auth-tokens", controller.CreateSystemAuthToken)

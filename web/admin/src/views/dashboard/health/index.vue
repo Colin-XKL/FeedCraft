@@ -97,18 +97,93 @@
         <a-empty v-else :description="t('health.noData')" />
       </a-spin>
     </a-card>
+
+    <a-card class="general-card" style="margin-top: 24px" :title="t('health.inboxMaintenance')">
+      <template #extra>
+        <a-space>
+          <a-button type="outline" :loading="gcScanning" @click="fetchGCData">
+            <template #icon>
+              <icon-search />
+            </template>
+            {{ t('health.inboxGC.scan') }}
+          </a-button>
+          <a-popconfirm
+            :content="t('health.inboxGC.cleanConfirm')"
+            @ok="handleGCCleanup"
+          >
+            <a-button type="primary" status="danger" :disabled="!gcStats || (gcStats.orphaned_count === 0 && gcStats.overflow_count === 0)" :loading="gcCleaning">
+              <template #icon>
+                <icon-delete />
+              </template>
+              {{ t('health.inboxGC.clean') }}
+            </a-button>
+          </a-popconfirm>
+        </a-space>
+      </template>
+
+      <a-spin :loading="gcScanning" style="width: 100%">
+        <div v-if="gcStats" class="grid-container">
+          <a-grid :cols="24" :col-gap="16" :row-gap="16">
+            <a-grid-item :span="{ xs: 24, sm: 8 }">
+              <a-statistic
+                :title="t('health.inboxGC.totalItems')"
+                :value="gcStats.total_items"
+                show-group-separator
+              />
+            </a-grid-item>
+            <a-grid-item :span="{ xs: 24, sm: 8 }">
+              <a-space align="center">
+                <a-statistic
+                  :title="t('health.inboxGC.orphaned')"
+                  :value="gcStats.orphaned_count"
+                  :value-style="{ color: gcStats.orphaned_count > 0 ? 'var(--color-danger-text)' : 'inherit' }"
+                  show-group-separator
+                />
+                <a-tag v-if="gcStats.orphaned_count > 0" color="red" size="small">
+                  <template #icon><icon-exclamation-circle-fill /></template>
+                  Need Action
+                </a-tag>
+              </a-space>
+            </a-grid-item>
+            <a-grid-item :span="{ xs: 24, sm: 8 }">
+              <a-space align="center">
+                <a-statistic
+                  :title="t('health.inboxGC.overflow')"
+                  :value="gcStats.overflow_count"
+                  :value-style="{ color: gcStats.overflow_count > 0 ? 'var(--color-warning-text)' : 'inherit' }"
+                  show-group-separator
+                />
+                <a-tag v-if="gcStats.overflow_count > 0" color="orange" size="small">
+                  <template #icon><icon-exclamation-circle-fill /></template>
+                  Need Action
+                </a-tag>
+              </a-space>
+            </a-grid-item>
+          </a-grid>
+        </div>
+        <a-empty v-else :description="t('health.noData')" />
+      </a-spin>
+    </a-card>
   </div>
 </template>
 
 <script lang="ts" setup>
-  import { ref } from 'vue';
+  import { ref, onMounted } from 'vue';
   import { useI18n } from 'vue-i18n';
   import { Message } from '@arco-design/web-vue';
-  import { fetchDependencyHealth, DependencyNode } from '@/api/health';
+  import {
+    fetchDependencyHealth,
+    fetchInboxGCStats,
+    triggerInboxGCCleanup,
+    DependencyNode,
+    InboxGCStats,
+  } from '@/api/health';
   import XHeader from '@/components/header/x-header.vue';
   import {
     IconRefresh,
     IconExclamationCircleFill,
+    IconSearch,
+    IconDelete,
   } from '@arco-design/web-vue/es/icon';
 
   const { t } = useI18n();
@@ -116,6 +191,11 @@
   const treeData = ref<DependencyNode[]>([]);
   const missingCount = ref(0);
   const missingNodes = ref<DependencyNode[]>([]);
+
+  // GC State
+  const gcScanning = ref(false);
+  const gcCleaning = ref(false);
+  const gcStats = ref<InboxGCStats | null>(null);
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -184,6 +264,45 @@
       loading.value = false;
     }
   };
+
+  const fetchGCData = async () => {
+    gcScanning.value = true;
+    try {
+      const res = await fetchInboxGCStats();
+      if (res.data) {
+        gcStats.value = res.data;
+      }
+    } catch (err: any) {
+      Message.error(err.message || t('health.inboxGC.scanError'));
+    } finally {
+      gcScanning.value = false;
+    }
+  };
+
+  const handleGCCleanup = async () => {
+    gcCleaning.value = true;
+    try {
+      const res = await triggerInboxGCCleanup();
+      if (res.data) {
+        Message.success(
+          t('health.inboxGC.cleanSuccess', {
+            orphaned: res.data.orphaned_deleted,
+            overflow: res.data.overflow_deleted,
+          })
+        );
+        fetchGCData();
+      }
+    } catch (err: any) {
+      Message.error(err.message || t('health.inboxGC.cleanError'));
+    } finally {
+      gcCleaning.value = false;
+    }
+  };
+
+  onMounted(() => {
+    fetchData();
+    fetchGCData();
+  });
 </script>
 
 <script lang="ts">

@@ -57,15 +57,20 @@ func UpdateInbox(db *gorm.DB, inbox *Inbox) error {
 }
 
 func DeleteInbox(db *gorm.DB, id string) error {
-	var inbox Inbox
-	result := db.Where("id = ?", id).Delete(&inbox)
-	if result.Error != nil {
-		return result.Error
-	}
-	if result.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
-	}
-	return nil
+	return db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("inbox_id = ?", id).Delete(&InboxItem{}).Error; err != nil {
+			return err
+		}
+		var inbox Inbox
+		result := tx.Where("id = ?", id).Delete(&inbox)
+		if result.Error != nil {
+			return result.Error
+		}
+		if result.RowsAffected == 0 {
+			return gorm.ErrRecordNotFound
+		}
+		return nil
+	})
 }
 
 func ListInboxes(db *gorm.DB) ([]*Inbox, error) {
