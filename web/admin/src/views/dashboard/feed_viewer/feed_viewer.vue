@@ -146,6 +146,7 @@
   const errorMessage = ref('');
   const isLoading = ref(false);
   const resourceLoading = ref(false);
+  let previewRequestSeq = 0;
 
   const currentInputURI = computed(() => {
     if (previewMode.value === 'recipe' && selectedRecipeId.value) {
@@ -164,26 +165,34 @@
   });
 
   function clearPreviewState() {
+    previewRequestSeq += 1;
     errorMessage.value = '';
     feedContent.value = null;
   }
 
   async function fetchFeed() {
-    if (!currentInputURI.value) return;
+    const inputURI = currentInputURI.value;
+    if (!inputURI) return;
+    const requestSeq = previewRequestSeq + 1;
+    previewRequestSeq = requestSeq;
     isLoading.value = true;
     errorMessage.value = '';
     feedContent.value = null;
     try {
-      const response = await previewFeed(currentInputURI.value);
+      const response = await previewFeed(inputURI);
+      if (requestSeq !== previewRequestSeq) return;
       feedContent.value = response.data;
     } catch (error) {
+      if (requestSeq !== previewRequestSeq) return;
       feedContent.value = null;
       errorMessage.value =
         error instanceof Error
           ? error.message
           : t('feedViewer.message.unknownError');
     } finally {
-      isLoading.value = false;
+      if (requestSeq === previewRequestSeq) {
+        isLoading.value = false;
+      }
     }
   }
 
@@ -226,6 +235,16 @@
     advancedURI.value = inputURI;
   }
 
+  function resetPreviewTarget() {
+    previewMode.value = 'url';
+    feedUrl.value = '';
+    advancedURI.value = '';
+    selectedRecipeId.value = '';
+    selectedTopicId.value = '';
+    selectedInboxId.value = '';
+    clearPreviewState();
+  }
+
   function applyRouteQuery() {
     const target = firstQueryValue(route.query.target || route.query.mode);
     const id = firstQueryValue(route.query.id);
@@ -245,11 +264,14 @@
       return;
     }
 
-    selectInputURI(
-      firstQueryValue(
-        route.query.input_uri || route.query.uri || route.query.url
-      )
+    const inputURI = firstQueryValue(
+      route.query.input_uri || route.query.uri || route.query.url
     );
+    if (inputURI) {
+      selectInputURI(inputURI);
+      return;
+    }
+    resetPreviewTarget();
   }
 
   async function loadPreviewResources() {

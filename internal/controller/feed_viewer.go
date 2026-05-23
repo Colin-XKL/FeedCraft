@@ -4,6 +4,7 @@ import (
 	"FeedCraft/internal/craft"
 	"FeedCraft/internal/feedruntime"
 	"FeedCraft/internal/model"
+	"FeedCraft/internal/observability"
 	"FeedCraft/internal/util"
 	"errors"
 	"fmt"
@@ -163,10 +164,10 @@ func PreviewEmbeddingFilter(c *gin.Context) {
 }
 
 func loadFeedViewerPreview(c *gin.Context, req FeedViewerPreviewReq) (*model.CraftFeed, error) {
-	provider, err := feedruntime.BuildProviderFromInput(c.Request.Context(), feedruntime.InputSpec{
+	provider, err := feedruntime.BuildProviderFromInputWithRecipeTrigger(c.Request.Context(), feedruntime.InputSpec{
 		Kind: feedruntime.InputKindURI,
 		URI:  req.InputURL,
-	}, nil)
+	}, nil, observability.TriggerUserRequest)
 	if err != nil {
 		return nil, err
 	}

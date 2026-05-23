@@ -62,6 +62,10 @@ func BuildProviderFromInput(ctx context.Context, spec InputSpec, stack []string)
 	return NewBuilder(nil).BuildProviderFromInput(ctx, spec, stack)
 }
 
+func BuildProviderFromInputWithRecipeTrigger(ctx context.Context, spec InputSpec, stack []string, recipeTrigger string) (engine.FeedProvider, error) {
+	return NewBuilder(nil).BuildProviderFromInputWithRecipeTrigger(ctx, spec, stack, recipeTrigger)
+}
+
 func BuildTopicProvider(ctx context.Context, topicID string) (engine.FeedProvider, error) {
 	return NewBuilder(nil).BuildTopicProvider(ctx, topicID)
 }
@@ -83,9 +87,16 @@ func BuildAggregator(steps []dao.AggregatorStep) (engine.CraftOption, error) {
 }
 
 func (b *Builder) BuildProviderFromInput(ctx context.Context, spec InputSpec, stack []string) (engine.FeedProvider, error) {
+	return b.BuildProviderFromInputWithRecipeTrigger(ctx, spec, stack, observability.TriggerTopicAggregation)
+}
+
+func (b *Builder) BuildProviderFromInputWithRecipeTrigger(ctx context.Context, spec InputSpec, stack []string, recipeTrigger string) (engine.FeedProvider, error) {
+	if strings.TrimSpace(recipeTrigger) == "" {
+		recipeTrigger = observability.TriggerTopicAggregation
+	}
 	switch spec.Kind {
 	case InputKindURI:
-		return b.buildProviderFromURI(ctx, spec.URI, stack)
+		return b.buildProviderFromURI(ctx, spec.URI, stack, recipeTrigger)
 	case InputKindSource:
 		if spec.SourceConfig == nil {
 			return nil, errors.New("source input requires source_config")
@@ -213,7 +224,7 @@ func buildRecipeInputSpec(recipeData *dao.CustomRecipeV2) (InputSpec, error) {
 	}, nil
 }
 
-func (b *Builder) buildProviderFromURI(ctx context.Context, rawURI string, stack []string) (engine.FeedProvider, error) {
+func (b *Builder) buildProviderFromURI(ctx context.Context, rawURI string, stack []string, recipeTrigger string) (engine.FeedProvider, error) {
 	if rawURI == "" {
 		return nil, errors.New("uri input requires a non-empty uri")
 	}
@@ -233,7 +244,7 @@ func (b *Builder) buildProviderFromURI(ctx context.Context, rawURI string, stack
 		}
 		switch resourceType {
 		case internalResourceTypeRecipe:
-			return b.buildRecipeProvider(ctx, resourceID, observability.TriggerTopicAggregation)
+			return b.buildRecipeProvider(ctx, resourceID, recipeTrigger)
 		case internalResourceTypeTopic:
 			return b.buildTopicProvider(ctx, resourceID, stack)
 		case internalResourceTypeInbox:
