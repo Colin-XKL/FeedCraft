@@ -177,7 +177,7 @@ curl -X POST "{{ pushUrl }}" \
             <li
               >在 Source Config JSON 中，配置当前收件箱的 ID 映射：
               <pre class="monospace-text mt-2 text-xs">
-{ "inbox_id": "{{ selectedInbox.id }}" }</pre
+{ "inbox_source": { "inbox_id": "{{ selectedInbox.id }}" } }</pre
               >
             </li>
             <li
