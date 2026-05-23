@@ -128,6 +128,15 @@ FeedCraft 內建了一系列「原子工藝 (AtomCrafts)」，用於對訂閱源
 - **參數:**
   - `prompt`: 自定義提示詞。
 
+### `ai-content-process` (AI 內容處理)
+
+根據自訂規則使用大型語言模型處理文章內容，並將生成結果插入到指定位置。
+
+- **參數:**
+  - `rule` (**必填**): 針對每篇文章內容的處理指令。例如："總結文章的關鍵觀點並列出行動建議"。
+  - `extra-payload` (預設: `article_content`): 逗號分隔的附加資訊列表，可發送給 LLM。支援：`article_summary` (AI 生成的摘要), `article_content` (文章內容), `article_date` (文章日期), `raw_rss_item` (原始 RSS 節點資料)。
+  - `placement` (預設: `prepend`): 生成內容的寫入位置。支援：`prepend` (在原文前追加), `replace` (替換原文), `append` (在原文後追加)。
+
 ### `beautify-content` (智能排版)
 
 使用 LLM 重新格式化文章，修復排版錯誤，去除廣告，並標準化 Markdown 格式，最後轉換回乾淨的 HTML。
