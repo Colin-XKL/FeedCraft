@@ -40,6 +40,19 @@ export default {
   'inbox.guide.query.private':
     'This inbox is Private. You must attach `?token=YOUR_TOKEN` query parameter to subscribe or view articles.',
 
+  // Recipe integration guide steps
+  'inbox.guide.recipe.heading': 'RSS Subscription via Recipe',
+  'inbox.guide.recipe.step1.pre': 'Go to the',
+  'inbox.guide.recipe.step1.link': 'Custom Recipe',
+  'inbox.guide.recipe.step1.post': 'page and create a new Recipe.',
+  'inbox.guide.recipe.step2': 'Set the Source Type to',
+  'inbox.guide.recipe.step3':
+    'In the Source Config JSON field, configure the inbox ID mapping:',
+  'inbox.guide.recipe.step4.pre': 'Click',
+  'inbox.guide.recipe.step4.link': 'Copy Link',
+  'inbox.guide.recipe.step4.post':
+    'in the Recipe list to get the RSS feed URL!',
+
   // System Auth Token Management
   'systemAuthToken.title': 'System Auth Token',
   'systemAuthToken.desc':
@@ -61,4 +74,6 @@ export default {
   'systemAuthToken.createdAlert.desc':
     'This is the only time your token is displayed in plain text. For safety reasons, you cannot retrieve it after closing this window. Please copy it immediately!',
   'systemAuthToken.copied': 'Copied to clipboard successfully',
+  'systemAuthToken.btn.copy': 'Copy',
+  'systemAuthToken.btn.close': 'Close',
 };

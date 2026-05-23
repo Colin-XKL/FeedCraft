@@ -33,6 +33,7 @@ export default {
   'menu.feedViewer': 'RSS 预览',
   'menu.exampleRssFeeds': 'RSS 示例订阅',
   'menu.rssGenerator': 'HTML 转 RSS',
+  'menu.webMonitor': '网页监控',
   'menu.jsonToRss': 'JSON 转 RSS',
   'menu.searchToRss': '搜索 转 RSS',
   'menu.llmDebug': 'LLM 调试',

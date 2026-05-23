@@ -39,6 +39,18 @@ export default {
   'inbox.guide.query.private':
     '该收件箱为私有状态，订阅或拉取文章正文必须在 URL Query 带上 `?token=YOUR_TOKEN` 进行身份验证。',
 
+  // Recipe integration guide steps
+  'inbox.guide.recipe.heading': '通过配方订阅 RSS',
+  'inbox.guide.recipe.step1.pre': '前往',
+  'inbox.guide.recipe.step1.link': '「自定义配方」',
+  'inbox.guide.recipe.step1.post': '页面，创建一个新配方。',
+  'inbox.guide.recipe.step2': '将数据源类型 (Source Type) 设为',
+  'inbox.guide.recipe.step3':
+    '在 Source Config JSON 中，配置当前收件箱的 ID 映射：',
+  'inbox.guide.recipe.step4.pre': '在配方列表点击',
+  'inbox.guide.recipe.step4.link': '『复制链接』',
+  'inbox.guide.recipe.step4.post': '即可获取完整的 RSS 订阅地址！',
+
   // System Auth Token Management
   'systemAuthToken.title': '系统授权令牌',
   'systemAuthToken.desc':
@@ -59,4 +71,6 @@ export default {
   'systemAuthToken.createdAlert.desc':
     '这是该令牌唯一一次以明文形式展示。为了您的系统安全，关闭此窗口后将无法再次找回明文，请立即复制并妥善保管！',
   'systemAuthToken.copied': '已成功复制到剪贴板',
+  'systemAuthToken.btn.copy': '复制',
+  'systemAuthToken.btn.close': '关闭',
 };
