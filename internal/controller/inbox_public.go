@@ -28,7 +28,7 @@ func PublicInboxItemContent(c *gin.Context) {
 	}
 
 	// 权限校验逻辑
-	if !inbox.IsPublic {
+	if inbox.IsPublic == nil || !*inbox.IsPublic {
 		var tokenValue string
 
 		// 1. 优先尝试从 Query 提取 "?token=xxx"
