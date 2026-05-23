@@ -117,7 +117,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed, onMounted, ref } from 'vue';
+  import { computed, onMounted, ref, watch } from 'vue';
   import FeedViewContainer from '@/views/dashboard/feed_viewer/feed_view_container.vue';
   import XHeader from '@/components/header/x-header.vue';
   import { useI18n } from 'vue-i18n';
@@ -172,6 +172,7 @@
     if (!currentInputURI.value) return;
     isLoading.value = true;
     errorMessage.value = '';
+    feedContent.value = null;
     try {
       const response = await previewFeed(currentInputURI.value);
       feedContent.value = response.data;
@@ -298,6 +299,18 @@
       fetchFeed();
     }
   });
+
+  watch(
+    () => route.fullPath,
+    () => {
+      applyRouteQuery();
+      if (currentInputURI.value) {
+        fetchFeed();
+      } else {
+        clearPreviewState();
+      }
+    }
+  );
 </script>
 
 <script lang="ts">
