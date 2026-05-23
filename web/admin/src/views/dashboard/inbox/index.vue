@@ -170,6 +170,21 @@ curl -X POST "{{ pushUrl }}" \
           <icon-exclamation-circle-fill /> {{ t('inbox.guide.query.private') }}
         </p>
 
+        <!-- Direct RSS URL -->
+        <p class="desc-text mt-2">{{ t('inbox.guide.directRss.desc') }}</p>
+        <div class="code-box">
+          <span class="monospace-text">{{ directRssUrl }}</span>
+          <a-button type="text" size="mini" @click="copyText(directRssUrl)">
+            <template #icon><icon-copy /></template>
+          </a-button>
+        </div>
+        <p v-if="!selectedInbox.is_public" class="desc-text">
+          {{ t('inbox.guide.directRss.privateHint') }}
+          <span class="monospace-text"
+            >{{ directRssUrl }}?token=YOUR_TOKEN</span
+          >
+        </p>
+
         <div class="recipe-step-box">
           <p
             ><strong>{{ t('inbox.guide.recipe.heading') }}:</strong></p
@@ -368,6 +383,11 @@ curl -X POST "{{ pushUrl }}" \
   const pushUrl = computed(() => {
     if (!selectedInbox.value) return '';
     return `${apiBaseUrl.value}/api/inbox/${selectedInbox.value.id}/items`;
+  });
+
+  const directRssUrl = computed(() => {
+    if (!selectedInbox.value) return '';
+    return `${apiBaseUrl.value}/inbox/${selectedInbox.value.id}/rss`;
   });
 
   onMounted(() => {

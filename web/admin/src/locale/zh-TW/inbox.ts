@@ -39,6 +39,11 @@ export default {
   'inbox.guide.query.private':
     '該收件箱為私有狀態，訂閱或拉取文章正文必須在 URL Query 帶上 `?token=YOUR_TOKEN` 進行身份驗證。',
 
+  // Direct RSS URL
+  'inbox.guide.directRss.desc':
+    '可直接使用以下 RSS 位址訂閱，無需提前建立自訂配方：',
+  'inbox.guide.directRss.privateHint': '私有收件箱 — 需在 URL 後附加 Token：',
+
   // Recipe integration guide steps
   'inbox.guide.recipe.heading': '透過配方訂閱 RSS',
   'inbox.guide.recipe.step1.pre': '前往',
