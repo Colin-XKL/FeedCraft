@@ -13,8 +13,10 @@ export default {
   'health.inboxGC.overflow': 'Overflow Articles (Exceeding Limit)',
   'health.inboxGC.scan': 'Scan Junk Data',
   'health.inboxGC.clean': 'Clean Up',
-  'health.inboxGC.cleanConfirm': 'Are you sure you want to clean up all orphaned and overflow articles? This action cannot be undone.',
-  'health.inboxGC.cleanSuccess': 'Cleanup successful! Deleted {orphaned} orphaned and {overflow} overflow articles.',
+  'health.inboxGC.cleanConfirm':
+    'Are you sure you want to clean up all orphaned and overflow articles? This action cannot be undone.',
+  'health.inboxGC.cleanSuccess':
+    'Cleanup successful! Deleted {orphaned} orphaned and {overflow} overflow articles.',
   'health.inboxGC.scanError': 'Scan failed',
   'health.inboxGC.cleanError': 'Cleanup failed',
 };

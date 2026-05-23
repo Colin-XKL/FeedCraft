@@ -97,6 +97,15 @@ const WORKTABLE: AppRouteRecordRaw = {
         requiresAuth: true,
       },
     },
+    {
+      path: 'inbox',
+      name: 'InboxManager',
+      component: () => import('@/views/dashboard/inbox/index.vue'),
+      meta: {
+        locale: 'menu.inbox',
+        requiresAuth: true,
+      },
+    },
   ],
 };
 

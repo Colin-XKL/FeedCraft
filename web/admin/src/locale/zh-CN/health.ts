@@ -13,8 +13,10 @@ export default {
   'health.inboxGC.overflow': '溢出文章 (超出最大限制)',
   'health.inboxGC.scan': '扫描垃圾数据',
   'health.inboxGC.clean': '一键清理',
-  'health.inboxGC.cleanConfirm': '确定要清理所有孤儿文章和溢出的文章吗？此操作不可逆。',
-  'health.inboxGC.cleanSuccess': '清理成功！删除了 {orphaned} 个孤儿文章和 {overflow} 个溢出文章。',
+  'health.inboxGC.cleanConfirm':
+    '确定要清理所有孤儿文章和溢出的文章吗？此操作不可逆。',
+  'health.inboxGC.cleanSuccess':
+    '清理成功！删除了 {orphaned} 个孤儿文章和 {overflow} 个溢出文章。',
   'health.inboxGC.scanError': '扫描失败',
   'health.inboxGC.cleanError': '清理失败',
 };

@@ -19,6 +19,7 @@ import localeSearchToRss from '@/locale/en-US/searchToRss';
 import localeDependencyService from '@/locale/en-US/dependencyService';
 import localeHealth from '@/locale/en-US/health';
 import localeObservability from '@/locale/en-US/observability';
+import localeInbox from '@/locale/en-US/inbox';
 
 export default {
   ...localeSettings,
@@ -41,4 +42,5 @@ export default {
   ...localeDependencyService,
   ...localeHealth,
   ...localeObservability,
+  ...localeInbox,
 };

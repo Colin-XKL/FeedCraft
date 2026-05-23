@@ -18,6 +18,7 @@ import localeSearchToRss from '@/locale/zh-CN/searchToRss';
 import localeDependencyService from '@/locale/zh-CN/dependencyService';
 import localeHealth from '@/locale/zh-CN/health';
 import localeObservability from '@/locale/zh-CN/observability';
+import localeInbox from '@/locale/zh-CN/inbox';
 
 export default {
   ...localeSettings,
@@ -39,4 +40,5 @@ export default {
   ...localeDependencyService,
   ...localeHealth,
   ...localeObservability,
+  ...localeInbox,
 };

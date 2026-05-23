@@ -44,4 +44,6 @@ export default {
   'menu.settings': 'Settings',
   'menu.settings.searchProvider': 'Search Provider',
   'menu.systemHealth': 'Craft Dependencies',
+  'menu.inbox': 'Inbox Management',
+  'menu.settings.systemAuthToken': 'System Auth Token',
 };

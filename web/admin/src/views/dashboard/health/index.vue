@@ -98,7 +98,11 @@
       </a-spin>
     </a-card>
 
-    <a-card class="general-card" style="margin-top: 24px" :title="t('health.inboxMaintenance')">
+    <a-card
+      class="general-card"
+      style="margin-top: 24px"
+      :title="t('health.inboxMaintenance')"
+    >
       <template #extra>
         <a-space>
           <a-button type="outline" :loading="gcScanning" @click="fetchGCData">
@@ -111,7 +115,15 @@
             :content="t('health.inboxGC.cleanConfirm')"
             @ok="handleGCCleanup"
           >
-            <a-button type="primary" status="danger" :disabled="!gcStats || (gcStats.orphaned_count === 0 && gcStats.overflow_count === 0)" :loading="gcCleaning">
+            <a-button
+              type="primary"
+              status="danger"
+              :disabled="
+                !gcStats ||
+                (gcStats.orphaned_count === 0 && gcStats.overflow_count === 0)
+              "
+              :loading="gcCleaning"
+            >
               <template #icon>
                 <icon-delete />
               </template>
@@ -136,10 +148,19 @@
                 <a-statistic
                   :title="t('health.inboxGC.orphaned')"
                   :value="gcStats.orphaned_count"
-                  :value-style="{ color: gcStats.orphaned_count > 0 ? 'var(--color-danger-text)' : 'inherit' }"
+                  :value-style="{
+                    color:
+                      gcStats.orphaned_count > 0
+                        ? 'var(--color-danger-text)'
+                        : 'inherit',
+                  }"
                   show-group-separator
                 />
-                <a-tag v-if="gcStats.orphaned_count > 0" color="red" size="small">
+                <a-tag
+                  v-if="gcStats.orphaned_count > 0"
+                  color="red"
+                  size="small"
+                >
                   <template #icon><icon-exclamation-circle-fill /></template>
                   Need Action
                 </a-tag>
@@ -150,10 +171,19 @@
                 <a-statistic
                   :title="t('health.inboxGC.overflow')"
                   :value="gcStats.overflow_count"
-                  :value-style="{ color: gcStats.overflow_count > 0 ? 'var(--color-warning-text)' : 'inherit' }"
+                  :value-style="{
+                    color:
+                      gcStats.overflow_count > 0
+                        ? 'var(--color-warning-text)'
+                        : 'inherit',
+                  }"
                   show-group-separator
                 />
-                <a-tag v-if="gcStats.overflow_count > 0" color="orange" size="small">
+                <a-tag
+                  v-if="gcStats.overflow_count > 0"
+                  color="orange"
+                  size="small"
+                >
                   <template #icon><icon-exclamation-circle-fill /></template>
                   Need Action
                 </a-tag>
