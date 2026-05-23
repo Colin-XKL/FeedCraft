@@ -114,13 +114,13 @@
             @click="copyToken(generatedToken)"
           >
             <template #icon><icon-copy /></template>
-            Copy
+            {{ t('systemAuthToken.btn.copy') }}
           </a-button>
         </div>
 
         <div class="mt-6 flex justify-end">
           <a-button type="primary" @click="showSuccessModal = false">
-            Close
+            {{ t('systemAuthToken.btn.close') }}
           </a-button>
         </div>
       </div>

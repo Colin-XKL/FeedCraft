@@ -15,7 +15,7 @@ import localeSearchToRss from '@/locale/zh-CN/searchToRss';
 import localeDependencyService from '@/locale/zh-CN/dependencyService';
 import localeHealth from '@/locale/zh-TW/health';
 import localeObservability from '@/locale/zh-CN/observability';
-import localeInbox from '@/locale/zh-CN/inbox';
+import localeInbox from '@/locale/zh-TW/inbox';
 
 export default {
   ...localeSettings,

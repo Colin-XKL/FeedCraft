@@ -1,0 +1,173 @@
+---
+title: 收件箱 (Inbox)
+description: 通过 HTTP 推送从第三方来源接收文章，并将其转为 RSS 订阅源。
+sidebar:
+  order: 6
+  badge:
+    text: new
+    variant: success
+---
+
+import { Steps } from '@astrojs/starlight/components';
+
+**收件箱**功能允许外部服务、脚本或自动化工具通过 HTTP 主动将文章推送到 FeedCraft。每个收件箱都可以通过自定义配方生成 RSS 订阅地址，方便在任何 RSS 阅读器中订阅。
+
+## 整体流程
+
+典型的使用流程如下：
+
+1. 在管理面板中**创建收件箱**（获得唯一的 inbox ID）。
+2. **创建系统授权令牌**（用于鉴权推送请求的密钥）。
+3. 通过脚本、自动化工具或第三方平台，使用标准 JSON HTTP POST **推送文章**。
+4. **创建自定义配方**，将该收件箱作为数据来源。
+5. 在阅读器中**订阅**生成的 RSS 地址。
+
+## 管理收件箱
+
+在管理面板中，前往 **工作台 > 收件箱管理**。
+
+### 创建收件箱
+
+<Steps>
+1. 点击**新建收件箱**。
+2. 填写必要字段：
+   - **收件箱 ID**：唯一的 URL 安全标识符（只允许小写字母、数字、连字符、下划线）。创建后无法修改。
+   - **标题**：收件箱的可读名称。
+   - **最大保存数**：最多保留的文章数量，超出后按**创建时间**从旧到新自动删除（默认 100）。若设为 `0` 会立即删除该收件箱的所有条目，请用大数值代替"无限制"。
+   - **公开可见性**：开启后，任何人可直接拉取文章内容；关闭后需提供系统授权令牌。
+3. 点击**确定**保存。
+</Steps>
+
+### 编辑收件箱
+
+点击操作栏中的**编辑收件箱**，可修改标题、描述、最大保存数和公开可见性。收件箱 ID 不可修改。
+
+:::caution
+降低已有收件箱的**最大保存数**将立即删除超出限制的文章（按创建时间从旧到新删除），且无法恢复。
+:::
+
+### 删除收件箱
+
+点击操作栏中的**删除**。此操作将永久删除该收件箱及其内**所有文章**。
+
+## 管理系统授权令牌
+
+前往 **设置 > 系统授权令牌**，创建用于鉴权推送请求的 API 令牌。
+
+<Steps>
+1. 点击**生成新令牌**。
+2. 输入描述性标签（例如"iPhone 快捷指令"、"Home Assistant"）。
+3. 立即复制生成的令牌——它只会显示一次，之后无法再次查看。
+</Steps>
+
+随时可点击**删除**撤销令牌。使用该令牌的所有集成将立即失效。
+
+## 推送文章
+
+使用推送接口，从任何 HTTP 客户端、脚本或自动化平台推送文章。
+
+### 接口地址
+
+```
+POST /api/inbox/{inbox_id}/items
+```
+
+### 鉴权
+
+在 `Authorization` 请求头中携带系统授权令牌：
+
+```
+Authorization: Bearer YOUR_SYSTEM_AUTH_TOKEN
+Content-Type: application/json
+```
+
+### 请求体
+
+发送一个 JSON 数组，每个元素代表一篇文章。只有 `title` 是必填字段。
+
+```json
+[
+  {
+    "id": "可选的自定义唯一ID",
+    "title": "文章标题",
+    "url": "https://example.com/article",
+    "content": "<p>文章正文 HTML 内容。</p>",
+    "summary": "简短描述，在订阅源预览中显示。",
+    "author": "作者名",
+    "timestamp": 1716470400
+  }
+]
+```
+
+| 字段        | 必填 | 说明                                                                                     |
+| ----------- | ---- | ---------------------------------------------------------------------------------------- |
+| `title`     | ✅   | 文章标题。                                                                               |
+| `id`        | 可选 | 自定义稳定 ID。省略时自动生成 UUID。若相同 `id` 再次推送，则**更新**（upsert）已有文章。 |
+| `url`       | 可选 | 文章原始链接。省略时 FeedCraft 自动生成指向存储内容的链接。                              |
+| `content`   | 可选 | 文章完整 HTML 正文。                                                                     |
+| `summary`   | 可选 | 简短描述，默认取 `content` 前 200 个 **Unicode 字符**（rune）。                          |
+| `author`    | 可选 | 作者名。                                                                                 |
+| `timestamp` | 可选 | 发布时间的 Unix 时间戳（秒）。默认为当前时间。                                           |
+
+**批次限制**：每次请求最多 100 条。
+
+### cURL 示例
+
+```bash
+curl -X POST "https://YOUR_SERVER/api/inbox/my-inbox/items" \
+  -H "Authorization: Bearer YOUR_SYSTEM_AUTH_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '[{"title": "Hello World", "content": "<p>第一篇推送文章！</p>"}]'
+```
+
+### 响应格式
+
+```json
+{
+  "total": 1,
+  "created": 1,
+  "updated": 0
+}
+```
+
+## 通过 RSS 订阅
+
+需要通过创建自定义配方，将收件箱作为数据来源，再生成可订阅的 RSS 地址。
+
+<Steps>
+1. 前往**工作台 > 自定义配方**，点击**新建配方**。
+2. 将**数据源类型 (Source Type)** 设置为 `inbox`。
+3. 在 **Source Config JSON** 字段中输入：
+   ```json
+   { "inbox_source": { "inbox_id": "YOUR_INBOX_ID" } }
+   ```
+4. 将 **Craft** 设置为 `proxy`（或您希望应用的其他处理链）。
+5. 保存配方后，在配方列表中点击**复制链接**即可获取 RSS 订阅地址。
+</Steps>
+
+:::tip
+可以在收件箱数据源之上叠加 AtomCraft 或 FlowCraft。例如使用 `translate-content` 自动将推送的文章翻译成其他语言。
+:::
+
+## 私有收件箱的访问控制
+
+当收件箱关闭**公开可见性**后，文章内容接口需要进行身份验证。
+
+在文章 URL 后添加 `?token=YOUR_SYSTEM_AUTH_TOKEN`：
+
+```
+GET /inbox/{inbox_id}/items/{article_id}/content?token=YOUR_TOKEN
+```
+
+或使用 `Authorization: Bearer YOUR_TOKEN` 请求头。
+
+:::note
+RSS 订阅源本身（通过自定义配方提供）的访问权限由配方自身的设置控制，与收件箱的公开标志无关。私有标志仅影响 `/inbox/{inbox_id}/items/{article_id}/content` 这一原始文章内容接口。
+:::
+
+## 垃圾回收 (GC)
+
+FeedCraft 提供垃圾回收工具，可通过管理 API 使用：
+
+- **GET `/api/admin/inboxes/gc/stats`** — 返回总条目数、孤儿条目数（属于已删除收件箱的条目）和溢出条目数。
+- **POST `/api/admin/inboxes/gc/cleanup`** — 通过单一原子事务删除所有孤儿和溢出条目。

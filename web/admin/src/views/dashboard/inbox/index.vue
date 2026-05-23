@@ -138,13 +138,13 @@ Content-Type: application/json</pre
         <pre class="monospace-text body-block">
 [
   {
-    "item_id": "optional-custom-unique-id",
+    "id": "optional-custom-unique-id",
     "title": "Article Title",
     "url": "https://example.com/article",
     "content": "&lt;p&gt;Article body HTML content&lt;/p&gt;",
     "summary": "Short description...",
     "author": "Author Name",
-    "published_at": "2026-05-23T12:00:00Z"
+    "timestamp": 1716470400
   }
 ]</pre
         >
@@ -169,21 +169,29 @@ curl -X POST "{{ pushUrl }}" \
 
         <div class="recipe-step-box">
           <p
-            ><strong>{{ t('customRecipe.form.placeholder.craft') }}:</strong></p
+            ><strong>{{ t('inbox.guide.recipe.heading') }}:</strong></p
           >
           <ol>
-            <li>前往<strong>「自定义配方」</strong>页面，创建一个新配方。</li>
-            <li>将数据源类型 (Source Type) 设为 <strong>inbox</strong>。</li>
-            <li
-              >在 Source Config JSON 中，配置当前收件箱的 ID 映射：
+            <li>
+              {{ t('inbox.guide.recipe.step1.pre') }}
+              <strong>{{ t('inbox.guide.recipe.step1.link') }}</strong>
+              {{ t('inbox.guide.recipe.step1.post') }}
+            </li>
+            <li>
+              {{ t('inbox.guide.recipe.step2') }}
+              <strong>inbox</strong>。
+            </li>
+            <li>
+              {{ t('inbox.guide.recipe.step3') }}
               <pre class="monospace-text mt-2 text-xs">
 { "inbox_source": { "inbox_id": "{{ selectedInbox.id }}" } }</pre
               >
             </li>
-            <li
-              >在配方列表点击<strong>『复制链接』</strong>即可获取完美的 RSS
-              订阅地址！</li
-            >
+            <li>
+              {{ t('inbox.guide.recipe.step4.pre') }}
+              <strong>{{ t('inbox.guide.recipe.step4.link') }}</strong>
+              {{ t('inbox.guide.recipe.step4.post') }}
+            </li>
           </ol>
         </div>
       </div>
