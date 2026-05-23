@@ -138,13 +138,13 @@ Content-Type: application/json</pre
         <pre class="monospace-text body-block">
 [
   {
-    "item_id": "optional-custom-unique-id",
+    "id": "optional-custom-unique-id",
     "title": "Article Title",
     "url": "https://example.com/article",
     "content": "&lt;p&gt;Article body HTML content&lt;/p&gt;",
     "summary": "Short description...",
     "author": "Author Name",
-    "published_at": "2026-05-23T12:00:00Z"
+    "timestamp": 1716470400
   }
 ]</pre
         >

@@ -33,7 +33,7 @@ Navigate to **Worktable > Inbox Management** in the admin dashboard.
 2. Fill in the required fields:
    - **Inbox ID**: A unique, URL-safe identifier (lowercase letters, numbers, hyphens, underscores). Cannot be changed after creation.
    - **Title**: A human-readable name for this inbox.
-   - **Max Items**: Maximum number of articles to retain. Older items are automatically pruned when the limit is exceeded (default: 100).
+   - **Max Items**: Maximum number of articles to retain. When the limit is exceeded, the items with the oldest **creation time** are pruned first (default: 100). Set to `0` to impose no limit — note that `0` actually deletes all items immediately, so use a large number instead.
    - **Public Access**: If enabled, article content can be fetched without authentication. If disabled, a valid System Auth Token must be provided.
 3. Click **OK** to save.
 </Steps>
@@ -43,7 +43,7 @@ Navigate to **Worktable > Inbox Management** in the admin dashboard.
 Click **Edit Inbox** in the actions column to update the Title, Description, Max Items, or Public Access setting. The Inbox ID cannot be modified.
 
 :::caution
-Reducing **Max Items** on an existing inbox immediately prunes overflow articles. Pruned articles cannot be recovered.
+Reducing **Max Items** on an existing inbox immediately prunes overflow articles, removing those with the oldest creation timestamps first. Pruned articles cannot be recovered.
 :::
 
 ### Deleting an Inbox
@@ -99,15 +99,15 @@ Send a JSON array of article objects. Only `title` is required; all other fields
 ]
 ```
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `title` | ✅ | Article headline. |
-| `id` | Optional | Custom stable ID. If omitted, a UUID is auto-generated. If the same `id` is pushed again, the article is **updated** (upsert). |
-| `url` | Optional | Canonical link. If omitted, FeedCraft generates a link pointing to the article's stored content. |
-| `content` | Optional | Full HTML body. |
-| `summary` | Optional | Short description. Defaults to the first 200 characters of `content`. |
-| `author` | Optional | Author name. |
-| `timestamp` | Optional | Unix timestamp (seconds) for the publication date. Defaults to the current time. |
+| Field       | Required | Description                                                                                                                    |
+| ----------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `title`     | ✅       | Article headline.                                                                                                              |
+| `id`        | Optional | Custom stable ID. If omitted, a UUID is auto-generated. If the same `id` is pushed again, the article is **updated** (upsert). |
+| `url`       | Optional | Canonical link. If omitted, FeedCraft generates a link pointing to the article's stored content.                               |
+| `content`   | Optional | Full HTML body.                                                                                                                |
+| `summary`   | Optional | Short description. Defaults to the first 200 **Unicode characters** (runes) of `content`.                                      |
+| `author`    | Optional | Author name.                                                                                                                   |
+| `timestamp` | Optional | Unix timestamp (seconds) for the publication date. Defaults to the current time.                                               |
 
 **Batch limit**: Maximum 100 items per request.
 
