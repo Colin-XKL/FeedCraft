@@ -19,6 +19,12 @@ func CreateInbox(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
+
+	if !util.IsValidID(data.ID) {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: "ID must only contain lowercase letters, numbers, hyphens, and underscores"})
+		return
+	}
+
 	db := util.GetDatabase()
 
 	if err := dao.CreateInbox(db, &data); err != nil {

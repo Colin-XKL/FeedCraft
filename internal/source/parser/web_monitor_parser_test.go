@@ -96,8 +96,8 @@ func TestWebMonitorParser_Parse_KeyFieldOrderDoesNotMatter(t *testing.T) {
 
 func TestWebMonitorParser_Parse_DefaultContentFallsBackToDescription(t *testing.T) {
 	parser := &WebMonitorParser{Config: &config.WebMonitorParserConfig{
-		Extractors: map[string]string{"price": ".price"},
-		KeyFields:  []string{"price"},
+		Extractors:          map[string]string{"price": ".price"},
+		KeyFields:           []string{"price"},
 		DescriptionTemplate: "价格 {{.price}}",
 	}}
 

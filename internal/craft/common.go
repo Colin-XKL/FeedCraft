@@ -132,7 +132,6 @@ func CommonCraftHandlerUsingCraftOptionList(c *gin.Context, optionList []LegacyC
 	c.String(http.StatusOK, rssStr)
 }
 
-
 type RawTransformer func(item *feeds.Item) (string, error)
 
 func GetCommonCachedTransformer(cacheKeyGenerator ContentCacheKeyGenerator, rawTransformer TransFunc, craftName string) TransFunc {
