@@ -23,6 +23,28 @@ type ResolvedCraftAtom struct {
 
 type nativeProcessorBuilder func(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error)
 
+func buildZeroArg(ctor func() localProcessor) nativeProcessorBuilder {
+	return func(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
+		_ = atom
+		_ = feedURL
+		return wrapLocalProcessor(ctor()), nil
+	}
+}
+
+func buildWithStringParam(paramKey string, ctor func(string) localProcessor) nativeProcessorBuilder {
+	return func(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
+		_ = feedURL
+		return wrapLocalProcessor(ctor(atom.Params[paramKey])), nil
+	}
+}
+
+func buildWithFeedURL(ctor func(string) localProcessor) nativeProcessorBuilder {
+	return func(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
+		_ = atom
+		return wrapLocalProcessor(ctor(feedURL)), nil
+	}
+}
+
 var nativeProcessorBuilders = map[string]nativeProcessorBuilder{
 	"proxy":                       buildNativeProxyProcessor,
 	"limit":                       buildNativeLimitProcessor,
@@ -30,17 +52,17 @@ var nativeProcessorBuilders = map[string]nativeProcessorBuilder{
 	"keyword":                     buildNativeKeywordProcessor,
 	"guid-fix":                    buildNativeGUIDFixProcessor,
 	"relative-link-fix":           buildNativeRelativeLinkFixProcessor,
-	"cleanup":                     buildNativeCleanupProcessor,
-	"fulltext":                    buildNativeFulltextProcessor,
+	"cleanup":                     buildZeroArg(func() localProcessor { return newCleanupProcessor() }),
+	"fulltext":                    buildWithFeedURL(func(u string) localProcessor { return newFulltextProcessor(u) }),
 	"fulltext-plus":               buildNativeFulltextPlusProcessor,
-	"summary":                     buildNativeSummaryProcessor,
-	"introduction":                buildNativeIntroductionProcessor,
-	"translate-title":             buildNativeTranslateTitleProcessor,
-	"translate-content":           buildNativeTranslateContentProcessor,
-	"translate-content-immersive": buildNativeTranslateContentImmersiveProcessor,
-	"beautify-content":            buildNativeBeautifyContentProcessor,
-	"llm-filter":                  buildNativeLLMFilterProcessor,
-	"ignore-advertorial":          buildNativeIgnoreAdvertorialProcessor,
+	"summary":                     buildWithStringParam("prompt", func(s string) localProcessor { return newSummaryProcessor(s) }),
+	"introduction":                buildWithStringParam("prompt", func(s string) localProcessor { return newIntroductionProcessor(s) }),
+	"translate-title":             buildWithStringParam("prompt", func(s string) localProcessor { return newTranslateTitleProcessor(s) }),
+	"translate-content":           buildWithStringParam("prompt", func(s string) localProcessor { return newTranslateContentProcessor(s) }),
+	"translate-content-immersive": buildWithStringParam("prompt", func(s string) localProcessor { return newTranslateContentImmersiveProcessor(s) }),
+	"beautify-content":            buildWithStringParam("prompt", func(s string) localProcessor { return newBeautifyContentProcessor(s) }),
+	"llm-filter":                  buildWithStringParam("filter_condition", func(s string) localProcessor { return newLLMFilterProcessor(s) }),
+	"ignore-advertorial":          buildWithStringParam("prompt-for-exclude", func(s string) localProcessor { return newIgnoreAdvertorialProcessor(s) }),
 }
 
 func BuildOptionChain(db *gorm.DB, craftName string, feedURL string) (engine.CraftOption, error) {
@@ -324,48 +346,8 @@ func buildNativeRelativeLinkFixProcessor(atom ResolvedCraftAtom, feedURL string)
 	}, nil
 }
 
-func buildNativeCleanupProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
-	return wrapLocalProcessor(newCleanupProcessor()), nil
-}
-
-func buildNativeFulltextProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
-	return wrapLocalProcessor(newFulltextProcessor(feedURL)), nil
-}
-
 func buildNativeFulltextPlusProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
 	return wrapLocalProcessor(newFulltextPlusProcessor(feedURL, parseFulltextPlusConfig(atom.Params))), nil
-}
-
-func buildNativeSummaryProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
-	return wrapLocalProcessor(newSummaryProcessor(atom.Params["prompt"])), nil
-}
-
-func buildNativeIntroductionProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
-	return wrapLocalProcessor(newIntroductionProcessor(atom.Params["prompt"])), nil
-}
-
-func buildNativeTranslateTitleProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
-	return wrapLocalProcessor(newTranslateTitleProcessor(atom.Params["prompt"])), nil
-}
-
-func buildNativeTranslateContentProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
-	return wrapLocalProcessor(newTranslateContentProcessor(atom.Params["prompt"])), nil
-}
-
-func buildNativeTranslateContentImmersiveProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
-	return wrapLocalProcessor(newTranslateContentImmersiveProcessor(atom.Params["prompt"])), nil
-}
-
-func buildNativeBeautifyContentProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
-	return wrapLocalProcessor(newBeautifyContentProcessor(atom.Params["prompt"])), nil
-}
-
-func buildNativeLLMFilterProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
-	return wrapLocalProcessor(newLLMFilterProcessor(atom.Params["filter_condition"])), nil
-}
-
-func buildNativeIgnoreAdvertorialProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
-	return wrapLocalProcessor(newIgnoreAdvertorialProcessor(atom.Params["prompt-for-exclude"])), nil
 }
 
 func buildLegacyOption(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
