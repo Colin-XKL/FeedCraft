@@ -52,12 +52,25 @@ func GetInbox(c *gin.Context) {
 
 func UpdateInbox(c *gin.Context) {
 	id := c.Param("id")
-	var data dao.Inbox
-	if err := c.ShouldBindJSON(&data); err != nil {
+
+	// Use an anonymous struct without binding:"required" on ID since ID comes from the path param.
+	var body struct {
+		Title       string `json:"title"`
+		Description string `json:"description"`
+		MaxItems    int    `json:"max_items"`
+		IsPublic    *bool  `json:"is_public"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
-	data.ID = id
+	data := dao.Inbox{
+		ID:          id,
+		Title:       body.Title,
+		Description: body.Description,
+		MaxItems:    body.MaxItems,
+		IsPublic:    body.IsPublic,
+	}
 	db := util.GetDatabase()
 
 	if _, err := dao.GetInboxByID(db, id); err != nil {

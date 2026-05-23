@@ -12,7 +12,8 @@ type Inbox struct {
 	Title       string `json:"title,omitempty"`
 	Description string `json:"description,omitempty"`
 	MaxItems    int    `gorm:"default:100" json:"max_items"`
-	IsPublic    bool   `gorm:"default:true" json:"is_public"`
+	// IsPublic uses *bool so GORM does not treat false as a zero value to skip; the DB default remains true.
+	IsPublic *bool `gorm:"default:true" json:"is_public"`
 }
 
 type InboxItem struct {
