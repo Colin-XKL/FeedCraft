@@ -64,6 +64,11 @@ type WebMonitorParserConfig struct {
 	ContentTemplate     string            `json:"content_template,omitempty"`
 }
 
+// InboxSourceConfig holds the configuration for an inbox source.
+type InboxSourceConfig struct {
+	InboxID string `json:"inbox_id"`
+}
+
 // --- Feed-level Metadata Configuration ---
 
 // FeedMetaConfig holds overrides for the final feed's metadata.
@@ -97,4 +102,6 @@ type SourceConfig struct {
 	HtmlParser       *HtmlParserConfig       `json:"html_parser,omitempty"`
 	JsonParser       *JsonParserConfig       `json:"json_parser,omitempty"`
 	WebMonitorParser *WebMonitorParserConfig `json:"web_monitor_parser,omitempty"`
+
+	InboxSource *InboxSourceConfig `json:"inbox_source,omitempty"`
 }

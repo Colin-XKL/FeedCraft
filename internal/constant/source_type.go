@@ -9,5 +9,6 @@ const (
 	SourceJSON       SourceType = "json"
 	SourceSearch     SourceType = "search"
 	SourceWebMonitor SourceType = "web_monitor"
+	SourceInbox      SourceType = "inbox"
 	// Add other source types here as they are implemented
 )
