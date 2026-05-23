@@ -45,4 +45,6 @@ export default {
   'menu.settings': '设置',
   'menu.settings.searchProvider': '搜索服务提供商',
   'menu.systemHealth': 'Craft 依赖检查',
+  'menu.inbox': '收件箱管理',
+  'menu.settings.systemAuthToken': '系统授权令牌',
 };

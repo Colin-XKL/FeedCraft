@@ -189,16 +189,27 @@ func TestProxyRecipeFetch_UsesDefaultUserAgent(t *testing.T) {
 }
 
 func TestBuildAggregator(t *testing.T) {
-	processor, err := BuildAggregator([]dao.AggregatorStep{
+	aggregator, err := BuildAggregator([]dao.AggregatorStep{
 		{Type: "sort", Option: map[string]string{"by": "date_desc"}},
 		{Type: "deduplicate", Option: map[string]string{"strategy": "by_link"}},
-		{Type: "limit", Option: map[string]string{"max": "10"}},
+		{Type: "limit", Option: map[string]string{"max": "2"}},
 	})
 	require.NoError(t, err)
+	require.NotNil(t, aggregator)
 
-	flow, ok := processor.(*engine.FlowCraftProcessor)
-	require.True(t, ok)
-	assert.Len(t, flow.Processors, 3)
+	now := time.Now()
+	result, err := aggregator(context.Background(), &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Id: "1", Link: "http://a.com", Updated: now.Add(-1 * time.Hour)},
+			{Id: "2", Link: "http://b.com", Updated: now},
+			{Id: "3", Link: "http://a.com", Updated: now.Add(1 * time.Hour)},
+			{Id: "4", Link: "http://c.com", Updated: now.Add(-2 * time.Hour)},
+		},
+	})
+	require.NoError(t, err)
+	require.Len(t, result.Articles, 2)
+	assert.Equal(t, "3", result.Articles[0].Id)
+	assert.Equal(t, "2", result.Articles[1].Id)
 }
 
 func TestBuildAggregator_InvalidLimit(t *testing.T) {
@@ -235,7 +246,13 @@ func TestBuildTopicProvider_NestedTopics(t *testing.T) {
 	assert.Len(t, topicProvider.Inputs, 1)
 	_, ok = topicProvider.Inputs[0].(*engine.TopicFeed)
 	assert.True(t, ok)
-	assert.IsType(t, &engine.FlowCraftProcessor{}, topicProvider.Aggregator)
+	require.NotNil(t, topicProvider.Aggregator)
+
+	result, err := topicProvider.Aggregator(context.Background(), &model.CraftFeed{
+		Articles: []*model.CraftArticle{{Id: "1"}, {Id: "2"}, {Id: "3"}, {Id: "4"}, {Id: "5"}, {Id: "6"}},
+	})
+	require.NoError(t, err)
+	require.Len(t, result.Articles, 5)
 }
 
 func TestBuildTopicProvider_CycleDetection(t *testing.T) {

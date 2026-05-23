@@ -73,7 +73,7 @@ func TrivialExtractor(targetURL string, timeout time.Duration) (string, error) {
 	return ExecuteWithDomainLimit(targetURL, timeout, action)
 }
 
-func GetFulltextCraftOptions() []CraftOption {
+func GetFulltextCraftOptions() []LegacyCraftOption {
 
 	transFunc := func(item *feeds.Item) (string, error) {
 		link := item.Link.Href
@@ -81,7 +81,7 @@ func GetFulltextCraftOptions() []CraftOption {
 	}
 	cachedTransFunc := GetCommonCachedTransformer(cacheKeyForArticleLink, transFunc, "extract fulltext")
 	relativeLinkFixOptions := GetRelativeLinkFixCraftOptions()
-	var craftOptions []CraftOption
+	var craftOptions []LegacyCraftOption
 	craftOptions = append(craftOptions, relativeLinkFixOptions...)
 	craftOptions = append(craftOptions, OptionTransformFeedItem(GetArticleContentProcessor(cachedTransFunc)))
 	return craftOptions

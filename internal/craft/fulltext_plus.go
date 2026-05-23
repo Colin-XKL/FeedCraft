@@ -53,7 +53,7 @@ type FulltextPlusConfig struct {
 	Mode string // networkidle2, etc.
 }
 
-func GetFulltextPlusCraftOptions(config FulltextPlusConfig) []CraftOption {
+func GetFulltextPlusCraftOptions(config FulltextPlusConfig) []LegacyCraftOption {
 	transFunc := func(item *feeds.Item) (string, error) {
 		link := item.Link.Href
 		opts := util.BrowserlessOptions{
@@ -75,13 +75,13 @@ func GetFulltextPlusCraftOptions(config FulltextPlusConfig) []CraftOption {
 
 	relativeLinkFixOptions := GetRelativeLinkFixCraftOptions()
 
-	var craftOptions []CraftOption
+	var craftOptions []LegacyCraftOption
 	craftOptions = append(craftOptions, relativeLinkFixOptions...)
 	craftOptions = append(craftOptions, OptionTransformFeedItem(GetArticleContentProcessor(cachedTransFunc)))
 	return craftOptions
 }
 
-func fulltextPlusLoadParam(m map[string]string) []CraftOption {
+func fulltextPlusLoadParam(m map[string]string) []LegacyCraftOption {
 	return GetFulltextPlusCraftOptions(parseFulltextPlusConfig(m))
 }
 

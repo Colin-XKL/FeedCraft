@@ -10,7 +10,7 @@ export default {
   'customRecipe.quickCreateRSS': 'Quick Create (RSS)',
   'customRecipe.edit': 'Edit',
   'customRecipe.delete': 'Delete',
-  'customRecipe.link': 'Link',
+  'customRecipe.actions': 'Actions',
   'customRecipe.status.active': 'Active',
   'customRecipe.status.inactive': 'Inactive',
   'customRecipe.status.activeTooltip': 'Active (Last accessed: {time})',

@@ -201,7 +201,6 @@ func (ca *CraftArticle) ToFeedsItem() *feeds.Item {
 }
 
 // FromFeedsFeed converts a Gorilla feeds.Feed back to a CraftFeed.
-// This is primarily used by the LegacyOptionAdapter to capture state after legacy CraftOptions run.
 func FromFeedsFeed(ff *feeds.Feed) *CraftFeed {
 	if ff == nil {
 		return nil

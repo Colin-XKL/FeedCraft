@@ -57,6 +57,20 @@ type JsonParserConfig struct {
 	// ... other fields
 }
 
+// WebMonitorParserConfig holds the configuration for monitoring changes in HTML content.
+type WebMonitorParserConfig struct {
+	Extractors          map[string]string `json:"extractors"`
+	KeyFields           []string          `json:"key_fields"`
+	TitleTemplate       string            `json:"title_template,omitempty"`
+	DescriptionTemplate string            `json:"description_template,omitempty"`
+	ContentTemplate     string            `json:"content_template,omitempty"`
+}
+
+// InboxSourceConfig holds the configuration for an inbox source.
+type InboxSourceConfig struct {
+	InboxID string `json:"inbox_id"`
+}
+
 // --- Feed-level Metadata Configuration ---
 
 // FeedMetaConfig holds overrides for the final feed's metadata.
@@ -87,6 +101,9 @@ type SourceConfig struct {
 
 	// Parser configurations - only one should be non-nil for a given recipe.
 	// Note: RSS parsing doesn't require a specific config struct.
-	HtmlParser *HtmlParserConfig `json:"html_parser,omitempty"`
-	JsonParser *JsonParserConfig `json:"json_parser,omitempty"`
+	HtmlParser       *HtmlParserConfig       `json:"html_parser,omitempty"`
+	JsonParser       *JsonParserConfig       `json:"json_parser,omitempty"`
+	WebMonitorParser *WebMonitorParserConfig `json:"web_monitor_parser,omitempty"`
+
+	InboxSource *InboxSourceConfig `json:"inbox_source,omitempty"`
 }

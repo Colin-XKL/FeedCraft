@@ -7,4 +7,16 @@ export default {
   'health.noData': 'No analysis data. Click Analyze to start.',
   'health.fetchError': 'Failed to fetch dependency health data',
   'health.missingCrafts': 'Missing Crafts',
+  'health.inboxMaintenance': 'Inbox Data Maintenance',
+  'health.inboxGC.totalItems': 'Total Articles',
+  'health.inboxGC.orphaned': 'Orphaned Articles (Unassigned)',
+  'health.inboxGC.overflow': 'Overflow Articles (Exceeding Limit)',
+  'health.inboxGC.scan': 'Scan Junk Data',
+  'health.inboxGC.clean': 'Clean Up',
+  'health.inboxGC.cleanConfirm':
+    'Are you sure you want to clean up all orphaned and overflow articles? This action cannot be undone.',
+  'health.inboxGC.cleanSuccess':
+    'Cleanup successful! Deleted {orphaned} orphaned and {overflow} overflow articles.',
+  'health.inboxGC.scanError': 'Scan failed',
+  'health.inboxGC.cleanError': 'Cleanup failed',
 };

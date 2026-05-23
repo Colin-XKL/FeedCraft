@@ -42,11 +42,11 @@ var (
 // maxContentLen: 文章正文最大截取长度
 // instruction: 传递给 Embedding 模型的 instruction 参数
 // mode: include（匹配即保留，默认）或 exclude（匹配即移除，反选）
-func OptionEmbeddingFilter(anchors []string, threshold float64, maxContentLen int, instruction string, mode EmbeddingFilterMode) CraftOption {
+func OptionEmbeddingFilter(anchors []string, threshold float64, maxContentLen int, instruction string, mode EmbeddingFilterMode) LegacyCraftOption {
 	return OptionEmbeddingFilterWithContext(context.Background(), anchors, threshold, maxContentLen, instruction, mode)
 }
 
-func OptionEmbeddingFilterWithContext(ctx context.Context, anchors []string, threshold float64, maxContentLen int, instruction string, mode EmbeddingFilterMode) CraftOption {
+func OptionEmbeddingFilterWithContext(ctx context.Context, anchors []string, threshold float64, maxContentLen int, instruction string, mode EmbeddingFilterMode) LegacyCraftOption {
 	return func(feed *feeds.Feed, payload ExtraPayload) error {
 		items := feed.Items
 		if len(items) == 0 {
@@ -195,8 +195,8 @@ func buildArticleText(item *feeds.Item, maxLen int) string {
 }
 
 // GetEmbeddingFilterOptions 返回 Embedding 过滤器的 CraftOption 列表
-func GetEmbeddingFilterOptions(anchors []string, threshold float64, maxContentLen int, instruction string, mode EmbeddingFilterMode) []CraftOption {
-	return []CraftOption{
+func GetEmbeddingFilterOptions(anchors []string, threshold float64, maxContentLen int, instruction string, mode EmbeddingFilterMode) []LegacyCraftOption {
+	return []LegacyCraftOption{
 		OptionEmbeddingFilter(anchors, threshold, maxContentLen, instruction, mode),
 	}
 }
@@ -232,12 +232,12 @@ var embeddingFilterParamTmpl = []ParamTemplate{
 }
 
 // embeddingFilterLoadParam 从参数 map 加载 Embedding 过滤器配置
-func embeddingFilterLoadParam(m map[string]string) []CraftOption {
+func embeddingFilterLoadParam(m map[string]string) []LegacyCraftOption {
 	// 解析锚点文本（换行分隔）
 	anchorsStr := m["anchors"]
 	if anchorsStr == "" {
 		logrus.Warn("[embedding-filter] anchors parameter is empty")
-		return []CraftOption{embeddingFilterConfigError(errEmbeddingFilterAnchorsRequired)}
+		return []LegacyCraftOption{embeddingFilterConfigError(errEmbeddingFilterAnchorsRequired)}
 	}
 	rawAnchors := strings.Split(anchorsStr, "\n")
 	var anchors []string
@@ -249,7 +249,7 @@ func embeddingFilterLoadParam(m map[string]string) []CraftOption {
 	}
 	if len(anchors) == 0 {
 		logrus.Warn("[embedding-filter] no valid anchors after parsing")
-		return []CraftOption{embeddingFilterConfigError(errEmbeddingFilterAnchorsRequired)}
+		return []LegacyCraftOption{embeddingFilterConfigError(errEmbeddingFilterAnchorsRequired)}
 	}
 
 	// 解析阈值
@@ -293,7 +293,7 @@ func embeddingFilterLoadParam(m map[string]string) []CraftOption {
 	return GetEmbeddingFilterOptions(anchors, threshold, maxContentLen, instruction, mode)
 }
 
-func embeddingFilterConfigError(err error) CraftOption {
+func embeddingFilterConfigError(err error) LegacyCraftOption {
 	return func(feed *feeds.Feed, payload ExtraPayload) error {
 		return err
 	}

@@ -36,17 +36,17 @@ var aiContentProcessCraftParamTmpl = []ParamTemplate{
 	},
 }
 
-func aiContentProcessCraftLoadParam(m map[string]string) []CraftOption {
+func aiContentProcessCraftLoadParam(m map[string]string) []LegacyCraftOption {
 	return GetAIContentProcessCraftOptions(m["rule"], m["extra-payload"], m["placement"])
 }
 
-func GetAIContentProcessCraftOptions(rule string, extraPayloadRaw string, placementRaw string) []CraftOption {
-	return []CraftOption{
+func GetAIContentProcessCraftOptions(rule string, extraPayloadRaw string, placementRaw string) []LegacyCraftOption {
+	return []LegacyCraftOption{
 		OptionAIContentProcess(rule, extraPayloadRaw, placementRaw),
 	}
 }
 
-func OptionAIContentProcess(rule string, extraPayloadRaw string, placementRaw string) CraftOption {
+func OptionAIContentProcess(rule string, extraPayloadRaw string, placementRaw string) LegacyCraftOption {
 	rule = strings.TrimSpace(rule)
 	payloadTypes := parseAIFilterExtraPayloadWithDefault(extraPayloadRaw, []aiFilterExtraPayloadType{aiFilterExtraPayloadArticleContent})
 	placement := parseAIContentProcessPlacement(placementRaw)

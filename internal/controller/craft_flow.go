@@ -25,6 +25,12 @@ func CreateCraftFlow(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
+
+	if !util.IsValidID(craftFlow.Name) {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: "Name must only contain lowercase letters, numbers, hyphens, and underscores"})
+		return
+	}
+
 	db := util.GetDatabase()
 
 	if err := db.Create(&craftFlow).Error; err != nil {

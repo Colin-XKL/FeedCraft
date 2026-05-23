@@ -14,7 +14,7 @@ func CleanupContent(htmlContent string, domain string) (string, error) {
 	return cleanHtml, nil
 }
 
-func GetCleanupCraftOptions() []CraftOption {
+func GetCleanupCraftOptions() []LegacyCraftOption {
 	transFunc := func(item *feeds.Item) (string, error) {
 		domain, _ := util.ParseDomainFromUrl(item.Link.Href)
 		return CleanupContent(item.Content, domain)
@@ -24,7 +24,7 @@ func GetCleanupCraftOptions() []CraftOption {
 		transFunc,
 		"cleanup article content",
 	)
-	craftOptions := []CraftOption{
+	craftOptions := []LegacyCraftOption{
 		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransFunc)),
 	}
 	return craftOptions

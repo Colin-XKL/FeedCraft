@@ -48,17 +48,17 @@ var aiFilterCraftParamTmpl = []ParamTemplate{
 	},
 }
 
-func aiFilterCraftLoadParam(m map[string]string) []CraftOption {
+func aiFilterCraftLoadParam(m map[string]string) []LegacyCraftOption {
 	return GetAIFilterCraftOptions(m["rule"], m["extra-payload"])
 }
 
-func GetAIFilterCraftOptions(rule string, extraPayloadRaw string) []CraftOption {
-	return []CraftOption{
+func GetAIFilterCraftOptions(rule string, extraPayloadRaw string) []LegacyCraftOption {
+	return []LegacyCraftOption{
 		OptionAIFilter(rule, extraPayloadRaw),
 	}
 }
 
-func OptionAIFilter(rule string, extraPayloadRaw string) CraftOption {
+func OptionAIFilter(rule string, extraPayloadRaw string) LegacyCraftOption {
 	rule = strings.TrimSpace(rule)
 	payloadTypes := parseAIFilterExtraPayload(extraPayloadRaw)
 	return func(feed *feeds.Feed, payload ExtraPayload) error {

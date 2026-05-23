@@ -42,15 +42,15 @@ func CheckIfAdvertorial(title string, content string, prompt string) bool {
 	return res
 }
 
-func GetIgnoreAdvertorialCraftOptions(prompt string) []CraftOption {
-	craftOptions := []CraftOption{
+func GetIgnoreAdvertorialCraftOptions(prompt string) []LegacyCraftOption {
+	craftOptions := []LegacyCraftOption{
 		OptionIgnoreAdvertorial(prompt),
 	}
 	return craftOptions
 }
 
 // OptionIgnoreAdvertorial option  判断一篇文章是不是推广软文和广告等
-func OptionIgnoreAdvertorial(prompt string) CraftOption {
+func OptionIgnoreAdvertorial(prompt string) LegacyCraftOption {
 	return func(feed *feeds.Feed, payload ExtraPayload) error {
 		items := feed.Items
 		if len(items) == 0 {
@@ -75,7 +75,7 @@ func OptionIgnoreAdvertorial(prompt string) CraftOption {
 	}
 }
 
-func llmFilterCraftLoadParam(m map[string]string) []CraftOption {
+func llmFilterCraftLoadParam(m map[string]string) []LegacyCraftOption {
 	prompt, exist := m["prompt-for-exclude"]
 	if !exist || len(prompt) == 0 {
 		prompt = fmt.Sprintf("%s\n%s\n", judgePrompt, promptCheckIfAdvertorial)

@@ -57,8 +57,6 @@ func TestTopicFeed_Fetch_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.Equal(t, "topic-1", result.Id)
-
-	// Should contain 3 articles total
 	assert.Len(t, result.Articles, 3)
 	assert.True(t, result.Updated.Equal(updated3))
 	assert.True(t, result.Created.Equal(created3))
@@ -67,26 +65,19 @@ func TestTopicFeed_Fetch_Success(t *testing.T) {
 func TestTopicFeed_Fetch_PartialFailure(t *testing.T) {
 	provider1 := &MockProvider{
 		Feed: &model.CraftFeed{
-			Articles: []*model.CraftArticle{
-				{Id: "1", Title: "Article 1"},
-			},
+			Articles: []*model.CraftArticle{{Id: "1", Title: "Article 1"}},
 		},
 	}
-	providerFail := &MockProvider{
-		Err: errors.New("network error"),
-	}
+	providerFail := &MockProvider{Err: errors.New("network error")}
 
 	topic := &TopicFeed{
 		ID:     "topic-2",
 		Inputs: []FeedProvider{provider1, providerFail},
 	}
 
-	// Should not return error overall, just log the warning and return partial success
 	result, err := topic.Fetch(context.Background())
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
-
-	// Should contain 1 article from provider1
 	assert.Len(t, result.Articles, 1)
 	assert.Equal(t, "1", result.Articles[0].Id)
 }
@@ -109,8 +100,15 @@ func TestTopicFeed_Fetch_WithAggregator(t *testing.T) {
 		},
 	}
 
-	// An aggregator that limits to 2 items
-	aggregator := &LimitProcessor{MaxItems: 2}
+	aggregator := func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		_ = ctx
+		if feed == nil || len(feed.Articles) <= 2 {
+			return feed, nil
+		}
+		cloned := *feed
+		cloned.Articles = append([]*model.CraftArticle(nil), feed.Articles[:2]...)
+		return &cloned, nil
+	}
 
 	topic := &TopicFeed{
 		Inputs:     []FeedProvider{provider},

@@ -62,7 +62,13 @@ func RegisterRouters(router *gin.Engine) {
 	{
 		public.POST("/login", controller.LoginAuth)
 		public.GET("/list-all-craft", controller.ListAllCraft)
+
+		// Third-party pushing endpoint (Inward data flow with SystemAuthToken Validation)
+		public.POST("/inbox/:inbox_id/items", middleware.SystemAuthTokenMiddleware(), controller.PushInboxItems)
 	}
+
+	// Article serving content in an isolated namespace to avoid routing ambiguity with SPA fallback or others
+	router.GET("/inbox/:inbox_id/items/:article_id/content", controller.PublicInboxItemContent)
 
 	craftRouters := router.Group("/craft")
 	{
@@ -88,6 +94,20 @@ func RegisterRouters(router *gin.Engine) {
 
 		adminApi.POST("/craft-debug/advertorial", craft.DebugCheckIfAdvertorial)
 		adminApi.POST("/craft-debug/common-llm-call-test", admin.LLMDebug)
+
+		// Inbox admin CRUD
+		adminApi.POST("/inboxes", controller.CreateInbox)
+		adminApi.GET("/inboxes", controller.ListInboxes)
+		adminApi.GET("/inboxes/:id", controller.GetInbox)
+		adminApi.PUT("/inboxes/:id", controller.UpdateInbox)
+		adminApi.DELETE("/inboxes/:id", controller.DeleteInbox)
+		adminApi.GET("/inboxes/gc/stats", controller.GetInboxGCStats)
+		adminApi.POST("/inboxes/gc/cleanup", controller.TriggerInboxGCCleanup)
+
+		// SystemAuthToken admin CRUD
+		adminApi.POST("/system-auth-tokens", controller.CreateSystemAuthToken)
+		adminApi.GET("/system-auth-tokens", controller.ListSystemAuthTokens)
+		adminApi.DELETE("/system-auth-tokens/:id", controller.DeleteSystemAuthToken)
 
 		adminApi.POST("/topics", controller.CreateTopicFeed)
 		adminApi.POST("/topics/validate", controller.ValidateTopicFeed)
@@ -126,6 +146,7 @@ func RegisterRouters(router *gin.Engine) {
 
 		adminApi.POST("/tools/fetch", controller.HtmlFetch)
 		adminApi.POST("/tools/parse", controller.HtmlParse)
+		adminApi.POST("/tools/web-monitor/preview", controller.WebMonitorPreview)
 		adminApi.GET("/tools/feed/preview", controller.PreviewFeedViewer)
 		adminApi.POST("/tools/embedding-filter/preview", controller.PreviewEmbeddingFilter)
 

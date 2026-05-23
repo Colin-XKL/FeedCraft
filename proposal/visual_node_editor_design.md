@@ -23,7 +23,7 @@
   - 对应后端的 `FeedProvider`。如：RSS 抓取节点、网页转换节点、搜索节点。
   - 视觉特征：只有输出端口（Output Port），没有输入端口。
 - **加工节点 (Processor Node)**：
-  - 对应后端的 `FeedProcessor` (Atom-Craft)。如：翻译节点、AI 摘要节点、去广告节点。
+  - 对应后端的 `CraftOption` (Atom-Craft)。如：翻译节点、AI 摘要节点、去广告节点。
   - 视觉特征：同时具有输入和输出端口（Input & Output Ports）。
 - **聚合/结构节点 (Router/Struct Node)**：
   - 负责多流合并或条件分发。如：Topic 中的合并去重器 (Merge Aggregator)。
@@ -87,7 +87,7 @@ FeedCraft 的业务模型具有明显的嵌套特征（Topic 包含 Recipe，Rec
 }
 ```
 
-**后端的适配挑战**：后端的执行引擎需要能够动态解析这种基于 Node 和 Edge 的图结构，并将其还原为内存中的 `FeedProvider` 和 `FeedProcessor` 的调用链。
+**后端的适配挑战**：后端的执行引擎需要能够动态解析这种基于 Node 和 Edge 的图结构，并将其还原为内存中的 `FeedProvider` 和 `CraftOption` 调用链。
 
 ## 5. 渐进式演进路径 (Evolution Path)
 
