@@ -1,8 +1,10 @@
 package controller
 
 import (
+	"FeedCraft/internal/config"
 	"FeedCraft/internal/craft"
 	fetcherpkg "FeedCraft/internal/source/fetcher"
+	"FeedCraft/internal/source/parser"
 	"FeedCraft/internal/util"
 	"fmt"
 	"net"
@@ -36,6 +38,13 @@ type ParsedItem struct {
 	Link    string `json:"link"`
 	Date    string `json:"date"`
 	Content string `json:"content"`
+}
+
+type WebMonitorPreviewReq struct {
+	HTML             string                        `json:"html"`
+	URL              string                        `json:"url" binding:"required"`
+	UseBrowserless   bool                          `json:"use_browserless"`
+	WebMonitorParser config.WebMonitorParserConfig `json:"web_monitor_parser"`
 }
 
 func validateURL(rawUrl string) error {
@@ -85,7 +94,6 @@ func fetchHTML(targetURL string, useBrowserless bool) (string, error) {
 	}
 
 	content := resp.String()
-	// Check if body is empty even with 200 OK
 	if strings.TrimSpace(content) == "" {
 		return "", fmt.Errorf("upstream returned 200 OK but the content is empty. Try enabling 'Enhance Mode'")
 	}
@@ -107,7 +115,6 @@ func HtmlFetch(c *gin.Context) {
 
 	htmlContent, err := fetchHTML(req.URL, req.UseBrowserless)
 	if err != nil {
-		// Use StatusCode: -1 to indicate logic/upstream error rather than system error
 		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
 		return
 	}
@@ -136,7 +143,6 @@ func HtmlParse(c *gin.Context) {
 			return
 		}
 
-		// Fallback fetch if HTML not provided. Default to standard fetch (no browserless) as ParseReq doesn't support it yet.
 		htmlContent, err = fetchHTML(req.URL, false)
 		if err != nil {
 			c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
@@ -154,7 +160,6 @@ func HtmlParse(c *gin.Context) {
 	}
 
 	var items []ParsedItem
-	// If no item selector, return empty
 	if req.ItemSelector == "" {
 		c.JSON(http.StatusOK, util.APIResponse[[]ParsedItem]{StatusCode: 0, Data: items})
 		return
@@ -163,9 +168,6 @@ func HtmlParse(c *gin.Context) {
 	doc.Find(req.ItemSelector).Each(func(i int, s *goquery.Selection) {
 		item := ParsedItem{}
 
-		// Helper to extract selection based on selector
-		// If selector is "." or empty (though frontend sends . now), use current 's'
-		// Otherwise find descendant
 		getSelection := func(selector string) *goquery.Selection {
 			if selector == "" || selector == "." {
 				return s
@@ -180,14 +182,12 @@ func HtmlParse(c *gin.Context) {
 			sel := getSelection(req.LinkSelector)
 			item.Link = util.ExtractLinkFromSelection(sel)
 
-			// Try to resolve relative URL to absolute URL
 			if req.URL != "" && item.Link != "" {
 				if absURL, err := util.BuildAbsoluteURL(req.URL, item.Link); err == nil {
 					item.Link = absURL
 				}
 			}
 
-			// Final validation: Ensure it is a valid HTTP/HTTPS URL
 			if item.Link != "" {
 				if u, err := url.Parse(item.Link); err != nil || (u.Scheme != "http" && u.Scheme != "https") {
 					item.Link = ""
@@ -197,7 +197,6 @@ func HtmlParse(c *gin.Context) {
 		if req.DateSelector != "" {
 			sel := getSelection(req.DateSelector)
 			item.Date = strings.TrimSpace(sel.Text())
-			// Check datetime attr if text is empty
 			if item.Date == "" {
 				val, exists := sel.Attr("datetime")
 				if exists {
@@ -223,5 +222,39 @@ func HtmlParse(c *gin.Context) {
 	c.JSON(http.StatusOK, util.APIResponse[[]ParsedItem]{
 		StatusCode: 0,
 		Data:       items,
+	})
+}
+
+func WebMonitorPreview(c *gin.Context) {
+	var req WebMonitorPreviewReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
+		return
+	}
+
+	if err := validateURL(req.URL); err != nil {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
+		return
+	}
+
+	htmlContent := req.HTML
+	if strings.TrimSpace(htmlContent) == "" {
+		var err error
+		htmlContent, err = fetchHTML(req.URL, req.UseBrowserless)
+		if err != nil {
+			c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
+			return
+		}
+	}
+
+	preview, err := parser.PreviewWebMonitor([]byte(htmlContent), &req.WebMonitorParser, req.URL)
+	if err != nil {
+		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, util.APIResponse[*parser.WebMonitorPreviewResult]{
+		StatusCode: 0,
+		Data:       preview,
 	})
 }

@@ -205,5 +205,9 @@ func applyRelativeLinkFix(ctx context.Context, feed *model.CraftFeed, originalFe
 	if strings.TrimSpace(originalFeedURL) == "" {
 		return feed, nil
 	}
-	return (&RelativeLinkFixProcessor{OriginalFeedURL: originalFeedURL}).Process(ctx, feed)
+	option, err := buildNativeRelativeLinkFixProcessor(ResolvedCraftAtom{}, originalFeedURL)
+	if err != nil {
+		return nil, err
+	}
+	return option(ctx, feed)
 }

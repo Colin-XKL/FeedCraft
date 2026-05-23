@@ -15,11 +15,13 @@ import localeExampleRssFeeds from '@/locale/en-US/exampleRssFeeds';
 import localeLlmDebug from '@/locale/en-US/llmDebug';
 import localeUrlGenerator from '@/locale/en-US/urlGenerator';
 import localeHtmlToRss from '@/locale/en-US/htmlToRss';
+import localeWebMonitor from '@/locale/en-US/webMonitor';
 import localeJsonToRss from '@/locale/en-US/jsonToRss';
 import localeSearchToRss from '@/locale/en-US/searchToRss';
 import localeDependencyService from '@/locale/en-US/dependencyService';
 import localeHealth from '@/locale/en-US/health';
 import localeObservability from '@/locale/en-US/observability';
+import localeInbox from '@/locale/en-US/inbox';
 
 export default {
   ...localeSettings,
@@ -38,9 +40,11 @@ export default {
   ...localeLlmDebug,
   ...localeUrlGenerator,
   ...localeHtmlToRss,
+  ...localeWebMonitor,
   ...localeJsonToRss,
   ...localeSearchToRss,
   ...localeDependencyService,
   ...localeHealth,
   ...localeObservability,
+  ...localeInbox,
 };

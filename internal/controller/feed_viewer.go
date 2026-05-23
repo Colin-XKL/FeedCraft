@@ -138,7 +138,7 @@ func PreviewEmbeddingFilter(c *gin.Context) {
 		return
 	}
 
-	craftedFeed, err := buildCraftPreviewWithOptions(feed, cfg.inputURL, []craft.CraftOption{craft.OptionEmbeddingFilterWithContext(
+	craftedFeed, err := buildCraftPreviewWithOptions(feed, cfg.inputURL, []craft.LegacyCraftOption{craft.OptionEmbeddingFilterWithContext(
 		c.Request.Context(),
 		cfg.anchors,
 		cfg.threshold,
@@ -270,7 +270,7 @@ func buildCraftPreview(feed *model.CraftFeed, inputURL, craftName string) (*mode
 	return model.FromFeedsFeed(craftedFeed), nil
 }
 
-func buildCraftPreviewWithOptions(feed *model.CraftFeed, inputURL string, options []craft.CraftOption) (*model.CraftFeed, error) {
+func buildCraftPreviewWithOptions(feed *model.CraftFeed, inputURL string, options []craft.LegacyCraftOption) (*model.CraftFeed, error) {
 	atomXML, err := feed.ToFeedsFeed().ToAtom()
 	if err != nil {
 		return nil, err

@@ -22,8 +22,8 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		Name:                "proxy",
 		Description:         "代理订阅源",
 		ParamTemplateDefine: []ParamTemplate{},
-		OptionFunc: func(m map[string]string) []CraftOption {
-			return []CraftOption{}
+		OptionFunc: func(m map[string]string) []LegacyCraftOption {
+			return []LegacyCraftOption{}
 		},
 	}
 	sysCraftTempList["limit"] = CraftTemplate{
@@ -48,7 +48,7 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		Name:                "guid-fix",
 		Description:         "修复 RSS GUID。使用文章内容 MD5 作为唯一 ID。",
 		ParamTemplateDefine: []ParamTemplate{},
-		OptionFunc: func(m map[string]string) []CraftOption {
+		OptionFunc: func(m map[string]string) []LegacyCraftOption {
 			return GetGuidCraftOptions()
 		},
 	}
@@ -56,7 +56,7 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		Name:                "relative-link-fix",
 		Description:         "修复文章链接,确保是绝对url. 这样可以保证在获取全文等场景时可以跳转到正确的网页",
 		ParamTemplateDefine: []ParamTemplate{},
-		OptionFunc: func(m map[string]string) []CraftOption {
+		OptionFunc: func(m map[string]string) []LegacyCraftOption {
 			return GetRelativeLinkFixCraftOptions()
 		},
 	}
@@ -64,7 +64,7 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		Name:                "fulltext",
 		Description:         "提取 RSS 订阅源的全文",
 		ParamTemplateDefine: []ParamTemplate{},
-		OptionFunc: func(m map[string]string) []CraftOption {
+		OptionFunc: func(m map[string]string) []LegacyCraftOption {
 			return GetFulltextCraftOptions()
 		},
 	}
@@ -78,7 +78,7 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		Name:                "cleanup",
 		Description:         "清理文章HTML内容，保留核心内容",
 		ParamTemplateDefine: []ParamTemplate{},
-		OptionFunc: func(m map[string]string) []CraftOption {
+		OptionFunc: func(m map[string]string) []LegacyCraftOption {
 			return GetCleanupCraftOptions()
 		},
 	}
@@ -209,12 +209,12 @@ func ProcessFeed(feed *gofeed.Feed, feedURL string, craftName string) (*feeds.Fe
 	return craftedFeed.OutputFeed, nil
 }
 
-func getCraftOptions(db *gorm.DB, craftName string) ([]CraftOption, error) {
+func getCraftOptions(db *gorm.DB, craftName string) ([]LegacyCraftOption, error) {
 	craftAtomDict := GetCraftAtomDict()
 	craftTmplDict := GetSysCraftTemplateDict()
 
 	if strings.Contains(craftName, ",") {
-		var allOptions []CraftOption
+		var allOptions []LegacyCraftOption
 		parts := strings.Split(craftName, ",")
 		for _, part := range parts {
 			part = strings.TrimSpace(part)
@@ -236,9 +236,9 @@ func getCraftOptions(db *gorm.DB, craftName string) ([]CraftOption, error) {
 const MaxCallDepth = 5
 
 // 递归地解出 craft option list
-func inner(db *gorm.DB, craftAtomDict *map[string]dao.CraftAtom, craftTmplDict *map[string]CraftTemplate, craftName string, depthId int) ([]CraftOption, error) {
+func inner(db *gorm.DB, craftAtomDict *map[string]dao.CraftAtom, craftTmplDict *map[string]CraftTemplate, craftName string, depthId int) ([]LegacyCraftOption, error) {
 	if depthId+1 > MaxCallDepth {
-		return []CraftOption{}, fmt.Errorf("max call depth hit")
+		return []LegacyCraftOption{}, fmt.Errorf("max call depth hit")
 	}
 	logrus.Infof("checking %s", craftName)
 
@@ -254,20 +254,20 @@ func inner(db *gorm.DB, craftAtomDict *map[string]dao.CraftAtom, craftTmplDict *
 		logrus.Infof("[%s] is known craft atom", craftName)
 		tmplContent, tmplValid := (*craftTmplDict)[craftAtom.TemplateName]
 		if !tmplValid {
-			return []CraftOption{}, fmt.Errorf("invalid tmpl name [%s] for craft atom [%s]", craftAtom.TemplateName, craftAtom.Name)
+			return []LegacyCraftOption{}, fmt.Errorf("invalid tmpl name [%s] for craft atom [%s]", craftAtom.TemplateName, craftAtom.Name)
 		}
 		return tmplContent.GetOptions(craftAtom.Params), nil
 	} else {
 		craftArr, checkErr := extractCraftArrFromFlow(db, craftName)
 		if checkErr != nil {
 			// then not a valid  craft name
-			return []CraftOption{}, fmt.Errorf("not a valid craft name")
+			return []LegacyCraftOption{}, fmt.Errorf("not a valid craft name")
 		}
-		var retArr []CraftOption
+		var retArr []LegacyCraftOption
 		for _, extractedSubCraftName := range craftArr {
 			sub, recurErr := inner(db, craftAtomDict, craftTmplDict, extractedSubCraftName, depthId+1)
 			if recurErr != nil {
-				return []CraftOption{}, recurErr
+				return []LegacyCraftOption{}, recurErr
 			}
 			retArr = append(retArr, sub...)
 		}

@@ -56,7 +56,7 @@ func cacheKeyForArticleLink(item *feeds.Item) (string, error) {
 // ===
 
 // GetTranslateTitleCraftOptions translate title
-func GetTranslateTitleCraftOptions(prompt string) []CraftOption {
+func GetTranslateTitleCraftOptions(prompt string) []LegacyCraftOption {
 	targetLangCode := util.GetDefaultTargetLang()
 	targetLangName := util.GetLanguageName(targetLangCode)
 
@@ -90,7 +90,7 @@ func GetTranslateTitleCraftOptions(prompt string) []CraftOption {
 		return translateArticleTitle(item.Title, finalPrompt)
 	}
 	transformer := GetCommonCachedTransformer(cacheKeyForArticleTitle, transFunc, "translate title")
-	craftOption := []CraftOption{
+	craftOption := []LegacyCraftOption{
 		OptionTransformFeedItem(
 			GetArticleTitleProcessor(transformer),
 		),
@@ -98,7 +98,7 @@ func GetTranslateTitleCraftOptions(prompt string) []CraftOption {
 	return craftOption
 }
 
-func transTitleCraftLoadParam(m map[string]string) []CraftOption {
+func transTitleCraftLoadParam(m map[string]string) []LegacyCraftOption {
 	prompt, exist := m["prompt"]
 	if !exist || len(prompt) == 0 {
 		prompt = translateArticleTitlePrompt
@@ -117,7 +117,7 @@ var transTitleParamTmpl = []ParamTemplate{
 //todo 后续添加mode字段, 支持将摘要放在文章开头/文章结尾/替换掉原文
 
 // GetTranslateContentCraftOptions translate article content
-func GetTranslateContentCraftOptions(prompt string) []CraftOption {
+func GetTranslateContentCraftOptions(prompt string) []LegacyCraftOption {
 	targetLangCode := util.GetDefaultTargetLang()
 	targetLangName := util.GetLanguageName(targetLangCode)
 
@@ -151,12 +151,12 @@ func GetTranslateContentCraftOptions(prompt string) []CraftOption {
 	}
 	cachedTransformer := GetCommonCachedTransformer(
 		cacheKeyForArticleContent, transFunc, "translate article content")
-	craftOption := []CraftOption{
+	craftOption := []LegacyCraftOption{
 		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransformer)),
 	}
 	return craftOption
 }
-func transContentCraftLoadParam(m map[string]string) []CraftOption {
+func transContentCraftLoadParam(m map[string]string) []LegacyCraftOption {
 	prompt, exist := m["prompt"]
 	if !exist || len(prompt) == 0 {
 		prompt = translateArticleContentPrompt
@@ -172,7 +172,7 @@ var transContentParamTmpl = []ParamTemplate{
 // immersive translate article content
 // ===
 
-func immersiveTranslateLoadParam(m map[string]string) []CraftOption {
+func immersiveTranslateLoadParam(m map[string]string) []LegacyCraftOption {
 	prompt, exist := m["prompt"]
 	if !exist || len(prompt) == 0 {
 		prompt = immersiveTranslatePrompt

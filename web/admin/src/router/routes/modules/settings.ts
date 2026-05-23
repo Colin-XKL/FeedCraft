@@ -40,6 +40,15 @@ const SETTINGS: AppRouteRecordRaw = {
         requiresAuth: true,
       },
     },
+    {
+      path: 'system_auth_token',
+      name: 'SystemAuthTokenManager',
+      component: () => import('@/views/settings/system_auth_token/index.vue'),
+      meta: {
+        locale: 'menu.settings.systemAuthToken',
+        requiresAuth: true,
+      },
+    },
   ],
 };
 

@@ -22,7 +22,29 @@ type ResolvedCraftAtom struct {
 	Params       map[string]string
 }
 
-type nativeProcessorBuilder func(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error)
+type nativeProcessorBuilder func(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error)
+
+func buildZeroArg(ctor func() localProcessor) nativeProcessorBuilder {
+	return func(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
+		_ = atom
+		_ = feedURL
+		return wrapLocalProcessor(ctor()), nil
+	}
+}
+
+func buildWithStringParam(paramKey string, ctor func(string) localProcessor) nativeProcessorBuilder {
+	return func(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
+		_ = feedURL
+		return wrapLocalProcessor(ctor(atom.Params[paramKey])), nil
+	}
+}
+
+func buildWithFeedURL(ctor func(string) localProcessor) nativeProcessorBuilder {
+	return func(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
+		_ = atom
+		return wrapLocalProcessor(ctor(feedURL)), nil
+	}
+}
 
 var nativeProcessorBuilders = map[string]nativeProcessorBuilder{
 	"proxy":                       buildNativeProxyProcessor,
@@ -31,197 +53,20 @@ var nativeProcessorBuilders = map[string]nativeProcessorBuilder{
 	"keyword":                     buildNativeKeywordProcessor,
 	"guid-fix":                    buildNativeGUIDFixProcessor,
 	"relative-link-fix":           buildNativeRelativeLinkFixProcessor,
-	"cleanup":                     buildNativeCleanupProcessor,
-	"fulltext":                    buildNativeFulltextProcessor,
+	"cleanup":                     buildZeroArg(func() localProcessor { return newCleanupProcessor() }),
+	"fulltext":                    buildWithFeedURL(func(u string) localProcessor { return newFulltextProcessor(u) }),
 	"fulltext-plus":               buildNativeFulltextPlusProcessor,
-	"summary":                     buildNativeSummaryProcessor,
-	"introduction":                buildNativeIntroductionProcessor,
-	"translate-title":             buildNativeTranslateTitleProcessor,
-	"translate-content":           buildNativeTranslateContentProcessor,
-	"translate-content-immersive": buildNativeTranslateContentImmersiveProcessor,
-	"beautify-content":            buildNativeBeautifyContentProcessor,
-	"llm-filter":                  buildNativeLLMFilterProcessor,
-	"ignore-advertorial":          buildNativeIgnoreAdvertorialProcessor,
+	"summary":                     buildWithStringParam("prompt", func(s string) localProcessor { return newSummaryProcessor(s) }),
+	"introduction":                buildWithStringParam("prompt", func(s string) localProcessor { return newIntroductionProcessor(s) }),
+	"translate-title":             buildWithStringParam("prompt", func(s string) localProcessor { return newTranslateTitleProcessor(s) }),
+	"translate-content":           buildWithStringParam("prompt", func(s string) localProcessor { return newTranslateContentProcessor(s) }),
+	"translate-content-immersive": buildWithStringParam("prompt", func(s string) localProcessor { return newTranslateContentImmersiveProcessor(s) }),
+	"beautify-content":            buildWithStringParam("prompt", func(s string) localProcessor { return newBeautifyContentProcessor(s) }),
+	"llm-filter":                  buildWithStringParam("filter_condition", func(s string) localProcessor { return newLLMFilterProcessor(s) }),
+	"ignore-advertorial":          buildWithStringParam("prompt-for-exclude", func(s string) localProcessor { return newIgnoreAdvertorialProcessor(s) }),
 }
 
-type NoopProcessor struct{}
-
-func (p *NoopProcessor) Process(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
-	return feed, nil
-}
-
-type LimitProcessor struct {
-	MaxItems int
-}
-
-func (p *LimitProcessor) Process(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
-	if feed == nil || p == nil || p.MaxItems <= 0 || len(feed.Articles) == 0 {
-		return feed, nil
-	}
-	cloned := cloneCraftFeed(feed)
-	sort.SliceStable(cloned.Articles, func(i, j int) bool {
-		return craftArticleTime(cloned.Articles[i]).After(craftArticleTime(cloned.Articles[j]))
-	})
-	if len(cloned.Articles) > p.MaxItems {
-		cloned.Articles = cloned.Articles[:p.MaxItems]
-	}
-	return cloned, nil
-}
-
-func craftArticleTime(article *model.CraftArticle) time.Time {
-	if article == nil {
-		return time.Time{}
-	}
-	if !article.Created.IsZero() {
-		return article.Created
-	}
-	return article.Updated
-}
-
-type TimeLimitProcessor struct {
-	Days int
-	Now  func() time.Time
-}
-
-func (p *TimeLimitProcessor) Process(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
-	if feed == nil || p == nil {
-		return feed, nil
-	}
-	nowFunc := p.Now
-	if nowFunc == nil {
-		nowFunc = time.Now
-	}
-
-	hasNormalDate := false
-	for _, article := range feed.Articles {
-		if article == nil {
-			continue
-		}
-		if !article.Created.IsZero() && article.Created.Year() > 1970 {
-			hasNormalDate = true
-			break
-		}
-	}
-	if !hasNormalDate {
-		return feed, nil
-	}
-
-	cutoff := nowFunc().AddDate(0, 0, -p.Days)
-	cloned := cloneCraftFeed(feed)
-	filtered := make([]*model.CraftArticle, 0, len(cloned.Articles))
-	for _, article := range cloned.Articles {
-		if article == nil {
-			continue
-		}
-		if article.Created.IsZero() {
-			filtered = append(filtered, article)
-			continue
-		}
-		if article.Created.Year() <= 1970 {
-			continue
-		}
-		if !article.Created.Before(cutoff) {
-			filtered = append(filtered, article)
-		}
-	}
-	cloned.Articles = filtered
-	return cloned, nil
-}
-
-type KeywordProcessor struct {
-	Mode       KeywordFilterMode
-	MatchScope KeywordMatchScope
-	Keywords   []string
-}
-
-func (p *KeywordProcessor) Process(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
-	if feed == nil || p == nil || len(p.Keywords) == 0 {
-		return feed, nil
-	}
-
-	searchTitle := p.MatchScope == KeywordMatchAll || p.MatchScope == KeywordMatchTitle
-	searchContent := p.MatchScope == KeywordMatchAll || p.MatchScope == KeywordMatchContent
-	cloned := cloneCraftFeed(feed)
-	filtered := make([]*model.CraftArticle, 0, len(cloned.Articles))
-
-	for _, article := range cloned.Articles {
-		if article == nil {
-			continue
-		}
-		matched := false
-		for _, keyword := range p.Keywords {
-			if searchTitle && strings.Contains(article.Title, keyword) {
-				matched = true
-				break
-			}
-			if searchContent && (strings.Contains(article.Content, keyword) || strings.Contains(article.Description, keyword)) {
-				matched = true
-				break
-			}
-		}
-
-		switch p.Mode {
-		case KeywordIncludeMode:
-			if matched {
-				filtered = append(filtered, article)
-			}
-		case KeywordExcludeMode:
-			if !matched {
-				filtered = append(filtered, article)
-			}
-		default:
-			filtered = append(filtered, article)
-		}
-	}
-
-	cloned.Articles = filtered
-	return cloned, nil
-}
-
-type GUIDFixProcessor struct{}
-
-func (p *GUIDFixProcessor) Process(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
-	if feed == nil {
-		return feed, nil
-	}
-
-	cloned := cloneCraftFeed(feed)
-	for _, article := range cloned.Articles {
-		if article == nil {
-			continue
-		}
-		if article.Title == "" && article.Content == "" && article.Description == "" {
-			article.Id = article.Link
-			continue
-		}
-		article.Id = util.GetTextContentHash(article.Title + article.Content + article.Description)
-	}
-	return cloned, nil
-}
-
-type RelativeLinkFixProcessor struct {
-	OriginalFeedURL string
-}
-
-func (p *RelativeLinkFixProcessor) Process(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
-	if feed == nil || p == nil {
-		return feed, nil
-	}
-
-	cloned := cloneCraftFeed(feed)
-	for _, article := range cloned.Articles {
-		if article == nil || strings.TrimSpace(article.Link) == "" {
-			continue
-		}
-		absURL := getAbsLinkForFeedItem(p.OriginalFeedURL, cloned.Link, article.Link)
-		if absURL != "" {
-			article.Link = absURL
-		}
-	}
-	return cloned, nil
-}
-
-func BuildProcessor(db *gorm.DB, craftName string, feedURL string) (engine.FeedProcessor, error) {
+func BuildOptionChain(db *gorm.DB, craftName string, feedURL string) (engine.CraftOption, error) {
 	if db == nil {
 		db = util.GetDatabase()
 	}
@@ -234,20 +79,20 @@ func BuildProcessor(db *gorm.DB, craftName string, feedURL string) (engine.FeedP
 		return nil, nil
 	}
 
-	processors := make([]engine.FeedProcessor, 0, len(atoms))
+	options := make([]engine.CraftOption, 0, len(atoms))
 	for _, atom := range atoms {
-		processor, err := buildProcessorForAtom(atom, feedURL)
+		option, err := buildOptionForAtom(atom, feedURL)
 		if err != nil {
 			return nil, err
 		}
-		if processor != nil {
-			processors = append(processors, processor)
+		if option != nil {
+			options = append(options, option)
 		}
 	}
-	if len(processors) == 0 {
+	if len(options) == 0 {
 		return nil, nil
 	}
-	return &engine.FlowCraftProcessor{Processors: processors}, nil
+	return composeEngineOptions(options...), nil
 }
 
 func ResolveCraftAtoms(db *gorm.DB, craftName string) ([]ResolvedCraftAtom, error) {
@@ -310,20 +155,33 @@ func resolveCraftAtoms(db *gorm.DB, craftAtomDict *map[string]dao.CraftAtom, cra
 	return resolved, nil
 }
 
-func buildProcessorForAtom(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
+func buildOptionForAtom(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
 	builder, ok := nativeProcessorBuilders[atom.TemplateName]
 	if ok {
 		return builder(atom, feedURL)
 	}
 
-	return buildLegacyProcessor(atom, feedURL)
+	return buildLegacyOption(atom, feedURL)
 }
 
-func buildNativeProxyProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return &NoopProcessor{}, nil
+func buildNativeProxyProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
+	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		_ = ctx
+		return feed, nil
+	}, nil
 }
 
-func buildNativeLimitProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
+func craftArticleTime(article *model.CraftArticle) time.Time {
+	if article == nil {
+		return time.Time{}
+	}
+	if !article.Created.IsZero() {
+		return article.Created
+	}
+	return article.Updated
+}
+
+func buildNativeLimitProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
 	maxItems := defaultLimit
 	if raw := strings.TrimSpace(atom.Params["num"]); raw != "" {
 		parsed, err := strconv.Atoi(raw)
@@ -332,10 +190,23 @@ func buildNativeLimitProcessor(atom ResolvedCraftAtom, feedURL string) (engine.F
 		}
 		maxItems = parsed
 	}
-	return &LimitProcessor{MaxItems: maxItems}, nil
+	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		_ = ctx
+		if feed == nil || maxItems <= 0 || len(feed.Articles) == 0 {
+			return feed, nil
+		}
+		cloned := cloneCraftFeed(feed)
+		sort.SliceStable(cloned.Articles, func(i, j int) bool {
+			return craftArticleTime(cloned.Articles[i]).After(craftArticleTime(cloned.Articles[j]))
+		})
+		if len(cloned.Articles) > maxItems {
+			cloned.Articles = cloned.Articles[:maxItems]
+		}
+		return cloned, nil
+	}, nil
 }
 
-func buildNativeTimeLimitProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
+func buildNativeTimeLimitProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
 	days := 7
 	if raw := strings.TrimSpace(atom.Params["days"]); raw != "" {
 		parsed, err := strconv.Atoi(raw)
@@ -344,10 +215,48 @@ func buildNativeTimeLimitProcessor(atom ResolvedCraftAtom, feedURL string) (engi
 		}
 		days = parsed
 	}
-	return &TimeLimitProcessor{Days: days}, nil
+	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		_ = ctx
+		if feed == nil {
+			return feed, nil
+		}
+		hasNormalDate := false
+		for _, article := range feed.Articles {
+			if article == nil {
+				continue
+			}
+			if !article.Created.IsZero() && article.Created.Year() > 1970 {
+				hasNormalDate = true
+				break
+			}
+		}
+		if !hasNormalDate {
+			return feed, nil
+		}
+		cutoff := time.Now().AddDate(0, 0, -days)
+		cloned := cloneCraftFeed(feed)
+		filtered := make([]*model.CraftArticle, 0, len(cloned.Articles))
+		for _, article := range cloned.Articles {
+			if article == nil {
+				continue
+			}
+			if article.Created.IsZero() {
+				filtered = append(filtered, article)
+				continue
+			}
+			if article.Created.Year() <= 1970 {
+				continue
+			}
+			if !article.Created.Before(cutoff) {
+				filtered = append(filtered, article)
+			}
+		}
+		cloned.Articles = filtered
+		return cloned, nil
+	}, nil
 }
 
-func buildNativeKeywordProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
+func buildNativeKeywordProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
 	var mode KeywordFilterMode
 	switch strings.TrimSpace(atom.Params["mode"]) {
 	case "", string(KeywordIncludeMode):
@@ -369,67 +278,95 @@ func buildNativeKeywordProcessor(atom ResolvedCraftAtom, feedURL string) (engine
 	default:
 		return nil, fmt.Errorf("invalid keyword scope %q", atom.Params["scope"])
 	}
-
-	return &KeywordProcessor{
-		Mode:       mode,
-		MatchScope: scope,
-		Keywords:   splitKeywords(atom.Params["keywords"]),
+	keywords := splitKeywords(atom.Params["keywords"])
+	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		_ = ctx
+		if feed == nil || len(keywords) == 0 {
+			return feed, nil
+		}
+		searchTitle := scope == KeywordMatchAll || scope == KeywordMatchTitle
+		searchContent := scope == KeywordMatchAll || scope == KeywordMatchContent
+		cloned := cloneCraftFeed(feed)
+		filtered := make([]*model.CraftArticle, 0, len(cloned.Articles))
+		for _, article := range cloned.Articles {
+			if article == nil {
+				continue
+			}
+			matched := false
+			for _, keyword := range keywords {
+				if searchTitle && strings.Contains(article.Title, keyword) {
+					matched = true
+					break
+				}
+				if searchContent && (strings.Contains(article.Content, keyword) || strings.Contains(article.Description, keyword)) {
+					matched = true
+					break
+				}
+			}
+			switch mode {
+			case KeywordIncludeMode:
+				if matched {
+					filtered = append(filtered, article)
+				}
+			case KeywordExcludeMode:
+				if !matched {
+					filtered = append(filtered, article)
+				}
+			default:
+				filtered = append(filtered, article)
+			}
+		}
+		cloned.Articles = filtered
+		return cloned, nil
 	}, nil
 }
 
-func buildNativeGUIDFixProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return &GUIDFixProcessor{}, nil
+func buildNativeGUIDFixProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
+	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		_ = ctx
+		if feed == nil {
+			return feed, nil
+		}
+		cloned := cloneCraftFeed(feed)
+		for _, article := range cloned.Articles {
+			if article == nil {
+				continue
+			}
+			if article.Title == "" && article.Content == "" && article.Description == "" {
+				article.Id = article.Link
+				continue
+			}
+			article.Id = util.GetTextContentHash(article.Title + article.Content + article.Description)
+		}
+		return cloned, nil
+	}, nil
 }
 
-func buildNativeRelativeLinkFixProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return &RelativeLinkFixProcessor{OriginalFeedURL: feedURL}, nil
+func buildNativeRelativeLinkFixProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
+	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		_ = ctx
+		if feed == nil {
+			return feed, nil
+		}
+		cloned := cloneCraftFeed(feed)
+		for _, article := range cloned.Articles {
+			if article == nil || strings.TrimSpace(article.Link) == "" {
+				continue
+			}
+			absURL := getAbsLinkForFeedItem(feedURL, cloned.Link, article.Link)
+			if absURL != "" {
+				article.Link = absURL
+			}
+		}
+		return cloned, nil
+	}, nil
 }
 
-func buildNativeCleanupProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newCleanupProcessor(), nil
+func buildNativeFulltextPlusProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
+	return wrapLocalProcessor(newFulltextPlusProcessor(feedURL, parseFulltextPlusConfig(atom.Params))), nil
 }
 
-func buildNativeFulltextProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newFulltextProcessor(feedURL), nil
-}
-
-func buildNativeFulltextPlusProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newFulltextPlusProcessor(feedURL, parseFulltextPlusConfig(atom.Params)), nil
-}
-
-func buildNativeSummaryProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newSummaryProcessor(atom.Params["prompt"]), nil
-}
-
-func buildNativeIntroductionProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newIntroductionProcessor(atom.Params["prompt"]), nil
-}
-
-func buildNativeTranslateTitleProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newTranslateTitleProcessor(atom.Params["prompt"]), nil
-}
-
-func buildNativeTranslateContentProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newTranslateContentProcessor(atom.Params["prompt"]), nil
-}
-
-func buildNativeTranslateContentImmersiveProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newTranslateContentImmersiveProcessor(atom.Params["prompt"]), nil
-}
-
-func buildNativeBeautifyContentProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newBeautifyContentProcessor(atom.Params["prompt"]), nil
-}
-
-func buildNativeLLMFilterProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newLLMFilterProcessor(atom.Params["filter_condition"]), nil
-}
-
-func buildNativeIgnoreAdvertorialProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
-	return newIgnoreAdvertorialProcessor(atom.Params["prompt-for-exclude"]), nil
-}
-
-func buildLegacyProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedProcessor, error) {
+func buildLegacyOption(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
 	tmplDict := GetSysCraftTemplateDict()
 	tmpl, ok := tmplDict[atom.TemplateName]
 	if !ok {
@@ -442,14 +379,50 @@ func buildLegacyProcessor(atom ResolvedCraftAtom, feedURL string) (engine.FeedPr
 	}
 
 	payload := ExtraPayload{originalFeedUrl: feedURL}
-	processors := make([]engine.FeedProcessor, 0, len(options))
+	adapted := make([]engine.CraftOption, 0, len(options))
 	for _, opt := range options {
-		processors = append(processors, &LegacyOptionAdapter{
-			Option: opt,
-			Extra:  payload,
-		})
+		adapted = append(adapted, wrapLocalOption(AdaptLegacyOption(opt, payload)))
 	}
-	return &engine.FlowCraftProcessor{Processors: processors}, nil
+	return composeEngineOptions(adapted...), nil
+}
+
+func wrapLocalOption(option CraftOption) engine.CraftOption {
+	if option == nil {
+		return nil
+	}
+	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		return option(ctx, feed)
+	}
+}
+
+type localProcessor interface {
+	Process(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error)
+}
+
+func wrapLocalProcessor(processor localProcessor) engine.CraftOption {
+	if processor == nil {
+		return nil
+	}
+	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		return processor.Process(ctx, feed)
+	}
+}
+
+func composeEngineOptions(options ...engine.CraftOption) engine.CraftOption {
+	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		currentFeed := feed
+		var err error
+		for _, option := range options {
+			if option == nil {
+				continue
+			}
+			currentFeed, err = option(ctx, currentFeed)
+			if err != nil {
+				return nil, err
+			}
+		}
+		return currentFeed, nil
+	}
 }
 
 func cloneCraftFeed(feed *model.CraftFeed) *model.CraftFeed {

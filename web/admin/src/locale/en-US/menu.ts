@@ -33,6 +33,7 @@ export default {
   'menu.feedViewer': 'RSS Viewer',
   'menu.exampleRssFeeds': 'Example RSS Feeds',
   'menu.rssGenerator': 'HTML to RSS',
+  'menu.webMonitor': 'Web Monitor',
   'menu.jsonToRss': 'JSON to RSS',
   'menu.searchToRss': 'Search to RSS',
   'menu.llmDebug': 'LLM Debug',
@@ -45,4 +46,6 @@ export default {
   'menu.settings': 'Settings',
   'menu.settings.searchProvider': 'Search Provider',
   'menu.systemHealth': 'Craft Dependencies',
+  'menu.inbox': 'Inbox Management',
+  'menu.settings.systemAuthToken': 'System Auth Token',
 };

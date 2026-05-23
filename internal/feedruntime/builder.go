@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -76,7 +77,7 @@ func BuildRecipe(ctx context.Context, recipeData *dao.CustomRecipeV2) (*engine.R
 	return NewBuilder(nil).BuildRecipe(ctx, recipeData)
 }
 
-func BuildAggregator(steps []dao.AggregatorStep) (engine.FeedProcessor, error) {
+func BuildAggregator(steps []dao.AggregatorStep) (engine.CraftOption, error) {
 	return buildAggregator(steps)
 }
 
@@ -183,7 +184,7 @@ func (b *Builder) BuildRecipe(ctx context.Context, recipeData *dao.CustomRecipeV
 		return nil, fmt.Errorf("recipe input provider does not expose base url: %T", provider)
 	}
 
-	processor, err := craft.BuildProcessor(b.db(), recipeData.Craft, inputProvider.BaseURL())
+	craftChain, err := craft.BuildOptionChain(b.db(), recipeData.Craft, inputProvider.BaseURL())
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +196,7 @@ func (b *Builder) BuildRecipe(ctx context.Context, recipeData *dao.CustomRecipeV
 		BaseURL:     inputProvider.BaseURL(),
 		CraftName:   recipeData.Craft,
 		Input:       inputProvider,
-		Processor:   processor,
+		Craft:       craftChain,
 	}, nil
 }
 
@@ -265,24 +266,25 @@ func (b *Builder) db() *gorm.DB {
 	return util.GetDatabase()
 }
 
-func buildAggregator(steps []dao.AggregatorStep) (engine.FeedProcessor, error) {
+func buildAggregator(steps []dao.AggregatorStep) (engine.CraftOption, error) {
 	if len(steps) == 0 {
 		return nil, nil
 	}
 
-	processors := make([]engine.FeedProcessor, 0, len(steps))
+	options := make([]engine.CraftOption, 0, len(steps))
 	for idx, step := range steps {
-		processor, err := buildAggregatorStep(idx, step)
+		option, err := buildAggregatorStep(idx, step)
 		if err != nil {
 			return nil, err
 		}
-		processors = append(processors, processor)
+		if option != nil {
+			options = append(options, option)
+		}
 	}
-
-	return &engine.FlowCraftProcessor{Processors: processors}, nil
+	return composeAggregatorOptions(options...), nil
 }
 
-func buildAggregatorStep(index int, step dao.AggregatorStep) (engine.FeedProcessor, error) {
+func buildAggregatorStep(index int, step dao.AggregatorStep) (engine.CraftOption, error) {
 	stepType := strings.ToLower(strings.TrimSpace(step.Type))
 	switch stepType {
 	case "deduplicate":
@@ -293,7 +295,34 @@ func buildAggregatorStep(index int, step dao.AggregatorStep) (engine.FeedProcess
 		if strategy != "by_link" && strategy != "by_id" {
 			return nil, fmt.Errorf("aggregator step %d (%s): invalid strategy %q", index, step.Type, strategy)
 		}
-		return &engine.DeduplicateProcessor{Strategy: strategy}, nil
+		return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+			_ = ctx
+			if feed == nil || len(feed.Articles) == 0 {
+				return feed, nil
+			}
+			cloned := cloneFeedArticles(feed)
+			seen := make(map[string]bool)
+			uniqueArticles := make([]*model.CraftArticle, 0, len(cloned.Articles))
+			for _, article := range cloned.Articles {
+				if article == nil {
+					continue
+				}
+				key := article.Link
+				if strategy == "by_id" {
+					key = article.Id
+				}
+				if key == "" {
+					uniqueArticles = append(uniqueArticles, article)
+					continue
+				}
+				if !seen[key] {
+					seen[key] = true
+					uniqueArticles = append(uniqueArticles, article)
+				}
+			}
+			cloned.Articles = uniqueArticles
+			return cloned, nil
+		}, nil
 	case "sort":
 		sortBy := strings.ToLower(strings.TrimSpace(step.Option["by"]))
 		if sortBy == "" {
@@ -301,7 +330,27 @@ func buildAggregatorStep(index int, step dao.AggregatorStep) (engine.FeedProcess
 		}
 		switch sortBy {
 		case "date_desc", "date_asc", "quality_desc", "quality_asc":
-			return &engine.SortProcessor{SortBy: sortBy}, nil
+			return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+				_ = ctx
+				if feed == nil || len(feed.Articles) <= 1 {
+					return feed, nil
+				}
+				cloned := cloneFeedArticles(feed)
+				sort.SliceStable(cloned.Articles, func(i, j int) bool {
+					a, b := cloned.Articles[i], cloned.Articles[j]
+					switch sortBy {
+					case "date_asc":
+						return a.Updated.Before(b.Updated)
+					case "quality_desc":
+						return a.QualityScore > b.QualityScore
+					case "quality_asc":
+						return a.QualityScore < b.QualityScore
+					default:
+						return a.Updated.After(b.Updated)
+					}
+				})
+				return cloned, nil
+			}, nil
 		default:
 			return nil, fmt.Errorf("aggregator step %d (%s): invalid sort mode %q", index, step.Type, sortBy)
 		}
@@ -314,10 +363,52 @@ func buildAggregatorStep(index int, step dao.AggregatorStep) (engine.FeedProcess
 		if err != nil || maxItems <= 0 {
 			return nil, fmt.Errorf("aggregator step %d (%s): invalid max %q", index, step.Type, rawMax)
 		}
-		return &engine.LimitProcessor{MaxItems: maxItems}, nil
+		return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+			_ = ctx
+			if feed == nil || len(feed.Articles) == 0 || len(feed.Articles) <= maxItems {
+				return feed, nil
+			}
+			cloned := cloneFeedArticles(feed)
+			cloned.Articles = cloned.Articles[:maxItems]
+			return cloned, nil
+		}, nil
 	default:
 		return nil, fmt.Errorf("aggregator step %d: unsupported type %q", index, step.Type)
 	}
+}
+
+func composeAggregatorOptions(options ...engine.CraftOption) engine.CraftOption {
+	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		currentFeed := feed
+		var err error
+		for _, option := range options {
+			if option == nil {
+				continue
+			}
+			currentFeed, err = option(ctx, currentFeed)
+			if err != nil {
+				return nil, err
+			}
+		}
+		return currentFeed, nil
+	}
+}
+
+func cloneFeedArticles(feed *model.CraftFeed) *model.CraftFeed {
+	if feed == nil {
+		return nil
+	}
+	cloned := *feed
+	cloned.Articles = make([]*model.CraftArticle, 0, len(feed.Articles))
+	for _, article := range feed.Articles {
+		if article == nil {
+			cloned.Articles = append(cloned.Articles, nil)
+			continue
+		}
+		articleCopy := *article
+		cloned.Articles = append(cloned.Articles, &articleCopy)
+	}
+	return &cloned
 }
 
 func pushTopicStack(stack []string, topicID string) ([]string, error) {
