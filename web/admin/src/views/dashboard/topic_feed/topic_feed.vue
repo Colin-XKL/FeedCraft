@@ -135,7 +135,6 @@
             <a-radio-group
               v-model="source.sourceType"
               type="button"
-              size="small"
               @change="resetSourceValue(idx)"
             >
               <a-radio value="external">{{
@@ -148,7 +147,7 @@
               v-if="source.sourceType === 'external'"
               v-model="source.externalUrl"
               :placeholder="t('topic.sourceUrl.placeholder')"
-              class="source-value"
+              allow-clear
             />
             <a-select
               v-else-if="source.sourceType === 'recipe'"
@@ -156,7 +155,6 @@
               :loading="pickerLoading"
               allow-search
               allow-clear
-              class="source-value"
               :placeholder="t('topic.sourceSelect.placeholder.recipe')"
             >
               <a-option
@@ -177,7 +175,6 @@
               :loading="pickerLoading"
               allow-search
               allow-clear
-              class="source-value"
               :placeholder="t('topic.sourceSelect.placeholder.topic')"
             >
               <a-option
@@ -671,16 +668,16 @@
   }
 
   .input-source-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
     gap: 8px;
     align-items: center;
     margin-bottom: 10px;
-    flex-wrap: nowrap;
+    width: 100%;
   }
 
-  .source-value {
-    flex: 1;
-    min-width: 0;
+  .input-source-row :deep(.arco-radio-group) {
+    white-space: nowrap;
   }
 
   .option-id {
