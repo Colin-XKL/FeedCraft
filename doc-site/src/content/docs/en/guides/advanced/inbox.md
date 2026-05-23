@@ -132,7 +132,23 @@ curl -X POST "https://YOUR_SERVER/api/inbox/my-inbox/items" \
 
 ## Subscribing via RSS
 
-To subscribe to inbox articles in an RSS reader, create a Custom Recipe that uses the inbox as its data source.
+### Direct RSS URL (simplest)
+
+Every inbox has a built-in RSS endpoint you can subscribe to immediately — no Custom Recipe required:
+
+```
+GET /inbox/{inbox_id}/rss
+```
+
+Copy this URL and paste it directly into your RSS reader. For a **private inbox**, append your token as a query parameter:
+
+```
+/inbox/{inbox_id}/rss?token=YOUR_SYSTEM_AUTH_TOKEN
+```
+
+### Via Custom Recipe (advanced)
+
+Create a Custom Recipe if you want to apply Craft processing on top of the inbox (e.g., AI translation, summarization, or filtering).
 
 <Steps>
 1. Navigate to **Worktable > Custom Recipe** and click **Create Recipe**.
@@ -141,12 +157,12 @@ To subscribe to inbox articles in an RSS reader, create a Custom Recipe that use
    ```json
    { "inbox_source": { "inbox_id": "YOUR_INBOX_ID" } }
    ```
-4. Set **Craft** to `proxy` (or any other craft chain you want to apply).
-5. Save the recipe and click **Copy Link** in the recipe list to get your RSS subscription URL.
+4. Set **Craft** to the desired processing chain (e.g., `translate-content`, `summary`).
+5. Save the recipe and click **Copy Link** in the recipe list to get the RSS URL.
 </Steps>
 
 :::tip
-You can apply AtomCrafts or FlowCrafts on top of the inbox source — for example, use `translate-content` to automatically translate pushed articles into another language.
+Use the **Direct RSS URL** for simple subscriptions. Switch to a Custom Recipe only when you need to apply AI processing (translation, summarization, filtering) on the inbox content.
 :::
 
 ## Access Control for Private Inboxes

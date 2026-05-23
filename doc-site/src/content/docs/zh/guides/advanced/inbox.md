@@ -132,7 +132,23 @@ curl -X POST "https://YOUR_SERVER/api/inbox/my-inbox/items" \
 
 ## 通过 RSS 订阅
 
-需要通过创建自定义配方，将收件箱作为数据来源，再生成可订阅的 RSS 地址。
+### 直接订阅（最简方式）
+
+每个收件箱都内置了一个可以直接订阅的 RSS 地址，无需创建自定义配方：
+
+```
+GET /inbox/{inbox_id}/rss
+```
+
+将此地址直接粘贴到 RSS 阅读器中即可订阅。对于**私有收件箱**，需在 URL 后附加 Token：
+
+```
+/inbox/{inbox_id}/rss?token=YOUR_SYSTEM_AUTH_TOKEN
+```
+
+### 通过自定义配方订阅（进阶）
+
+若需要对收件箱内容进行 Craft 处理（如 AI 翻译、摘要生成、内容过滤），则创建自定义配方。
 
 <Steps>
 1. 前往**工作台 > 自定义配方**，点击**新建配方**。
@@ -141,12 +157,12 @@ curl -X POST "https://YOUR_SERVER/api/inbox/my-inbox/items" \
    ```json
    { "inbox_source": { "inbox_id": "YOUR_INBOX_ID" } }
    ```
-4. 将 **Craft** 设置为 `proxy`（或您希望应用的其他处理链）。
+4. 将 **Craft** 设置为所需的处理链（例如 `translate-content`、`summary`）。
 5. 保存配方后，在配方列表中点击**复制链接**即可获取 RSS 订阅地址。
 </Steps>
 
 :::tip
-可以在收件箱数据源之上叠加 AtomCraft 或 FlowCraft。例如使用 `translate-content` 自动将推送的文章翻译成其他语言。
+简单订阅场景直接使用**直接订阅地址**即可。只有在需要对推送内容进行 AI 加工（翻译、摘要、过滤）时，才需要创建自定义配方。
 :::
 
 ## 私有收件箱的访问控制

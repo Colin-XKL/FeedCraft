@@ -67,7 +67,8 @@ func RegisterRouters(router *gin.Engine) {
 		public.POST("/inbox/:inbox_id/items", middleware.SystemAuthTokenMiddleware(), controller.PushInboxItems)
 	}
 
-	// Article serving content in an isolated namespace to avoid routing ambiguity with SPA fallback or others
+	// Inbox public routes — isolated from /api and SPA fallback
+	router.GET("/inbox/:inbox_id/rss", controller.PublicInboxRSSFeed)
 	router.GET("/inbox/:inbox_id/items/:article_id/content", controller.PublicInboxItemContent)
 
 	craftRouters := router.Group("/craft")

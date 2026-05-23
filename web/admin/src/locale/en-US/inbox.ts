@@ -41,6 +41,12 @@ export default {
   'inbox.guide.query.private':
     'This inbox is Private. You must attach `?token=YOUR_TOKEN` query parameter to subscribe or view articles.',
 
+  // Direct RSS URL
+  'inbox.guide.directRss.desc':
+    'Subscribe directly with this RSS URL — no Custom Recipe needed:',
+  'inbox.guide.directRss.privateHint':
+    'Private inbox — append token to the URL:',
+
   // Recipe integration guide steps
   'inbox.guide.recipe.heading': 'RSS Subscription via Recipe',
   'inbox.guide.recipe.step1.pre': 'Go to the',
