@@ -31,16 +31,6 @@ const TOOLS: AppRouteRecordRaw = {
       },
     },
     {
-      path: 'feed_compare',
-      name: 'FeedCompare',
-      component: () =>
-        import('@/views/dashboard/feed_compare/feed_compare.vue'),
-      meta: {
-        requiresAuth: false,
-        locale: 'menu.feedCompare',
-      },
-    },
-    {
       path: 'embedding-filter',
       name: 'EmbeddingFilterDebug',
       component: () =>
