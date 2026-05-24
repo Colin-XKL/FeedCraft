@@ -63,6 +63,15 @@ export default {
   'topic.stepOption.max': 'Max Items',
   'topic.stepOption.strategy.by_link': 'By Link',
   'topic.stepOption.strategy.by_id': 'By ID',
+  'topic.stepOption.strategy.by_title': 'By Title (Exact Match)',
+  'topic.stepOption.strategy.by_simhash':
+    'By Title+Content Similarity (SimHash)',
+  'topic.stepOption.strategy.by_embedding':
+    'By Semantic Similarity (Embedding)',
+  'topic.stepOption.threshold.label': 'Threshold',
+  'topic.stepOption.threshold.simhash': 'Hamming distance (0–64, default 3)',
+  'topic.stepOption.threshold.embedding':
+    'Cosine similarity (0–1, default 0.9)',
   'topic.stepOption.sort.date_desc': 'Newest First',
   'topic.stepOption.sort.date_asc': 'Oldest First',
   'topic.stepOption.sort.quality_desc': 'Highest Quality First',

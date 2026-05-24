@@ -255,9 +255,17 @@
 
   const formatAggregatorStep = (step: AggregatorStep) => {
     if (step.type === 'deduplicate') {
-      return `${t('topic.stepType.deduplicate')} · ${t(
-        `topic.stepOption.strategy.${step.option?.strategy || 'by_link'}`
-      )}`;
+      const strategy = step.option?.strategy || 'by_link';
+      const label = t(`topic.stepOption.strategy.${strategy}`);
+      if (
+        (strategy === 'by_simhash' || strategy === 'by_embedding') &&
+        step.option?.threshold
+      ) {
+        return `${t('topic.stepType.deduplicate')} · ${label} (${t(
+          'topic.stepOption.threshold.label'
+        )}: ${step.option.threshold})`;
+      }
+      return `${t('topic.stepType.deduplicate')} · ${label}`;
     }
     if (step.type === 'sort') {
       return `${t('topic.stepType.sort')} · ${t(

@@ -255,6 +255,94 @@ func TestBuildAggregator_InvalidLimit(t *testing.T) {
 	assert.Contains(t, err.Error(), "invalid max")
 }
 
+func TestDeduplicate_ByTitle(t *testing.T) {
+	aggregator, err := BuildAggregator([]dao.AggregatorStep{
+		{Type: "deduplicate", Option: map[string]string{"strategy": "by_title"}},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, aggregator)
+
+	result, err := aggregator(context.Background(), &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Id: "1", Title: "Hello World", Link: "http://a.com/1"},
+			{Id: "2", Title: "Hello World", Link: "http://b.com/2"},  // duplicate title
+			{Id: "3", Title: "Hello World!", Link: "http://c.com/3"}, // different (extra !)
+			{Id: "4", Title: "", Link: "http://d.com/4"},             // empty title: kept unconditionally
+			{Id: "5", Title: "", Link: "http://e.com/5"},             // another empty title: also kept
+		},
+	})
+	require.NoError(t, err)
+	// "Hello World" kept once, "Hello World!" kept, both empty-title articles kept
+	require.Len(t, result.Articles, 4)
+	assert.Equal(t, "1", result.Articles[0].Id)
+	assert.Equal(t, "3", result.Articles[1].Id)
+	assert.Equal(t, "4", result.Articles[2].Id)
+	assert.Equal(t, "5", result.Articles[3].Id)
+}
+
+func TestDeduplicate_BySimhash_IdenticalContent(t *testing.T) {
+	aggregator, err := BuildAggregator([]dao.AggregatorStep{
+		{Type: "deduplicate", Option: map[string]string{"strategy": "by_simhash", "threshold": "3"}},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, aggregator)
+
+	text := "这是一篇关于人工智能的深度报道，探讨了大模型技术的最新进展。"
+	result, err := aggregator(context.Background(), &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Id: "1", Title: text, Content: text},
+			{Id: "2", Title: text, Content: text}, // exact duplicate
+			{Id: "3", Title: "完全不同的文章：量子计算突破！", Content: "全新内容"},
+		},
+	})
+	require.NoError(t, err)
+	require.Len(t, result.Articles, 2)
+	assert.Equal(t, "1", result.Articles[0].Id)
+	assert.Equal(t, "3", result.Articles[1].Id)
+}
+
+func TestDeduplicate_BySimhash_InvalidThreshold(t *testing.T) {
+	_, err := BuildAggregator([]dao.AggregatorStep{
+		{Type: "deduplicate", Option: map[string]string{"strategy": "by_simhash", "threshold": "999"}},
+	})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "threshold")
+}
+
+func TestDeduplicate_BySimhash_DefaultThreshold(t *testing.T) {
+	// Omitting threshold should use default (3) without error
+	aggregator, err := BuildAggregator([]dao.AggregatorStep{
+		{Type: "deduplicate", Option: map[string]string{"strategy": "by_simhash"}},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, aggregator)
+
+	result, err := aggregator(context.Background(), &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Id: "1", Title: "test"},
+			{Id: "2", Title: "unique content here"},
+		},
+	})
+	require.NoError(t, err)
+	require.NotEmpty(t, result.Articles)
+}
+
+func TestDeduplicate_ByEmbedding_InvalidStrategy(t *testing.T) {
+	_, err := BuildAggregator([]dao.AggregatorStep{
+		{Type: "deduplicate", Option: map[string]string{"strategy": "by_unknown"}},
+	})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid strategy")
+}
+
+func TestDeduplicate_ByEmbedding_ThresholdOutOfRange(t *testing.T) {
+	_, err := BuildAggregator([]dao.AggregatorStep{
+		{Type: "deduplicate", Option: map[string]string{"strategy": "by_embedding", "threshold": "1.5"}},
+	})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "threshold")
+}
+
 func TestBuildTopicProvider_NestedTopics(t *testing.T) {
 	db := newTestDB(t)
 	require.NoError(t, db.Create(&dao.TopicFeed{
