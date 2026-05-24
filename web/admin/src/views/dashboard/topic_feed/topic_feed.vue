@@ -126,28 +126,93 @@
           />
         </a-form-item>
 
-        <a-form-item :label="t('topic.inputs')">
+        <a-divider
+          orientation="left"
+          style="margin-top: 4px; margin-bottom: 4px"
+        >
+          {{ t('topic.sectionInputs') }}
+        </a-divider>
+        <a-form-item>
           <template #help>{{ t('topic.inputsHelp') }}</template>
           <div
-            v-for="(uri, idx) in formData.input_uris"
-            :key="`uri-${idx}`"
-            class="editor-row"
+            v-for="(source, idx) in formData.inputSources"
+            :key="`source-${idx}`"
+            class="input-source-row"
           >
+            <a-radio-group
+              v-model="source.sourceType"
+              type="button"
+              @change="resetSourceValue(idx)"
+            >
+              <a-radio value="external">{{
+                t('topic.sourceType.external')
+              }}</a-radio>
+              <a-radio value="recipe">Recipe</a-radio>
+              <a-radio value="topic">Topic</a-radio>
+            </a-radio-group>
             <a-input
-              v-model="formData.input_uris[idx]"
-              :placeholder="t('topic.inputPlaceholder')"
+              v-if="source.sourceType === 'external'"
+              v-model="source.externalUrl"
+              :placeholder="t('topic.sourceUrl.placeholder')"
+              allow-clear
             />
-            <a-button type="text" status="danger" @click="removeUri(idx)">
+            <a-select
+              v-else-if="source.sourceType === 'recipe'"
+              v-model="source.resourceId"
+              :loading="pickerLoading"
+              allow-search
+              allow-clear
+              :placeholder="t('topic.sourceSelect.placeholder.recipe')"
+            >
+              <a-option
+                v-for="r in availableRecipes"
+                :key="r.id"
+                :value="r.id"
+                :label="r.description ? `${r.id} — ${r.description}` : r.id"
+              >
+                <span class="option-id">{{ r.id }}</span>
+                <span v-if="r.description" class="option-desc">
+                  — {{ r.description }}
+                </span>
+              </a-option>
+            </a-select>
+            <a-select
+              v-else
+              v-model="source.resourceId"
+              :loading="pickerLoading"
+              allow-search
+              allow-clear
+              :placeholder="t('topic.sourceSelect.placeholder.topic')"
+            >
+              <a-option
+                v-for="tp in pickerTopics"
+                :key="tp.id"
+                :value="tp.id"
+                :label="tp.title ? `${tp.id} — ${tp.title}` : tp.id"
+              >
+                <span class="option-id">{{ tp.id }}</span>
+                <span v-if="tp.title" class="option-desc">
+                  — {{ tp.title }}</span
+                >
+              </a-option>
+            </a-select>
+            <a-button type="text" status="danger" @click="removeSource(idx)">
               {{ t('topic.removeInput') }}
             </a-button>
           </div>
-          <a-button type="dashed" long @click="addUri">
+          <a-button type="dashed" long @click="addSource">
             <icon-plus />
             {{ t('topic.addInput') }}
           </a-button>
         </a-form-item>
 
-        <a-form-item :label="t('topic.aggregatorConfig')">
+        <a-divider
+          orientation="left"
+          style="margin-top: 4px; margin-bottom: 4px"
+        >
+          {{ t('topic.sectionAggregator') }}
+        </a-divider>
+        <a-form-item>
           <template #help>{{ t('topic.aggregatorHelp') }}</template>
           <div
             v-for="(step, idx) in formData.aggregator_config"
@@ -263,10 +328,11 @@
 </template>
 
 <script lang="ts" setup>
-  import { onMounted, ref } from 'vue';
+  import { computed, onMounted, ref } from 'vue';
   import { Message } from '@arco-design/web-vue';
   import { useI18n } from 'vue-i18n';
   import { useRouter } from 'vue-router';
+  import { CustomRecipe, getCustomRecipes } from '@/api/custom_recipe';
   import XHeader from '@/components/header/x-header.vue';
   import buildPublicFeedUrl from '@/utils/publicFeedUrl';
   import { getRecipeIdRules } from '@/utils/slug';
@@ -283,6 +349,14 @@
 
   type StepType = 'deduplicate' | 'sort' | 'limit';
 
+  type SourceType = 'external' | 'recipe' | 'topic';
+
+  interface InputSourceItem {
+    sourceType: SourceType;
+    externalUrl: string;
+    resourceId: string;
+  }
+
   interface StepFormItem {
     type: StepType;
     value: string | number;
@@ -292,7 +366,7 @@
     id: string;
     title: string;
     description: string;
-    input_uris: string[];
+    inputSources: InputSourceItem[];
     aggregator_config: StepFormItem[];
   }
 
@@ -307,6 +381,9 @@
   const validating = ref(false);
   const validationErrors = ref<TopicValidationIssue[]>([]);
   const validationWarnings = ref<TopicValidationIssue[]>([]);
+  const availableRecipes = ref<CustomRecipe[]>([]);
+  const availableTopics = ref<TopicFeed[]>([]);
+  const pickerLoading = ref(false);
 
   const createDefaultStep = (type: StepType = 'limit'): StepFormItem => {
     if (type === 'deduplicate') return { type, value: 'by_link' };
@@ -318,19 +395,68 @@
     id: '',
     title: '',
     description: '',
-    input_uris: [''],
+    inputSources: [{ sourceType: 'external', externalUrl: '', resourceId: '' }],
     aggregator_config: [],
   });
 
+  const parseUriToSource = (uri: string): InputSourceItem => {
+    if (uri.startsWith('feedcraft://recipe/')) {
+      return {
+        sourceType: 'recipe',
+        externalUrl: '',
+        resourceId: uri.slice('feedcraft://recipe/'.length),
+      };
+    }
+    if (uri.startsWith('feedcraft://topic/')) {
+      return {
+        sourceType: 'topic',
+        externalUrl: '',
+        resourceId: uri.slice('feedcraft://topic/'.length),
+      };
+    }
+    return { sourceType: 'external', externalUrl: uri, resourceId: '' };
+  };
+
+  const sourceToUri = (source: InputSourceItem): string => {
+    if (source.sourceType === 'recipe') {
+      return `feedcraft://recipe/${source.resourceId}`;
+    }
+    if (source.sourceType === 'topic') {
+      return `feedcraft://topic/${source.resourceId}`;
+    }
+    return source.externalUrl.trim();
+  };
+
+  const loadPickerData = async () => {
+    pickerLoading.value = true;
+    try {
+      const [recipesRes, topicsRes] = await Promise.all([
+        getCustomRecipes(),
+        listTopicFeeds(),
+      ]);
+      availableRecipes.value = recipesRes.data ?? [];
+      availableTopics.value = topicsRes.data ?? [];
+    } catch {
+      // non-fatal: picker continues with empty lists
+    } finally {
+      pickerLoading.value = false;
+    }
+  };
+
   const formData = ref<TopicFormData>(defaultFormData());
+
+  const pickerTopics = computed(() => {
+    if (!isEdit.value) return availableTopics.value;
+    return availableTopics.value.filter((tp) => tp.id !== formData.value.id);
+  });
 
   const normalizeTopicPayload = (): TopicFeed => ({
     id: formData.value.id.trim(),
     title: formData.value.title.trim(),
     description: formData.value.description.trim(),
-    input_uris: formData.value.input_uris
-      .map((item) => item.trim())
-      .filter((item) => item !== ''),
+    input_uris: formData.value.inputSources
+      .map(sourceToUri)
+      .filter((uri) => uri !== ''),
     aggregator_config: formData.value.aggregator_config.map((step) => {
       const option: Record<string, string> = {};
       if (step.type === 'deduplicate') option.strategy = String(step.value);
@@ -381,6 +507,7 @@
     formRef.value?.resetFields();
     validationErrors.value = [];
     validationWarnings.value = [];
+    loadPickerData();
     modalVisible.value = true;
   };
 
@@ -405,7 +532,10 @@
       id: record.id,
       title: record.title || '',
       description: record.description || '',
-      input_uris: record.input_uris.length > 0 ? [...record.input_uris] : [''],
+      inputSources:
+        record.input_uris.length > 0
+          ? record.input_uris.map(parseUriToSource)
+          : [{ sourceType: 'external', externalUrl: '', resourceId: '' }],
       aggregator_config: (record.aggregator_config || []).map((step) => {
         if (step.type === 'deduplicate') {
           return {
@@ -432,15 +562,32 @@
     }
   };
 
-  const addUri = () => {
-    formData.value.input_uris.push('');
+  const addSource = () => {
+    formData.value.inputSources.push({
+      sourceType: 'external',
+      externalUrl: '',
+      resourceId: '',
+    });
   };
 
-  const removeUri = (idx: number) => {
-    formData.value.input_uris.splice(idx, 1);
-    if (formData.value.input_uris.length === 0) {
-      formData.value.input_uris.push('');
+  const removeSource = (idx: number) => {
+    formData.value.inputSources.splice(idx, 1);
+    if (formData.value.inputSources.length === 0) {
+      formData.value.inputSources.push({
+        sourceType: 'external',
+        externalUrl: '',
+        resourceId: '',
+      });
     }
+  };
+
+  const resetSourceValue = (idx: number) => {
+    const { sourceType } = formData.value.inputSources[idx];
+    formData.value.inputSources[idx] = {
+      sourceType,
+      externalUrl: '',
+      resourceId: '',
+    };
   };
 
   const addStep = () => {
@@ -532,6 +679,29 @@
     gap: 12px;
     align-items: center;
     margin-bottom: 12px;
+  }
+
+  .input-source-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+    width: 100%;
+  }
+
+  .input-source-row :deep(.arco-radio-group) {
+    white-space: nowrap;
+  }
+
+  .option-id {
+    font-weight: 500;
+  }
+
+  .option-desc {
+    color: var(--color-text-3);
+    margin-left: 2px;
+    font-size: 12px;
   }
 
   .validation-item {
