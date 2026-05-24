@@ -58,11 +58,7 @@ You can configure processors for a Topic Feed to automatically handle the combin
 
 **Managing Topic Feeds:**
 
-:::caution
-The Topic Feed feature is currently under active development. Its UI entry point in the admin dashboard has been temporarily hidden until the feature is stable and ready for general use.
-:::
-
 Navigate to **Worktable > Topic Feed** to create and manage topics.
 
-- **Create**: Define a title, add multiple input URIs (e.g. `feedcraft://recipe/my-recipe` or external RSS URLs), and set your aggregator config.
+- **Create**: Define a title, add multiple input sources using the type picker (supports external RSS URLs, custom recipes, or nesting other topics), and set your aggregator config.
 - **Public Access**: Your new topic feed will be available without authentication at `http://your-feedcraft-instance/topic/{id}`.
