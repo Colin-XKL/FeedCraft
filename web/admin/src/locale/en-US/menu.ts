@@ -28,7 +28,6 @@ export default {
   'menu.quickStart': 'Quick Start',
   'menu.dashboard.welcome': 'Welcome',
   // tools menus
-  'menu.feedCompare': 'Feed Compare',
   'menu.embeddingFilterDebug': 'Embedding Filter',
   'menu.feedViewer': 'RSS Viewer',
   'menu.exampleRssFeeds': 'Example RSS Feeds',
