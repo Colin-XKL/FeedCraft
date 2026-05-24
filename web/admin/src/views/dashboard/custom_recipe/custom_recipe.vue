@@ -187,6 +187,9 @@
               <a-option value="rss">RSS</a-option>
               <a-option value="html">HTML</a-option>
               <a-option value="json">JSON</a-option>
+              <a-option value="web_monitor">{{
+                t('menu.webMonitor')
+              }}</a-option>
             </a-select>
           </a-form-item>
           <a-form-item

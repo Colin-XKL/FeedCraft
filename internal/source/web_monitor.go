@@ -26,6 +26,9 @@ func webMonitorSourceFactory(cfg *config.SourceConfig) (Source, error) {
 	return &PipelineSource{
 		Config:  cfg,
 		Fetcher: &fetcher.HttpFetcher{Config: cfg.HttpFetcher},
-		Parser:  &parser.WebMonitorParser{Config: cfg.WebMonitorParser},
+		Parser: &parser.WebMonitorParser{
+			Config:  cfg.WebMonitorParser,
+			PageURL: cfg.HttpFetcher.URL,
+		},
 	}, nil
 }
