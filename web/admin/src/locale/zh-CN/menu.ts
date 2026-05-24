@@ -28,7 +28,6 @@ export default {
   'menu.quickStart': '快速开始',
   'menu.dashboard.welcome': '欢迎页',
   // 调试菜单
-  'menu.feedCompare': 'Feed 对比',
   'menu.embeddingFilterDebug': 'Embedding 过滤器',
   'menu.feedViewer': 'RSS 预览',
   'menu.exampleRssFeeds': 'RSS 示例订阅',

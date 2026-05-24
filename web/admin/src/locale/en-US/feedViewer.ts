@@ -1,6 +1,6 @@
 export default {
   'feedViewer.description':
-    'Preview external RSS, Custom Recipe, Topic Feed, or Inbox runtime output',
+    'Preview external RSS, Custom Recipe, Topic Feed, or Inbox runtime output. Select a Craft to compare results before and after processing.',
   'feedViewer.inputLink': 'Select Preview Target',
   'feedViewer.inputTip':
     'Choose a resource to preview. Internal resources run through runtime directly without public subscription URLs.',
@@ -10,6 +10,7 @@ export default {
   'feedViewer.placeholder.inbox': 'Select Inbox',
   'feedViewer.placeholder.uri': 'Enter http(s):// or feedcraft:// URI',
   'feedViewer.preview': 'Preview',
+  'feedViewer.compare': 'Compare',
   'feedViewer.resultPreview': 'Result Preview',
   'feedViewer.currentInput': 'Current input',
   'feedViewer.mode.url': 'External URL',
@@ -17,10 +18,16 @@ export default {
   'feedViewer.mode.topic': 'Topic Feed',
   'feedViewer.mode.inbox': 'Inbox',
   'feedViewer.mode.uri': 'Advanced URI',
+  'feedViewer.pageMode.preview': 'Preview',
+  'feedViewer.pageMode.compare': 'Craft Compare',
   'feedViewer.viewMode': 'View Mode',
   'feedViewer.viewModeNormal': 'Normal',
   'feedViewer.viewModeRich': 'Rich Text',
   'feedViewer.message.unknownError': 'Unknown Error',
   'feedViewer.message.resourceLoadFailed':
     'Some internal resource lists failed to load. Please refresh and try again.',
+  'feedViewer.compare.originalFeed': 'Original Feed',
+  'feedViewer.compare.craftAppliedFeed': 'Craft Applied Feed',
+  'feedViewer.compare.message.inputRequired':
+    'Please enter a feed URL and select a craft',
 };
