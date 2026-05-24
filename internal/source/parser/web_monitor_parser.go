@@ -15,7 +15,8 @@ import (
 )
 
 type WebMonitorParser struct {
-	Config *config.WebMonitorParserConfig
+	Config  *config.WebMonitorParserConfig
+	PageURL string
 }
 
 type webMonitorTemplateContext map[string]string
@@ -35,6 +36,8 @@ func (p *WebMonitorParser) Parse(data []byte) (*model.CraftFeed, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	values["url"] = p.PageURL
 
 	rendered, err := renderWebMonitorPreview(doc, values, p.Config.KeyFields, templates)
 	if err != nil {
