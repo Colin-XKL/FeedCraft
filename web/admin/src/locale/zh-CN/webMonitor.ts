@@ -20,7 +20,8 @@ export default {
   'webMonitor.step2.enhanceMode.tooltip':
     '当页面内容依赖 JavaScript 渲染时，请启用此选项。',
   'webMonitor.step2.alert.l1': '1. 添加变量并从预览中拾取对应的选择器。',
-  'webMonitor.step2.alert.l2': '2. 勾选"用作关键字段"以标记变化时触发更新的字段。',
+  'webMonitor.step2.alert.l2':
+    '2. 勾选"用作关键字段"以标记变化时触发更新的字段。',
   'webMonitor.step2.variables': '提取变量',
   'webMonitor.step2.addVariable': '添加变量',
   'webMonitor.step2.variableName': '变量名',
