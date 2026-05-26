@@ -62,6 +62,18 @@ export default {
   'topic.stepOption.max': '最大文章数',
   'topic.stepOption.strategy.by_link': '按链接去重',
   'topic.stepOption.strategy.by_id': '按 ID 去重',
+  'topic.stepOption.strategy.by_title': '按标题去重（完全匹配）',
+  'topic.stepOption.strategy.by_simhash': '文字相似去重（SimHash · 轻量）',
+  'topic.stepOption.strategy.by_embedding': '语义相似去重（Embedding · 精准）',
+  'topic.stepOption.strategy.by_simhash.hint':
+    '基于字符特征的轻量级相似判定，适合过滤转载、微调改写等字面高度相似的重复文章。无需 AI 服务，速度快、开销小。阈值越小越严格（仅移除极相似内容）。',
+  'topic.stepOption.strategy.by_embedding.hint':
+    '基于大模型语义向量的精准相似判定，能识别"同义不同字"的内容，适合聚合不同媒体对同一事件的报道。需配置 Embedding API，服务不可用时自动降级（不去重）。阈值越小越严格（仅移除极相似内容）。',
+  'topic.stepOption.threshold.label': '阈值',
+  'topic.stepOption.threshold.simhash':
+    '差异容忍度 0–1，默认 0.05（越小越严格）',
+  'topic.stepOption.threshold.embedding':
+    '差异容忍度 0–1，默认 0.1（越小越严格）',
   'topic.stepOption.sort.date_desc': '按时间倒序',
   'topic.stepOption.sort.date_asc': '按时间正序',
   'topic.stepOption.sort.quality_desc': '按质量倒序',

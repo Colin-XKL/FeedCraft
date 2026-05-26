@@ -217,63 +217,107 @@
           <div
             v-for="(step, idx) in formData.aggregator_config"
             :key="`step-${idx}`"
-            class="editor-row"
+            class="step-wrapper"
           >
-            <a-select
-              v-model="step.type"
-              style="width: 180px"
-              @change="resetStepValue(idx)"
+            <div class="editor-row">
+              <a-select
+                v-model="step.type"
+                style="width: 180px"
+                @change="resetStepValue(idx)"
+              >
+                <a-option value="deduplicate">
+                  {{ t('topic.stepType.deduplicate') }}
+                </a-option>
+                <a-option value="sort">{{ t('topic.stepType.sort') }}</a-option>
+                <a-option value="limit">{{
+                  t('topic.stepType.limit')
+                }}</a-option>
+              </a-select>
+
+              <template v-if="step.type === 'deduplicate'">
+                <a-select
+                  v-model="step.value"
+                  style="width: 200px"
+                  @change="onDeduplicateStrategyChange(idx)"
+                >
+                  <a-option value="by_link">
+                    {{ t('topic.stepOption.strategy.by_link') }}
+                  </a-option>
+                  <a-option value="by_id">
+                    {{ t('topic.stepOption.strategy.by_id') }}
+                  </a-option>
+                  <a-option value="by_title">
+                    {{ t('topic.stepOption.strategy.by_title') }}
+                  </a-option>
+                  <a-option value="by_simhash">
+                    {{ t('topic.stepOption.strategy.by_simhash') }}
+                  </a-option>
+                  <a-option value="by_embedding">
+                    {{ t('topic.stepOption.strategy.by_embedding') }}
+                  </a-option>
+                </a-select>
+                <a-input-number
+                  v-if="step.value === 'by_simhash'"
+                  v-model="step.threshold"
+                  :min="0"
+                  :max="1"
+                  :step="0.01"
+                  :precision="2"
+                  :placeholder="t('topic.stepOption.threshold.simhash')"
+                  style="width: 160px"
+                />
+                <a-input-number
+                  v-else-if="step.value === 'by_embedding'"
+                  v-model="step.threshold"
+                  :min="0"
+                  :max="1"
+                  :step="0.01"
+                  :precision="2"
+                  :placeholder="t('topic.stepOption.threshold.embedding')"
+                  style="width: 160px"
+                />
+              </template>
+
+              <a-select
+                v-else-if="step.type === 'sort'"
+                v-model="step.value"
+                style="width: 220px"
+              >
+                <a-option value="date_desc">
+                  {{ t('topic.stepOption.sort.date_desc') }}
+                </a-option>
+                <a-option value="date_asc">
+                  {{ t('topic.stepOption.sort.date_asc') }}
+                </a-option>
+                <a-option value="quality_desc">
+                  {{ t('topic.stepOption.sort.quality_desc') }}
+                </a-option>
+                <a-option value="quality_asc">
+                  {{ t('topic.stepOption.sort.quality_asc') }}
+                </a-option>
+              </a-select>
+
+              <a-input-number
+                v-else
+                v-model="step.value"
+                :min="1"
+                mode="button"
+                style="width: 220px"
+              />
+
+              <a-button type="text" status="danger" @click="removeStep(idx)">
+                {{ t('topic.removeStep') }}
+              </a-button>
+            </div>
+            <p
+              v-if="
+                step.type === 'deduplicate' &&
+                (step.value === 'by_simhash' || step.value === 'by_embedding')
+              "
+              class="step-hint"
             >
-              <a-option value="deduplicate">
-                {{ t('topic.stepType.deduplicate') }}
-              </a-option>
-              <a-option value="sort">{{ t('topic.stepType.sort') }}</a-option>
-              <a-option value="limit">{{ t('topic.stepType.limit') }}</a-option>
-            </a-select>
-
-            <a-select
-              v-if="step.type === 'deduplicate'"
-              v-model="step.value"
-              style="width: 220px"
-            >
-              <a-option value="by_link">
-                {{ t('topic.stepOption.strategy.by_link') }}
-              </a-option>
-              <a-option value="by_id">
-                {{ t('topic.stepOption.strategy.by_id') }}
-              </a-option>
-            </a-select>
-
-            <a-select
-              v-else-if="step.type === 'sort'"
-              v-model="step.value"
-              style="width: 220px"
-            >
-              <a-option value="date_desc">
-                {{ t('topic.stepOption.sort.date_desc') }}
-              </a-option>
-              <a-option value="date_asc">
-                {{ t('topic.stepOption.sort.date_asc') }}
-              </a-option>
-              <a-option value="quality_desc">
-                {{ t('topic.stepOption.sort.quality_desc') }}
-              </a-option>
-              <a-option value="quality_asc">
-                {{ t('topic.stepOption.sort.quality_asc') }}
-              </a-option>
-            </a-select>
-
-            <a-input-number
-              v-else
-              v-model="step.value"
-              :min="1"
-              mode="button"
-              style="width: 220px"
-            />
-
-            <a-button type="text" status="danger" @click="removeStep(idx)">
-              {{ t('topic.removeStep') }}
-            </a-button>
+              {{ t(`topic.stepOption.strategy.${step.value}.hint`) }}
+            </p>
           </div>
 
           <a-button type="dashed" long @click="addStep">
@@ -351,6 +395,8 @@
 
   type SourceType = 'external' | 'recipe' | 'topic';
 
+  const STRATEGIES_WITH_THRESHOLD = ['by_simhash', 'by_embedding'] as const;
+
   interface InputSourceItem {
     sourceType: SourceType;
     externalUrl: string;
@@ -360,6 +406,8 @@
   interface StepFormItem {
     type: StepType;
     value: string | number;
+    /** Deduplication threshold: Hamming distance for by_simhash, cosine similarity for by_embedding */
+    threshold?: number;
   }
 
   interface TopicFormData {
@@ -384,6 +432,12 @@
   const availableRecipes = ref<CustomRecipe[]>([]);
   const availableTopics = ref<TopicFeed[]>([]);
   const pickerLoading = ref(false);
+
+  const defaultThreshold = (strategy: string): number | undefined => {
+    if (strategy === 'by_simhash') return 0.05;
+    if (strategy === 'by_embedding') return 0.1;
+    return undefined;
+  };
 
   const createDefaultStep = (type: StepType = 'limit'): StepFormItem => {
     if (type === 'deduplicate') return { type, value: 'by_link' };
@@ -459,7 +513,17 @@
       .filter((uri) => uri !== ''),
     aggregator_config: formData.value.aggregator_config.map((step) => {
       const option: Record<string, string> = {};
-      if (step.type === 'deduplicate') option.strategy = String(step.value);
+      if (step.type === 'deduplicate') {
+        option.strategy = String(step.value);
+        if (
+          step.threshold !== undefined &&
+          STRATEGIES_WITH_THRESHOLD.includes(
+            step.value as (typeof STRATEGIES_WITH_THRESHOLD)[number]
+          )
+        ) {
+          option.threshold = String(step.threshold);
+        }
+      }
       if (step.type === 'sort') option.by = String(step.value);
       if (step.type === 'limit') option.max = String(step.value);
       return {
@@ -469,14 +533,26 @@
     }),
   });
 
+  const formatDeduplicateStrategy = (step: AggregatorStep): string => {
+    const strategy = step.option?.strategy || 'by_link';
+    const label = t(`topic.stepOption.strategy.${strategy}`);
+    if (strategy === 'by_simhash' && step.option?.threshold) {
+      return `${label} (${step.option.threshold})`;
+    }
+    if (strategy === 'by_embedding' && step.option?.threshold) {
+      return `${label} (${step.option.threshold})`;
+    }
+    return label;
+  };
+
   const formatAggregatorSummary = (steps: AggregatorStep[]) => {
     if (!steps || steps.length === 0) return t('topic.noAggregator');
     return steps
       .map((step) => {
         if (step.type === 'deduplicate') {
-          return `${t('topic.stepType.deduplicate')} · ${t(
-            `topic.stepOption.strategy.${step.option?.strategy || 'by_link'}`
-          )}`;
+          return `${t(
+            'topic.stepType.deduplicate'
+          )} · ${formatDeduplicateStrategy(step)}`;
         }
         if (step.type === 'sort') {
           return `${t('topic.stepType.sort')} · ${t(
@@ -538,10 +614,19 @@
           : [{ sourceType: 'external', externalUrl: '', resourceId: '' }],
       aggregator_config: (record.aggregator_config || []).map((step) => {
         if (step.type === 'deduplicate') {
-          return {
-            type: 'deduplicate',
-            value: step.option?.strategy || 'by_link',
-          };
+          const strategy = step.option?.strategy || 'by_link';
+          const item: StepFormItem = { type: 'deduplicate', value: strategy };
+          if (
+            step.option?.threshold !== undefined &&
+            STRATEGIES_WITH_THRESHOLD.includes(
+              strategy as (typeof STRATEGIES_WITH_THRESHOLD)[number]
+            )
+          ) {
+            item.threshold = Number(step.option.threshold);
+          } else {
+            item.threshold = defaultThreshold(strategy);
+          }
+          return item;
         }
         if (step.type === 'sort') {
           return { type: 'sort', value: step.option?.by || 'date_desc' };
@@ -601,6 +686,12 @@
   const resetStepValue = (idx: number) => {
     const currentType = formData.value.aggregator_config[idx].type;
     formData.value.aggregator_config[idx] = createDefaultStep(currentType);
+  };
+
+  const onDeduplicateStrategyChange = (idx: number) => {
+    const strategy = String(formData.value.aggregator_config[idx].value);
+    formData.value.aggregator_config[idx].threshold =
+      defaultThreshold(strategy);
   };
 
   const runValidation = async () => {
@@ -674,11 +765,22 @@
 </script>
 
 <style scoped>
+  .step-wrapper {
+    margin-bottom: 12px;
+  }
+
   .editor-row {
     display: flex;
     gap: 12px;
     align-items: center;
-    margin-bottom: 12px;
+  }
+
+  .step-hint {
+    margin: 4px 0 0 0;
+    padding-left: 2px;
+    font-size: 12px;
+    color: var(--color-text-3);
+    line-height: 1.5;
   }
 
   .input-source-row {

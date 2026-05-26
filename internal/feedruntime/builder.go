@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"net/url"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 
+	"FeedCraft/internal/adapter"
 	"FeedCraft/internal/config"
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/craft"
@@ -306,37 +308,39 @@ func buildAggregatorStep(index int, step dao.AggregatorStep) (engine.CraftOption
 		if strategy == "" {
 			strategy = "by_link"
 		}
-		if strategy != "by_link" && strategy != "by_id" {
+		switch strategy {
+		case "by_link", "by_id":
+			return buildKeyDeduplicateOption(strategy), nil
+		case "by_title":
+			return buildTitleDeduplicateOption(), nil
+		case "by_simhash":
+			// threshold is a user-facing normalized value in [0.0, 1.0].
+			// 0.0 = only exact duplicates; 1.0 = treat everything as duplicate.
+			// Internally converted to Hamming distance: hamming = round(threshold * 64).
+			threshold, err := parseFloatOption(step.Option, "threshold", 0.05)
+			if err != nil {
+				return nil, fmt.Errorf("aggregator step %d (deduplicate/by_simhash): %w", index, err)
+			}
+			if threshold < 0 || threshold > 1 {
+				return nil, fmt.Errorf("aggregator step %d (deduplicate/by_simhash): threshold must be in [0, 1], got %f", index, threshold)
+			}
+			hammingThreshold := int(math.Round(threshold * 64.0))
+			return buildSimhashDeduplicateOption(hammingThreshold), nil
+		case "by_embedding":
+			// threshold is a difference-tolerance value in [0.0, 1.0], same direction as by_simhash:
+			// 0.0 = only near-identical (strictest); 1.0 = everything is duplicate (most aggressive).
+			// Internally converted to cosine similarity floor: floor = 1 - threshold.
+			threshold, err := parseFloatOption(step.Option, "threshold", 0.1)
+			if err != nil {
+				return nil, fmt.Errorf("aggregator step %d (deduplicate/by_embedding): %w", index, err)
+			}
+			if threshold < 0 || threshold > 1 {
+				return nil, fmt.Errorf("aggregator step %d (deduplicate/by_embedding): threshold must be in [0, 1], got %f", index, threshold)
+			}
+			return buildEmbeddingDeduplicateOption(threshold), nil
+		default:
 			return nil, fmt.Errorf("aggregator step %d (%s): invalid strategy %q", index, step.Type, strategy)
 		}
-		return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
-			_ = ctx
-			if feed == nil || len(feed.Articles) == 0 {
-				return feed, nil
-			}
-			cloned := cloneFeedArticles(feed)
-			seen := make(map[string]bool)
-			uniqueArticles := make([]*model.CraftArticle, 0, len(cloned.Articles))
-			for _, article := range cloned.Articles {
-				if article == nil {
-					continue
-				}
-				key := article.Link
-				if strategy == "by_id" {
-					key = article.Id
-				}
-				if key == "" {
-					uniqueArticles = append(uniqueArticles, article)
-					continue
-				}
-				if !seen[key] {
-					seen[key] = true
-					uniqueArticles = append(uniqueArticles, article)
-				}
-			}
-			cloned.Articles = uniqueArticles
-			return cloned, nil
-		}, nil
 	case "sort":
 		sortBy := strings.ToLower(strings.TrimSpace(step.Option["by"]))
 		if sortBy == "" {
@@ -406,6 +410,180 @@ func composeAggregatorOptions(options ...engine.CraftOption) engine.CraftOption 
 		}
 		return currentFeed, nil
 	}
+}
+
+// buildKeyDeduplicateOption deduplicates by article.Link or article.Id exact match.
+func buildKeyDeduplicateOption(strategy string) engine.CraftOption {
+	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		_ = ctx
+		if feed == nil || len(feed.Articles) == 0 {
+			return feed, nil
+		}
+		cloned := cloneFeedArticles(feed)
+		seen := make(map[string]bool)
+		unique := make([]*model.CraftArticle, 0, len(cloned.Articles))
+		for _, article := range cloned.Articles {
+			if article == nil {
+				continue
+			}
+			key := article.Link
+			if strategy == "by_id" {
+				key = article.Id
+			}
+			if key == "" {
+				unique = append(unique, article)
+				continue
+			}
+			if !seen[key] {
+				seen[key] = true
+				unique = append(unique, article)
+			}
+		}
+		cloned.Articles = unique
+		return cloned, nil
+	}
+}
+
+// buildTitleDeduplicateOption deduplicates by exact title match.
+func buildTitleDeduplicateOption() engine.CraftOption {
+	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		_ = ctx
+		if feed == nil || len(feed.Articles) == 0 {
+			return feed, nil
+		}
+		cloned := cloneFeedArticles(feed)
+		seen := make(map[string]bool)
+		unique := make([]*model.CraftArticle, 0, len(cloned.Articles))
+		for _, article := range cloned.Articles {
+			if article == nil {
+				continue
+			}
+			if article.Title == "" {
+				unique = append(unique, article)
+				continue
+			}
+			if !seen[article.Title] {
+				seen[article.Title] = true
+				unique = append(unique, article)
+			}
+		}
+		cloned.Articles = unique
+		return cloned, nil
+	}
+}
+
+// buildSimhashDeduplicateOption deduplicates using 64-bit SimHash on title+content.
+// Two articles are considered duplicates when their Hamming distance <= threshold.
+// Retention strategy: keep the earliest encountered article (first in the slice).
+func buildSimhashDeduplicateOption(threshold int) engine.CraftOption {
+	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		_ = ctx
+		if feed == nil || len(feed.Articles) == 0 {
+			return feed, nil
+		}
+		cloned := cloneFeedArticles(feed)
+		unique := make([]*model.CraftArticle, 0, len(cloned.Articles))
+		keptHashes := make([]uint64, 0, len(cloned.Articles))
+
+		for _, article := range cloned.Articles {
+			if article == nil {
+				continue
+			}
+			text := normalizeSimhashText(article.Title + " " + article.Content + " " + article.Description)
+			h := computeSimhash(text)
+
+			isDuplicate := false
+			for _, keptHash := range keptHashes {
+				if hammingDistance(h, keptHash) <= threshold {
+					isDuplicate = true
+					break
+				}
+			}
+			if !isDuplicate {
+				unique = append(unique, article)
+				keptHashes = append(keptHashes, h)
+			}
+		}
+		cloned.Articles = unique
+		return cloned, nil
+	}
+}
+
+// buildEmbeddingDeduplicateOption deduplicates using LLM Embedding cosine similarity.
+// threshold is a difference-tolerance value in [0.0, 1.0] (lower = stricter, same direction as SimHash).
+// Internally, two articles are considered duplicates when cosine similarity >= (1 - threshold).
+// Default threshold 0.1 → cosine floor 0.9 (only very similar articles removed).
+// Retention strategy: keep the earliest encountered article (first in the slice).
+// Falls back to keeping all articles if the embedding call fails.
+func buildEmbeddingDeduplicateOption(threshold float64) engine.CraftOption {
+	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		if feed == nil || len(feed.Articles) == 0 {
+			return feed, nil
+		}
+		cloned := cloneFeedArticles(feed)
+
+		texts := make([]string, len(cloned.Articles))
+		for i, article := range cloned.Articles {
+			if article == nil {
+				continue
+			}
+			texts[i] = article.Title + " " + article.Description
+		}
+
+		vectors, err := adapter.EmbedTexts(ctx, texts, "")
+		if err != nil {
+			// Fail open: if embedding is unavailable, return all articles without dedup.
+			return cloned, nil
+		}
+		// Guard against a shorter-than-expected slice from EmbedTexts.
+		if len(vectors) != len(cloned.Articles) {
+			return cloned, nil
+		}
+
+		unique := make([]*model.CraftArticle, 0, len(cloned.Articles))
+		keptVectors := make([][]float64, 0, len(cloned.Articles))
+
+		for i, article := range cloned.Articles {
+			if article == nil {
+				continue
+			}
+			// Defense-in-depth: guard against out-of-bounds and empty vectors.
+			if i >= len(vectors) || len(vectors[i]) == 0 {
+				// No usable vector for this article; keep it unconditionally.
+				unique = append(unique, article)
+				continue
+			}
+			vec := vectors[i]
+			// Convert difference-tolerance threshold to cosine similarity floor.
+			isDuplicate := false
+			for _, keptVec := range keptVectors {
+				if util.CosineSimilarity(vec, keptVec) >= (1.0 - threshold) {
+					isDuplicate = true
+					break
+				}
+			}
+			if !isDuplicate {
+				unique = append(unique, article)
+				keptVectors = append(keptVectors, vec)
+			}
+		}
+		cloned.Articles = unique
+		return cloned, nil
+	}
+}
+
+// parseFloatOption parses a float64 option from the step options map.
+// Falls back to defaultVal if the key is absent.
+func parseFloatOption(opts map[string]string, key string, defaultVal float64) (float64, error) {
+	raw := strings.TrimSpace(opts[key])
+	if raw == "" {
+		return defaultVal, nil
+	}
+	v, err := strconv.ParseFloat(raw, 64)
+	if err != nil {
+		return 0, fmt.Errorf("invalid %s %q: must be a number", key, raw)
+	}
+	return v, nil
 }
 
 func cloneFeedArticles(feed *model.CraftFeed) *model.CraftFeed {
