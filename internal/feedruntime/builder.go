@@ -566,20 +566,6 @@ func buildEmbeddingDeduplicateOption(threshold float64) engine.CraftOption {
 	}
 }
 
-// parseIntOption parses an integer option from the step options map.
-// Falls back to defaultVal if the key is absent.
-func parseIntOption(opts map[string]string, key string, defaultVal int) (int, error) {
-	raw := strings.TrimSpace(opts[key])
-	if raw == "" {
-		return defaultVal, nil
-	}
-	v, err := strconv.Atoi(raw)
-	if err != nil {
-		return 0, fmt.Errorf("invalid %s %q: must be an integer", key, raw)
-	}
-	return v, nil
-}
-
 // parseFloatOption parses a float64 option from the step options map.
 // Falls back to defaultVal if the key is absent.
 func parseFloatOption(opts map[string]string, key string, defaultVal float64) (float64, error) {

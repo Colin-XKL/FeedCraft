@@ -65,13 +65,18 @@ export default {
   'topic.stepOption.strategy.by_id': 'By ID',
   'topic.stepOption.strategy.by_title': 'By Title (Exact Match)',
   'topic.stepOption.strategy.by_simhash':
-    'By Title+Content Similarity (SimHash)',
+    'Lexical Similarity (SimHash · Lightweight)',
   'topic.stepOption.strategy.by_embedding':
-    'By Semantic Similarity (Embedding)',
+    'Semantic Similarity (Embedding · Precise)',
+  'topic.stepOption.strategy.by_simhash.hint':
+    'Lightweight character-based similarity — great for filtering reposts and lightly reworded duplicates. No AI service needed; fast and low-overhead.',
+  'topic.stepOption.strategy.by_embedding.hint':
+    'High-accuracy semantic similarity via LLM Embedding — catches paraphrased duplicates and different outlets covering the same story. Requires an Embedding API; fails open (no deduplication) when unavailable.',
   'topic.stepOption.threshold.label': 'Threshold',
-  'topic.stepOption.threshold.simhash': 'Difference (0=identical, 1.0=completely different, default 0.05)',
+  'topic.stepOption.threshold.simhash':
+    'Difference 0–1, default 0.05 (lower = stricter)',
   'topic.stepOption.threshold.embedding':
-    'Cosine similarity (0–1, default 0.9)',
+    'Similarity 0–1, default 0.9 (higher = stricter)',
   'topic.stepOption.sort.date_desc': 'Newest First',
   'topic.stepOption.sort.date_asc': 'Oldest First',
   'topic.stepOption.sort.quality_desc': 'Highest Quality First',
