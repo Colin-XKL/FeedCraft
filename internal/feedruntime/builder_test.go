@@ -282,7 +282,8 @@ func TestDeduplicate_ByTitle(t *testing.T) {
 
 func TestDeduplicate_BySimhash_IdenticalContent(t *testing.T) {
 	aggregator, err := BuildAggregator([]dao.AggregatorStep{
-		{Type: "deduplicate", Option: map[string]string{"strategy": "by_simhash", "threshold": "3"}},
+		// threshold=5 (normalized 0-100) → hamming ≈ 3
+		{Type: "deduplicate", Option: map[string]string{"strategy": "by_simhash", "threshold": "5"}},
 	})
 	require.NoError(t, err)
 	require.NotNil(t, aggregator)
@@ -302,15 +303,17 @@ func TestDeduplicate_BySimhash_IdenticalContent(t *testing.T) {
 }
 
 func TestDeduplicate_BySimhash_InvalidThreshold(t *testing.T) {
-	_, err := BuildAggregator([]dao.AggregatorStep{
-		{Type: "deduplicate", Option: map[string]string{"strategy": "by_simhash", "threshold": "999"}},
-	})
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "threshold")
+	for _, bad := range []string{"999", "101", "-1", "abc"} {
+		_, err := BuildAggregator([]dao.AggregatorStep{
+			{Type: "deduplicate", Option: map[string]string{"strategy": "by_simhash", "threshold": bad}},
+		})
+		require.Error(t, err, "expected error for threshold=%q", bad)
+		assert.Contains(t, err.Error(), "threshold", "expected 'threshold' in error for threshold=%q", bad)
+	}
 }
 
 func TestDeduplicate_BySimhash_DefaultThreshold(t *testing.T) {
-	// Omitting threshold should use default (3) without error
+	// Omitting threshold should use default (5, normalized 0-100) without error
 	aggregator, err := BuildAggregator([]dao.AggregatorStep{
 		{Type: "deduplicate", Option: map[string]string{"strategy": "by_simhash"}},
 	})
@@ -325,6 +328,17 @@ func TestDeduplicate_BySimhash_DefaultThreshold(t *testing.T) {
 	})
 	require.NoError(t, err)
 	require.NotEmpty(t, result.Articles)
+}
+
+func TestDeduplicate_BySimhash_BoundaryThresholds(t *testing.T) {
+	// threshold=0 and threshold=100 are both valid
+	for _, v := range []string{"0", "100"} {
+		agg, err := BuildAggregator([]dao.AggregatorStep{
+			{Type: "deduplicate", Option: map[string]string{"strategy": "by_simhash", "threshold": v}},
+		})
+		require.NoError(t, err, "threshold=%s should be valid", v)
+		require.NotNil(t, agg)
+	}
 }
 
 func TestDeduplicate_ByEmbedding_InvalidStrategy(t *testing.T) {
