@@ -50,15 +50,24 @@ Navigate to **Worktable > Custom Recipe** to manage all your created recipes.
 
 **Topic Feed** is an aggregation unit that combines multiple input sources (like `RawFeed`s or other `Recipe`s) into a single, unified RSS feed. It solves information overload by bringing disparate sources into one place.
 
-You can configure processors for a Topic Feed to automatically handle the combined data:
+You can configure aggregation rules for a Topic Feed to automatically process the merged articles:
 
-- **Deduplicate**: Removes duplicate articles across sources.
-- **Sort**: Orders the combined articles by publication date.
-- **Limit**: Keeps only the most recent items.
+- **Deduplicate**: Removes duplicate articles across sources. Five strategies are available:
+  - `by_link` — exact URL match (default)
+  - `by_id` — exact GUID match
+  - `by_title` — exact title match
+  - `by_simhash` — fuzzy deduplication using character 2-gram SimHash. Articles whose difference score is below the threshold are considered duplicates. Threshold range: `0.0` (identical only) to `1.0` (everything), default `0.05`.
+  - `by_embedding` — semantic deduplication via LLM Embedding. Articles whose cosine similarity meets or exceeds the threshold are considered duplicates. Threshold range: `0.0` to `1.0`, default `0.9`. Requires an Embedding API to be configured; fails open (no deduplication) if unavailable.
+- **Sort**: Orders the combined articles by date or quality score.
+- **Limit**: Keeps only the specified number of most recent items.
+
+:::tip
+Rules run in the order you define them. A typical pipeline is: **Sort** (newest first) → **Deduplicate** → **Limit**.
+:::
 
 **Managing Topic Feeds:**
 
 Navigate to **Worktable > Topic Feed** to create and manage topics.
 
-- **Create**: Define a title, add multiple input sources using the type picker (supports external RSS URLs, custom recipes, or nesting other topics), and set your aggregator config.
+- **Create**: Define a title, add multiple input sources using the type picker (supports external RSS URLs, custom recipes, or nesting other topics), and configure your aggregation rules.
 - **Public Access**: Your new topic feed will be available without authentication at `http://your-feedcraft-instance/topic/{id}`.
