@@ -444,8 +444,7 @@
   const templates = reactive({
     title: '【监控更新】{{.price}}',
     description: '价格 {{.price}}，状态 {{.stock}}',
-    content:
-      '标题：{{.title}}\n价格：{{.price}}\n状态：{{.stock}}\n链接：{{.url}}',
+    content: '价格：{{.price}}\n状态：{{.stock}}\n链接：{{.url}}',
   });
 
   const preview = reactive<WebMonitorPreview>({

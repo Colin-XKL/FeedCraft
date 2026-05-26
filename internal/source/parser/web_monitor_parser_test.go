@@ -31,7 +31,7 @@ func TestWebMonitorParser_Parse_KeyFieldsDriveGUID(t *testing.T) {
 		ContentTemplate:     "{{.title}} - {{.price}} - {{.stock}} - {{.url}}",
 	}
 
-	parser := &WebMonitorParser{Config: cfg}
+	parser := &WebMonitorParser{Config: cfg, PageURL: "https://example.com/product"}
 	feed, err := parser.Parse([]byte(html))
 
 	require.NoError(t, err)
@@ -40,7 +40,8 @@ func TestWebMonitorParser_Parse_KeyFieldsDriveGUID(t *testing.T) {
 	assert.Equal(t, "Product Page", feed.Title)
 	assert.Equal(t, "价格 $399", feed.Articles[0].Title)
 	assert.Equal(t, "库存 In Stock", feed.Articles[0].Description)
-	assert.Equal(t, "PS5 Console - $399 - In Stock - ", feed.Articles[0].Content)
+	assert.Equal(t, "https://example.com/product", feed.Articles[0].Link)
+	assert.Equal(t, "PS5 Console - $399 - In Stock - https://example.com/product", feed.Articles[0].Content)
 
 	feedSame, err := parser.Parse([]byte(html))
 	require.NoError(t, err)
@@ -71,6 +72,35 @@ func TestWebMonitorParser_Parse_KeyFieldsDriveGUID(t *testing.T) {
 	feedPriceChanged, err := parser.Parse([]byte(htmlPriceChanged))
 	require.NoError(t, err)
 	assert.NotEqual(t, feed.Articles[0].Id, feedPriceChanged.Articles[0].Id)
+}
+
+func TestWebMonitorParser_Parse_URLInjectedIntoTemplateAndGUID(t *testing.T) {
+	html := `<html><body><div class="price">$399</div></body></html>`
+
+	cfg := &config.WebMonitorParserConfig{
+		Extractors:      map[string]string{"price": ".price"},
+		KeyFields:       []string{"price"},
+		ContentTemplate: "链接：{{.url}}",
+	}
+
+	parserA := &WebMonitorParser{Config: cfg, PageURL: "https://site-a.com/product"}
+	parserB := &WebMonitorParser{Config: cfg, PageURL: "https://site-b.com/product"}
+
+	feedA, err := parserA.Parse([]byte(html))
+	require.NoError(t, err)
+	feedB, err := parserB.Parse([]byte(html))
+	require.NoError(t, err)
+
+	// URL should be injected into content template
+	assert.Equal(t, "链接：https://site-a.com/product", feedA.Articles[0].Content)
+	assert.Equal(t, "链接：https://site-b.com/product", feedB.Articles[0].Content)
+
+	// URL should be the article link
+	assert.Equal(t, "https://site-a.com/product", feedA.Articles[0].Link)
+	assert.Equal(t, "https://site-b.com/product", feedB.Articles[0].Link)
+
+	// Different URLs must produce different GUIDs even when key field values are identical
+	assert.NotEqual(t, feedA.Articles[0].Id, feedB.Articles[0].Id)
 }
 
 func TestWebMonitorParser_Parse_KeyFieldOrderDoesNotMatter(t *testing.T) {

@@ -15,6 +15,7 @@ import localeExampleRssFeeds from '@/locale/zh-CN/exampleRssFeeds';
 import localeLlmDebug from '@/locale/zh-CN/llmDebug';
 import localeUrlGenerator from '@/locale/zh-CN/urlGenerator';
 import localeHtmlToRss from '@/locale/zh-CN/htmlToRss';
+import localeWebMonitor from '@/locale/zh-CN/webMonitor';
 import localeJsonToRss from '@/locale/zh-CN/jsonToRss';
 import localeSearchToRss from '@/locale/zh-CN/searchToRss';
 import localeDependencyService from '@/locale/zh-CN/dependencyService';
@@ -39,6 +40,7 @@ export default {
   ...localeLlmDebug,
   ...localeUrlGenerator,
   ...localeHtmlToRss,
+  ...localeWebMonitor,
   ...localeJsonToRss,
   ...localeSearchToRss,
   ...localeDependencyService,
