@@ -69,8 +69,7 @@ export default {
   'topic.stepOption.strategy.by_embedding':
     'By Semantic Similarity (Embedding)',
   'topic.stepOption.threshold.label': 'Threshold',
-  'topic.stepOption.threshold.simhash':
-    'Similarity (0=identical, 100=completely different, default 5)',
+  'topic.stepOption.threshold.simhash': 'Difference (0=identical, 1.0=completely different, default 0.05)',
   'topic.stepOption.threshold.embedding':
     'Cosine similarity (0–1, default 0.9)',
   'topic.stepOption.sort.date_desc': 'Newest First',

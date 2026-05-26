@@ -257,8 +257,9 @@
                 v-if="step.value === 'by_simhash'"
                 v-model="step.threshold"
                 :min="0"
-                :max="100"
-                :precision="0"
+                :max="1"
+                :step="0.01"
+                :precision="2"
                 :placeholder="t('topic.stepOption.threshold.simhash')"
                 style="width: 160px"
               />
@@ -420,7 +421,7 @@
   const pickerLoading = ref(false);
 
   const defaultThreshold = (strategy: string): number | undefined => {
-    if (strategy === 'by_simhash') return 5;
+    if (strategy === 'by_simhash') return 0.05;
     if (strategy === 'by_embedding') return 0.9;
     return undefined;
   };

@@ -66,8 +66,7 @@ export default {
   'topic.stepOption.strategy.by_simhash': '按标题+内容相似去重（SimHash）',
   'topic.stepOption.strategy.by_embedding': '按语义相似去重（Embedding）',
   'topic.stepOption.threshold.label': '阈值',
-  'topic.stepOption.threshold.simhash':
-    '相似度（0=完全一致，100=完全不同，默认 5）',
+  'topic.stepOption.threshold.simhash': '差异度（0=完全一致，1.0=完全不同，默认 0.05）',
   'topic.stepOption.threshold.embedding': '余弦相似度（0-1，默认 0.9）',
   'topic.stepOption.sort.date_desc': '按时间倒序',
   'topic.stepOption.sort.date_asc': '按时间正序',

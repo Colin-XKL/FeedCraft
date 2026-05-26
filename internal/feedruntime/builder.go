@@ -314,17 +314,17 @@ func buildAggregatorStep(index int, step dao.AggregatorStep) (engine.CraftOption
 		case "by_title":
 			return buildTitleDeduplicateOption(), nil
 		case "by_simhash":
-			// threshold is a user-facing normalized value in [0, 100].
-			// 0 = only exact duplicates; 100 = treat everything as duplicate.
-			// Internally converted to Hamming distance: hamming = round(threshold * 64 / 100).
-			threshold, err := parseIntOption(step.Option, "threshold", 5)
+			// threshold is a user-facing normalized value in [0.0, 1.0].
+			// 0.0 = only exact duplicates; 1.0 = treat everything as duplicate.
+			// Internally converted to Hamming distance: hamming = round(threshold * 64).
+			threshold, err := parseFloatOption(step.Option, "threshold", 0.05)
 			if err != nil {
 				return nil, fmt.Errorf("aggregator step %d (deduplicate/by_simhash): %w", index, err)
 			}
-			if threshold < 0 || threshold > 100 {
-				return nil, fmt.Errorf("aggregator step %d (deduplicate/by_simhash): threshold must be in [0, 100], got %d", index, threshold)
+			if threshold < 0 || threshold > 1 {
+				return nil, fmt.Errorf("aggregator step %d (deduplicate/by_simhash): threshold must be in [0, 1], got %f", index, threshold)
 			}
-			hammingThreshold := int(math.Round(float64(threshold) * 64.0 / 100.0))
+			hammingThreshold := int(math.Round(threshold * 64.0))
 			return buildSimhashDeduplicateOption(hammingThreshold), nil
 		case "by_embedding":
 			threshold, err := parseFloatOption(step.Option, "threshold", 0.9)

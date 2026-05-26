@@ -282,8 +282,8 @@ func TestDeduplicate_ByTitle(t *testing.T) {
 
 func TestDeduplicate_BySimhash_IdenticalContent(t *testing.T) {
 	aggregator, err := BuildAggregator([]dao.AggregatorStep{
-		// threshold=5 (normalized 0-100) → hamming ≈ 3
-		{Type: "deduplicate", Option: map[string]string{"strategy": "by_simhash", "threshold": "5"}},
+		// threshold=0.05 (normalized 0-1.0) → hamming = round(0.05*64) = 3
+		{Type: "deduplicate", Option: map[string]string{"strategy": "by_simhash", "threshold": "0.05"}},
 	})
 	require.NoError(t, err)
 	require.NotNil(t, aggregator)
@@ -303,7 +303,7 @@ func TestDeduplicate_BySimhash_IdenticalContent(t *testing.T) {
 }
 
 func TestDeduplicate_BySimhash_InvalidThreshold(t *testing.T) {
-	for _, bad := range []string{"999", "101", "-1", "abc"} {
+	for _, bad := range []string{"1.5", "-0.1", "2", "abc"} {
 		_, err := BuildAggregator([]dao.AggregatorStep{
 			{Type: "deduplicate", Option: map[string]string{"strategy": "by_simhash", "threshold": bad}},
 		})
@@ -313,7 +313,7 @@ func TestDeduplicate_BySimhash_InvalidThreshold(t *testing.T) {
 }
 
 func TestDeduplicate_BySimhash_DefaultThreshold(t *testing.T) {
-	// Omitting threshold should use default (5, normalized 0-100) without error
+	// Omitting threshold should use default (0.05, normalized 0-1.0) without error
 	aggregator, err := BuildAggregator([]dao.AggregatorStep{
 		{Type: "deduplicate", Option: map[string]string{"strategy": "by_simhash"}},
 	})
@@ -331,8 +331,8 @@ func TestDeduplicate_BySimhash_DefaultThreshold(t *testing.T) {
 }
 
 func TestDeduplicate_BySimhash_BoundaryThresholds(t *testing.T) {
-	// threshold=0 and threshold=100 are both valid
-	for _, v := range []string{"0", "100"} {
+	// threshold=0 and threshold=1.0 are both valid
+	for _, v := range []string{"0", "1.0"} {
 		agg, err := BuildAggregator([]dao.AggregatorStep{
 			{Type: "deduplicate", Option: map[string]string{"strategy": "by_simhash", "threshold": v}},
 		})
