@@ -69,14 +69,14 @@ export default {
   'topic.stepOption.strategy.by_embedding':
     'Semantic Similarity (Embedding · Precise)',
   'topic.stepOption.strategy.by_simhash.hint':
-    'Lightweight character-based similarity — great for filtering reposts and lightly reworded duplicates. No AI service needed; fast and low-overhead.',
+    'Lightweight character-based similarity — great for filtering reposts and lightly reworded duplicates. No AI service needed; fast and low-overhead. Lower threshold = stricter (only near-identical articles removed).',
   'topic.stepOption.strategy.by_embedding.hint':
-    'High-accuracy semantic similarity via LLM Embedding — catches paraphrased duplicates and different outlets covering the same story. Requires an Embedding API; fails open (no deduplication) when unavailable.',
+    'High-accuracy semantic similarity via LLM Embedding — catches paraphrased duplicates and different outlets covering the same story. Requires an Embedding API; fails open (no deduplication) when unavailable. Lower threshold = stricter (only near-identical articles removed).',
   'topic.stepOption.threshold.label': 'Threshold',
   'topic.stepOption.threshold.simhash':
-    'Difference 0–1, default 0.05 (lower = stricter)',
+    'Difference tolerance 0–1, default 0.05 (lower = stricter)',
   'topic.stepOption.threshold.embedding':
-    'Similarity 0–1, default 0.9 (higher = stricter)',
+    'Difference tolerance 0–1, default 0.1 (lower = stricter)',
   'topic.stepOption.sort.date_desc': 'Newest First',
   'topic.stepOption.sort.date_asc': 'Oldest First',
   'topic.stepOption.sort.quality_desc': 'Highest Quality First',

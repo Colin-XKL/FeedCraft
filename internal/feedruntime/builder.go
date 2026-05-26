@@ -327,7 +327,10 @@ func buildAggregatorStep(index int, step dao.AggregatorStep) (engine.CraftOption
 			hammingThreshold := int(math.Round(threshold * 64.0))
 			return buildSimhashDeduplicateOption(hammingThreshold), nil
 		case "by_embedding":
-			threshold, err := parseFloatOption(step.Option, "threshold", 0.9)
+			// threshold is a difference-tolerance value in [0.0, 1.0], same direction as by_simhash:
+			// 0.0 = only near-identical (strictest); 1.0 = everything is duplicate (most aggressive).
+			// Internally converted to cosine similarity floor: floor = 1 - threshold.
+			threshold, err := parseFloatOption(step.Option, "threshold", 0.1)
 			if err != nil {
 				return nil, fmt.Errorf("aggregator step %d (deduplicate/by_embedding): %w", index, err)
 			}
@@ -507,7 +510,9 @@ func buildSimhashDeduplicateOption(threshold int) engine.CraftOption {
 }
 
 // buildEmbeddingDeduplicateOption deduplicates using LLM Embedding cosine similarity.
-// Two articles are considered duplicates when their cosine similarity >= threshold.
+// threshold is a difference-tolerance value in [0.0, 1.0] (lower = stricter, same direction as SimHash).
+// Internally, two articles are considered duplicates when cosine similarity >= (1 - threshold).
+// Default threshold 0.1 → cosine floor 0.9 (only very similar articles removed).
 // Retention strategy: keep the earliest encountered article (first in the slice).
 // Falls back to keeping all articles if the embedding call fails.
 func buildEmbeddingDeduplicateOption(threshold float64) engine.CraftOption {
@@ -549,9 +554,10 @@ func buildEmbeddingDeduplicateOption(threshold float64) engine.CraftOption {
 				continue
 			}
 			vec := vectors[i]
+			// Convert difference-tolerance threshold to cosine similarity floor.
 			isDuplicate := false
 			for _, keptVec := range keptVectors {
-				if util.CosineSimilarity(vec, keptVec) >= threshold {
+				if util.CosineSimilarity(vec, keptVec) >= (1.0 - threshold) {
 					isDuplicate = true
 					break
 				}

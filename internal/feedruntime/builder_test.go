@@ -350,11 +350,14 @@ func TestDeduplicate_ByEmbedding_InvalidStrategy(t *testing.T) {
 }
 
 func TestDeduplicate_ByEmbedding_ThresholdOutOfRange(t *testing.T) {
-	_, err := BuildAggregator([]dao.AggregatorStep{
-		{Type: "deduplicate", Option: map[string]string{"strategy": "by_embedding", "threshold": "1.5"}},
-	})
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), "threshold")
+	// threshold is now a difference-tolerance in [0,1], same direction as SimHash
+	for _, bad := range []string{"1.5", "-0.1", "2"} {
+		_, err := BuildAggregator([]dao.AggregatorStep{
+			{Type: "deduplicate", Option: map[string]string{"strategy": "by_embedding", "threshold": bad}},
+		})
+		require.Error(t, err, "expected error for threshold=%q", bad)
+		assert.Contains(t, err.Error(), "threshold", "expected 'threshold' in error for threshold=%q", bad)
+	}
 }
 
 func TestBuildTopicProvider_NestedTopics(t *testing.T) {

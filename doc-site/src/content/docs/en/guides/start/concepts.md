@@ -56,8 +56,8 @@ You can configure aggregation rules for a Topic Feed to automatically process th
   - `by_link` — exact URL match (default)
   - `by_id` — exact GUID match
   - `by_title` — exact title match
-  - `by_simhash` _(Lightweight)_ — character-based fuzzy deduplication using SimHash. Compares the literal text of title and content; no AI service required. Best for filtering reposts and lightly reworded copies. Threshold is a **difference score** (`0.0` = identical only, `1.0` = everything, default `0.05`; lower is stricter).
-  - `by_embedding` _(Precise)_ — semantic deduplication via LLM Embedding vectors. Understands meaning, not just wording — catches paraphrased duplicates and different outlets covering the same story. Requires a configured Embedding API; fails open (keeps all articles) when unavailable. Threshold is a **cosine similarity score** (`0.0`–`1.0`, default `0.9`; higher is stricter).
+  - `by_simhash` _(Lightweight)_ — character-based fuzzy deduplication using SimHash. Compares the literal text of title and content; no AI service required. Best for filtering reposts and lightly reworded copies. Threshold is a **difference tolerance** (`0.0`–`1.0`, default `0.05`; **lower = stricter**).
+  - `by_embedding` _(Precise)_ — semantic deduplication via LLM Embedding vectors. Understands meaning, not just wording — catches paraphrased duplicates and different outlets covering the same story. Requires a configured Embedding API; fails open (keeps all articles) when unavailable. Threshold is also a **difference tolerance** (`0.0`–`1.0`, default `0.1`; **lower = stricter**, same direction as SimHash).
 - **Sort**: Orders the combined articles by date or quality score.
 - **Limit**: Keeps only the specified number of most recent items.
 

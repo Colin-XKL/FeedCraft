@@ -435,7 +435,7 @@
 
   const defaultThreshold = (strategy: string): number | undefined => {
     if (strategy === 'by_simhash') return 0.05;
-    if (strategy === 'by_embedding') return 0.9;
+    if (strategy === 'by_embedding') return 0.1;
     return undefined;
   };
 
