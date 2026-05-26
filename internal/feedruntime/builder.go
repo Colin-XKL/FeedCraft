@@ -530,6 +530,10 @@ func buildEmbeddingDeduplicateOption(threshold float64) engine.CraftOption {
 			// Fail open: if embedding is unavailable, return all articles without dedup.
 			return cloned, nil
 		}
+		// Guard against a shorter-than-expected slice from EmbedTexts.
+		if len(vectors) != len(cloned.Articles) {
+			return cloned, nil
+		}
 
 		unique := make([]*model.CraftArticle, 0, len(cloned.Articles))
 		keptVectors := make([][]float64, 0, len(cloned.Articles))
@@ -538,12 +542,13 @@ func buildEmbeddingDeduplicateOption(threshold float64) engine.CraftOption {
 			if article == nil {
 				continue
 			}
-			vec := vectors[i]
-			if len(vec) == 0 {
-				// No vector returned for this article; keep it unconditionally.
+			// Defense-in-depth: guard against out-of-bounds and empty vectors.
+			if i >= len(vectors) || len(vectors[i]) == 0 {
+				// No usable vector for this article; keep it unconditionally.
 				unique = append(unique, article)
 				continue
 			}
+			vec := vectors[i]
 			isDuplicate := false
 			for _, keptVec := range keptVectors {
 				if util.CosineSimilarity(vec, keptVec) >= threshold {
