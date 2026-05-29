@@ -180,7 +180,7 @@ Set a dedicated embedding endpoint when possible:
 FC_EMBEDDING_API_TYPE=openai
 FC_EMBEDDING_API_BASE=https://api.openai.com/v1
 FC_EMBEDDING_API_KEY=sk-your-api-key
-FC_EMBEDDING_API_MODEL=text-embedding-3-small
+FC_EMBEDDING_API_MODEL=text-embedding-3-small # Required
 FC_EMBEDDING_BATCH_SIZE=5
 FC_EMBEDDING_MAX_INPUT_CHARS=8000
 ```
@@ -191,7 +191,7 @@ Supported `FC_EMBEDDING_API_TYPE` values:
 - `gemini`: Gemini through its OpenAI-compatible embedding endpoint. Set `FC_EMBEDDING_API_BASE` and `FC_EMBEDDING_API_MODEL` explicitly.
 - `ollama`: Local Ollama embedding model. Set `FC_EMBEDDING_API_BASE`, for example `http://localhost:11434`, and an embedding model such as `nomic-embed-text` or `bge-m3`.
 
-If `FC_EMBEDDING_API_TYPE`, `FC_EMBEDDING_API_BASE`, and `FC_EMBEDDING_API_KEY` are not set, FeedCraft falls back to the matching `FC_LLM_API_TYPE`, `FC_LLM_API_BASE`, and `FC_LLM_API_KEY` values. The embedding model name is independent: set `FC_EMBEDDING_API_MODEL` to a real embedding model, or FeedCraft uses its OpenAI default when the API type is `openai`. FeedCraft does not reuse `FC_LLM_API_MODEL` because that value is usually a chat model.
+If `FC_EMBEDDING_API_TYPE`, `FC_EMBEDDING_API_BASE`, and `FC_EMBEDDING_API_KEY` are not set, FeedCraft falls back to the matching `FC_LLM_API_TYPE`, `FC_LLM_API_BASE`, and `FC_LLM_API_KEY` values. The embedding model name is independent: **you must explicitly set `FC_EMBEDDING_API_MODEL` to a valid embedding model.** FeedCraft does not provide a default embedding model and does not reuse `FC_LLM_API_MODEL` because that value is usually a chat model.
 
 `FC_EMBEDDING_MAX_INPUT_CHARS` is a final safety cap applied to every text sent to the embedding service, including any `instruction` prefix. It is a character budget, not an exact tokenizer count. Keep it at or below a conservative value for your model's token window, for example `8000` for an 8k-token embedding model.
 
