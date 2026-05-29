@@ -54,7 +54,7 @@
         layout="vertical"
       >
         <a-form-item :label="t('craftAtom.form.name')" field="name">
-          <a-input v-model="editedCraftAtom.name" />
+          <a-input v-model="editedCraftAtom.name" :disabled="isUpdating" />
         </a-form-item>
         <a-form-item
           :label="t('craftAtom.form.description')"

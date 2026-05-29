@@ -79,6 +79,12 @@ func UpdateCraftAtom(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
+
+	if craftAtom.Name != "" && craftAtom.Name != name {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: "Changing AtomCraft name is not allowed"})
+		return
+	}
+
 	db := util.GetDatabase()
 
 	existingCraftAtom, err := dao.GetCraftAtomByName(db, name)
