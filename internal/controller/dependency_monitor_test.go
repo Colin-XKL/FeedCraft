@@ -19,7 +19,7 @@ func TestCheckEmbeddingFallsBackToLLMEndpointForConfiguredStatus(t *testing.T) {
 	t.Setenv("FC_EMBEDDING_API_TYPE", "")
 	t.Setenv("FC_EMBEDDING_API_BASE", "")
 	t.Setenv("FC_EMBEDDING_API_KEY", "")
-	t.Setenv("FC_EMBEDDING_API_MODEL", "")
+	t.Setenv("FC_EMBEDDING_API_MODEL", "text-embedding-3-small")
 
 	status := checkEmbedding(false)
 

@@ -23,7 +23,6 @@ import (
  */
 
 const (
-	defaultEmbeddingModel         = "text-embedding-3-small"
 	embeddingCallTimeout          = 2 * time.Minute
 	embeddingTotalTimeout         = 5 * time.Minute // 全局超时预算，所有重试在此预算内执行
 	defaultEmbeddingBatchSize     = 5               // 每批发送给 Embedding 服务的默认最大文本数
@@ -109,18 +108,8 @@ func loadEmbeddingConfig() (embeddingConfig, error) {
 		cfg.apiType = "openai"
 	}
 
-	if strings.Contains(cfg.apiModel, ",") {
+	if cfg.apiModel == "" || strings.Contains(cfg.apiModel, ",") {
 		return embeddingConfig{}, fmt.Errorf("FC_EMBEDDING_API_MODEL must be set to a single embedding model")
-	}
-
-	if cfg.apiModel == "" {
-		switch cfg.apiType {
-		case "ollama", "gemini":
-			return embeddingConfig{}, fmt.Errorf("FC_EMBEDDING_API_MODEL must be set when using FC_EMBEDDING_API_TYPE='%s'", cfg.apiType)
-		default: // "openai" 及其他 OpenAI 兼容服务
-			cfg.apiModel = defaultEmbeddingModel
-			logrus.Debugf("FC_EMBEDDING_API_MODEL not set, using default: %s", defaultEmbeddingModel)
-		}
 	}
 
 	return cfg, nil

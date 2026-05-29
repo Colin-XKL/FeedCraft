@@ -181,7 +181,7 @@ FeedCraft 內建了一系列「原子工藝 (AtomCrafts)」，用於對訂閱源
 FC_EMBEDDING_API_TYPE=openai
 FC_EMBEDDING_API_BASE=https://api.openai.com/v1
 FC_EMBEDDING_API_KEY=sk-your-api-key
-FC_EMBEDDING_API_MODEL=text-embedding-3-small
+FC_EMBEDDING_API_MODEL=text-embedding-3-small # 必填
 FC_EMBEDDING_BATCH_SIZE=5
 FC_EMBEDDING_MAX_INPUT_CHARS=8000
 ```
@@ -192,7 +192,7 @@ FC_EMBEDDING_MAX_INPUT_CHARS=8000
 - `gemini`: 透過 Gemini 的 OpenAI 相容 Embedding 介面呼叫。請明確設定 `FC_EMBEDDING_API_BASE` 和 `FC_EMBEDDING_API_MODEL`。
 - `ollama`: 本機 Ollama Embedding 模型。請設定 `FC_EMBEDDING_API_BASE`，例如 `http://localhost:11434`，並使用 `nomic-embed-text` 或 `bge-m3` 這類 Embedding 模型。
 
-如果 `FC_EMBEDDING_API_TYPE`、`FC_EMBEDDING_API_BASE`、`FC_EMBEDDING_API_KEY` 都沒有設定，FeedCraft 會回退到對應的 `FC_LLM_API_TYPE`、`FC_LLM_API_BASE`、`FC_LLM_API_KEY`。Embedding 模型名是獨立的：請將 `FC_EMBEDDING_API_MODEL` 設定為真正的 Embedding 模型；如果 API 類型是 `openai` 且未設定該變數，FeedCraft 會使用預設 Embedding 模型。FeedCraft 不會複用 `FC_LLM_API_MODEL`，因為它通常是聊天模型。
+如果 `FC_EMBEDDING_API_TYPE`、`FC_EMBEDDING_API_BASE`、`FC_EMBEDDING_API_KEY` 都沒有設定，FeedCraft 會回退到對應的 `FC_LLM_API_TYPE`、`FC_LLM_API_BASE`、`FC_LLM_API_KEY`。Embedding 模型名是獨立的：**你必須顯式設定 `FC_EMBEDDING_API_MODEL` 為有效的 Embedding 模型。** FeedCraft 不再提供預設 Embedding 模型，也不會複用 `FC_LLM_API_MODEL`，因為它通常是聊天模型。
 
 `FC_EMBEDDING_MAX_INPUT_CHARS` 是傳送給 Embedding 服務前的最終安全上限，包含 `instruction` 前綴。它是字元預算，不是精確的 tokenizer token 數。建議按模型 token 視窗設定保守值，例如 8k token 的 Embedding 模型可從 `8000` 開始。
 

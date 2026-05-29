@@ -190,9 +190,6 @@ func checkEmbedding(activeCheck bool) DependencyStatus {
 	if embeddingType == "" {
 		embeddingType = "openai"
 	}
-	if embeddingModel == "" && embeddingType == "openai" {
-		embeddingModel = "text-embedding-3-small"
-	}
 
 	details := fmt.Sprintf("Type: %s, Model: %s, Base: %s", embeddingType, embeddingModel, embeddingBase)
 	if embeddingKey != "" {

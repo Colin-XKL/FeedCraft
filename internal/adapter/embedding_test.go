@@ -11,15 +11,16 @@ import (
 // --- loadEmbeddingConfig 测试 ---
 
 func TestLoadEmbeddingConfig_Defaults(t *testing.T) {
+	t.Setenv("FC_EMBEDDING_API_MODEL", "text-embedding-3-small")
 	cfg, err := loadEmbeddingConfig()
 	assert.NoError(t, err)
 	// 默认 apiType 应为 "openai"
 	assert.Equal(t, "openai", cfg.apiType)
-	// 默认模型应为 defaultEmbeddingModel
-	assert.Equal(t, defaultEmbeddingModel, cfg.apiModel)
+	assert.Equal(t, "text-embedding-3-small", cfg.apiModel)
 }
 
 func TestLoadEmbeddingConfig_ApiTypeDefault(t *testing.T) {
+	t.Setenv("FC_EMBEDDING_API_MODEL", "text-embedding-3-small")
 	cfg, err := loadEmbeddingConfig()
 	assert.NoError(t, err)
 	// 未设置 FC_EMBEDDING_API_TYPE 时应默认为 "openai"
@@ -27,6 +28,7 @@ func TestLoadEmbeddingConfig_ApiTypeDefault(t *testing.T) {
 }
 
 func TestLoadEmbeddingConfig_ReturnsNoFatal(t *testing.T) {
+	t.Setenv("FC_EMBEDDING_API_MODEL", "text-embedding-3-small")
 	// 确保 loadEmbeddingConfig 不会 panic 或 fatal
 	cfg, err := loadEmbeddingConfig()
 	assert.NoError(t, err)
@@ -34,12 +36,14 @@ func TestLoadEmbeddingConfig_ReturnsNoFatal(t *testing.T) {
 }
 
 func TestLoadEmbeddingConfig_DefaultMaxInputChars(t *testing.T) {
+	t.Setenv("FC_EMBEDDING_API_MODEL", "text-embedding-3-small")
 	cfg, err := loadEmbeddingConfig()
 	assert.NoError(t, err)
 	assert.Equal(t, defaultEmbeddingMaxInputChars, cfg.maxInputChars)
 }
 
 func TestLoadEmbeddingConfig_CustomMaxInputChars(t *testing.T) {
+	t.Setenv("FC_EMBEDDING_API_MODEL", "text-embedding-3-small")
 	t.Setenv("FC_EMBEDDING_MAX_INPUT_CHARS", "4096")
 
 	cfg, err := loadEmbeddingConfig()
@@ -183,9 +187,9 @@ func TestLoadEmbeddingConfig_GeminiEmptyModel(t *testing.T) {
 func TestLoadEmbeddingConfig_OpenAIDefaultModel(t *testing.T) {
 	t.Setenv("FC_EMBEDDING_API_TYPE", "openai")
 	t.Setenv("FC_EMBEDDING_API_MODEL", "")
-	cfg, err := loadEmbeddingConfig()
-	assert.NoError(t, err)
-	assert.Equal(t, defaultEmbeddingModel, cfg.apiModel, "openai should use default model when not set")
+	_, err := loadEmbeddingConfig()
+	assert.Error(t, err, "openai with empty model should return error")
+	assert.Contains(t, err.Error(), "FC_EMBEDDING_API_MODEL")
 }
 
 func TestLoadEmbeddingConfig_FallsBackToLLMEndpointWithDedicatedEmbeddingModel(t *testing.T) {
@@ -217,13 +221,10 @@ func TestLoadEmbeddingConfig_DoesNotUseLLMChatModelAsEmbeddingModel(t *testing.T
 	t.Setenv("FC_EMBEDDING_API_KEY", "")
 	t.Setenv("FC_EMBEDDING_API_MODEL", "")
 
-	cfg, err := loadEmbeddingConfig()
+	_, err := loadEmbeddingConfig()
 
-	assert.NoError(t, err)
-	assert.Equal(t, "openai", cfg.apiType)
-	assert.Equal(t, "https://api.openai.com/v1", cfg.apiBase)
-	assert.Equal(t, "test-key", cfg.apiKey)
-	assert.Equal(t, defaultEmbeddingModel, cfg.apiModel)
+	assert.Error(t, err, "should return error when embedding model is not set, even if LLM model is set")
+	assert.Contains(t, err.Error(), "FC_EMBEDDING_API_MODEL")
 }
 
 func TestLoadEmbeddingConfig_DoesNotFallbackLLMKeyWhenEmbeddingEndpointIsSet(t *testing.T) {
@@ -247,10 +248,10 @@ func TestLoadEmbeddingConfig_IgnoresCommaSeparatedLLMModelWhenEmbeddingModelUses
 	t.Setenv("FC_EMBEDDING_API_TYPE", "")
 	t.Setenv("FC_EMBEDDING_API_MODEL", "")
 
-	cfg, err := loadEmbeddingConfig()
+	_, err := loadEmbeddingConfig()
 
-	assert.NoError(t, err)
-	assert.Equal(t, defaultEmbeddingModel, cfg.apiModel)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "FC_EMBEDDING_API_MODEL")
 }
 
 func TestBuildAnchorVectorCacheKeyIncludesProviderAndBase(t *testing.T) {
