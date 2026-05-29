@@ -39,6 +39,34 @@ export default {
   'inbox.guide.query.private':
     '該收件箱為私有狀態，訂閱或拉取文章正文必須在 URL Query 帶上 `?token=YOUR_TOKEN` 進行身份驗證。',
 
+  // Integration Guide Modal Tabs & Prompt Generator
+  'inbox.guide.tab.push': '如何推送到 Inbox',
+  'inbox.guide.tab.subscribe': '如何從 Inbox 訂閱RSS',
+  'inbox.guide.prompt.title': 'AI Agent 腳本編寫 Prompt 產生器',
+  'inbox.guide.prompt.desc':
+    '產生一個專門的 System Prompt，用於引導外部 AI Agent (例如 ChatGPT、Claude) 編寫網頁擷取和資料推送腳本。',
+  'inbox.guide.prompt.btn': '產生 Prompt',
+  'inbox.guide.prompt.preview': 'Prompt 預覽',
+  'inbox.guide.prompt.copy': '複製 Prompt',
+  'inbox.guide.prompt.template': `你是一個擅長資料擷取的 AI 助手。現在需要你編寫一個自動化腳本（例如 Python 或 Node.js），擷取特定網頁或資料來源的資料，並將其推送到 feed-craft 的 Inbox 收件箱。
+
+【介面資訊】
+- 推送 API 位址: {pushUrl}
+- 認證標頭 (Authorization): Bearer <YOUR_SYSTEM_AUTH_TOKEN>
+- 請求方法: POST
+- Content-Type: application/json
+- 請求體格式 (JSON 陣列):
+{jsonSample}
+
+【任務要求】
+1. 編寫一個腳本擷取目標網站的資料（可以使用 Python 的 requests/BeautifulSoup/Playwright 或 Node.js 的 axios/puppeteer 等函式庫）。
+2. 將擷取到的資料解析並整理成符合上述 JSON 陣列格式的物件。
+3. 呼叫推送 API 位址，並在 Headers 中帶上 Authorization 認證標頭，將資料透過 POST 方式推送到 feed-craft。
+4. 包含完善的錯誤處理和日誌輸出，確保推送成功。
+5. 腳本應該支援定時執行或單次執行。
+
+請基於以上要求，編寫出高效、健壯的擷取與推送腳本。`,
+
   // Direct RSS URL
   'inbox.guide.directRss.desc':
     '可直接使用以下 RSS 位址訂閱，無需提前建立自訂配方：',

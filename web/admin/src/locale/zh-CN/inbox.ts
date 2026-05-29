@@ -40,6 +40,34 @@ export default {
   'inbox.guide.query.private':
     '该收件箱为私有状态，订阅或拉取文章正文必须在 URL Query 带上 `?token=YOUR_TOKEN` 进行身份验证。',
 
+  // Integration Guide Modal Tabs & Prompt Generator
+  'inbox.guide.tab.push': '如何推送到 Inbox',
+  'inbox.guide.tab.subscribe': '如何从 Inbox 订阅RSS',
+  'inbox.guide.prompt.title': 'AI Agent 脚本编写 Prompt 生成器',
+  'inbox.guide.prompt.desc':
+    '生成一个专门的 System Prompt，用于引导外部 AI Agent (例如 ChatGPT、Claude) 编写网页采集和数据推送脚本。',
+  'inbox.guide.prompt.btn': '生成 Prompt',
+  'inbox.guide.prompt.preview': 'Prompt 预览',
+  'inbox.guide.prompt.copy': '复制 Prompt',
+  'inbox.guide.prompt.template': `你是一个擅长数据采集的 AI 助手。现在需要你编写一个自动化脚本（比如 Python 或 Node.js），采集特定网页或数据源的数据，并将其推送到 feed-craft 的 Inbox 收件箱。
+
+【接口信息】
+- 推送 API 地址: {pushUrl}
+- 认证头 (Authorization): Bearer <YOUR_SYSTEM_AUTH_TOKEN>
+- 请求方法: POST
+- Content-Type: application/json
+- 请求体格式 (JSON 数组):
+{jsonSample}
+
+【任务要求】
+1. 编写一个脚本采集目标网站的数据（可以使用 Python 的 requests/BeautifulSoup/Playwright 或 Node.js 的 axios/puppeteer 等库）。
+2. 将采集到的数据解析并整理成符合上述 JSON 数组格式的对象。
+3. 调用推送 API 地址，并在 Headers 中带上 Authorization 认证头，将数据通过 POST 方式推送到 feed-craft。
+4. 包含完善的错误处理和日志输出，确保推送成功。
+5. 脚本应该支持定时运行或单次运行。
+
+请基于以上要求，编写出高效、健壮的采集与推送脚本。`,
+
   // Direct RSS URL
   'inbox.guide.directRss.desc':
     '可直接使用以下 RSS 地址订阅，无需提前创建自定义配方：',
