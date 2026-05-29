@@ -41,6 +41,34 @@ export default {
   'inbox.guide.query.private':
     'This inbox is Private. You must attach `?token=YOUR_TOKEN` query parameter to subscribe or view articles.',
 
+  // Integration Guide Modal Tabs & Prompt Generator
+  'inbox.guide.tab.push': 'How to Push to Inbox',
+  'inbox.guide.tab.subscribe': 'How to Subscribe to RSS',
+  'inbox.guide.prompt.title': 'AI Agent Script Prompt Generator',
+  'inbox.guide.prompt.desc':
+    'Generate a specialized System Prompt to guide external AI Agents (e.g., ChatGPT, Claude) in writing web scraping and data push scripts.',
+  'inbox.guide.prompt.btn': 'Generate Prompt',
+  'inbox.guide.prompt.preview': 'Prompt Preview',
+  'inbox.guide.prompt.copy': 'Copy Prompt',
+  'inbox.guide.prompt.template': `You are an expert AI assistant specializing in web data scraping. Your task is to write an automation script (e.g., in Python or Node.js) to scrape data from a specific website or data source and push it directly to the feed-craft Inbox.
+
+[API Information]
+- Push API URL: {pushUrl}
+- Authorization Header: Bearer <YOUR_SYSTEM_AUTH_TOKEN>
+- Request Method: POST
+- Content-Type: application/json
+- Request Body Format (JSON Array):
+{jsonSample}
+
+[Requirements]
+1. Write a script to scrape data from the target website (you may use requests/BeautifulSoup/Playwright for Python, or axios/puppeteer for Node.js).
+2. Format and organize the scraped data into the JSON array structure specified above.
+3. Call the Push API URL, attaching the Authorization header, and send the data using HTTP POST to feed-craft.
+4. Include robust error handling and logging to ensure the data is pushed successfully.
+5. The script should support scheduled runs or single-run invocation.
+
+Please write an efficient, robust scraping and pushing script based on the requirements above.`,
+
   // Direct RSS URL
   'inbox.guide.directRss.desc':
     'Subscribe directly with this RSS URL — no Custom Recipe needed:',

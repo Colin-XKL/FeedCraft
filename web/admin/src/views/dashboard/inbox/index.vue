@@ -454,4 +454,51 @@ curl -X POST "{{ pushUrl }}" \
     font-size: 13px;
     line-height: 1.8;
   }
+  .tab-content h3 {
+    margin-bottom: 8px;
+    font-size: 15px;
+    color: var(--color-text-1);
+  }
+  .tab-content h3:not(:first-child) {
+    margin-top: 16px;
+  }
+  .prompt-card {
+    background-color: var(--color-fill-1);
+    border: 1px dashed var(--color-border-3);
+  }
+  .prompt-textarea {
+    font-size: 12px;
+    background-color: var(--color-bg-1) !important;
+    border: 1px solid var(--color-border-2);
+  }
+  .flex {
+    display: flex;
+  }
+  .items-center {
+    align-items: center;
+  }
+  .justify-between {
+    justify-content: space-between;
+  }
+  .gap-2 {
+    gap: 8px;
+  }
+  .mb-2 {
+    margin-bottom: 8px;
+  }
+  .mb-4 {
+    margin-bottom: 16px;
+  }
+  .mt-4 {
+    margin-top: 16px;
+  }
+  .mt-6 {
+    margin-top: 24px;
+  }
+  .text-primary-6 {
+    color: rgb(var(--primary-6));
+  }
+  .text-xs {
+    font-size: 12px;
+  }
 </style>
