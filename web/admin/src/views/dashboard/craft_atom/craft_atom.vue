@@ -248,7 +248,7 @@
     isEmbeddingFilterThresholdParam,
     serializeCraftParamValue,
     toCraftParamFormValue,
-  } from './paramOptions';
+  } from '@/views/dashboard/craft_atom/paramOptions';
 
   const { t } = useI18n();
 

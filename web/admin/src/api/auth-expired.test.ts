@@ -6,7 +6,7 @@ import {
   isSessionExpiredAPIResponse,
   isSessionExpiredHTTPStatus,
   SessionExpiredError,
-} from './auth-expired';
+} from '@/api/auth-expired';
 
 describe('auth expired helpers', () => {
   it('identifies unauthorized responses as session expiration', () => {

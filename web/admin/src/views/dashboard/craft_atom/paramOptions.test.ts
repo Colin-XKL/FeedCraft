@@ -5,7 +5,7 @@ import {
   isAIContentProcessPlacementParam,
   serializeCraftParamValue,
   toCraftParamFormValue,
-} from './paramOptions';
+} from '@/views/dashboard/craft_atom/paramOptions';
 
 describe('craft atom param options', () => {
   it('treats ai-content-process extra-payload like ai-filter extra-payload', () => {
