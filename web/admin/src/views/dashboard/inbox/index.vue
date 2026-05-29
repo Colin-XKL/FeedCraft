@@ -119,26 +119,30 @@
       v-model:visible="showGuideModal"
       :title="t('inbox.guide.title')"
       :footer="false"
-      width="700px"
+      width="750px"
     >
       <div v-if="selectedInbox" class="guide-container">
-        <h3>1. {{ t('inbox.guide.pushUrl') }}</h3>
-        <p class="desc-text">{{ t('inbox.guide.pushUrl.desc') }}</p>
-        <div class="code-box">
-          <span class="monospace-text">{{ pushUrl }}</span>
-          <a-button type="text" size="mini" @click="copyText(pushUrl)">
-            <template #icon><icon-copy /></template>
-          </a-button>
-        </div>
+        <a-tabs default-active-key="push" type="line">
+          <!-- Tab 1: 如何推送到 Inbox -->
+          <a-tab-pane key="push" :title="t('inbox.guide.tab.push')">
+            <div class="tab-content mt-4">
+              <h3>1. {{ t('inbox.guide.pushUrl') }}</h3>
+              <p class="desc-text">{{ t('inbox.guide.pushUrl.desc') }}</p>
+              <div class="code-box">
+                <span class="monospace-text">{{ pushUrl }}</span>
+                <a-button type="text" size="mini" @click="copyText(pushUrl)">
+                  <template #icon><icon-copy /></template>
+                </a-button>
+              </div>
 
-        <h3 class="mt-4">2. {{ t('inbox.guide.headers') }}</h3>
-        <pre class="monospace-text headers-block">
+              <h3>2. {{ t('inbox.guide.headers') }}</h3>
+              <pre class="monospace-text headers-block">
 Authorization: Bearer &lt;YOUR_SYSTEM_AUTH_TOKEN&gt;
 Content-Type: application/json</pre
-        >
+              >
 
-        <h3 class="mt-4">3. {{ t('inbox.guide.body') }}</h3>
-        <pre class="monospace-text body-block">
+              <h3>3. {{ t('inbox.guide.body') }}</h3>
+              <pre class="monospace-text body-block">
 [
   {
     "id": "optional-custom-unique-id",
@@ -150,68 +154,132 @@ Content-Type: application/json</pre
     "timestamp": 1716470400
   }
 ]</pre
-        >
+              >
 
-        <h3 class="mt-4">4. {{ t('inbox.guide.example') }}</h3>
-        <div class="code-box bash-example">
-          <pre class="monospace-text">
+              <h3>4. {{ t('inbox.guide.example') }}</h3>
+              <div class="code-box bash-example">
+                <pre class="monospace-text">
 curl -X POST "{{ pushUrl }}" \
   -H "Authorization: Bearer &lt;YOUR_SYSTEM_AUTH_TOKEN&gt;" \
   -H "Content-Type: application/json" \
   -d '[{"title": "Test Push", "content": "&lt;p&gt;Hello World!&lt;/p&gt;"}]'</pre
-          >
-        </div>
+                >
+              </div>
 
-        <h3 class="mt-6">5. {{ t('inbox.guide.query') }}</h3>
-        <p v-if="selectedInbox.is_public" class="success-text">
-          <icon-check-circle-fill /> {{ t('inbox.guide.query.public') }}
-        </p>
-        <p v-else class="warning-text">
-          <icon-exclamation-circle-fill /> {{ t('inbox.guide.query.private') }}
-        </p>
+              <!-- AI Prompt Generator Section -->
+              <div class="prompt-generator-section mt-6">
+                <a-card size="small" class="prompt-card">
+                  <template #title>
+                    <div class="flex items-center gap-2">
+                      <icon-code class="text-primary-6" />
+                      <span>{{ t('inbox.guide.prompt.title') }}</span>
+                    </div>
+                  </template>
+                  <p class="desc-text mb-4">{{
+                    t('inbox.guide.prompt.desc')
+                  }}</p>
 
-        <!-- Direct RSS URL -->
-        <p class="desc-text mt-2">{{ t('inbox.guide.directRss.desc') }}</p>
-        <div class="code-box">
-          <span class="monospace-text">{{ directRssUrl }}</span>
-          <a-button type="text" size="mini" @click="copyText(directRssUrl)">
-            <template #icon><icon-copy /></template>
-          </a-button>
-        </div>
-        <p v-if="!selectedInbox.is_public" class="desc-text">
-          {{ t('inbox.guide.directRss.privateHint') }}
-          <span class="monospace-text"
-            >{{ directRssUrl }}?token=YOUR_TOKEN</span
-          >
-        </p>
+                  <a-button
+                    type="primary"
+                    size="small"
+                    @click="handleGeneratePrompt"
+                  >
+                    <template #icon><icon-code /></template>
+                    {{ t('inbox.guide.prompt.btn') }}
+                  </a-button>
 
-        <div class="recipe-step-box">
-          <p
-            ><strong>{{ t('inbox.guide.recipe.heading') }}:</strong></p
-          >
-          <ol>
-            <li>
-              {{ t('inbox.guide.recipe.step1.pre') }}
-              <strong>{{ t('inbox.guide.recipe.step1.link') }}</strong>
-              {{ t('inbox.guide.recipe.step1.post') }}
-            </li>
-            <li>
-              {{ t('inbox.guide.recipe.step2') }}
-              <strong>inbox</strong>。
-            </li>
-            <li>
-              {{ t('inbox.guide.recipe.step3') }}
-              <pre class="monospace-text mt-2 text-xs">
+                  <div
+                    v-if="generatedPrompt"
+                    class="prompt-preview-container mt-4"
+                  >
+                    <div class="flex justify-between items-center mb-2">
+                      <strong class="text-xs"
+                        >{{ t('inbox.guide.prompt.preview') }}:</strong
+                      >
+                      <a-button
+                        type="text"
+                        size="mini"
+                        @click="copyText(generatedPrompt)"
+                      >
+                        <template #icon><icon-copy /></template>
+                        {{ t('inbox.guide.prompt.copy') }}
+                      </a-button>
+                    </div>
+                    <a-textarea
+                      v-model="generatedPrompt"
+                      readonly
+                      :auto-size="{ minRows: 6, maxRows: 12 }"
+                      class="monospace-text prompt-textarea"
+                    />
+                  </div>
+                </a-card>
+              </div>
+            </div>
+          </a-tab-pane>
+
+          <!-- Tab 2: 如何从 Inbox 订阅RSS -->
+          <a-tab-pane key="subscribe" :title="t('inbox.guide.tab.subscribe')">
+            <div class="tab-content mt-4">
+              <h3>1. {{ t('inbox.guide.query') }}</h3>
+              <p v-if="selectedInbox.is_public" class="success-text mb-2">
+                <icon-check-circle-fill /> {{ t('inbox.guide.query.public') }}
+              </p>
+              <p v-else class="warning-text mb-2">
+                <icon-exclamation-circle-fill />
+                {{ t('inbox.guide.query.private') }}
+              </p>
+
+              <!-- Direct RSS URL -->
+              <p class="desc-text mt-2">{{
+                t('inbox.guide.directRss.desc')
+              }}</p>
+              <div class="code-box">
+                <span class="monospace-text">{{ directRssUrl }}</span>
+                <a-button
+                  type="text"
+                  size="mini"
+                  @click="copyText(directRssUrl)"
+                >
+                  <template #icon><icon-copy /></template>
+                </a-button>
+              </div>
+              <p v-if="!selectedInbox.is_public" class="desc-text">
+                {{ t('inbox.guide.directRss.privateHint') }}
+                <span class="monospace-text"
+                  >{{ directRssUrl }}?token=YOUR_TOKEN</span
+                >
+              </p>
+
+              <div class="recipe-step-box">
+                <p
+                  ><strong>{{ t('inbox.guide.recipe.heading') }}:</strong></p
+                >
+                <ol>
+                  <li>
+                    {{ t('inbox.guide.recipe.step1.pre') }}
+                    <strong>{{ t('inbox.guide.recipe.step1.link') }}</strong>
+                    {{ t('inbox.guide.recipe.step1.post') }}
+                  </li>
+                  <li>
+                    {{ t('inbox.guide.recipe.step2') }}
+                    <strong>inbox</strong>。
+                  </li>
+                  <li>
+                    {{ t('inbox.guide.recipe.step3') }}
+                    <pre class="monospace-text mt-2 text-xs">
 { "inbox_source": { "inbox_id": "{{ selectedInbox.id }}" } }</pre
-              >
-            </li>
-            <li>
-              {{ t('inbox.guide.recipe.step4.pre') }}
-              <strong>{{ t('inbox.guide.recipe.step4.link') }}</strong>
-              {{ t('inbox.guide.recipe.step4.post') }}
-            </li>
-          </ol>
-        </div>
+                    >
+                  </li>
+                  <li>
+                    {{ t('inbox.guide.recipe.step4.pre') }}
+                    <strong>{{ t('inbox.guide.recipe.step4.link') }}</strong>
+                    {{ t('inbox.guide.recipe.step4.post') }}
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </a-tab-pane>
+        </a-tabs>
       </div>
     </a-modal>
   </div>
@@ -236,6 +304,7 @@ curl -X POST "{{ pushUrl }}" \
     IconCopy,
     IconCheckCircleFill,
     IconExclamationCircleFill,
+    IconCode,
   } from '@arco-design/web-vue/es/icon';
 
   const { t } = useI18n();
@@ -248,6 +317,7 @@ curl -X POST "{{ pushUrl }}" \
   const isEditing = ref(false);
   const showGuideModal = ref(false);
   const selectedInbox = ref<Inbox | null>(null);
+  const generatedPrompt = ref('');
 
   const form = reactive({
     id: '',
@@ -327,8 +397,41 @@ curl -X POST "{{ pushUrl }}" \
     showModal.value = true;
   };
 
+  const apiBaseUrl = computed(() => {
+    return window.location.origin;
+  });
+
+  const pushUrl = computed(() => {
+    if (!selectedInbox.value) return '';
+    return `${apiBaseUrl.value}/api/inbox/${selectedInbox.value.id}/items`;
+  });
+
+  const directRssUrl = computed(() => {
+    if (!selectedInbox.value) return '';
+    return `${apiBaseUrl.value}/inbox/${selectedInbox.value.id}/rss`;
+  });
+
+  const handleGeneratePrompt = () => {
+    const jsonSample = `[
+  {
+    "id": "optional-custom-unique-id",
+    "title": "Article Title",
+    "url": "https://example.com/article",
+    "content": "<p>Article body HTML content</p>",
+    "summary": "Short description...",
+    "author": "Author Name",
+    "timestamp": 1716470400
+  }
+]`;
+    generatedPrompt.value = t('inbox.guide.prompt.template', {
+      pushUrl: pushUrl.value,
+      jsonSample,
+    });
+  };
+
   const handleShowGuide = (record: Inbox) => {
     selectedInbox.value = record;
+    generatedPrompt.value = '';
     showGuideModal.value = true;
   };
 
@@ -375,20 +478,6 @@ curl -X POST "{{ pushUrl }}" \
     navigator.clipboard.writeText(text);
     Message.success(t('systemAuthToken.copied'));
   };
-
-  const apiBaseUrl = computed(() => {
-    return window.location.origin;
-  });
-
-  const pushUrl = computed(() => {
-    if (!selectedInbox.value) return '';
-    return `${apiBaseUrl.value}/api/inbox/${selectedInbox.value.id}/items`;
-  });
-
-  const directRssUrl = computed(() => {
-    if (!selectedInbox.value) return '';
-    return `${apiBaseUrl.value}/inbox/${selectedInbox.value.id}/rss`;
-  });
 
   onMounted(() => {
     fetchInboxes();
@@ -453,5 +542,52 @@ curl -X POST "{{ pushUrl }}" \
     padding-left: 20px;
     font-size: 13px;
     line-height: 1.8;
+  }
+  .tab-content h3 {
+    margin-bottom: 8px;
+    font-size: 15px;
+    color: var(--color-text-1);
+  }
+  .tab-content h3:not(:first-child) {
+    margin-top: 16px;
+  }
+  .prompt-card {
+    background-color: var(--color-fill-1);
+    border: 1px dashed var(--color-border-3);
+  }
+  .prompt-textarea {
+    font-size: 12px;
+    background-color: var(--color-bg-1) !important;
+    border: 1px solid var(--color-border-2);
+  }
+  .flex {
+    display: flex;
+  }
+  .items-center {
+    align-items: center;
+  }
+  .justify-between {
+    justify-content: space-between;
+  }
+  .gap-2 {
+    gap: 8px;
+  }
+  .mb-2 {
+    margin-bottom: 8px;
+  }
+  .mb-4 {
+    margin-bottom: 16px;
+  }
+  .mt-4 {
+    margin-top: 16px;
+  }
+  .mt-6 {
+    margin-top: 24px;
+  }
+  .text-primary-6 {
+    color: rgb(var(--primary-6));
+  }
+  .text-xs {
+    font-size: 12px;
   }
 </style>
