@@ -23,6 +23,7 @@ export default {
   'feedViewer.viewMode': 'View Mode',
   'feedViewer.viewModeNormal': 'Normal',
   'feedViewer.viewModeRich': 'Rich Text',
+  'feedViewer.viewModeHtml': 'Raw HTML',
   'feedViewer.message.unknownError': 'Unknown Error',
   'feedViewer.message.resourceLoadFailed':
     'Some internal resource lists failed to load. Please refresh and try again.',
@@ -30,4 +31,12 @@ export default {
   'feedViewer.compare.craftAppliedFeed': 'Craft Applied Feed',
   'feedViewer.compare.message.inputRequired':
     'Please enter a feed URL and select a craft',
+  'feedViewer.item.expand': 'Expand',
+  'feedViewer.item.collapse': 'Collapse',
+  'feedViewer.item.viewDetail': 'View Detail',
+  'feedViewer.item.noContent': '(no content)',
+  'feedViewer.item.detail': 'Article Detail',
+  'feedViewer.totalItems': '{count} items total',
+  'feedViewer.showingItems': 'Showing first {count} items',
+  'feedViewer.feedInfo': 'Feed Info',
 };
