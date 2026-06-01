@@ -66,12 +66,14 @@ func CreateTopicFeed(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
+	topicData.NormalizeInputs()
 	db := util.GetDatabase()
 
 	if err := dao.CreateTopicFeed(db, &topicData); err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
+	topicData.NormalizeInputs()
 
 	c.JSON(http.StatusCreated, util.APIResponse[any]{Data: topicData})
 }
@@ -89,6 +91,7 @@ func GetTopicFeed(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
+	topicData.NormalizeInputs()
 
 	c.JSON(http.StatusOK, util.APIResponse[any]{Data: topicData})
 }
@@ -99,6 +102,10 @@ func ListTopicFeeds(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
+	}
+
+	for _, topic := range topicList {
+		topic.NormalizeInputs()
 	}
 
 	c.JSON(http.StatusOK, util.APIResponse[any]{Data: topicList})
@@ -116,6 +123,7 @@ func UpdateTopicFeed(c *gin.Context) {
 	if id != topicData.ID {
 		topicData.ID = id
 	}
+	topicData.NormalizeInputs()
 
 	db := util.GetDatabase()
 
@@ -133,6 +141,7 @@ func UpdateTopicFeed(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
+	topicData.NormalizeInputs()
 
 	c.JSON(http.StatusOK, util.APIResponse[any]{Data: topicData})
 }
@@ -159,6 +168,7 @@ func ValidateTopicFeed(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
+	topicData.NormalizeInputs()
 
 	result, err := validateTopicConfig(c.Request.Context(), util.GetDatabase(), &topicData)
 	if err != nil {
@@ -182,6 +192,7 @@ func GetTopicFeedDetail(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
+	topicData.NormalizeInputs()
 
 	health, err := dao.GetResourceHealth(db, dao.ResourceTypeTopic, id)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -272,6 +283,9 @@ func validateTopicConfig(ctx context.Context, db *gorm.DB, topicData *dao.TopicF
 		Valid:    true,
 		Errors:   []TopicValidationIssue{},
 		Warnings: []TopicValidationIssue{},
+	}
+	if topicData != nil {
+		topicData.NormalizeInputs()
 	}
 	if topicData == nil {
 		result.Valid = false

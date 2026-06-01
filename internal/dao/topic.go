@@ -1,8 +1,16 @@
 package dao
 
 import (
+	"strings"
+
 	"gorm.io/gorm"
 )
+
+// TopicInput is a single upstream source with an optional admin label.
+type TopicInput struct {
+	URI         string `json:"uri"`
+	Description string `json:"description,omitempty"`
+}
 
 // TopicFeed represents the persistence model for a multi-source aggregation node.
 type TopicFeed struct {
@@ -11,16 +19,65 @@ type TopicFeed struct {
 	Title       string `json:"title,omitempty"`
 	Description string `json:"description,omitempty"`
 
-	// List of URIs representing inputs.
+	// Inputs carries URI plus optional description for admin display.
+	Inputs []TopicInput `json:"inputs,omitempty" gorm:"serializer:json"`
+
+	// List of URIs representing inputs (derived from Inputs for runtime).
 	// Uses a custom protocol for internal resources to make routing elegant and standard.
 	// Examples:
 	//   - "feedcraft://recipe/my-tech-recipe" (Internal RecipeFeed)
 	//   - "feedcraft://topic/sub-topic-id"    (Nested internal TopicFeed)
 	//   - "https://external.com/rss.xml"      (External raw feed)
-	InputURIs []string `json:"input_uris" binding:"required" gorm:"serializer:json"`
+	InputURIs []string `json:"input_uris" gorm:"serializer:json"`
 
 	// Configuration for the aggregator pipeline
 	AggregatorConfig []AggregatorStep `json:"aggregator_config" gorm:"serializer:json"`
+}
+
+// NormalizeInputs keeps Inputs and InputURIs in sync.
+// When Inputs is provided it becomes the source of truth; otherwise legacy InputURIs are upgraded.
+func (t *TopicFeed) NormalizeInputs() {
+	if t == nil {
+		return
+	}
+
+	if len(t.Inputs) > 0 {
+		uris := make([]string, 0, len(t.Inputs))
+		normalized := make([]TopicInput, 0, len(t.Inputs))
+		for _, item := range t.Inputs {
+			uri := strings.TrimSpace(item.URI)
+			if uri == "" {
+				continue
+			}
+			uris = append(uris, uri)
+			normalized = append(normalized, TopicInput{
+				URI:         uri,
+				Description: strings.TrimSpace(item.Description),
+			})
+		}
+		t.InputURIs = uris
+		t.Inputs = normalized
+		return
+	}
+
+	if len(t.InputURIs) == 0 {
+		t.Inputs = nil
+		return
+	}
+
+	inputs := make([]TopicInput, 0, len(t.InputURIs))
+	for _, uri := range t.InputURIs {
+		uri = strings.TrimSpace(uri)
+		if uri == "" {
+			continue
+		}
+		inputs = append(inputs, TopicInput{URI: uri})
+	}
+	t.Inputs = inputs
+	t.InputURIs = make([]string, 0, len(inputs))
+	for _, item := range inputs {
+		t.InputURIs = append(t.InputURIs, item.URI)
+	}
 }
 
 // AggregatorStep defines a single processing step in an Aggregator pipeline.

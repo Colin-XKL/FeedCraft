@@ -82,10 +82,13 @@
               <div class="section-label">{{ t('topic.inputs') }}</div>
               <a-list bordered>
                 <a-list-item
-                  v-for="(uri, idx) in detail.topic.input_uris"
-                  :key="`${uri}-${idx}`"
+                  v-for="(input, idx) in topicInputs"
+                  :key="`${input.uri}-${idx}`"
                 >
-                  {{ uri }}
+                  <a-list-item-meta
+                    :title="input.description || input.uri"
+                    :description="input.description ? input.uri : undefined"
+                  />
                 </a-list-item>
               </a-list>
             </a-col>
@@ -318,6 +321,13 @@
   const publicUrl = computed(() =>
     detail.value ? buildPublicFeedUrl(detail.value.public_url) : ''
   );
+
+  const topicInputs = computed(() => {
+    if (!detail.value) return [];
+    const { topic } = detail.value;
+    if (topic.inputs?.length) return topic.inputs;
+    return topic.input_uris.map((uri) => ({ uri, description: '' }));
+  });
 
   const formatTime = (value?: string) => {
     if (!value) return '-';

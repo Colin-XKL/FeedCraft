@@ -152,3 +152,4 @@ db/
 start.sh
 start-full.sh
 .claude/
+.dev-data/

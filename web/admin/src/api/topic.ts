@@ -11,10 +11,16 @@ export interface AggregatorStep {
   option: Record<string, string>;
 }
 
+export interface TopicInput {
+  uri: string;
+  description?: string;
+}
+
 export interface TopicFeed {
   id: string;
   title?: string;
   description?: string;
+  inputs?: TopicInput[];
   input_uris: string[];
   aggregator_config: AggregatorStep[];
 }
