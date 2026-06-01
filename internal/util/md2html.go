@@ -14,10 +14,21 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// paragraphTagRE matches <p> elements so we can normalize line breaks inside them.
-var paragraphTagRE = regexp.MustCompile(`(?is)<p(\s[^>]*)?>(.*?)</p>`)
+var (
+	paragraphTagRE = regexp.MustCompile(`(?is)<p(\s[^>]*)?>(.*?)</p>`)
+
+	// consecutiveBlankLinesRE collapses 3+ line breaks (optional whitespace-only lines) to one blank line.
+	consecutiveBlankLinesRE = regexp.MustCompile(`(?:\r?\n[ \t]*){3,}`)
+
+	// Prefix match: next line starts a new block (list, heading, quote, fence, table).
+	blockStartRE = regexp.MustCompile("^(?:#{1,6}\\s|(?:\\*|-|\\+)\\s|\\d+\\.\\s|>|```|\\|)")
+
+	orderedListItemRE = regexp.MustCompile(`^\d+\.\s`)
+)
 
 func Markdown2HTML(md string) string {
+	md = normalizeMarkdownForRender(md)
+
 	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
 	p := parser.NewWithExtensions(extensions)
 	doc := p.Parse([]byte(md))
@@ -26,8 +37,7 @@ func Markdown2HTML(md string) string {
 	opts := html.RendererOptions{Flags: htmlFlags}
 	renderer := html.NewRenderer(opts)
 
-	renderResult := markdown.Render(doc, renderer)
-	return insertLineBreaksInParagraphHTML(string(renderResult))
+	return string(markdown.Render(doc, renderer))
 }
 
 func Html2Markdown(text string, domain *string) string {
@@ -46,11 +56,99 @@ func Html2Markdown(text string, domain *string) string {
 	}
 
 	mdStr, err := conv.ConvertString(text, convertOptions...)
-
 	if err != nil {
 		logrus.Errorf("convert html to markdown err: %v", err)
 	}
-	return mdStr
+	return collapseConsecutiveBlankLines(mdStr)
+}
+
+// normalizeMarkdownForRender prepares LLM- and cleanup-oriented markdown before HTML rendering.
+// Single newlines become visible line breaks; runs of blank lines are collapsed for readability.
+func normalizeMarkdownForRender(md string) string {
+	return processOutsideFencedCodeBlocks(md, func(segment string) string {
+		segment = collapseConsecutiveBlankLines(segment)
+		return applySingleNewlineHardBreaks(segment)
+	})
+}
+
+func collapseConsecutiveBlankLines(md string) string {
+	return consecutiveBlankLinesRE.ReplaceAllString(md, "\n\n")
+}
+
+// applySingleNewlineHardBreaks turns single newlines into CommonMark hard breaks ("  \n")
+// without using HardLineBreak globally, so list items and block boundaries stay intact.
+func applySingleNewlineHardBreaks(md string) string {
+	if md == "" {
+		return md
+	}
+
+	lines := strings.Split(md, "\n")
+	for i := 0; i < len(lines)-1; i++ {
+		current := lines[i]
+		next := lines[i+1]
+		if current == "" || next == "" {
+			continue
+		}
+		if isListContinuation(current, next) {
+			continue
+		}
+		if blockStartRE.MatchString(next) && !isSameBlockContinuation(current, next) {
+			continue
+		}
+		lines[i] = strings.TrimRight(current, " ") + "  "
+	}
+	return strings.Join(lines, "\n")
+}
+
+func isSameBlockContinuation(prev, next string) bool {
+	prevTrim := strings.TrimSpace(prev)
+	nextTrim := strings.TrimSpace(next)
+	if strings.HasPrefix(prevTrim, "> ") && strings.HasPrefix(nextTrim, "> ") {
+		return true
+	}
+	return false
+}
+
+func isListContinuation(prev, next string) bool {
+	if strings.TrimSpace(next) == "" {
+		return false
+	}
+	indent := len(next) - len(strings.TrimLeft(next, " \t"))
+	if indent < 2 {
+		return false
+	}
+	prevTrim := strings.TrimSpace(prev)
+	if strings.HasPrefix(prevTrim, "- ") || strings.HasPrefix(prevTrim, "* ") || strings.HasPrefix(prevTrim, "+ ") {
+		return true
+	}
+	return orderedListItemRE.MatchString(prevTrim)
+}
+
+func processOutsideFencedCodeBlocks(md string, process func(string) string) string {
+	var result strings.Builder
+	remaining := md
+
+	for {
+		open := strings.Index(remaining, "```")
+		if open == -1 {
+			result.WriteString(process(remaining))
+			break
+		}
+
+		result.WriteString(process(remaining[:open]))
+		rest := remaining[open+3:]
+		close := strings.Index(rest, "```")
+		if close == -1 {
+			result.WriteString(remaining[open:])
+			break
+		}
+
+		closeEnd := open + 3 + close + 3
+		result.WriteString(remaining[open:closeEnd])
+		remaining = remaining[closeEnd:]
+	}
+
+	return result.String()
 }
 
 // insertLineBreaksInParagraphHTML converts literal newlines inside <p> tags into <br>,
