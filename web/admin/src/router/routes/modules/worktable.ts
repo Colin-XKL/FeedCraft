@@ -22,6 +22,26 @@ const WORKTABLE: AppRouteRecordRaw = {
       },
     },
     {
+      path: 'topic_feed/create',
+      name: 'TopicFeedCreate',
+      component: () => import('@/views/dashboard/topic_feed/editor.vue'),
+      meta: {
+        requiresAuth: true,
+        locale: 'menu.topicFeed',
+        hideInMenu: true,
+      },
+    },
+    {
+      path: 'topic_feed/:id/edit',
+      name: 'TopicFeedEdit',
+      component: () => import('@/views/dashboard/topic_feed/editor.vue'),
+      meta: {
+        requiresAuth: true,
+        locale: 'menu.topicFeed',
+        hideInMenu: true,
+      },
+    },
+    {
       path: 'topic_feed/:id',
       name: 'TopicFeedDetail',
       component: () => import('@/views/dashboard/topic_feed/detail.vue'),

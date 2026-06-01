@@ -152,8 +152,9 @@ func (b *Builder) BuildTopic(ctx context.Context, topic *dao.TopicFeed, stack []
 		return nil, err
 	}
 
-	inputs := make([]engine.FeedProvider, 0, len(topic.InputURIs))
-	for _, inputURI := range topic.InputURIs {
+	enabledInputURIs := topic.EnabledInputURIs()
+	inputs := make([]engine.FeedProvider, 0, len(enabledInputURIs))
+	for _, inputURI := range enabledInputURIs {
 		spec := InputSpec{
 			Kind: InputKindURI,
 			URI:  inputURI,

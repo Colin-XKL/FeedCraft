@@ -68,6 +68,7 @@ func CreateTopicFeed(c *gin.Context) {
 	}
 	db := util.GetDatabase()
 
+	topicData.NormalizeInputs()
 	if err := dao.CreateTopicFeed(db, &topicData); err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
@@ -129,6 +130,7 @@ func UpdateTopicFeed(c *gin.Context) {
 		return
 	}
 
+	topicData.NormalizeInputs()
 	if err := dao.UpdateTopicFeed(db, &topicData); err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
@@ -211,9 +213,9 @@ func GetTopicFeedDetail(c *gin.Context) {
 		return
 	}
 
-	subFeedHealth := make([]feedruntime.SubFeedHealth, 0, len(topicData.InputURIs))
-	for _, uri := range topicData.InputURIs {
-		subFeedHealth = append(subFeedHealth, feedruntime.GetSubFeedHealth(uri))
+	subFeedHealth := make([]feedruntime.SubFeedHealth, 0, len(topicData.Inputs))
+	for _, input := range topicData.Inputs {
+		subFeedHealth = append(subFeedHealth, feedruntime.GetSubFeedHealth(input.URI))
 	}
 
 	detail := TopicDetailResponse{
@@ -273,6 +275,9 @@ func validateTopicConfig(ctx context.Context, db *gorm.DB, topicData *dao.TopicF
 		Errors:   []TopicValidationIssue{},
 		Warnings: []TopicValidationIssue{},
 	}
+	if topicData != nil {
+		topicData.NormalizeInputs()
+	}
 	if topicData == nil {
 		result.Valid = false
 		result.Errors = append(result.Errors, TopicValidationIssue{
@@ -291,19 +296,19 @@ func validateTopicConfig(ctx context.Context, db *gorm.DB, topicData *dao.TopicF
 		return result, nil
 	}
 
-	if len(topicData.InputURIs) == 0 {
+	if len(topicData.EnabledInputURIs()) == 0 {
 		result.Valid = false
 		result.Errors = append(result.Errors, TopicValidationIssue{
-			Field:   "input_uris",
-			Message: "At least one input source is required",
+			Field:   "inputs",
+			Message: "At least one enabled input source is required",
 		})
 	}
 
-	for idx, uri := range topicData.InputURIs {
-		if strings.TrimSpace(uri) == "" {
+	for idx, input := range topicData.Inputs {
+		if strings.TrimSpace(input.URI) == "" {
 			result.Valid = false
 			result.Errors = append(result.Errors, TopicValidationIssue{
-				Field:   fmt.Sprintf("input_uris[%d]", idx),
+				Field:   fmt.Sprintf("inputs[%d].uri", idx),
 				Message: "Input URI cannot be empty",
 			})
 		}

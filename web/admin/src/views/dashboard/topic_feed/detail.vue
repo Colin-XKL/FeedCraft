@@ -24,10 +24,14 @@
               </a-statistic>
             </a-col>
             <a-col :span="8">
-              <a-statistic
-                :title="t('topic.inputCount')"
-                :value="detail.topic.input_uris.length"
-              />
+              <a-statistic :title="t('topic.inputCount')">
+                <template #value>
+                  {{ enabledInputCount }}
+                  <span v-if="disabledInputCount > 0" class="input-count-muted">
+                    / {{ topicInputs.length }}
+                  </span>
+                </template>
+              </a-statistic>
             </a-col>
             <a-col :span="8">
               <a-statistic
@@ -80,14 +84,60 @@
           <a-row :gutter="16">
             <a-col :span="12">
               <div class="section-label">{{ t('topic.inputs') }}</div>
-              <a-list bordered>
-                <a-list-item
-                  v-for="(uri, idx) in detail.topic.input_uris"
-                  :key="`${uri}-${idx}`"
-                >
-                  {{ uri }}
-                </a-list-item>
-              </a-list>
+              <a-alert
+                type="info"
+                class="mb-3"
+                :title="t('topic.inputDisabled.hint')"
+              />
+              <a-table
+                :data="topicInputs"
+                :pagination="false"
+                row-key="uri"
+                size="small"
+              >
+                <template #columns>
+                  <a-table-column
+                    :title="t('topic.inputDescription.placeholder')"
+                    :ellipsis="true"
+                  >
+                    <template #cell="{ record }">
+                      <span :class="{ 'input-disabled': record.disabled }">
+                        {{ record.description || record.uri }}
+                      </span>
+                    </template>
+                  </a-table-column>
+                  <a-table-column
+                    :title="t('topic.detail.subFeedHealth.uri')"
+                    :ellipsis="true"
+                  >
+                    <template #cell="{ record }">
+                      <span
+                        class="sub-feed-uri"
+                        :class="{ 'input-disabled': record.disabled }"
+                        :title="record.uri"
+                      >
+                        {{ record.uri }}
+                      </span>
+                    </template>
+                  </a-table-column>
+                  <a-table-column
+                    :title="t('topic.inputDisabled.label')"
+                    :width="100"
+                    align="center"
+                  >
+                    <template #cell="{ record }">
+                      <a-switch
+                        :model-value="record.disabled"
+                        :loading="inputToggleSavingUri === record.uri"
+                        @change="
+                          (value: boolean) =>
+                            toggleInputDisabled(record.uri, value)
+                        "
+                      />
+                    </template>
+                  </a-table-column>
+                </template>
+              </a-table>
             </a-col>
             <a-col :span="12">
               <div class="section-label">{{ t('topic.aggregatorConfig') }}</div>
@@ -305,7 +355,9 @@
     AggregatorStep,
     SubFeedHealth,
     TopicDetail,
+    TopicInput,
     getTopicFeedDetail,
+    updateTopicFeed,
   } from '@/api/topic';
 
   const { t } = useI18n();
@@ -315,9 +367,58 @@
   const detail = ref<TopicDetail | null>(null);
   const detailsModalVisible = ref(false);
   const selectedExecutionDetails = ref('');
+  const inputToggleSavingUri = ref('');
   const publicUrl = computed(() =>
     detail.value ? buildPublicFeedUrl(detail.value.public_url) : ''
   );
+
+  const topicInputs = computed((): TopicInput[] => {
+    if (!detail.value) return [];
+    const { topic } = detail.value;
+    return topic.inputs || [];
+  });
+
+  const enabledInputCount = computed(
+    () => topicInputs.value.filter((input) => !input.disabled).length
+  );
+
+  const disabledInputCount = computed(
+    () => topicInputs.value.filter((input) => input.disabled).length
+  );
+
+  const toggleInputDisabled = async (uri: string, disabled: boolean) => {
+    if (!detail.value) return;
+
+    const nextInputs = topicInputs.value.map((input) =>
+      input.uri === uri ? { ...input, disabled } : input
+    );
+    const enabledCount = nextInputs.filter((input) => !input.disabled).length;
+    if (enabledCount === 0) {
+      Message.warning(t('topic.inputDisabled.lastEnabled'));
+      return;
+    }
+
+    const { topic } = detail.value;
+    const payload = {
+      ...topic,
+      inputs: nextInputs,
+    };
+
+    inputToggleSavingUri.value = uri;
+    try {
+      await updateTopicFeed(topic.id, payload);
+      Message.success(
+        disabled
+          ? t('topic.inputDisabled.disabledSuccess')
+          : t('topic.inputDisabled.enabledSuccess')
+      );
+      await fetchDetail();
+    } catch (err: any) {
+      Message.error(err.message || t('topic.saveFailed'));
+    } finally {
+      inputToggleSavingUri.value = '';
+    }
+  };
 
   const formatTime = (value?: string) => {
     if (!value) return '-';
@@ -400,8 +501,7 @@
     try {
       await navigator.clipboard.writeText(publicUrl.value);
       Message.success(t('topic.copyLink'));
-    } catch (err) {
-      console.error(err);
+    } catch {
       Message.error(t('topic.copyLinkFailed'));
     }
   };
@@ -485,5 +585,16 @@
   .error-text {
     color: var(--color-danger-6, #f53f3f);
     font-size: 12px;
+  }
+
+  .input-count-muted {
+    font-size: 14px;
+    color: var(--color-text-3);
+    font-weight: normal;
+  }
+
+  .input-disabled {
+    color: var(--color-text-3);
+    text-decoration: line-through;
   }
 </style>

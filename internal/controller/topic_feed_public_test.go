@@ -76,7 +76,7 @@ func TestPublicTopicFeed(t *testing.T) {
 			ID:          topicID,
 			Title:       "My Topic",
 			Description: "Topic description",
-			InputURIs:   []string{"feedcraft://recipe/" + recipeID},
+			Inputs:      []dao.TopicInput{{URI: "feedcraft://recipe/" + recipeID}},
 		})
 
 		req, err := http.NewRequest(http.MethodGet, "/topic/"+topicID, nil)
@@ -105,9 +105,9 @@ func TestPublicTopicFeed(t *testing.T) {
 	t.Run("returns 500 when topic build fails", func(t *testing.T) {
 		topicID := uniqueTestID("topic-invalid")
 		createTopicTestTopic(t, db, &dao.TopicFeed{
-			ID:        topicID,
-			Title:     "Broken Topic",
-			InputURIs: []string{"feedcraft://broken/abc"},
+			ID:     topicID,
+			Title:  "Broken Topic",
+			Inputs: []dao.TopicInput{{URI: "feedcraft://broken/abc"}},
 		})
 
 		req, err := http.NewRequest(http.MethodGet, "/topic/"+topicID, nil)
@@ -125,9 +125,9 @@ func TestPublicTopicFeed(t *testing.T) {
 		topicID := uniqueTestID("topic-partial")
 		createTopicTestRecipe(t, db, recipeID)
 		createTopicTestTopic(t, db, &dao.TopicFeed{
-			ID:        topicID,
-			Title:     "Partial Topic",
-			InputURIs: []string{"feedcraft://recipe/" + recipeID, "http://127.0.0.1:1/unreachable.xml"},
+			ID:     topicID,
+			Title:  "Partial Topic",
+			Inputs: []dao.TopicInput{{URI: "feedcraft://recipe/" + recipeID}, {URI: "http://127.0.0.1:1/unreachable.xml"}},
 		})
 
 		req, err := http.NewRequest(http.MethodGet, "/topic/"+topicID, nil)
@@ -144,9 +144,9 @@ func TestPublicTopicFeed(t *testing.T) {
 	t.Run("returns 500 when all upstreams fail", func(t *testing.T) {
 		topicID := uniqueTestID("topic-all-failed")
 		createTopicTestTopic(t, db, &dao.TopicFeed{
-			ID:        topicID,
-			Title:     "Failed Topic",
-			InputURIs: []string{"http://127.0.0.1:1/a.xml", "http://127.0.0.1:1/b.xml"},
+			ID:     topicID,
+			Title:  "Failed Topic",
+			Inputs: []dao.TopicInput{{URI: "http://127.0.0.1:1/a.xml"}, {URI: "http://127.0.0.1:1/b.xml"}},
 		})
 
 		req, err := http.NewRequest(http.MethodGet, "/topic/"+topicID, nil)
@@ -182,7 +182,7 @@ func TestTopicFeedAdminEndpoints(t *testing.T) {
 		body := `{
 			"id":"` + uniqueTestID("topic-validate-ok") + `",
 			"title":"Tech Topic",
-			"input_uris":["feedcraft://recipe/` + recipeID + `"],
+			"inputs":[{"uri":"feedcraft://recipe/` + recipeID + `"}],
 			"aggregator_config":[{"type":"limit","option":{"max":"10"}}]
 		}`
 
@@ -206,7 +206,7 @@ func TestTopicFeedAdminEndpoints(t *testing.T) {
 		body := `{
 			"id":"` + uniqueTestID("topic-invalid-step") + `",
 			"title":"Broken Step Topic",
-			"input_uris":["feedcraft://recipe/` + recipeID + `"],
+			"inputs":[{"uri":"feedcraft://recipe/` + recipeID + `"}],
 			"aggregator_config":[{"type":"limit","option":{"max":"0"}}]
 		}`
 
@@ -230,7 +230,7 @@ func TestTopicFeedAdminEndpoints(t *testing.T) {
 		body := `{
 			"id":"` + topicID + `",
 			"title":"Cycle Topic",
-			"input_uris":["feedcraft://topic/` + topicID + `"],
+			"inputs":[{"uri":"feedcraft://topic/` + topicID + `"}],
 			"aggregator_config":[{"type":"limit","option":{"max":"10"}}]
 		}`
 
@@ -255,7 +255,7 @@ func TestTopicFeedAdminEndpoints(t *testing.T) {
 			ID:          topicID,
 			Title:       "Detail Topic",
 			Description: "detail description",
-			InputURIs:   []string{"https://example.com/feed.xml"},
+			Inputs:      []dao.TopicInput{{URI: "https://example.com/feed.xml"}},
 			AggregatorConfig: []dao.AggregatorStep{
 				{Type: "limit", Option: map[string]string{"max": "20"}},
 			},

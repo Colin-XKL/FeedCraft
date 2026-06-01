@@ -363,14 +363,14 @@ func TestDeduplicate_ByEmbedding_ThresholdOutOfRange(t *testing.T) {
 func TestBuildTopicProvider_NestedTopics(t *testing.T) {
 	db := newTestDB(t)
 	require.NoError(t, db.Create(&dao.TopicFeed{
-		ID:        "child",
-		Title:     "Child Topic",
-		InputURIs: []string{"https://example.com/feed.xml"},
+		ID:     "child",
+		Title:  "Child Topic",
+		Inputs: []dao.TopicInput{{URI: "https://example.com/feed.xml"}},
 	}).Error)
 	require.NoError(t, db.Create(&dao.TopicFeed{
-		ID:        "parent",
-		Title:     "Parent Topic",
-		InputURIs: []string{"feedcraft://topic/child"},
+		ID:     "parent",
+		Title:  "Parent Topic",
+		Inputs: []dao.TopicInput{{URI: "feedcraft://topic/child"}},
 		AggregatorConfig: []dao.AggregatorStep{
 			{Type: "limit", Option: map[string]string{"max": "5"}},
 		},
@@ -401,12 +401,12 @@ func TestBuildTopicProvider_NestedTopics(t *testing.T) {
 func TestBuildTopicProvider_CycleDetection(t *testing.T) {
 	db := newTestDB(t)
 	require.NoError(t, db.Create(&dao.TopicFeed{
-		ID:        "A",
-		InputURIs: []string{"feedcraft://topic/B"},
+		ID:     "A",
+		Inputs: []dao.TopicInput{{URI: "feedcraft://topic/B"}},
 	}).Error)
 	require.NoError(t, db.Create(&dao.TopicFeed{
-		ID:        "B",
-		InputURIs: []string{"feedcraft://topic/A"},
+		ID:     "B",
+		Inputs: []dao.TopicInput{{URI: "feedcraft://topic/A"}},
 	}).Error)
 
 	builder := NewBuilder(db)
