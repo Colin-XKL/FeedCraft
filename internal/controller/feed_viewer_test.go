@@ -158,7 +158,7 @@ func TestPreviewFeedViewerSupportsTopicURI(t *testing.T) {
 		ID:          topicID,
 		Title:       "Preview Topic",
 		Description: "Topic preview",
-		InputURIs:   []string{"feedcraft://recipe/" + recipeID},
+		Inputs:      []dao.TopicInput{{URI: "feedcraft://recipe/" + recipeID}},
 	})
 
 	recorder := performFeedViewerPreviewRequest(t, http.MethodGet, "feedcraft://topic/"+topicID)

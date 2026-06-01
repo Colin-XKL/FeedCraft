@@ -108,14 +108,7 @@ export const countEnabledInputs = (sources: InputSourceItem[]): number =>
     .length;
 
 export const topicFeedToFormData = (record: TopicFeed): TopicFormData => {
-  const inputs =
-    record.inputs && record.inputs.length > 0
-      ? record.inputs
-      : record.input_uris.map((uri) => ({
-          uri,
-          description: '',
-          disabled: false,
-        }));
+  const inputs = record.inputs || [];
 
   return {
     id: record.id,
@@ -171,7 +164,6 @@ export const normalizeTopicPayload = (formData: TopicFormData): TopicFeed => {
     title: formData.title.trim(),
     description: formData.description.trim(),
     inputs,
-    input_uris: inputs.filter((item) => !item.disabled).map((item) => item.uri),
     aggregator_config: formData.aggregator_config.map((step) => {
       const option: Record<string, string> = {};
       if (step.type === 'deduplicate') {

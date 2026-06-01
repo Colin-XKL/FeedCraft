@@ -305,7 +305,7 @@ func validateTopicConfig(ctx context.Context, db *gorm.DB, topicData *dao.TopicF
 		return result, nil
 	}
 
-	if len(topicData.InputURIs) == 0 {
+	if len(topicData.EnabledInputURIs()) == 0 {
 		result.Valid = false
 		result.Errors = append(result.Errors, TopicValidationIssue{
 			Field:   "inputs",

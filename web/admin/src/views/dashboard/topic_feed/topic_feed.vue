@@ -116,8 +116,7 @@
   const loading = ref(false);
 
   const inputCount = (record: TopicFeed) => {
-    if (record.inputs?.length) return record.inputs.length;
-    return record.input_uris.length;
+    return record.inputs?.length || 0;
   };
 
   const fetchTopics = async () => {

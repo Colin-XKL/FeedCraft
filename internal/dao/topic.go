@@ -24,65 +24,45 @@ type TopicFeed struct {
 	// Inputs carries URI plus optional description for admin display.
 	Inputs []TopicInput `json:"inputs,omitempty" gorm:"serializer:json"`
 
-	// List of URIs representing inputs (derived from Inputs for runtime).
-	// Uses a custom protocol for internal resources to make routing elegant and standard.
-	// Examples:
-	//   - "feedcraft://recipe/my-tech-recipe" (Internal RecipeFeed)
-	//   - "feedcraft://topic/sub-topic-id"    (Nested internal TopicFeed)
-	//   - "https://external.com/rss.xml"      (External raw feed)
-	InputURIs []string `json:"input_uris" gorm:"serializer:json"`
-
 	// Configuration for the aggregator pipeline
 	AggregatorConfig []AggregatorStep `json:"aggregator_config" gorm:"serializer:json"`
 }
 
-// NormalizeInputs keeps Inputs and InputURIs in sync.
-// When Inputs is provided it becomes the source of truth; otherwise legacy InputURIs are upgraded.
+// NormalizeInputs trims input metadata and removes blank URIs.
 func (t *TopicFeed) NormalizeInputs() {
 	if t == nil {
 		return
 	}
 
-	if len(t.Inputs) > 0 {
-		uris := make([]string, 0, len(t.Inputs))
-		normalized := make([]TopicInput, 0, len(t.Inputs))
-		for _, item := range t.Inputs {
-			uri := strings.TrimSpace(item.URI)
-			if uri == "" {
-				continue
-			}
-			if !item.Disabled {
-				uris = append(uris, uri)
-			}
-			normalized = append(normalized, TopicInput{
-				URI:         uri,
-				Description: strings.TrimSpace(item.Description),
-				Disabled:    item.Disabled,
-			})
-		}
-		t.InputURIs = uris
-		t.Inputs = normalized
-		return
-	}
-
-	if len(t.InputURIs) == 0 {
-		t.Inputs = nil
-		return
-	}
-
-	inputs := make([]TopicInput, 0, len(t.InputURIs))
-	for _, uri := range t.InputURIs {
-		uri = strings.TrimSpace(uri)
+	normalized := make([]TopicInput, 0, len(t.Inputs))
+	for _, item := range t.Inputs {
+		uri := strings.TrimSpace(item.URI)
 		if uri == "" {
 			continue
 		}
-		inputs = append(inputs, TopicInput{URI: uri})
+		normalized = append(normalized, TopicInput{
+			URI:         uri,
+			Description: strings.TrimSpace(item.Description),
+			Disabled:    item.Disabled,
+		})
 	}
-	t.Inputs = inputs
-	t.InputURIs = make([]string, 0, len(inputs))
-	for _, item := range inputs {
-		t.InputURIs = append(t.InputURIs, item.URI)
+	t.Inputs = normalized
+}
+
+// EnabledInputURIs returns input URIs that participate in topic aggregation.
+func (t *TopicFeed) EnabledInputURIs() []string {
+	if t == nil {
+		return nil
 	}
+	uris := make([]string, 0, len(t.Inputs))
+	for _, item := range t.Inputs {
+		uri := strings.TrimSpace(item.URI)
+		if uri == "" || item.Disabled {
+			continue
+		}
+		uris = append(uris, uri)
+	}
+	return uris
 }
 
 // AggregatorStep defines a single processing step in an Aggregator pipeline.

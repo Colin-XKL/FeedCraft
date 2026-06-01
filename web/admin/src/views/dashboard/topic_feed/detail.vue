@@ -375,12 +375,7 @@
   const topicInputs = computed((): TopicInput[] => {
     if (!detail.value) return [];
     const { topic } = detail.value;
-    if (topic.inputs?.length) return topic.inputs;
-    return topic.input_uris.map((uri) => ({
-      uri,
-      description: '',
-      disabled: false,
-    }));
+    return topic.inputs || [];
   });
 
   const enabledInputCount = computed(
@@ -407,9 +402,6 @@
     const payload = {
       ...topic,
       inputs: nextInputs,
-      input_uris: nextInputs
-        .filter((input) => !input.disabled)
-        .map((input) => input.uri),
     };
 
     inputToggleSavingUri.value = uri;
@@ -509,8 +501,7 @@
     try {
       await navigator.clipboard.writeText(publicUrl.value);
       Message.success(t('topic.copyLink'));
-    } catch (err) {
-      console.error(err);
+    } catch {
       Message.error(t('topic.copyLinkFailed'));
     }
   };

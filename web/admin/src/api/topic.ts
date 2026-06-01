@@ -21,8 +21,7 @@ export interface TopicFeed {
   id: string;
   title?: string;
   description?: string;
-  inputs?: TopicInput[];
-  input_uris: string[];
+  inputs: TopicInput[];
   aggregator_config: AggregatorStep[];
 }
 
