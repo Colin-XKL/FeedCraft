@@ -2,9 +2,6 @@ package util
 
 import (
 	"regexp"
-
-	htmltomarkdown "github.com/JohannesKaufmann/html-to-markdown/v2"
-	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -34,13 +31,10 @@ func ProcessContent(content string, option ContentProcessOption) string {
 		content = imgRegex.ReplaceAllString(content, "")
 	}
 	if option.ConvertToMd {
-		markdown, err := htmltomarkdown.ConvertString(content)
-		if err != nil {
-			logrus.Errorf("Error converting HTML to Markdown: %v", err)
-			// fallback to original content
-			return content
+		if md := HTMLToMarkdown(content, ""); md != "" {
+			return md
 		}
-		return markdown
+		return content
 	}
 	return content
 }

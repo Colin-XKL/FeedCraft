@@ -29,7 +29,7 @@ func (p *LLMTextProcessor) Process(original string) (string, error) {
 	return adapter.CallLLMUsingContext(p.prompt, original, util.ContentProcessOption{})
 }
 func (p *LLMTextProcessor) Combine(original, processed string) string {
-	processedHTML := util.Markdown2HTML(processed)
+	processedHTML := util.MarkdownToHTML(processed)
 	return fmt.Sprintf(`<div><div>%s</div><hr/><br/><div>%s</div></div>`, processedHTML, original)
 }
 func (p *LLMTextProcessor) GetName() string {
@@ -49,7 +49,7 @@ func processItemContent(item *feeds.Item, processor TextProcessor) string {
 	}
 
 	domain, _ := util.ParseDomainFromUrl(item.Link.Href)
-	cleanedContent := util.Html2Markdown(originalContent, &domain)
+	cleanedContent := util.HTMLToMarkdown(originalContent, domain)
 
 	var processedContent string
 	var err error

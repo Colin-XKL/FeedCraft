@@ -374,7 +374,7 @@ func getPrimaryArticleContent(article *model.CraftArticle) string {
 
 func getArticleContentForPrompt(article *model.CraftArticle, original string) string {
 	domain, _ := util.ParseDomainFromUrl(article.Link)
-	cleaned := util.Html2Markdown(original, &domain)
+	cleaned := util.HTMLToMarkdown(original, domain)
 	if strings.TrimSpace(cleaned) != "" {
 		return cleaned
 	}
@@ -382,7 +382,7 @@ func getArticleContentForPrompt(article *model.CraftArticle, original string) st
 }
 
 func combineArticleHTMLWithGeneratedMarkdown(originalHTML string, generatedMarkdown string) string {
-	processedHTML := util.Markdown2HTML(generatedMarkdown)
+	processedHTML := util.MarkdownToHTML(generatedMarkdown)
 	return combineArticleHTMLFragments(processedHTML, originalHTML)
 }
 

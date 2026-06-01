@@ -135,7 +135,7 @@ func parseAIContentProcessPlacement(raw string) aiContentProcessPlacement {
 }
 
 func applyAIContentProcessPlacement(originalHTML string, generatedMarkdown string, placement aiContentProcessPlacement) string {
-	generatedHTML := util.Markdown2HTML(generatedMarkdown)
+	generatedHTML := util.MarkdownToHTML(generatedMarkdown)
 	switch placement {
 	case aiContentProcessPlacementReplace:
 		return generatedHTML

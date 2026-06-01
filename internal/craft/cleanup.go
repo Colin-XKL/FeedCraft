@@ -7,10 +7,9 @@ import (
 
 func CleanupContent(htmlContent string, domain string) (string, error) {
 	// First convert HTML to Markdown to strip unnecessary elements
-	markdown := util.Html2Markdown(htmlContent, &domain)
+	markdown := util.HTMLToMarkdown(htmlContent, domain)
 
-	// Then convert back to HTML for clean, semantic markup
-	cleanHtml := util.Markdown2HTML(markdown)
+	cleanHtml := util.MarkdownToHTML(markdown)
 	return cleanHtml, nil
 }
 
