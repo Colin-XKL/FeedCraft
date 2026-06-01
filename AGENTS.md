@@ -148,8 +148,6 @@ Use the existing helpers in `internal/util/hash.go` — do not import `crypto/md
 | `util.GetTextContentHash(text)` | FNV-64a | General-purpose cache keys, content fingerprinting (efficiency-focused) |
 | `util.GetPasswordMD5Hash(text)` | MD5 | Password hashing flows only (security-semantic alias) |
 
-`GetMD5Hash` is intentionally unexported. New code should use `GetTextContentHash` for cache key derivation and similar non-security purposes.
-
 ## Common Development Tasks
 
 ### Adding New Craft Template
