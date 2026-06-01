@@ -9,14 +9,7 @@
       <a-button type="primary" :loading="isLoading" @click="listAllCraftAtoms">
         {{ t('craftAtom.query') }}
       </a-button>
-      <a-button
-        type="outline"
-        @click="
-          () => {
-            showEditModal = true;
-            isUpdating = false;
-          }
-        "
+      <a-button type="outline" @click="handleAdd"
         >{{ t('craftAtom.create') }}
       </a-button>
     </a-space>
@@ -54,7 +47,7 @@
         layout="vertical"
       >
         <a-form-item :label="t('craftAtom.form.name')" field="name">
-          <a-input v-model="editedCraftAtom.name" />
+          <a-input v-model="editedCraftAtom.name" :disabled="isUpdating" />
         </a-form-item>
         <a-form-item
           :label="t('craftAtom.form.description')"
@@ -264,6 +257,7 @@
   const formParams = ref<{ key: string; value: CraftParamValue }[]>([]);
   const showEditModal = ref(false);
   const isUpdating = ref(false);
+  const originalName = ref('');
 
   const columns = [
     { title: t('craftAtom.form.name'), dataIndex: 'name' },
@@ -320,6 +314,18 @@
     }));
   };
 
+  const handleAdd = () => {
+    editedCraftAtom.value = {
+      name: '',
+      description: '',
+      template_name: '',
+      params: {},
+    };
+    formParams.value = [];
+    showEditModal.value = true;
+    isUpdating.value = false;
+  };
+
   onBeforeMount(() => {
     listAllCraftAtoms();
     fetchTemplates();
@@ -327,6 +333,7 @@
 
   const editBtnHandler = (craftAtom: CraftAtom) => {
     editedCraftAtom.value = { ...craftAtom };
+    originalName.value = craftAtom.name;
     formParams.value = Object.entries(editedCraftAtom.value.params).map(
       ([key, value]) => ({
         key,
@@ -392,7 +399,7 @@
     editedCraftAtom.value.params = paramsMap;
 
     if (isUpdating.value) {
-      await updateCraftAtom(editedCraftAtom.value.name, editedCraftAtom.value);
+      await updateCraftAtom(originalName.value, editedCraftAtom.value);
     } else {
       await createCraftAtom(editedCraftAtom.value);
     }
