@@ -2,7 +2,6 @@ package feedruntime
 
 import (
 	"context"
-	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"time"
@@ -140,11 +139,9 @@ func GetSubFeedHealth(uri string) SubFeedHealth {
 }
 
 func subFeedResultKey(uri string) string {
-	h := sha256.Sum256([]byte(uri))
-	return fmt.Sprintf("%s:%x", constant.PrefixSubFeedResult, h)
+	return fmt.Sprintf("%s:%s", constant.PrefixSubFeedResult, util.GetMD5Hash(uri))
 }
 
 func subFeedHealthKey(uri string) string {
-	h := sha256.Sum256([]byte(uri))
-	return fmt.Sprintf("%s:%x", constant.PrefixSubFeedHealth, h)
+	return fmt.Sprintf("%s:%s", constant.PrefixSubFeedHealth, util.GetMD5Hash(uri))
 }
