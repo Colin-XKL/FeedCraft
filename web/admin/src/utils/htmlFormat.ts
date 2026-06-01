@@ -58,13 +58,63 @@ const INLINE_TAGS = new Set([
   'var',
 ]);
 
+/** Tokenize html into tag tokens and text nodes, correctly handling '>' inside
+ *  quoted attributes and HTML comments so they are never split prematurely. */
+function tokenize(html: string): string[] {
+  const tokens: string[] = [];
+  let i = 0;
+  let textStart = 0;
+
+  const flushText = (end: number) => {
+    if (end > textStart) tokens.push(html.slice(textStart, end));
+  };
+
+  while (i < html.length) {
+    if (html[i] !== '<') {
+      i += 1;
+    } else if (html.startsWith('<!--', i)) {
+      // HTML comment: <!-- ... -->
+      flushText(i);
+      const end = html.indexOf('-->', i + 4);
+      const tagEnd = end === -1 ? html.length : end + 3;
+      tokens.push(html.slice(i, tagEnd));
+      i = tagEnd;
+      textStart = i;
+    } else {
+      // Regular tag: scan forward respecting quoted attributes
+      flushText(i);
+      let j = i + 1;
+      let quoteChar = '';
+      let done = false;
+      while (j < html.length && !done) {
+        const ch = html[j];
+        if (quoteChar) {
+          if (ch === quoteChar) quoteChar = '';
+        } else if (ch === '"' || ch === "'") {
+          quoteChar = ch;
+        } else if (ch === '>') {
+          j += 1;
+          done = true;
+        }
+        if (!done) j += 1;
+      }
+      tokens.push(html.slice(i, j));
+      i = j;
+      textStart = i;
+    }
+  }
+
+  flushText(html.length);
+  return tokens;
+}
+
 export default function formatHTML(html: string): string {
   if (!html || !html.trim()) return '';
 
   const result: string[] = [];
   let depth = 0;
 
-  const tokens = html.split(/(<[^>]+>)/g);
+  const tokens = tokenize(html);
 
   tokens.forEach((token) => {
     const trimmed = token.trim();
