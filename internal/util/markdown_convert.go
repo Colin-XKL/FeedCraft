@@ -22,6 +22,10 @@ var (
 	blockStartRE = regexp.MustCompile("^(?:#{1,6}\\s|(?:\\*|-|\\+)\\s|\\d+\\.\\s|>|```|\\|)")
 
 	orderedListItemRE = regexp.MustCompile(`^\d+\.\s`)
+
+	// brTagSuffixRE / brTagPrefixRE detect <br> variants adjacent to a newline (with optional whitespace).
+	brTagSuffixRE = regexp.MustCompile(`(?i)<br\b[^>]*>\s*$`)
+	brTagPrefixRE = regexp.MustCompile(`(?i)^\s*<br\b[^>]*>`)
 )
 
 // MarkdownToHTML is the canonical Markdown → HTML converter for FeedCraft.
@@ -187,6 +191,5 @@ func shouldInsertLineBreak(before, after string) bool {
 	if before == "" || after == "" {
 		return false
 	}
-	lower := strings.ToLower(before)
-	return !strings.HasSuffix(lower, "<br>") && !strings.HasSuffix(lower, "<br/>") && !strings.HasSuffix(lower, "<br />")
+	return !brTagSuffixRE.MatchString(before) && !brTagPrefixRE.MatchString(after)
 }

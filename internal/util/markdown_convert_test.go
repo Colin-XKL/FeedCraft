@@ -65,6 +65,26 @@ func TestInsertLineBreaksInParagraphHTML_DoesNotDuplicateExistingBreak(t *testin
 	assert.Equal(t, "<p>line1<br>\nline2</p>", html)
 }
 
+func TestInsertLineBreaksInParagraphHTML_DoesNotDuplicateBreakBeforeExistingBr(t *testing.T) {
+	cases := []struct {
+		name string
+		in   string
+	}{
+		{"newline before br", "<p>line1\n<br>line2</p>"},
+		{"newline before br slash", "<p>line1\n<br/>line2</p>"},
+		{"newline before br spaced", "<p>line1\n<br />line2</p>"},
+		{"newline before br with attrs", "<p>line1\n<br class=\"x\">line2</p>"},
+		{"newline before uppercase br", "<p>line1\n<BR>line2</p>"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			html := insertLineBreaksInParagraphHTML(tc.in)
+			assert.NotContains(t, html, "<br>\n<br")
+			assert.NotContains(t, html, "<br>\n<BR")
+		})
+	}
+}
+
 func TestInsertLineBreaksInParagraphHTML_HandlesAttributes(t *testing.T) {
 	html := insertLineBreaksInParagraphHTML(`<p class="note">line1
 line2</p>`)
@@ -119,6 +139,10 @@ func TestShouldInsertLineBreak(t *testing.T) {
 	assert.False(t, shouldInsertLineBreak("line1", ""))
 	assert.False(t, shouldInsertLineBreak("line1<br>", "line2"))
 	assert.False(t, shouldInsertLineBreak("line1<br/>", "line2"))
+	assert.False(t, shouldInsertLineBreak("line1", "<br>line2"))
+	assert.False(t, shouldInsertLineBreak("line1", "<br/>line2"))
+	assert.False(t, shouldInsertLineBreak("line1", "<br />line2"))
+	assert.False(t, shouldInsertLineBreak("line1", `<br class="x">line2`))
 }
 
 func TestCollapseConsecutiveBlankLines(t *testing.T) {
