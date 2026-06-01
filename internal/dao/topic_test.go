@@ -26,6 +26,30 @@ func TestTopicFeed_NormalizeInputs_FromInputs(t *testing.T) {
 	}
 }
 
+func TestTopicFeed_NormalizeInputs_SkipsDisabled(t *testing.T) {
+	topic := &TopicFeed{
+		Inputs: []TopicInput{
+			{URI: "https://example.com/enabled.xml"},
+			{URI: "https://example.com/disabled.xml", Disabled: true},
+		},
+	}
+
+	topic.NormalizeInputs()
+
+	if len(topic.InputURIs) != 1 {
+		t.Fatalf("expected 1 enabled URI, got %d", len(topic.InputURIs))
+	}
+	if topic.InputURIs[0] != "https://example.com/enabled.xml" {
+		t.Fatalf("unexpected enabled URI: %q", topic.InputURIs[0])
+	}
+	if len(topic.Inputs) != 2 {
+		t.Fatalf("expected 2 inputs retained, got %d", len(topic.Inputs))
+	}
+	if !topic.Inputs[1].Disabled {
+		t.Fatal("expected second input to stay disabled")
+	}
+}
+
 func TestTopicFeed_NormalizeInputs_FromLegacyURIs(t *testing.T) {
 	topic := &TopicFeed{
 		InputURIs: []string{"https://example.com/a.xml", "https://example.com/b.xml"},

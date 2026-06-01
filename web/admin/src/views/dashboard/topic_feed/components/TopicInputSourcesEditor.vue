@@ -4,6 +4,7 @@
       v-for="(source, idx) in modelValue"
       :key="`source-${idx}`"
       class="input-source-card"
+      :class="{ 'input-source-card--disabled': source.disabled }"
     >
       <div class="source-header">
         <a-radio-group
@@ -17,10 +18,20 @@
           <a-radio value="recipe">Recipe</a-radio>
           <a-radio value="topic">Topic</a-radio>
         </a-radio-group>
-        <a-space>
+        <a-space wrap>
+          <div v-if="showDisabledToggle" class="disable-toggle">
+            <span class="disable-toggle-label">{{
+              t('topic.inputDisabled.label')
+            }}</span>
+            <a-switch
+              :model-value="source.disabled"
+              size="small"
+              @change="(value: boolean) => setDisabled(idx, value)"
+            />
+          </div>
           <a-button
             size="small"
-            :disabled="!canPreviewSource(source)"
+            :disabled="!canPreviewSource(source) || source.disabled"
             :loading="previewingIndex === idx"
             @click="openPreview(idx)"
           >
@@ -134,13 +145,19 @@
     sourceToUri,
   } from '../topicInputUtils';
 
-  const props = defineProps<{
-    modelValue: InputSourceItem[];
-    availableRecipes: CustomRecipe[];
-    availableTopics: TopicFeed[];
-    pickerLoading?: boolean;
-    excludeTopicId?: string;
-  }>();
+  const props = withDefaults(
+    defineProps<{
+      modelValue: InputSourceItem[];
+      availableRecipes: CustomRecipe[];
+      availableTopics: TopicFeed[];
+      pickerLoading?: boolean;
+      excludeTopicId?: string;
+      showDisabledToggle?: boolean;
+    }>(),
+    {
+      showDisabledToggle: true,
+    }
+  );
 
   const emit = defineEmits<{
     (event: 'update:modelValue', value: InputSourceItem[]): void;
@@ -176,8 +193,15 @@
         externalUrl: '',
         resourceId: '',
         description: '',
+        disabled: false,
       },
     ]);
+  };
+
+  const setDisabled = (idx: number, disabled: boolean) => {
+    const next = [...props.modelValue];
+    next[idx] = { ...next[idx], disabled };
+    updateSources(next);
   };
 
   const removeSource = (idx: number) => {
@@ -189,6 +213,7 @@
         externalUrl: '',
         resourceId: '',
         description: '',
+        disabled: false,
       });
     }
     updateSources(next);
@@ -196,11 +221,13 @@
 
   const onSourceTypeChange = (idx: number, sourceType: SourceType) => {
     const next = [...props.modelValue];
+    const current = next[idx];
     next[idx] = {
       sourceType,
       externalUrl: '',
       resourceId: '',
-      description: next[idx]?.description || '',
+      description: current?.description || '',
+      disabled: current?.disabled || false,
     };
     updateSources(next);
   };
@@ -254,6 +281,21 @@
   .input-source-card:hover {
     border-color: var(--color-border-3);
     background-color: var(--color-fill-2);
+  }
+
+  .input-source-card--disabled {
+    opacity: 0.72;
+  }
+
+  .disable-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .disable-toggle-label {
+    font-size: 12px;
+    color: var(--color-text-3);
   }
 
   .source-header {

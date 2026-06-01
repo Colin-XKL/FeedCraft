@@ -111,6 +111,11 @@
                   :title="source.description || source.uri"
                   :description="source.description ? source.uri : undefined"
                 />
+                <template #actions>
+                  <a-tag v-if="source.disabled" color="gray">
+                    {{ t('topic.inputDisabled.badge') }}
+                  </a-tag>
+                </template>
               </a-list-item>
             </a-list>
 
@@ -198,8 +203,8 @@
   import {
     defaultFormData,
     formatAggregatorSummary,
+    countEnabledInputs,
     normalizeTopicPayload,
-    sourceToUri,
     topicFeedToFormData,
     type TopicFormData,
   } from './topicInputUtils';
@@ -229,10 +234,8 @@
   const availableTopics = ref<TopicFeed[]>([]);
   const pickerLoading = ref(false);
 
-  const configuredInputCount = computed(
-    () =>
-      formData.value.inputSources.filter((source) => sourceToUri(source) !== '')
-        .length
+  const configuredInputCount = computed(() =>
+    countEnabledInputs(formData.value.inputSources)
   );
 
   const reviewInputs = computed(

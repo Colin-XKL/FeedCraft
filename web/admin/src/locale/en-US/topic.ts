@@ -41,6 +41,14 @@ export default {
   'topic.addInput': 'Add Input',
   'topic.inputDescription.placeholder':
     'Label for this input (optional, helps you recognize it later)',
+  'topic.inputDisabled.label': 'Disabled',
+  'topic.inputDisabled.badge': 'Disabled',
+  'topic.inputDisabled.hint':
+    'Disabled inputs are excluded from aggregation but kept in config. You can re-enable them anytime.',
+  'topic.inputDisabled.lastEnabled':
+    'At least one input source must stay enabled',
+  'topic.inputDisabled.disabledSuccess': 'Input source disabled',
+  'topic.inputDisabled.enabledSuccess': 'Input source enabled',
   'topic.inputPreview': 'Preview',
   'topic.inputPreview.title': 'Input #{index}',
   'topic.inputPreview.currentUri': 'Preview URI',

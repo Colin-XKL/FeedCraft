@@ -13,6 +13,7 @@ export interface InputSourceItem {
   externalUrl: string;
   resourceId: string;
   description: string;
+  disabled: boolean;
 }
 
 export interface StepFormItem {
@@ -51,6 +52,7 @@ export const defaultFormData = (): TopicFormData => ({
       externalUrl: '',
       resourceId: '',
       description: '',
+      disabled: false,
     },
   ],
   aggregator_config: [],
@@ -62,6 +64,7 @@ export const parseUriToSource = (
   const uri = typeof input === 'string' ? input : input.uri;
   const description =
     typeof input === 'string' ? '' : input.description?.trim() || '';
+  const disabled = typeof input === 'string' ? false : Boolean(input.disabled);
 
   if (uri.startsWith('feedcraft://recipe/')) {
     return {
@@ -69,6 +72,7 @@ export const parseUriToSource = (
       externalUrl: '',
       resourceId: uri.slice('feedcraft://recipe/'.length),
       description,
+      disabled,
     };
   }
   if (uri.startsWith('feedcraft://topic/')) {
@@ -77,6 +81,7 @@ export const parseUriToSource = (
       externalUrl: '',
       resourceId: uri.slice('feedcraft://topic/'.length),
       description,
+      disabled,
     };
   }
   return {
@@ -84,6 +89,7 @@ export const parseUriToSource = (
     externalUrl: uri,
     resourceId: '',
     description,
+    disabled,
   };
 };
 
@@ -97,11 +103,19 @@ export const sourceToUri = (source: InputSourceItem): string => {
   return source.externalUrl.trim();
 };
 
+export const countEnabledInputs = (sources: InputSourceItem[]): number =>
+  sources.filter((source) => sourceToUri(source) !== '' && !source.disabled)
+    .length;
+
 export const topicFeedToFormData = (record: TopicFeed): TopicFormData => {
   const inputs =
     record.inputs && record.inputs.length > 0
       ? record.inputs
-      : record.input_uris.map((uri) => ({ uri, description: '' }));
+      : record.input_uris.map((uri) => ({
+          uri,
+          description: '',
+          disabled: false,
+        }));
 
   return {
     id: record.id,
@@ -116,6 +130,7 @@ export const topicFeedToFormData = (record: TopicFeed): TopicFormData => {
               externalUrl: '',
               resourceId: '',
               description: '',
+              disabled: false,
             },
           ],
     aggregator_config: (record.aggregator_config || []).map((step) => {
@@ -147,6 +162,7 @@ export const normalizeTopicPayload = (formData: TopicFormData): TopicFeed => {
     .map((source) => ({
       uri: sourceToUri(source),
       description: source.description.trim(),
+      disabled: source.disabled,
     }))
     .filter((item) => item.uri !== '');
 
@@ -155,7 +171,7 @@ export const normalizeTopicPayload = (formData: TopicFormData): TopicFeed => {
     title: formData.title.trim(),
     description: formData.description.trim(),
     inputs,
-    input_uris: inputs.map((item) => item.uri),
+    input_uris: inputs.filter((item) => !item.disabled).map((item) => item.uri),
     aggregator_config: formData.aggregator_config.map((step) => {
       const option: Record<string, string> = {};
       if (step.type === 'deduplicate') {

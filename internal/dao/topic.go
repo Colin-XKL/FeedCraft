@@ -6,10 +6,12 @@ import (
 	"gorm.io/gorm"
 )
 
-// TopicInput is a single upstream source with an optional admin label.
+// TopicInput is a single upstream source with optional admin metadata.
 type TopicInput struct {
 	URI         string `json:"uri"`
 	Description string `json:"description,omitempty"`
+	// Disabled excludes this input from topic aggregation when true.
+	Disabled bool `json:"disabled,omitempty"`
 }
 
 // TopicFeed represents the persistence model for a multi-source aggregation node.
@@ -49,10 +51,13 @@ func (t *TopicFeed) NormalizeInputs() {
 			if uri == "" {
 				continue
 			}
-			uris = append(uris, uri)
+			if !item.Disabled {
+				uris = append(uris, uri)
+			}
 			normalized = append(normalized, TopicInput{
 				URI:         uri,
 				Description: strings.TrimSpace(item.Description),
+				Disabled:    item.Disabled,
 			})
 		}
 		t.InputURIs = uris

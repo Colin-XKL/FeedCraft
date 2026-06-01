@@ -39,6 +39,13 @@ export default {
   'topic.inputPlaceholder': '例如 feedcraft://recipe/my-recipe',
   'topic.addInput': '添加输入源',
   'topic.inputDescription.placeholder': '备注名称，便于识别此输入源（可选）',
+  'topic.inputDisabled.label': '禁用',
+  'topic.inputDisabled.badge': '已禁用',
+  'topic.inputDisabled.hint':
+    '禁用后该子 Feed 不会参与聚合输出，配置仍保留，可随时重新启用。',
+  'topic.inputDisabled.lastEnabled': '至少需要保留一个启用的输入源',
+  'topic.inputDisabled.disabledSuccess': '已禁用该输入源',
+  'topic.inputDisabled.enabledSuccess': '已重新启用该输入源',
   'topic.inputPreview': '预览',
   'topic.inputPreview.title': '输入源 #{index}',
   'topic.inputPreview.currentUri': '当前预览地址',

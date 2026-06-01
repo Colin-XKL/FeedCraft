@@ -14,6 +14,7 @@ export interface AggregatorStep {
 export interface TopicInput {
   uri: string;
   description?: string;
+  disabled?: boolean;
 }
 
 export interface TopicFeed {
