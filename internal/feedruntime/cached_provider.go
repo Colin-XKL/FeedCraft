@@ -139,9 +139,9 @@ func GetSubFeedHealth(uri string) SubFeedHealth {
 }
 
 func subFeedResultKey(uri string) string {
-	return fmt.Sprintf("%s:%s", constant.PrefixSubFeedResult, util.GetMD5Hash(uri))
+	return fmt.Sprintf("%s:%s", constant.PrefixSubFeedResult, util.GetTextContentHash(uri))
 }
 
 func subFeedHealthKey(uri string) string {
-	return fmt.Sprintf("%s:%s", constant.PrefixSubFeedHealth, util.GetMD5Hash(uri))
+	return fmt.Sprintf("%s:%s", constant.PrefixSubFeedHealth, util.GetTextContentHash(uri))
 }

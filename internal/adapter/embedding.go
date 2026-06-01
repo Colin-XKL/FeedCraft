@@ -121,8 +121,8 @@ func buildAnchorVectorCacheKey(anchor string, cfg embeddingConfig, effectiveInst
 		cfg.apiType,
 		cfg.apiBase,
 		cfg.apiModel,
-		util.GetMD5Hash(effectiveInstruction),
-		util.GetMD5Hash(anchor),
+		util.GetTextContentHash(effectiveInstruction),
+		util.GetTextContentHash(anchor),
 	)
 }
 
