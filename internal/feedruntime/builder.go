@@ -162,7 +162,9 @@ func (b *Builder) BuildTopic(ctx context.Context, topic *dao.TopicFeed, stack []
 		if buildErr != nil {
 			return nil, fmt.Errorf("build topic input %q: %w", inputURI, buildErr)
 		}
-		inputs = append(inputs, provider)
+		// Wrap every input with optimistic caching so that a failing sub-feed
+		// falls back to its last known good snapshot (up to SubFeedCacheTTL).
+		inputs = append(inputs, &CachedFeedProvider{URI: inputURI, Inner: provider})
 	}
 
 	aggregator, err := buildAggregator(topic.AggregatorConfig)

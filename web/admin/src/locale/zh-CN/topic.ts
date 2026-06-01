@@ -98,4 +98,17 @@ export default {
   'topic.detail.executionDetails': '执行详情',
   'topic.detail.noExecutionDetails': '没有可展示的结构化详情',
   'topic.validation.field.runtime': '运行时构建',
+  'topic.detail.subFeedHealth': '子源缓存状态',
+  'topic.detail.subFeedHealth.uri': '输入源',
+  'topic.detail.subFeedHealth.lastSuccess': '最近成功',
+  'topic.detail.subFeedHealth.lastFailure': '最近失败',
+  'topic.detail.subFeedHealth.lastError': '最近错误',
+  'topic.detail.subFeedHealth.cachedAt': '缓存时间',
+  'topic.detail.subFeedHealth.status': '状态',
+  'topic.detail.subFeedHealth.status.ok': '正常',
+  'topic.detail.subFeedHealth.status.stale': '使用缓存',
+  'topic.detail.subFeedHealth.status.unknown': '未知',
+  'topic.detail.subFeedHealth.noData': '暂无子源状态数据（尚未被访问过）',
+  'topic.detail.subFeedHealth.hint':
+    '子源拉取失败时会自动回退到最近缓存（最长 14 天）。此处显示每个子源的最近健康情况。',
 };

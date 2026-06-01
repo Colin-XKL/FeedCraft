@@ -106,6 +106,91 @@
           </a-row>
         </a-card>
 
+        <!-- Sub-Feed Health Card -->
+        <a-card
+          v-if="detail"
+          class="general-card"
+          :title="t('topic.detail.subFeedHealth')"
+        >
+          <a-alert
+            type="info"
+            :title="t('topic.detail.subFeedHealth.hint')"
+            style="margin-bottom: 16px"
+          />
+          <a-empty
+            v-if="
+              !detail.sub_feed_health || detail.sub_feed_health.length === 0
+            "
+            :description="t('topic.detail.subFeedHealth.noData')"
+          />
+          <a-table
+            v-else
+            :data="detail.sub_feed_health"
+            :pagination="false"
+            row-key="uri"
+          >
+            <template #columns>
+              <a-table-column
+                :title="t('topic.detail.subFeedHealth.status')"
+                :width="110"
+              >
+                <template #cell="{ record }">
+                  <a-tag :color="subFeedStatusColor(record)">
+                    {{ subFeedStatusLabel(record) }}
+                  </a-tag>
+                </template>
+              </a-table-column>
+              <a-table-column
+                :title="t('topic.detail.subFeedHealth.uri')"
+                :ellipsis="true"
+              >
+                <template #cell="{ record }">
+                  <span class="sub-feed-uri" :title="record.uri">{{
+                    record.uri
+                  }}</span>
+                </template>
+              </a-table-column>
+              <a-table-column
+                :title="t('topic.detail.subFeedHealth.lastSuccess')"
+                :width="160"
+              >
+                <template #cell="{ record }">
+                  {{ formatTime(record.last_success_at) }}
+                </template>
+              </a-table-column>
+              <a-table-column
+                :title="t('topic.detail.subFeedHealth.lastFailure')"
+                :width="160"
+              >
+                <template #cell="{ record }">
+                  {{ formatTime(record.last_failure_at) }}
+                </template>
+              </a-table-column>
+              <a-table-column
+                :title="t('topic.detail.subFeedHealth.lastError')"
+                :ellipsis="true"
+              >
+                <template #cell="{ record }">
+                  <span
+                    :class="{ 'error-text': record.last_error }"
+                    :title="record.last_error"
+                  >
+                    {{ record.last_error || '-' }}
+                  </span>
+                </template>
+              </a-table-column>
+              <a-table-column
+                :title="t('topic.detail.subFeedHealth.cachedAt')"
+                :width="160"
+              >
+                <template #cell="{ record }">
+                  {{ formatTime(record.cached_at) }}
+                </template>
+              </a-table-column>
+            </template>
+          </a-table>
+        </a-card>
+
         <a-card
           v-if="detail"
           class="general-card"
@@ -216,7 +301,12 @@
     formatObservabilityTrigger,
   } from '@/utils/observability';
   import buildPublicFeedUrl from '@/utils/publicFeedUrl';
-  import { AggregatorStep, TopicDetail, getTopicFeedDetail } from '@/api/topic';
+  import {
+    AggregatorStep,
+    SubFeedHealth,
+    TopicDetail,
+    getTopicFeedDetail,
+  } from '@/api/topic';
 
   const { t } = useI18n();
   const route = useRoute();
@@ -276,6 +366,33 @@
       return `${t('topic.stepType.limit')} · ${step.option?.max || '-'}`;
     }
     return step.type;
+  };
+
+  // Returns a colour for the sub-feed status tag.
+  // "stale" (using cache) = orange; "ok" (last_failure is absent or last_success is more recent) = green; unknown = gray.
+  const subFeedStatusColor = (record: SubFeedHealth) => {
+    if (!record.last_success_at && !record.last_failure_at) return 'gray';
+    if (record.last_failure_at && !record.last_success_at) return 'red';
+    if (record.last_failure_at && record.last_success_at) {
+      const failedAt = new Date(record.last_failure_at).getTime();
+      const succeededAt = new Date(record.last_success_at).getTime();
+      if (failedAt > succeededAt) return 'orange';
+    }
+    return 'green';
+  };
+
+  const subFeedStatusLabel = (record: SubFeedHealth) => {
+    if (!record.last_success_at && !record.last_failure_at)
+      return t('topic.detail.subFeedHealth.status.unknown');
+    if (record.last_failure_at && !record.last_success_at)
+      return t('topic.detail.subFeedHealth.status.stale');
+    if (record.last_failure_at && record.last_success_at) {
+      const failedAt = new Date(record.last_failure_at).getTime();
+      const succeededAt = new Date(record.last_success_at).getTime();
+      if (failedAt > succeededAt)
+        return t('topic.detail.subFeedHealth.status.stale');
+    }
+    return t('topic.detail.subFeedHealth.status.ok');
   };
 
   const copyPublicUrl = async () => {
@@ -357,5 +474,16 @@
     background: var(--color-fill-2);
     white-space: pre-wrap;
     word-break: break-word;
+  }
+
+  .sub-feed-uri {
+    font-family: monospace;
+    font-size: 12px;
+    word-break: break-all;
+  }
+
+  .error-text {
+    color: var(--color-danger-6, #f53f3f);
+    font-size: 12px;
   }
 </style>
