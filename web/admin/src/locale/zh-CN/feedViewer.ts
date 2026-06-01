@@ -23,6 +23,7 @@ export default {
   'feedViewer.viewMode': '预览模式',
   'feedViewer.viewModeNormal': '普通',
   'feedViewer.viewModeRich': '富文本',
+  'feedViewer.viewModeHtml': '原始 HTML',
   'feedViewer.message.unknownError': '未知错误',
   'feedViewer.message.resourceLoadFailed':
     '部分内部资源列表加载失败，可稍后刷新重试',
@@ -30,4 +31,12 @@ export default {
   'feedViewer.compare.craftAppliedFeed': 'Craft 处理后的 Feed',
   'feedViewer.compare.message.inputRequired':
     '请输入 Feed 地址并选择一个 Craft',
+  'feedViewer.item.expand': '展开',
+  'feedViewer.item.collapse': '折叠',
+  'feedViewer.item.viewDetail': '查看详情',
+  'feedViewer.item.noContent': '（无内容）',
+  'feedViewer.item.detail': '文章详情',
+  'feedViewer.totalItems': '共 {count} 篇',
+  'feedViewer.showingItems': '显示前 {count} 篇',
+  'feedViewer.feedInfo': 'Feed 信息',
 };

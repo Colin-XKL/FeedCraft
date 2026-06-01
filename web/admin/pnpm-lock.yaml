@@ -16,6 +16,9 @@ importers:
       '@arco-design/web-vue':
         specifier: ^2.57.0
         version: 2.57.0(vue@3.4.27(typescript@4.9.5))
+      '@types/highlight.js':
+        specifier: ^10.1.0
+        version: 10.1.0
       '@vueuse/core':
         specifier: ^9.3.0
         version: 9.13.0(vue@3.4.27(typescript@4.9.5))
@@ -34,6 +37,9 @@ importers:
       events:
         specifier: ^3.3.0
         version: 3.3.0
+      highlight.js:
+        specifier: ^11.11.1
+        version: 11.11.1
       js-md5:
         specifier: ^0.8.3
         version: 0.8.3
@@ -502,6 +508,10 @@ packages:
 
   '@types/estree@1.0.5':
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
+
+  '@types/highlight.js@10.1.0':
+    resolution: {integrity: sha512-77hF2dGBsOgnvZll1vymYiNUtqJ8cJfXPD6GG/2M0aLRc29PkvB7Au6sIDjIEFcSICBhCh2+Pyq6WSRS7LUm6A==}
+    deprecated: This is a stub types definition. highlight.js provides its own type definitions, so you do not need this installed.
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -1695,6 +1705,10 @@ packages:
   hepburn@1.2.2:
     resolution: {integrity: sha512-DeykBc4XmfAWsnN+Y1Svi9uaQnnz21Q/ARuGWvIBxP1iUFeMIWL41DfVkgTh7tU23LFIbmIBO2Bk17BTPu0kVA==}
     engines: {node: '>=4'}
+
+  highlight.js@11.11.1:
+    resolution: {integrity: sha512-Xwwo44whKBVCYoliBQwaPvtd/2tYFkRQtXDWj1nackaV2JPXx3L0+Jvd8/qCJ2p+ML0/XVkJ2q+Mr+UVdpJK5w==}
+    engines: {node: '>=12.0.0'}
 
   html-tags@3.3.1:
     resolution: {integrity: sha512-ztqyC3kLto0e9WbNp0aeP+M3kTt+nbaIveGmUxAtZa+8iFgKLUOD4YKM5j+f3QD89bra7UeumolZHKuOXnTmeQ==}
@@ -3342,6 +3356,10 @@ snapshots:
 
   '@types/estree@1.0.5': {}
 
+  '@types/highlight.js@10.1.0':
+    dependencies:
+      highlight.js: 11.11.1
+
   '@types/json-schema@7.0.15': {}
 
   '@types/json5@0.0.29': {}
@@ -4701,6 +4719,8 @@ snapshots:
   he@1.2.0: {}
 
   hepburn@1.2.2: {}
+
+  highlight.js@11.11.1: {}
 
   html-tags@3.3.1: {}
 

@@ -74,8 +74,8 @@
                 size="large"
                 :loading="fetching"
                 :disabled="!fetchReq.query"
-                @click="handlePreview"
                 class="w-full sm:w-64"
+                @click="handlePreview"
               >
                 {{ $t('searchToRss.step1.button') }} <icon-arrow-right />
               </a-button>

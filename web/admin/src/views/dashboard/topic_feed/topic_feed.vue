@@ -200,8 +200,8 @@
               <a-button
                 type="text"
                 status="danger"
-                @click="removeSource(idx)"
                 class="remove-btn"
+                @click="removeSource(idx)"
               >
                 <template #icon>
                   <icon-delete />
@@ -209,7 +209,7 @@
                 {{ t('topic.removeInput') }}
               </a-button>
             </div>
-            <a-button type="dashed" long @click="addSource" class="add-btn">
+            <a-button type="dashed" long class="add-btn" @click="addSource">
               <template #icon>
                 <icon-plus />
               </template>
@@ -323,8 +323,8 @@
                 <a-button
                   type="text"
                   status="danger"
-                  @click="removeStep(idx)"
                   class="remove-btn"
+                  @click="removeStep(idx)"
                 >
                   <template #icon>
                     <icon-delete />
@@ -343,7 +343,7 @@
               </p>
             </div>
 
-            <a-button type="dashed" long @click="addStep" class="add-btn">
+            <a-button type="dashed" long class="add-btn" @click="addStep">
               <template #icon>
                 <icon-plus />
               </template>
