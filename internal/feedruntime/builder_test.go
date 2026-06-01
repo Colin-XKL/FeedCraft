@@ -384,7 +384,10 @@ func TestBuildTopicProvider_NestedTopics(t *testing.T) {
 	require.True(t, ok)
 	assert.Equal(t, "parent", topicProvider.ID)
 	assert.Len(t, topicProvider.Inputs, 1)
-	_, ok = topicProvider.Inputs[0].(*engine.TopicFeed)
+	// Each input is wrapped in a CachedFeedProvider; the inner provider is a nested TopicFeed.
+	cached, ok := topicProvider.Inputs[0].(*CachedFeedProvider)
+	require.True(t, ok)
+	_, ok = cached.Inner.(*engine.TopicFeed)
 	assert.True(t, ok)
 	require.NotNil(t, topicProvider.Aggregator)
 

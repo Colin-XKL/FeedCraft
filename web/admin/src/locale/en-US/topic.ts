@@ -101,4 +101,18 @@ export default {
   'topic.detail.executionDetails': 'Execution Details',
   'topic.detail.noExecutionDetails': 'No structured execution details',
   'topic.validation.field.runtime': 'Runtime Build',
+  'topic.detail.subFeedHealth': 'Sub-Feed Cache Health',
+  'topic.detail.subFeedHealth.uri': 'Input Source',
+  'topic.detail.subFeedHealth.lastSuccess': 'Last Success',
+  'topic.detail.subFeedHealth.lastFailure': 'Last Failure',
+  'topic.detail.subFeedHealth.lastError': 'Last Error',
+  'topic.detail.subFeedHealth.cachedAt': 'Cache Written',
+  'topic.detail.subFeedHealth.status': 'Status',
+  'topic.detail.subFeedHealth.status.ok': 'OK',
+  'topic.detail.subFeedHealth.status.stale': 'Using Cache',
+  'topic.detail.subFeedHealth.status.unknown': 'Unknown',
+  'topic.detail.subFeedHealth.noData':
+    'No sub-feed data yet (topic has not been accessed).',
+  'topic.detail.subFeedHealth.hint':
+    'When a sub-feed fails to fetch, the last cached snapshot is used (up to 14 days). This section shows the recent health of each input source.',
 };

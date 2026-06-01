@@ -137,6 +137,17 @@ The system includes numerous built-in craft templates in `internal/craft/entry.g
 - Use `go test ./...` to run all tests
 - The frontend project currently does not have test scripts configured. If tests are added, they would be located in `web/admin/`.
 
+## Utility Guidelines
+
+### Hash Functions
+
+Use the existing helpers in `internal/util/hash.go` — do not import `crypto/md5`, `crypto/sha256`, or `hash/fnv` directly.
+
+| Function | Algorithm | Use case |
+|---|---|---|
+| `util.GetTextContentHash(text)` | FNV-64a | General-purpose cache keys, content fingerprinting (efficiency-focused) |
+| `util.GetPasswordMD5Hash(text)` | MD5 | Password hashing flows only (security-semantic alias) |
+
 ## Common Development Tasks
 
 ### Adding New Craft Template

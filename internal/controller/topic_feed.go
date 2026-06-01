@@ -1,20 +1,22 @@
 package controller
 
 import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
 	"FeedCraft/internal/dao"
 	"FeedCraft/internal/feedruntime"
 	"FeedCraft/internal/model"
 	"FeedCraft/internal/observability"
 	"FeedCraft/internal/util"
-	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"net/http"
-	"strings"
-	"time"
 )
 
 const topicDetailLogLimit = 20
@@ -38,6 +40,8 @@ type TopicDetailResponse struct {
 	Health               ResourceHealthView        `json:"health"`
 	RecentExecutions     []TopicExecutionLogView   `json:"recent_executions"`
 	RelatedNotifications []*dao.SystemNotification `json:"related_notifications"`
+	// SubFeedHealth provides per-input-URI health metadata powered by optimistic caching.
+	SubFeedHealth []feedruntime.SubFeedHealth `json:"sub_feed_health"`
 }
 
 type TopicExecutionLogView struct {
@@ -207,12 +211,18 @@ func GetTopicFeedDetail(c *gin.Context) {
 		return
 	}
 
+	subFeedHealth := make([]feedruntime.SubFeedHealth, 0, len(topicData.InputURIs))
+	for _, uri := range topicData.InputURIs {
+		subFeedHealth = append(subFeedHealth, feedruntime.GetSubFeedHealth(uri))
+	}
+
 	detail := TopicDetailResponse{
 		Topic:                *topicData,
 		PublicURL:            "/topic/" + topicData.ID,
 		Health:               mergeResourceHealth(dao.ResourceTypeTopic, topicData.ID, topicData.Title, health),
 		RecentExecutions:     buildTopicExecutionViews(executions),
 		RelatedNotifications: notifications,
+		SubFeedHealth:        subFeedHealth,
 	}
 
 	c.JSON(http.StatusOK, util.APIResponse[any]{Data: detail})

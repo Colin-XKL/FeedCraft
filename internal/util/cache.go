@@ -3,6 +3,9 @@ package util
 import (
 	"FeedCraft/internal/constant"
 	"context"
+	"errors"
+	"strings"
+
 	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
 	"log"
@@ -27,6 +30,48 @@ func GetRedisClient() *redis.Client {
 		log.Fatalf("create redis client error.")
 	}
 	return rdb
+}
+
+// tryGetRedisClient returns a Redis client or an error without fatally crashing.
+// It is safe to call in environments where Redis may not be configured (e.g. tests).
+func tryGetRedisClient() (*redis.Client, error) {
+	envClient := GetEnvClient()
+	if envClient == nil {
+		return nil, errors.New("env client not available")
+	}
+	redisURI := strings.TrimSpace(envClient.GetString("REDIS_URI"))
+	if redisURI == "" {
+		return nil, errors.New("REDIS_URI is not configured")
+	}
+	opts, err := redis.ParseURL(redisURI)
+	if err != nil {
+		return nil, err
+	}
+	rdb := redis.NewClient(opts)
+	if rdb == nil {
+		return nil, errors.New("failed to create redis client")
+	}
+	return rdb, nil
+}
+
+// TryCacheSetString is like CacheSetString but returns an error instead of crashing
+// when Redis is not configured. Safe to call in environments without Redis.
+func TryCacheSetString(key string, value string, ttl time.Duration) error {
+	rdb, err := tryGetRedisClient()
+	if err != nil {
+		return err
+	}
+	return rdb.Set(context.Background(), key, value, ttl).Err()
+}
+
+// TryCacheGetString is like CacheGetString but returns an error instead of crashing
+// when Redis is not configured. Safe to call in environments without Redis.
+func TryCacheGetString(key string) (string, error) {
+	rdb, err := tryGetRedisClient()
+	if err != nil {
+		return "", err
+	}
+	return rdb.Get(context.Background(), key).Result()
 }
 
 func CacheSetString(key string, value string, ttl time.Duration) error {
