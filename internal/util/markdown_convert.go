@@ -15,21 +15,15 @@ import (
 )
 
 var (
-	paragraphTagRE = regexp.MustCompile(`(?is)<p(\s[^>]*)?>(.*?)</p>`)
-
+	paragraphTagRE          = regexp.MustCompile(`(?is)<p(\s[^>]*)?>(.*?)</p>`)
 	consecutiveBlankLinesRE = regexp.MustCompile(`(?:\r?\n[ \t]*){3,}`)
+	brTagSuffixRE           = regexp.MustCompile(`(?i)<br\b[^>]*>\s*$`)
+	brTagPrefixRE           = regexp.MustCompile(`(?i)^\s*<br\b[^>]*>`)
 
-	blockStartRE = regexp.MustCompile("^(?:#{1,6}\\s|(?:\\*|-|\\+)\\s|\\d+\\.\\s|>|```|\\|)")
-
+	blockStartRE      = regexp.MustCompile("^(?:#{1,6}\\s|(?:\\*|-|\\+)\\s|\\d+\\.\\s|>|```|\\|)")
 	orderedListItemRE = regexp.MustCompile(`^\d+\.\s`)
-
-	// brTagSuffixRE / brTagPrefixRE detect <br> variants adjacent to a newline (with optional whitespace).
-	brTagSuffixRE = regexp.MustCompile(`(?i)<br\b[^>]*>\s*$`)
-	brTagPrefixRE = regexp.MustCompile(`(?i)^\s*<br\b[^>]*>`)
 )
 
-// MarkdownToHTML is the canonical Markdown → HTML converter for FeedCraft.
-// It normalizes LLM-oriented markdown (single newlines as breaks, collapsed blank runs) before rendering.
 func MarkdownToHTML(md string) string {
 	md = normalizeMarkdownForRender(md)
 
@@ -44,8 +38,6 @@ func MarkdownToHTML(md string) string {
 	return string(markdown.Render(doc, renderer))
 }
 
-// HTMLToMarkdown is the canonical HTML → Markdown converter for FeedCraft.
-// Pass domain when relative URLs should be resolved against an article origin (e.g. cleanup, LLM prompts).
 func HTMLToMarkdown(htmlContent string, domain string) string {
 	htmlContent = insertLineBreaksInParagraphHTML(htmlContent)
 

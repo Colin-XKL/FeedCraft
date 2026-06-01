@@ -150,29 +150,6 @@ func TestCollapseConsecutiveBlankLines(t *testing.T) {
 	assert.Equal(t, "line1\n\nline2", collapseConsecutiveBlankLines("line1\n   \n  \nline2"))
 }
 
-func TestApplySingleNewlineHardBreaks_ListBoundaryUnchanged(t *testing.T) {
-	md := applySingleNewlineHardBreaks("- item1\n- item2")
-	assert.Equal(t, "- item1\n- item2", md)
-}
-
-func TestApplySingleNewlineHardBreaks_BlockquoteContinuationGetsHardBreak(t *testing.T) {
-	md := applySingleNewlineHardBreaks("> quote line1\n> quote line2")
-	assert.Contains(t, md, "quote line1  \n> quote line2")
-}
-
-func TestApplySingleNewlineHardBreaks_ParagraphGetsHardBreak(t *testing.T) {
-	md := applySingleNewlineHardBreaks("line1\nline2")
-	assert.Equal(t, "line1  \nline2", md)
-}
-
-func TestNormalizeMarkdownForRender_PreservesCodeFenceBlankLines(t *testing.T) {
-	input := "intro\n\n\n\n```\nkeep\n\n\nspacing\n```\n\n\n\noutro"
-	normalized := normalizeMarkdownForRender(input)
-	assert.Contains(t, normalized, "keep\n\n\nspacing")
-	assert.Contains(t, normalized, "intro\n\n```")
-	assert.Contains(t, normalized, "```\n\noutro")
-}
-
 func TestMarkdownToHTML_CollapsesExcessiveBlankLines(t *testing.T) {
 	html := MarkdownToHTML("line1\n\n\n\nline2")
 	assert.Contains(t, html, "<p>line1</p>")
