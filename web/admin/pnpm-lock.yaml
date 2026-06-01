@@ -16,9 +16,6 @@ importers:
       '@arco-design/web-vue':
         specifier: ^2.57.0
         version: 2.57.0(vue@3.4.27(typescript@4.9.5))
-      '@types/highlight.js':
-        specifier: ^10.1.0
-        version: 10.1.0
       '@vueuse/core':
         specifier: ^9.3.0
         version: 9.13.0(vue@3.4.27(typescript@4.9.5))
@@ -508,10 +505,6 @@ packages:
 
   '@types/estree@1.0.5':
     resolution: {integrity: sha512-/kYRxGDLWzHOB7q+wtSUQlFrtcdUccpfy+X+9iMBpHK8QLLhx2wIPYuS5DYtR9Wa/YlZAbIovy7qVdB1Aq6Lyw==}
-
-  '@types/highlight.js@10.1.0':
-    resolution: {integrity: sha512-77hF2dGBsOgnvZll1vymYiNUtqJ8cJfXPD6GG/2M0aLRc29PkvB7Au6sIDjIEFcSICBhCh2+Pyq6WSRS7LUm6A==}
-    deprecated: This is a stub types definition. highlight.js provides its own type definitions, so you do not need this installed.
 
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
@@ -3355,10 +3348,6 @@ snapshots:
       '@types/json-schema': 7.0.15
 
   '@types/estree@1.0.5': {}
-
-  '@types/highlight.js@10.1.0':
-    dependencies:
-      highlight.js: 11.11.1
 
   '@types/json-schema@7.0.15': {}
 
