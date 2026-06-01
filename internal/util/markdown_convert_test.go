@@ -8,45 +8,45 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestMarkdown2HTML_SingleNewlineBecomesBreak(t *testing.T) {
-	html := Markdown2HTML("line1\nline2")
+func TestMarkdownToHTML_SingleNewlineBecomesBreak(t *testing.T) {
+	html := MarkdownToHTML("line1\nline2")
 	assert.Contains(t, html, "line1<br>")
 	assert.Contains(t, html, "line2")
 }
 
-func TestMarkdown2HTML_DoubleNewlineCreatesParagraphs(t *testing.T) {
-	html := Markdown2HTML("line1\n\nline2")
+func TestMarkdownToHTML_DoubleNewlineCreatesParagraphs(t *testing.T) {
+	html := MarkdownToHTML("line1\n\nline2")
 	assert.Contains(t, html, "<p>line1</p>")
 	assert.Contains(t, html, "<p>line2</p>")
 }
 
-func TestMarkdown2HTML_TwoSpacesNewlineStillBreaks(t *testing.T) {
-	html := Markdown2HTML("line1  \nline2")
+func TestMarkdownToHTML_TwoSpacesNewlineStillBreaks(t *testing.T) {
+	html := MarkdownToHTML("line1  \nline2")
 	assert.Contains(t, html, "line1<br>")
 	assert.Contains(t, html, "line2")
 }
 
-func TestMarkdown2HTML_ExplicitBreakTagPreserved(t *testing.T) {
-	html := Markdown2HTML("line1<br>line2")
+func TestMarkdownToHTML_ExplicitBreakTagPreserved(t *testing.T) {
+	html := MarkdownToHTML("line1<br>line2")
 	assert.Contains(t, html, "line1<br>")
 	assert.Contains(t, html, "line2")
 }
 
-func TestMarkdown2HTML_ListItemsUnchanged(t *testing.T) {
-	html := Markdown2HTML("- item1\n- item2")
+func TestMarkdownToHTML_ListItemsUnchanged(t *testing.T) {
+	html := MarkdownToHTML("- item1\n- item2")
 	assert.Contains(t, html, "<li>item1</li>")
 	assert.Contains(t, html, "<li>item2</li>")
 	assert.NotRegexp(t, `<li>item1<br>`, html)
 }
 
-func TestMarkdown2HTML_BlockquotePreservesLineBreaks(t *testing.T) {
-	html := Markdown2HTML("> quote line1\n> quote line2")
+func TestMarkdownToHTML_BlockquotePreservesLineBreaks(t *testing.T) {
+	html := MarkdownToHTML("> quote line1\n> quote line2")
 	assert.Contains(t, html, "quote line1<br>")
 	assert.Contains(t, html, "quote line2")
 }
 
-func TestMarkdown2HTML_CodeBlockPreservesNewlines(t *testing.T) {
-	html := Markdown2HTML("```\ncode line1\ncode line2\n```")
+func TestMarkdownToHTML_CodeBlockPreservesNewlines(t *testing.T) {
+	html := MarkdownToHTML("```\ncode line1\ncode line2\n```")
 	assert.Contains(t, html, "<pre>")
 	assert.Contains(t, html, "code line1")
 	assert.Contains(t, html, "code line2")
@@ -72,45 +72,42 @@ line2</p>`)
 	assert.Contains(t, html, "line1<br>")
 }
 
-func TestHtml2Markdown_ParagraphNewlineRoundTrip(t *testing.T) {
-	domain := "example.com"
+func TestHTMLToMarkdown_ParagraphNewlineRoundTrip(t *testing.T) {
 	original := "<p>line1\nline2</p>"
 
-	md := Html2Markdown(original, &domain)
+	md := HTMLToMarkdown(original, "example.com")
 	require.NotEmpty(t, md)
 	assert.Contains(t, md, "line1")
 	assert.Contains(t, md, "line2")
 
-	back := Markdown2HTML(md)
+	back := MarkdownToHTML(md)
 	assert.Contains(t, back, "line1<br>")
 	assert.Contains(t, back, "line2")
 }
 
-func TestHtml2Markdown_BreakTagRoundTrip(t *testing.T) {
-	domain := "example.com"
+func TestHTMLToMarkdown_BreakTagRoundTrip(t *testing.T) {
 	original := "<p>line1<br>line2</p>"
 
-	md := Html2Markdown(original, &domain)
-	back := Markdown2HTML(md)
+	md := HTMLToMarkdown(original, "example.com")
+	back := MarkdownToHTML(md)
 
 	assert.Contains(t, back, "line1<br>")
 	assert.Contains(t, back, "line2")
 }
 
-func TestHtml2Markdown_SeparateParagraphsRoundTrip(t *testing.T) {
-	domain := "example.com"
+func TestHTMLToMarkdown_SeparateParagraphsRoundTrip(t *testing.T) {
 	original := "<p>line1</p><p>line2</p>"
 
-	md := Html2Markdown(original, &domain)
-	back := Markdown2HTML(md)
+	md := HTMLToMarkdown(original, "example.com")
+	back := MarkdownToHTML(md)
 
 	assert.Contains(t, back, "<p>line1</p>")
 	assert.Contains(t, back, "<p>line2</p>")
 }
 
-func TestMarkdown2HTML_TableUnaffected(t *testing.T) {
+func TestMarkdownToHTML_TableUnaffected(t *testing.T) {
 	md := "| a | b |\n|---|---|\n| 1 | 2 |"
-	html := Markdown2HTML(md)
+	html := MarkdownToHTML(md)
 	assert.Contains(t, html, "<table>")
 	assert.Contains(t, html, ">1<")
 	assert.Contains(t, html, ">2<")
@@ -152,22 +149,21 @@ func TestNormalizeMarkdownForRender_PreservesCodeFenceBlankLines(t *testing.T) {
 	assert.Contains(t, normalized, "```\n\noutro")
 }
 
-func TestMarkdown2HTML_CollapsesExcessiveBlankLines(t *testing.T) {
-	html := Markdown2HTML("line1\n\n\n\nline2")
+func TestMarkdownToHTML_CollapsesExcessiveBlankLines(t *testing.T) {
+	html := MarkdownToHTML("line1\n\n\n\nline2")
 	assert.Contains(t, html, "<p>line1</p>")
 	assert.Contains(t, html, "<p>line2</p>")
 	assert.NotContains(t, html, "<p></p>")
 }
 
-func TestHtml2Markdown_CollapsesExcessiveBlankLines(t *testing.T) {
-	domain := "example.com"
-	md := Html2Markdown("<p>line1</p><p>line2</p>", &domain)
+func TestHTMLToMarkdown_CollapsesExcessiveBlankLines(t *testing.T) {
+	md := HTMLToMarkdown("<p>line1</p><p>line2</p>", "example.com")
 	assert.NotContains(t, md, "\n\n\n")
 }
 
-func TestMarkdown2HTML_MultiLineParagraph(t *testing.T) {
+func TestMarkdownToHTML_MultiLineParagraph(t *testing.T) {
 	md := "first line\nsecond line\n\nnew paragraph"
-	html := Markdown2HTML(md)
+	html := MarkdownToHTML(md)
 
 	firstP := strings.Index(html, "<p>")
 	secondP := strings.Index(html[firstP+len("<p>"):], "<p>")

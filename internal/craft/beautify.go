@@ -39,7 +39,7 @@ func beautifyArticleContent(content string, prompt string) (string, error) {
 		return "", err
 	}
 
-	return util.Markdown2HTML(beautifiedMd), nil
+	return util.MarkdownToHTML(beautifiedMd), nil
 }
 
 // GetBeautifyContentCraftOptions returns the craft options for beautification

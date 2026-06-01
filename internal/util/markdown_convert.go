@@ -17,16 +17,16 @@ import (
 var (
 	paragraphTagRE = regexp.MustCompile(`(?is)<p(\s[^>]*)?>(.*?)</p>`)
 
-	// consecutiveBlankLinesRE collapses 3+ line breaks (optional whitespace-only lines) to one blank line.
 	consecutiveBlankLinesRE = regexp.MustCompile(`(?:\r?\n[ \t]*){3,}`)
 
-	// Prefix match: next line starts a new block (list, heading, quote, fence, table).
 	blockStartRE = regexp.MustCompile("^(?:#{1,6}\\s|(?:\\*|-|\\+)\\s|\\d+\\.\\s|>|```|\\|)")
 
 	orderedListItemRE = regexp.MustCompile(`^\d+\.\s`)
 )
 
-func Markdown2HTML(md string) string {
+// MarkdownToHTML is the canonical Markdown → HTML converter for FeedCraft.
+// It normalizes LLM-oriented markdown (single newlines as breaks, collapsed blank runs) before rendering.
+func MarkdownToHTML(md string) string {
 	md = normalizeMarkdownForRender(md)
 
 	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
@@ -40,8 +40,10 @@ func Markdown2HTML(md string) string {
 	return string(markdown.Render(doc, renderer))
 }
 
-func Html2Markdown(text string, domain *string) string {
-	text = insertLineBreaksInParagraphHTML(text)
+// HTMLToMarkdown is the canonical HTML → Markdown converter for FeedCraft.
+// Pass domain when relative URLs should be resolved against an article origin (e.g. cleanup, LLM prompts).
+func HTMLToMarkdown(htmlContent string, domain string) string {
+	htmlContent = insertLineBreaksInParagraphHTML(htmlContent)
 
 	conv := converter.NewConverter(
 		converter.WithPlugins(
@@ -51,19 +53,17 @@ func Html2Markdown(text string, domain *string) string {
 		),
 	)
 	var convertOptions []converter.ConvertOptionFunc
-	if domain != nil {
-		convertOptions = append(convertOptions, converter.WithDomain(*domain))
+	if domain != "" {
+		convertOptions = append(convertOptions, converter.WithDomain(domain))
 	}
 
-	mdStr, err := conv.ConvertString(text, convertOptions...)
+	mdStr, err := conv.ConvertString(htmlContent, convertOptions...)
 	if err != nil {
 		logrus.Errorf("convert html to markdown err: %v", err)
 	}
 	return collapseConsecutiveBlankLines(mdStr)
 }
 
-// normalizeMarkdownForRender prepares LLM- and cleanup-oriented markdown before HTML rendering.
-// Single newlines become visible line breaks; runs of blank lines are collapsed for readability.
 func normalizeMarkdownForRender(md string) string {
 	return processOutsideFencedCodeBlocks(md, func(segment string) string {
 		segment = collapseConsecutiveBlankLines(segment)
@@ -75,8 +75,6 @@ func collapseConsecutiveBlankLines(md string) string {
 	return consecutiveBlankLinesRE.ReplaceAllString(md, "\n\n")
 }
 
-// applySingleNewlineHardBreaks turns single newlines into CommonMark hard breaks ("  \n")
-// without using HardLineBreak globally, so list items and block boundaries stay intact.
 func applySingleNewlineHardBreaks(md string) string {
 	if md == "" {
 		return md
@@ -103,10 +101,7 @@ func applySingleNewlineHardBreaks(md string) string {
 func isSameBlockContinuation(prev, next string) bool {
 	prevTrim := strings.TrimSpace(prev)
 	nextTrim := strings.TrimSpace(next)
-	if strings.HasPrefix(prevTrim, "> ") && strings.HasPrefix(nextTrim, "> ") {
-		return true
-	}
-	return false
+	return strings.HasPrefix(prevTrim, "> ") && strings.HasPrefix(nextTrim, "> ")
 }
 
 func isListContinuation(prev, next string) bool {
@@ -151,8 +146,6 @@ func processOutsideFencedCodeBlocks(md string, process func(string) string) stri
 	return result.String()
 }
 
-// insertLineBreaksInParagraphHTML converts literal newlines inside <p> tags into <br>,
-// so soft line breaks survive browser rendering and HTML↔Markdown round-trips.
 func insertLineBreaksInParagraphHTML(html string) string {
 	return paragraphTagRE.ReplaceAllStringFunc(html, func(match string) string {
 		subs := paragraphTagRE.FindStringSubmatch(match)

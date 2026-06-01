@@ -248,7 +248,7 @@ func generateAIFilterArticleSummary(item *feeds.Item) (string, error) {
 		if item.Link != nil {
 			domain, _ = util.ParseDomainFromUrl(item.Link.Href)
 		}
-		cleanedContent := util.Html2Markdown(content, &domain)
+		cleanedContent := util.HTMLToMarkdown(content, domain)
 		if strings.TrimSpace(cleanedContent) != "" {
 			processedContent = cleanedContent
 		}
