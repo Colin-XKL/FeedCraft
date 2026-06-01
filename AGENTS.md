@@ -143,10 +143,10 @@ The system includes numerous built-in craft templates in `internal/craft/entry.g
 
 Use the existing helpers in `internal/util/hash.go` — do not import `crypto/md5`, `crypto/sha256`, or `hash/fnv` directly.
 
-| Function | Algorithm | Use case |
-|---|---|---|
-| `util.GetTextContentHash(text)` | FNV-64a | General-purpose cache keys, content fingerprinting (efficiency-focused) |
-| `util.GetPasswordMD5Hash(text)` | MD5 | Password hashing flows only (security-semantic alias) |
+| Function                        | Algorithm | Use case                                                                |
+| ------------------------------- | --------- | ----------------------------------------------------------------------- |
+| `util.GetTextContentHash(text)` | FNV-64a   | General-purpose cache keys, content fingerprinting (efficiency-focused) |
+| `util.GetPasswordMD5Hash(text)` | MD5       | Password hashing flows only (security-semantic alias)                   |
 
 ## Common Development Tasks
 
