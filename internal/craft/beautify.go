@@ -2,12 +2,10 @@ package craft
 
 import (
 	"FeedCraft/internal/adapter"
+	"FeedCraft/internal/util"
 	"fmt"
 	"strings"
 
-	"github.com/gomarkdown/markdown"
-	"github.com/gomarkdown/markdown/html"
-	"github.com/gomarkdown/markdown/parser"
 	"github.com/gorilla/feeds"
 )
 
@@ -41,18 +39,7 @@ func beautifyArticleContent(content string, prompt string) (string, error) {
 		return "", err
 	}
 
-	// 3. Convert Beautified Markdown back to HTML
-	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
-	p := parser.NewWithExtensions(extensions)
-	doc := p.Parse([]byte(beautifiedMd))
-
-	htmlFlags := html.CommonFlags | html.HrefTargetBlank
-	opts := html.RendererOptions{Flags: htmlFlags}
-	renderer := html.NewRenderer(opts)
-
-	beautifiedHtml := markdown.Render(doc, renderer)
-
-	return string(beautifiedHtml), nil
+	return util.Markdown2HTML(beautifiedMd), nil
 }
 
 // GetBeautifyContentCraftOptions returns the craft options for beautification
