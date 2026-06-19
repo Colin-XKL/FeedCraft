@@ -69,5 +69,6 @@ Rules run in the order you define them. A typical pipeline is: **Sort** (newest 
 
 Navigate to **Worktable > Topic Feed** to create and manage topics.
 
-- **Create**: Define a title, add multiple input sources using the type picker (supports external RSS URLs, custom recipes, or nesting other topics), and configure your aggregation rules.
+- **Create**: Use the step-by-step wizard to define a title, add multiple input sources (supports external RSS URLs, custom recipes, or nesting other topics) with the ability to add remarks or temporarily disable them, and configure your aggregation rules.
+- **Preview**: Quickly preview sub-feeds directly within the editor.
 - **Public Access**: Your new topic feed will be available without authentication at `http://your-feedcraft-instance/topic/{id}`.
