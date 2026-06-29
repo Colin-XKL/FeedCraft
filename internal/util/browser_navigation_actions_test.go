@@ -54,3 +54,25 @@ func TestValidateBrowserNavigationActionsRejectsInvalidAction(t *testing.T) {
 	require.Error(t, err)
 	assert.True(t, strings.Contains(err.Error(), "selector is required"), err.Error())
 }
+
+func TestValidateBrowserNavigationActionsNormalizesActionFields(t *testing.T) {
+	actions := []config.BrowserNavigationAction{
+		{Type: " click ", Selector: " #tab-a "},
+	}
+
+	err := ValidateBrowserNavigationActions(actions)
+
+	require.NoError(t, err)
+	assert.Equal(t, config.BrowserNavigationActionClick, actions[0].Type)
+	assert.Equal(t, "#tab-a", actions[0].Selector)
+	assert.Equal(t, int64(DefaultBrowserNavigationTimeoutMs), actions[0].TimeoutMs)
+}
+
+func TestValidateBrowserNavigationActionsRejectsExcessiveWait(t *testing.T) {
+	err := ValidateBrowserNavigationActions([]config.BrowserNavigationAction{
+		{Type: config.BrowserNavigationActionWait, DurationMs: MaxBrowserNavigationWaitMs + 1},
+	})
+
+	require.Error(t, err)
+	assert.True(t, strings.Contains(err.Error(), "duration_ms must be between"), err.Error())
+}
