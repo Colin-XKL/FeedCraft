@@ -248,7 +248,9 @@ func generateAIFilterArticleSummary(item *feeds.Item) (string, error) {
 		if item.Link != nil {
 			domain, _ = util.ParseDomainFromUrl(item.Link.Href)
 		}
-		cleanedContent := util.HTMLToMarkdown(content, domain)
+		// Drop inline base64 images before converting: they carry no useful signal
+		// for LLM processing but can dominate the token budget.
+		cleanedContent := util.HTMLToMarkdown(util.RemoveBase64Images(content), domain)
 		if strings.TrimSpace(cleanedContent) != "" {
 			processedContent = cleanedContent
 		}
