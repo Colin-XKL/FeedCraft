@@ -20,8 +20,9 @@ export default {
   'craftAtom.form.addParam': '添加参数',
   'craftAtom.form.cancel': '取消',
   'craftAtom.form.save': '保存',
-  'craftAtom.form.rule.templateRequired': 'template is required',
-  'craftAtom.form.rule.nameRequired': 'Name is required',
+  'craftAtom.form.saveSuccess': '保存成功',
+  'craftAtom.form.rule.templateRequired': '模板为必填项',
+  'craftAtom.form.rule.nameRequired': '名称为必填项',
   'craftAtom.empty.description': '暂无原子工艺',
   'craftAtom.empty.hint':
     '原子工艺决定如何处理 RSS，例如翻译、提取全文或生成摘要。创建第一个 AtomCraft 后即可在配方和组合工艺中复用。',

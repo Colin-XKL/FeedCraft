@@ -13,6 +13,8 @@ export default {
   'craftFlow.form.save': '保存',
   'craftFlow.form.saveSuccess': '保存成功',
   'craftFlow.form.rule.nameRequired': '名称为必填项',
+  'craftFlow.flow.start': '开始',
+  'craftFlow.flow.end': '结束',
   'craftFlow.editModalTitle.create': '创建组合工艺 (FlowCraft)',
   'craftFlow.editModalTitle.edit': '编辑组合工艺 (FlowCraft)',
   'craftFlow.editor.empty': '暂无步骤',

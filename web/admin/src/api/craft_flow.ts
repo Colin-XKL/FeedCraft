@@ -14,6 +14,13 @@ export interface CraftFlow {
   craft_flow_config?: CraftFlowItem[];
 }
 
+export interface CraftItem {
+  name: string;
+  description: string;
+  type: string;
+  template_only?: boolean;
+}
+
 const adminApiBase = '/api/admin';
 
 // Define the API base URL
@@ -85,5 +92,11 @@ interface CraftTemplate {
 export function listCraftTemplates(): Promise<APIResponse<CraftTemplate[]>> {
   return axios
     .get<APIResponse<CraftTemplate[]>>(`${adminApiBase}/craft-templates`)
+    .then((res) => res.data);
+}
+
+export function listAllCrafts(): Promise<APIResponse<CraftItem[]>> {
+  return axios
+    .get<APIResponse<CraftItem[]>>('/api/list-all-craft')
     .then((res) => res.data);
 }

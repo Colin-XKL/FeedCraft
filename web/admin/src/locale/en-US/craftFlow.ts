@@ -13,6 +13,8 @@ export default {
   'craftFlow.form.save': 'Save',
   'craftFlow.form.saveSuccess': 'Saved successfully',
   'craftFlow.form.rule.nameRequired': 'Name is required',
+  'craftFlow.flow.start': 'Start',
+  'craftFlow.flow.end': 'End',
   'craftFlow.editModalTitle.create': 'Create FlowCraft',
   'craftFlow.editModalTitle.edit': 'Edit FlowCraft',
   'craftFlow.editor.empty': 'No AtomCrafts in this FlowCraft yet',
