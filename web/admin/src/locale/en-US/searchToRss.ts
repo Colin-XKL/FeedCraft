@@ -10,13 +10,30 @@ export default {
   'searchToRss.step.feedMetadata.desc': 'Configure feed details',
   'searchToRss.step.saveRecipe': 'Save Recipe',
   'searchToRss.step.saveRecipe.desc': 'Save as custom recipe',
-  'searchToRss.step1.label': 'Search Query',
-  'searchToRss.step1.help': 'Enter the keywords or question you want to track.',
+  'searchToRss.step1.modeLabel': 'Choose search mode',
+  'searchToRss.step1.label': 'Search Content',
+  'searchToRss.step1.help':
+    'Enter the keywords, topic, or question you want to track.',
   'searchToRss.step1.placeholder': "e.g. 'latest AI news' or 'SpaceX launches'",
-  'searchToRss.step1.enhancedMode': 'Enhanced Mode (LLM Powered)',
-  'searchToRss.step1.enhancedMode.desc':
-    'Uses AI to generate multiple optimized queries for better coverage.',
+  'searchToRss.step1.providerTip':
+    'Search results use the configured search provider.',
   'searchToRss.step1.button': 'Preview Results',
+  'searchToRss.mode.keyword.title': 'Keyword Search',
+  'searchToRss.mode.keyword.description':
+    'Search exactly what you type. Best for names, products, sites, and specific events.',
+  'searchToRss.mode.keyword.badge': 'Simple',
+  'searchToRss.mode.keyword.placeholder':
+    "e.g. 'OpenAI release' or 'site:example.com RSS'",
+  'searchToRss.mode.keyword.help':
+    'Enter precise keywords or search operators to track.',
+  'searchToRss.mode.semantic.title': 'AI Semantic Search',
+  'searchToRss.mode.semantic.description':
+    'Let AI expand related queries, merge results, and cover synonyms or adjacent topics.',
+  'searchToRss.mode.semantic.badge': 'Broader',
+  'searchToRss.mode.semantic.placeholder':
+    "e.g. 'recent open-source AI tools worth watching'",
+  'searchToRss.mode.semantic.help':
+    'Describe the topic naturally. AI will generate multiple search queries and merge results.',
   'searchToRss.step2.alert':
     'Found {count} items. Review them below before proceeding.',
   'searchToRss.step3.alert':
@@ -25,6 +42,7 @@ export default {
   'searchToRss.step3.feedDescription': 'Feed Description',
   'searchToRss.step3.siteLink': 'Site Link',
   'searchToRss.step4.reviewAndSave': 'Review & Save',
+  'searchToRss.step4.mode': 'Search Mode',
   'searchToRss.step4.query': 'Query',
   'searchToRss.step4.itemsFound': 'Items Found',
   'searchToRss.step4.recipeId': 'Recipe ID',

@@ -33,40 +33,61 @@
 
         <!-- STEP 1: Search Query -->
         <div v-show="currentStep === 1" class="step-content">
-          <a-form :model="fetchReq" layout="vertical" class="max-w-xl mx-auto">
+          <a-form :model="fetchReq" layout="vertical" class="max-w-2xl mx-auto">
+            <a-form-item :label="$t('searchToRss.step1.modeLabel')" required>
+              <div class="mode-grid">
+                <button
+                  v-for="option in searchModeOptions"
+                  :key="option.value"
+                  type="button"
+                  class="mode-card"
+                  :class="{ 'mode-card--active': searchMode === option.value }"
+                  @click="searchMode = option.value"
+                >
+                  <div class="mode-card__header">
+                    <span class="mode-card__icon">
+                      <icon-search v-if="option.value === 'keyword'" />
+                      <icon-robot v-else />
+                    </span>
+                    <span class="mode-card__title">
+                      {{ $t(option.titleKey) }}
+                    </span>
+                    <a-tag size="small" color="arcoblue">
+                      {{ $t(option.badgeKey) }}
+                    </a-tag>
+                  </div>
+                  <p class="mode-card__description">
+                    {{ $t(option.descriptionKey) }}
+                  </p>
+                </button>
+              </div>
+            </a-form-item>
+
             <a-form-item
-              :label="$t('searchToRss.step1.label')"
+              :label="currentSearchModeTitle"
               required
-              :help="$t('searchToRss.step1.help')"
+              :help="currentSearchModeHelp"
             >
               <a-input
                 v-model="fetchReq.query"
-                :placeholder="$t('searchToRss.step1.placeholder')"
+                :placeholder="currentSearchModePlaceholder"
                 size="large"
                 allow-clear
                 @press-enter="handlePreview"
               />
             </a-form-item>
 
-            <a-form-item>
-              <div class="flex flex-col">
-                <a-checkbox v-model="fetchReq.enhanced_mode">
-                  {{
-                    $t('searchToRss.step1.enhancedMode') ||
-                    'Enhanced Mode (LLM Powered)'
-                  }}
-                </a-checkbox>
-                <div
-                  v-if="fetchReq.enhanced_mode"
-                  class="text-xs text-gray-400 ml-6 mt-1"
+            <a-alert class="mode-tip" type="info">
+              <div class="flex flex-wrap items-center gap-2">
+                <span>{{ $t('searchToRss.step1.providerTip') }}</span>
+                <router-link
+                  :to="{ name: 'SearchProvider' }"
+                  class="text-blue-600 hover:underline"
                 >
-                  {{
-                    $t('searchToRss.step1.enhancedMode.desc') ||
-                    'Uses AI to generate multiple optimized queries for better coverage.'
-                  }}
-                </div>
+                  {{ $t('settings.searchProvider.configure') }}
+                </router-link>
               </div>
-            </a-form-item>
+            </a-alert>
 
             <div class="text-center mt-12">
               <a-button
@@ -79,14 +100,6 @@
               >
                 {{ $t('searchToRss.step1.button') }} <icon-arrow-right />
               </a-button>
-              <div class="mt-6">
-                <router-link
-                  :to="{ name: 'SearchProvider' }"
-                  class="text-blue-500 hover:underline text-sm"
-                >
-                  {{ $t('settings.searchProvider.configure') }}
-                </router-link>
-              </div>
             </div>
           </a-form>
         </div>
@@ -95,7 +108,14 @@
         <div v-show="currentStep === 2" class="step-content flex flex-col">
           <div class="flex-1 overflow-y-auto mb-4">
             <a-alert type="success" class="mb-4">
-              {{ $t('searchToRss.step2.alert', { count: parsedItems.length }) }}
+              <div class="flex flex-wrap items-center gap-2">
+                <span>
+                  {{
+                    $t('searchToRss.step2.alert', { count: parsedItems.length })
+                  }}
+                </span>
+                <a-tag color="green">{{ currentSearchModeTitle }}</a-tag>
+              </div>
             </a-alert>
             <a-list :data="parsedItems" :bordered="false">
               <template #item="{ item }">
@@ -175,6 +195,9 @@
               class="border-blue-100"
             >
               <a-descriptions :column="1" bordered>
+                <a-descriptions-item :label="$t('searchToRss.step4.mode')">
+                  {{ currentSearchModeTitle }}
+                </a-descriptions-item>
                 <a-descriptions-item :label="$t('searchToRss.step4.query')">{{
                   fetchReq.query
                 }}</a-descriptions-item>
@@ -255,11 +278,13 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, reactive, watch } from 'vue';
+  import { computed, ref, reactive, watch } from 'vue';
   import { useRouter } from 'vue-router';
   import { Message } from '@arco-design/web-vue';
   import {
     IconArrowRight,
+    IconSearch,
+    IconRobot,
     IconSave,
     IconRefresh,
   } from '@arco-design/web-vue/es/icon';
@@ -269,6 +294,12 @@
     SearchFetchReq,
     SearchPreviewItem,
   } from '@/api/json_rss';
+  import {
+    buildSearchFetchReq,
+    buildSearchSourceConfig,
+    SearchMode,
+    searchModeOptions,
+  } from '@/views/dashboard/search_to_rss/searchMode';
   import { createCustomRecipe } from '@/api/custom_recipe';
   import { useI18n } from 'vue-i18n';
   import generateRecipeId, { getRecipeIdRules } from '@/utils/slug';
@@ -283,10 +314,26 @@
   const parsedItems = ref<SearchPreviewItem[]>([]);
 
   // Step 1: Query
+  const searchMode = ref<SearchMode>('keyword');
   const fetchReq = reactive<SearchFetchReq>({
     query: '',
-    enhanced_mode: false,
   });
+
+  const currentSearchModeOption = computed(
+    () =>
+      searchModeOptions.find((option) => option.value === searchMode.value) ||
+      searchModeOptions[0]
+  );
+
+  const currentSearchModeTitle = computed(() =>
+    t(currentSearchModeOption.value.titleKey)
+  );
+  const currentSearchModeHelp = computed(() =>
+    t(currentSearchModeOption.value.helpKey)
+  );
+  const currentSearchModePlaceholder = computed(() =>
+    t(currentSearchModeOption.value.placeholderKey)
+  );
 
   // Step 3: Feed Meta
   const feedMeta = reactive({
@@ -335,7 +382,9 @@
     fetching.value = true;
     parsedItems.value = [];
     try {
-      const res = await previewSearch(fetchReq);
+      const res = await previewSearch(
+        buildSearchFetchReq(fetchReq.query, searchMode.value)
+      );
       if (res.data) {
         parsedItems.value = res.data;
       }
@@ -373,18 +422,11 @@
 
     saving.value = true;
 
-    const sourceConfig = {
-      type: 'search',
-      search_fetcher: {
-        query: fetchReq.query,
-        enhanced_mode: fetchReq.enhanced_mode,
-      },
-      feed_meta: {
-        title: feedMeta.title,
-        description: feedMeta.description,
-        link: feedMeta.link,
-      },
-    };
+    const sourceConfig = buildSearchSourceConfig(
+      fetchReq.query,
+      searchMode.value,
+      feedMeta
+    );
 
     try {
       await createCustomRecipe({
@@ -414,5 +456,79 @@
   .step-content {
     margin-top: 24px;
     min-height: 450px;
+  }
+
+  .mode-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    width: 100%;
+  }
+
+  .mode-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 18px;
+    text-align: left;
+    background: #fff;
+    border: 1px solid var(--color-border-2);
+    border-radius: 14px;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .mode-card:hover,
+  .mode-card--active {
+    border-color: rgb(var(--primary-6));
+    box-shadow: 0 8px 24px rgba(22, 93, 255, 0.12);
+    transform: translateY(-1px);
+  }
+
+  .mode-card--active {
+    background: linear-gradient(180deg, #f7fbff 0%, #fff 100%);
+  }
+
+  .mode-card__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .mode-card__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    color: rgb(var(--primary-6));
+    background: rgb(var(--primary-1));
+    border-radius: 10px;
+    font-size: 18px;
+  }
+
+  .mode-card__title {
+    flex: 1;
+    color: var(--color-text-1);
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .mode-card__description {
+    margin: 0;
+    color: var(--color-text-3);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .mode-tip {
+    margin-top: 4px;
+  }
+
+  @media (max-width: 640px) {
+    .mode-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
