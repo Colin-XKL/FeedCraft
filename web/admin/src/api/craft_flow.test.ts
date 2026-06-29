@@ -15,8 +15,12 @@ describe('craft flow API helpers', () => {
     expect(normalizeCraftItems(crafts)).toBe(crafts);
   });
 
-  it('falls back to an empty list for malformed craft list responses', () => {
-    expect(normalizeCraftItems(null)).toEqual([]);
-    expect(normalizeCraftItems({ data: [] })).toEqual([]);
+  it('rejects malformed craft list responses', () => {
+    expect(() => normalizeCraftItems(null)).toThrow(
+      'Expected craft list response data to be an array.'
+    );
+    expect(() => normalizeCraftItems({ data: [] })).toThrow(
+      'Expected craft list response data to be an array.'
+    );
   });
 });

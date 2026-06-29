@@ -13,8 +13,8 @@
     </template>
 
     <a-table
-      row-key="name"
-      :data="allCrafts"
+      row-key="row_key"
+      :data="allCraftRows"
       :columns="columns"
       :loading="isLoading"
       :bordered="false"
@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
   import CraftManagePage from '@/components/craft/CraftManagePage.vue';
-  import { onBeforeMount, ref } from 'vue';
+  import { computed, onBeforeMount, ref } from 'vue';
   import { Message } from '@arco-design/web-vue';
   import { useI18n } from 'vue-i18n';
   import { CraftItem, listAllCrafts } from '@/api/craft_flow';
@@ -49,6 +49,12 @@
 
   const isLoading = ref(false);
   const allCrafts = ref<CraftItem[]>([]);
+  const allCraftRows = computed(() =>
+    allCrafts.value.map((item) => ({
+      ...item,
+      row_key: `${item.type}:${item.name}`,
+    }))
+  );
 
   const columns = [
     { title: t('allCraftList.table.name'), dataIndex: 'name' },

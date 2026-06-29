@@ -22,7 +22,10 @@ export interface CraftItem {
 }
 
 export function normalizeCraftItems(data: unknown): CraftItem[] {
-  return Array.isArray(data) ? data : [];
+  if (!Array.isArray(data)) {
+    throw new TypeError('Expected craft list response data to be an array.');
+  }
+  return data;
 }
 
 const adminApiBase = '/api/admin';
