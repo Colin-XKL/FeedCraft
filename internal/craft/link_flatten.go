@@ -74,10 +74,12 @@ func OptionLinkFlatten(config LinkFlattenConfig) LegacyCraftOption {
 			}
 			sourceLink = resolveArticleLink(payload.originalFeedUrl, feedLink, sourceLink)
 			for _, candidate := range extractFlattenedLinks(item.Content, item.Description, sourceLink, config.ExternalOnly) {
+				description := buildFlattenedLinkDescription(item.Title, sourceLink)
 				flattened = append(flattened, &feeds.Item{
 					Title:       candidate.Title,
 					Link:        &feeds.Link{Href: candidate.URL},
-					Description: buildFlattenedLinkDescription(item.Title, sourceLink),
+					Description: description,
+					Content:     description,
 					Id:          buildFlattenedLinkID(item.Id, sourceLink, candidate.URL),
 					Updated:     item.Updated,
 					Created:     item.Created,

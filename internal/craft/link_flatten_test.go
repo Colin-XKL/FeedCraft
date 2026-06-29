@@ -101,4 +101,5 @@ func TestLinkFlattenLegacyOptionUsesTemplateDefaults(t *testing.T) {
 	assert.Equal(t, "Elsewhere", feed.Items[1].Title)
 	require.NotNil(t, feed.Items[1].Link)
 	assert.Equal(t, "https://elsewhere.test/path", feed.Items[1].Link.Href)
+	assert.Contains(t, feed.Items[1].Content, "Legacy Source")
 }
