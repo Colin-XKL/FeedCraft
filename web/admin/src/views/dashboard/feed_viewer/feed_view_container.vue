@@ -67,9 +67,18 @@
   const { t } = useI18n();
   const viewMode = ref<ViewMode>('normal');
 
+  const feedTypeLabel = computed(() => {
+    const feedType = props.feedData.feedType?.toLowerCase();
+    if (feedType === 'rss') return 'RSS';
+    if (feedType === 'atom') return 'Atom';
+    if (feedType === 'json') return 'JSON Feed';
+    return props.feedData.feedType;
+  });
+
   const feedMetaList = computed(() => {
     const data = props.feedData;
     return [
+      { label: 'type', value: feedTypeLabel.value },
       { label: 'description', value: data.description },
       { label: 'link', value: data.link },
       { label: 'feedUrl', value: data.feedUrl },

@@ -74,6 +74,124 @@ func TestPreviewFeedViewerAllowsInternalFeedURL(t *testing.T) {
 	}
 }
 
+func TestPreviewFeedViewerDetectsExternalFeedTypes(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+
+	tests := []struct {
+		name        string
+		contentType string
+		body        string
+		wantType    string
+		wantTitle   string
+		wantItem    string
+	}{
+		{
+			name:        "rss",
+			contentType: "application/rss+xml",
+			body: `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>RSS Preview Feed</title>
+    <link>https://example.com/rss</link>
+    <description>RSS feed description</description>
+    <item>
+      <title>RSS Preview Item</title>
+      <link>https://example.com/rss/item</link>
+      <guid>rss-item-1</guid>
+      <description>RSS item description</description>
+    </item>
+  </channel>
+</rss>`,
+			wantType:  "rss",
+			wantTitle: "RSS Preview Feed",
+			wantItem:  "RSS Preview Item",
+		},
+		{
+			name:        "atom",
+			contentType: "application/atom+xml",
+			body: `<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Atom Preview Feed</title>
+  <link href="https://example.com/atom" rel="alternate"/>
+  <link href="https://example.com/atom.xml" rel="self"/>
+  <id>https://example.com/atom</id>
+  <updated>2026-06-29T00:00:00Z</updated>
+  <entry>
+    <title>Atom Preview Item</title>
+    <link href="https://example.com/atom/item"/>
+    <id>atom-item-1</id>
+    <updated>2026-06-29T00:00:00Z</updated>
+    <content type="html">&lt;p&gt;Atom item content&lt;/p&gt;</content>
+  </entry>
+</feed>`,
+			wantType:  "atom",
+			wantTitle: "Atom Preview Feed",
+			wantItem:  "Atom Preview Item",
+		},
+		{
+			name:        "json feed",
+			contentType: "application/feed+json",
+			body: `{
+  "version": "https://jsonfeed.org/version/1.1",
+  "title": "JSON Preview Feed",
+  "home_page_url": "https://example.com/json",
+  "feed_url": "https://example.com/json-feed.json",
+  "items": [
+    {
+      "id": "json-item-1",
+      "url": "https://example.com/json/item",
+      "title": "JSON Preview Item",
+      "content_html": "<p>JSON item content</p>",
+      "date_published": "2026-06-29T00:00:00Z"
+    }
+  ]
+}`,
+			wantType:  "json",
+			wantTitle: "JSON Preview Feed",
+			wantItem:  "JSON Preview Item",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", tt.contentType)
+				_, _ = w.Write([]byte(tt.body))
+			}))
+			defer server.Close()
+
+			recorder := performFeedViewerPreviewRequest(t, http.MethodGet, server.URL)
+
+			var response struct {
+				Code int `json:"code"`
+				Data struct {
+					FeedType string `json:"feedType"`
+					Title    string `json:"title"`
+					Items    []struct {
+						Title string `json:"title"`
+					} `json:"items"`
+				} `json:"data"`
+				Msg string `json:"msg"`
+			}
+			if err := json.Unmarshal(recorder.Body.Bytes(), &response); err != nil {
+				t.Fatalf("failed to decode response: %v", err)
+			}
+			if recorder.Code != http.StatusOK || response.Code != 0 {
+				t.Fatalf("expected preview success, got status %d code %d msg %q body %s", recorder.Code, response.Code, response.Msg, recorder.Body.String())
+			}
+			if response.Data.FeedType != tt.wantType {
+				t.Fatalf("feedType = %q, want %q", response.Data.FeedType, tt.wantType)
+			}
+			if response.Data.Title != tt.wantTitle {
+				t.Fatalf("title = %q, want %q", response.Data.Title, tt.wantTitle)
+			}
+			if len(response.Data.Items) != 1 || response.Data.Items[0].Title != tt.wantItem {
+				t.Fatalf("expected one item titled %q, got %+v", tt.wantItem, response.Data.Items)
+			}
+		})
+	}
+}
+
 func TestPreviewFeedViewerRejectsNonGETRequest(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 

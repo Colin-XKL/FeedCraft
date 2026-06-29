@@ -16,6 +16,7 @@ type CraftFeed struct {
 	Updated     time.Time
 	Created     time.Time
 	Id          string // The URL of the feed itself
+	FeedType    string
 	Copyright   string
 	AuthorName  string
 	AuthorEmail string
@@ -68,6 +69,7 @@ func FromGofeed(parsedFeed *gofeed.Feed) *CraftFeed {
 		Updated:     updatedTime,
 		Created:     publishedTime,
 		Id:          parsedFeed.FeedLink,
+		FeedType:    parsedFeed.FeedType,
 		Copyright:   parsedFeed.Copyright,
 	}
 
