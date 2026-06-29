@@ -563,7 +563,8 @@
 <script setup lang="ts">
   import { ref, reactive, watch } from 'vue';
   import { useRouter } from 'vue-router';
-  import { Message, TreeNodeData } from '@arco-design/web-vue';
+  import { Message } from '@arco-design/web-vue';
+  import type { TreeNodeData } from '@arco-design/web-vue';
   import {
     IconImport,
     IconDelete,
@@ -588,6 +589,13 @@
 
   const router = useRouter();
   const { t } = useI18n();
+
+  type JsonTreeNodeData = TreeNodeData & {
+    data?: {
+      type: string;
+    };
+    children?: JsonTreeNodeData[];
+  };
 
   // --- State ---
   const currentStep = ref(1);
@@ -649,8 +657,8 @@
 
   // --- Watchers & Helpers ---
 
-  const jsonToTree = (data: any, rootPath = ''): TreeNodeData[] => {
-    const nodes: TreeNodeData[] = [];
+  const jsonToTree = (data: any, rootPath = ''): JsonTreeNodeData[] => {
+    const nodes: JsonTreeNodeData[] = [];
     const getType = (val: any) => {
       if (isArray(val)) return 'array';
       if (isPlainObject(val)) return 'object';
@@ -664,7 +672,7 @@
         const isArr = isArray(value);
         const isPrimitive = !isObj && !isArr;
 
-        const node: TreeNodeData = {
+        const node: JsonTreeNodeData = {
           key: currentPath,
           title: isPrimitive ? `${key}: ${value}` : key,
           isLeaf: isPrimitive,
@@ -685,7 +693,7 @@
         const isArr = isArray(item);
         const isPrimitive = !isObj && !isArr;
 
-        const node: TreeNodeData = {
+        const node: JsonTreeNodeData = {
           key: currentPath,
           title: `[${index}]`,
           isLeaf: isPrimitive,
@@ -737,15 +745,16 @@
 
   const handleNodeSelect = (
     selectedKeys: (string | number)[],
-    { node }: { node: TreeNodeData }
+    { node }: { node?: TreeNodeData }
   ) => {
-    if (!activeField.value || !node.key) return;
+    if (!activeField.value || !node?.key) return;
+    const jsonNode = node as JsonTreeNodeData;
 
     const path = node.key as string;
 
     if (activeField.value === 'list_selector') {
       // Suggest iterator
-      if (node.data && node.data.type === 'array') {
+      if (jsonNode.data && jsonNode.data.type === 'array') {
         parseReq.list_selector = `${path}[]`;
       } else {
         parseReq.list_selector = path;

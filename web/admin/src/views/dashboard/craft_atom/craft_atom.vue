@@ -146,12 +146,15 @@
                           param.key
                         )
                       "
-                      v-model="param.value"
+                      :model-value="toNumberParamValue(param.value)"
                       :min="0"
                       :max="1"
                       :step="0.05"
                       :precision="2"
                       :placeholder="t('craftAtom.form.value')"
+                      @update:model-value="
+                        (value) => updateNumberParamValue(param, value)
+                      "
                     />
                     <a-input-number
                       v-else-if="
@@ -160,14 +163,17 @@
                           param.key
                         )
                       "
-                      v-model="param.value"
+                      :model-value="toNumberParamValue(param.value)"
                       :min="1"
                       :step="100"
                       :placeholder="t('craftAtom.form.value')"
+                      @update:model-value="
+                        (value) => updateNumberParamValue(param, value)
+                      "
                     />
                     <a-textarea
                       v-else
-                      v-model="param.value"
+                      :model-value="String(param.value ?? '')"
                       :placeholder="t('craftAtom.form.value')"
                       :auto-size="
                         isEmbeddingFilterAnchorsParam(
@@ -177,6 +183,7 @@
                           ? { minRows: 4, maxRows: 8 }
                           : { minRows: 2, maxRows: 4 }
                       "
+                      @update:model-value="(value) => (param.value = value)"
                     />
                   </a-col>
                   <a-col :span="2">
@@ -357,6 +364,20 @@
 
   const addParam = () => {
     formParams.value.push({ key: '', value: '' });
+  };
+
+  const toNumberParamValue = (value: CraftParamValue) => {
+    if (typeof value === 'number') return value;
+    if (value === '') return undefined;
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? undefined : parsed;
+  };
+
+  const updateNumberParamValue = (
+    param: { key: string; value: CraftParamValue },
+    value: CraftParamValue | undefined
+  ) => {
+    param.value = value ?? '';
   };
 
   const removeParam = (index: number) => {

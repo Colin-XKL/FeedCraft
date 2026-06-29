@@ -30,7 +30,7 @@
 
         <!-- STEP 1: URL Input -->
         <div v-show="currentStep === 1" class="step-content">
-          <a-form layout="vertical" class="max-w-xl mx-auto">
+          <a-form :model="{ url }" layout="vertical" class="max-w-xl mx-auto">
             <a-form-item
               :label="$t('htmlToRss.step1.label')"
               :help="$t('htmlToRss.step1.help')"

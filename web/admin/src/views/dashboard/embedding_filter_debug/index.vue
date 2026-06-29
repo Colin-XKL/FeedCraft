@@ -6,7 +6,7 @@
     ></x-header>
 
     <a-card class="my-2" :title="t('embeddingFilterDebug.config')">
-      <a-form layout="vertical">
+      <a-form :model="form" layout="vertical">
         <a-row :gutter="[16, 12]">
           <a-col :span="12" :xs="24" :lg="12">
             <a-form-item :label="t('embeddingFilterDebug.feedUrl')" required>

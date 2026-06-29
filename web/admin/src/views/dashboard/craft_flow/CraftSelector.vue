@@ -37,24 +37,20 @@
   import MultiCraftSelector from '@/views/dashboard/craft_flow/components/MultiCraftSelector.vue';
   import CraftPickerModal from '@/views/dashboard/craft_flow/components/CraftPickerModal.vue';
 
-  defineProps({
-    modelValue: {
-      type: [String, Array],
-      default: () => [],
-    },
-    mode: {
-      type: String as () => 'single' | 'multiple',
-      default: 'single',
-    },
-    placeholder: {
-      type: String,
-      default: '',
-    },
-    allowClear: {
-      type: Boolean,
-      default: false,
-    },
-  });
+  withDefaults(
+    defineProps<{
+      modelValue: string | string[];
+      mode: 'single' | 'multiple';
+      placeholder?: string;
+      allowClear?: boolean;
+    }>(),
+    {
+      modelValue: () => [],
+      mode: 'single',
+      placeholder: '',
+      allowClear: false,
+    }
+  );
 
   const emit = defineEmits(['update:modelValue', 'change']);
 

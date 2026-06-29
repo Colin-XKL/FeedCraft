@@ -130,7 +130,7 @@
               ? !currentInputURI || !selectedCraft
               : !currentInputURI
           "
-          :type="pageMode === 'compare' ? 'primary' : 'default'"
+          :type="pageMode === 'compare' ? 'primary' : 'secondary'"
           @click="handleAction"
         >
           {{

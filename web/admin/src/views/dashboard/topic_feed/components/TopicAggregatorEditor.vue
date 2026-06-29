@@ -83,10 +83,11 @@
 
         <a-input-number
           v-else
-          v-model="step.value"
+          :model-value="toNumberValue(step.value)"
           :min="1"
           mode="button"
           style="flex: 1; min-width: 150px"
+          @update:model-value="(value) => updateStepValue(idx, value)"
         />
 
         <a-button
@@ -167,6 +168,24 @@
     next[idx] = {
       ...next[idx],
       threshold: defaultThreshold(strategy),
+    };
+    updateSteps(next);
+  };
+
+  const toNumberValue = (value: string | number) => {
+    if (typeof value === 'number') return value;
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? undefined : parsed;
+  };
+
+  const updateStepValue = (
+    idx: number,
+    value: string | number | undefined
+  ) => {
+    const next = [...props.modelValue];
+    next[idx] = {
+      ...next[idx],
+      value: value ?? 1,
     };
     updateSteps(next);
   };

@@ -17,10 +17,26 @@ export default mergeConfig(
     build: {
       rollupOptions: {
         output: {
-          manualChunks: {
-            arco: ['@arco-design/web-vue'],
-            chart: ['echarts', 'vue-echarts'],
-            vue: ['vue', 'vue-router', 'pinia', '@vueuse/core', 'vue-i18n'],
+          manualChunks(id) {
+            if (!id.includes('node_modules')) {
+              return undefined;
+            }
+            if (id.includes('@arco-design/web-vue')) {
+              return 'arco';
+            }
+            if (id.includes('echarts') || id.includes('vue-echarts')) {
+              return 'chart';
+            }
+            if (
+              id.includes('/vue/') ||
+              id.includes('/vue-router/') ||
+              id.includes('/pinia/') ||
+              id.includes('/@vueuse/core/') ||
+              id.includes('/vue-i18n/')
+            ) {
+              return 'vue';
+            }
+            return undefined;
           },
         },
       },

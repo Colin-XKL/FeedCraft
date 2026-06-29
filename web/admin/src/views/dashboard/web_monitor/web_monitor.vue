@@ -32,7 +32,7 @@
         </a-steps>
 
         <div v-show="currentStep === 1" class="step-content">
-          <a-form layout="vertical" class="max-w-xl mx-auto">
+          <a-form :model="{ url }" layout="vertical" class="max-w-xl mx-auto">
             <a-form-item
               :label="t('webMonitor.step1.label')"
               :help="t('webMonitor.step1.help')"
@@ -170,7 +170,7 @@
                 </a-card>
 
                 <a-card :title="t('webMonitor.step2.preview')" size="small">
-                  <a-form layout="vertical">
+                  <a-form :model="templates" layout="vertical">
                     <a-form-item :label="t('webMonitor.step2.previewTitle')">
                       <a-input v-model="templates.title" allow-clear />
                     </a-form-item>

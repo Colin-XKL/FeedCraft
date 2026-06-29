@@ -22,24 +22,20 @@
 
   const { t } = useI18n();
 
-  const props = defineProps({
-    visible: {
-      type: Boolean,
-      default: false,
-    },
-    modelValue: {
-      type: [String, Array],
-      default: () => [],
-    },
-    mode: {
-      type: String as () => 'single' | 'multiple',
-      default: 'single',
-    },
-    title: {
-      type: String,
-      default: '',
-    },
-  });
+  const props = withDefaults(
+    defineProps<{
+      visible: boolean;
+      modelValue: string | string[];
+      mode: 'single' | 'multiple';
+      title?: string;
+    }>(),
+    {
+      visible: false,
+      modelValue: () => [],
+      mode: 'single',
+      title: '',
+    }
+  );
 
   const emit = defineEmits(['update:visible', 'update:modelValue', 'ok']);
 

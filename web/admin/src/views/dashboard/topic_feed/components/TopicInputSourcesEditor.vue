@@ -10,7 +10,7 @@
         <a-radio-group
           :model-value="source.sourceType"
           type="button"
-          @change="(value: SourceType) => onSourceTypeChange(idx, value)"
+          @change="(value) => onSourceTypeChange(idx, value as SourceType)"
         >
           <a-radio value="external">{{
             t('topic.sourceType.external')
@@ -26,7 +26,7 @@
             <a-switch
               :model-value="source.disabled"
               size="small"
-              @change="(value: boolean) => setDisabled(idx, value)"
+              @change="(value) => setDisabled(idx, Boolean(value))"
             />
           </div>
           <a-button

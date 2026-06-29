@@ -1,20 +1,22 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "ES2020",
-    "moduleResolution": "node",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "strict": true,
     "jsx": "preserve",
     "jsxImportSource": "vue",
     "sourceMap": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
     "lib": ["es2020", "dom"],
     "skipLibCheck": true
+  },
+  "vueCompilerOptions": {
+    "strictTemplates": false
   },
   "include": ["src/**/*", "src/**/*.vue"],
   "exclude": ["node_modules"]
