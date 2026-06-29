@@ -39,6 +39,11 @@ func MarkdownToHTML(md string) string {
 }
 
 func HTMLToMarkdown(htmlContent string, domain string) string {
+	// Strip inline base64 images up front. HTMLToMarkdown is used as the
+	// token-saving cleanup step before LLM calls (summary, introduction,
+	// filters, etc.); base64 images carry no useful signal yet would otherwise
+	// be converted into huge ![](data:...) Markdown blobs that waste tokens.
+	htmlContent = RemoveBase64Images(htmlContent)
 	htmlContent = insertLineBreaksInParagraphHTML(htmlContent)
 
 	conv := converter.NewConverter(
@@ -57,6 +62,9 @@ func HTMLToMarkdown(htmlContent string, domain string) string {
 	if err != nil {
 		logrus.Errorf("convert html to markdown err: %v", err)
 	}
+	// Defense-in-depth: drop any base64 images that survived conversion into
+	// Markdown image syntax.
+	mdStr = RemoveBase64Images(mdStr)
 	return collapseConsecutiveBlankLines(mdStr)
 }
 
