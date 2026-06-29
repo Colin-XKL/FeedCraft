@@ -8,6 +8,7 @@ import (
 	"FeedCraft/internal/util"
 	"context"
 	"fmt"
+	"net/url"
 )
 
 // PipelineSource is the generic implementation for most scenarios.
@@ -64,6 +65,7 @@ func (p *PipelineSource) normalizeCraftFeed(feed *model.CraftFeed) {
 
 	feed.Link = getAbsFeedLink(baseURL, feed.Link)
 	p.applyFeedMetaOverrides(feed)
+	p.applyFeedIconSource(feed, baseURL)
 }
 
 // applyFeedMetaOverrides checks for a FeedMetaConfig and uses its values
@@ -90,4 +92,60 @@ func (p *PipelineSource) applyFeedMetaOverrides(feed *model.CraftFeed) {
 		feed.AuthorName = meta.AuthorName
 		feed.AuthorEmail = meta.AuthorEmail
 	}
+}
+
+func (p *PipelineSource) applyFeedIconSource(feed *model.CraftFeed, baseURL string) {
+	if feed == nil {
+		return
+	}
+
+	iconSource := config.FeedIconSourceAuto
+	hasExplicitIconSource := p.Config != nil && p.Config.FeedMeta != nil && p.Config.FeedMeta.IconSource != ""
+	if hasExplicitIconSource {
+		iconSource = p.Config.FeedMeta.IconSource
+	}
+
+	if iconSource == config.FeedIconSourceFaviconService {
+		if serviceURL := buildFaviconServiceURL(feed.Link, baseURL); serviceURL != "" {
+			feed.ImageURL = serviceURL
+			feed.ImageTitle = feed.Title
+		}
+		return
+	}
+
+	if feed.ImageURL != "" {
+		if absURL, err := util.BuildAbsoluteURL(baseURL, feed.ImageURL); err == nil {
+			feed.ImageURL = absURL
+		}
+		if feed.ImageTitle == "" {
+			feed.ImageTitle = feed.Title
+		}
+		return
+	}
+
+	if hasExplicitIconSource {
+		if origin := firstOrigin(feed.Link, baseURL); origin != "" {
+			feed.ImageURL = origin + "/favicon.ico"
+			feed.ImageTitle = feed.Title
+		}
+	}
+}
+
+func buildFaviconServiceURL(feedLink string, baseURL string) string {
+	origin := firstOrigin(feedLink, baseURL)
+	if origin == "" {
+		return ""
+	}
+	return "https://www.google.com/s2/favicons?domain_url=" + url.QueryEscape(origin) + "&sz=64"
+}
+
+func firstOrigin(rawURLs ...string) string {
+	for _, rawURL := range rawURLs {
+		parsedURL, err := url.Parse(rawURL)
+		if err != nil || parsedURL.Scheme == "" || parsedURL.Host == "" {
+			continue
+		}
+		return parsedURL.Scheme + "://" + parsedURL.Host
+	}
+	return ""
 }

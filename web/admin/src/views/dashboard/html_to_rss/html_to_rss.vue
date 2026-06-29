@@ -385,6 +385,19 @@
                   allow-clear
                 />
               </a-form-item>
+              <a-form-item
+                :label="$t('htmlToRss.step3.iconSource')"
+                :help="$t('htmlToRss.step3.iconSource.help')"
+              >
+                <a-radio-group v-model="feedMeta.icon_source" type="button">
+                  <a-radio value="auto">{{
+                    $t('htmlToRss.step3.iconSource.auto')
+                  }}</a-radio>
+                  <a-radio value="favicon_service">{{
+                    $t('htmlToRss.step3.iconSource.faviconService')
+                  }}</a-radio>
+                </a-radio-group>
+              </a-form-item>
               <a-row :gutter="16">
                 <a-col :span="12">
                   <a-form-item :label="$t('htmlToRss.step3.authorName')">
@@ -561,6 +574,7 @@
     description: '',
     author_name: '',
     author_email: '',
+    icon_source: 'auto',
   });
 
   // Step 4 State
@@ -746,6 +760,7 @@
         description: feedMeta.description,
         author_name: feedMeta.author_name,
         author_email: feedMeta.author_email,
+        icon_source: feedMeta.icon_source,
       },
     };
 

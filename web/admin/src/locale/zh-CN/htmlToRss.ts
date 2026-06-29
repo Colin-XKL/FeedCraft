@@ -45,6 +45,11 @@ export default {
   'htmlToRss.step3.feedDesc.placeholder': '此 Feed 的简短描述...',
   'htmlToRss.step3.siteLink': '站点链接',
   'htmlToRss.step3.siteLink.placeholder': '原始网站 URL',
+  'htmlToRss.step3.iconSource': 'Feed 图标获取方式',
+  'htmlToRss.step3.iconSource.help':
+    '自动提取会优先使用页面声明的 favicon；通用服务会按站点域名生成图标地址。',
+  'htmlToRss.step3.iconSource.auto': '自动提取',
+  'htmlToRss.step3.iconSource.faviconService': '使用通用 favicon 服务',
   'htmlToRss.step3.authorName': '作者姓名',
   'htmlToRss.step3.authorEmail': '作者邮箱',
   'htmlToRss.step4.card.title': '预览并保存配方',

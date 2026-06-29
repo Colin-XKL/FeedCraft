@@ -49,6 +49,11 @@ export default {
   'htmlToRss.step3.feedDesc.placeholder': 'A brief description of this feed...',
   'htmlToRss.step3.siteLink': 'Site Link',
   'htmlToRss.step3.siteLink.placeholder': 'Original website URL',
+  'htmlToRss.step3.iconSource': 'Feed Icon Source',
+  'htmlToRss.step3.iconSource.help':
+    'Auto extraction uses the favicon declared by the page first. The generic service builds an icon URL from the site domain.',
+  'htmlToRss.step3.iconSource.auto': 'Auto extract',
+  'htmlToRss.step3.iconSource.faviconService': 'Use generic favicon service',
   'htmlToRss.step3.authorName': 'Author Name',
   'htmlToRss.step3.authorEmail': 'Author Email',
   'htmlToRss.step4.card.title': 'Review & Save Recipe',
