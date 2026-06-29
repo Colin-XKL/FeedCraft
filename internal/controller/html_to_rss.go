@@ -19,8 +19,9 @@ import (
 )
 
 type FetchReq struct {
-	URL            string `json:"url" binding:"required"`
-	UseBrowserless bool   `json:"use_browserless"`
+	URL               string                           `json:"url" binding:"required"`
+	UseBrowserless    bool                             `json:"use_browserless"`
+	NavigationActions []config.BrowserNavigationAction `json:"navigation_actions,omitempty"`
 }
 
 type ParseReq struct {
@@ -70,10 +71,14 @@ func validateURL(rawUrl string) error {
 }
 
 // fetchHTML extracts common fetching logic with browser emulation and error handling
-func fetchHTML(targetURL string, useBrowserless bool) (string, error) {
+func fetchHTML(targetURL string, useBrowserless bool, navigationActions []config.BrowserNavigationAction) (string, error) {
+	if len(navigationActions) > 0 && !useBrowserless {
+		return "", fmt.Errorf("navigation actions require Enhance Mode")
+	}
 	if useBrowserless {
 		return util.GetBrowserlessContent(targetURL, util.BrowserlessOptions{
-			Timeout: craft.DefaultExtractFulltextTimeout,
+			Timeout:           craft.DefaultExtractFulltextTimeout,
+			NavigationActions: navigationActions,
 		})
 	}
 
@@ -113,7 +118,7 @@ func HtmlFetch(c *gin.Context) {
 		return
 	}
 
-	htmlContent, err := fetchHTML(req.URL, req.UseBrowserless)
+	htmlContent, err := fetchHTML(req.URL, req.UseBrowserless, req.NavigationActions)
 	if err != nil {
 		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
 		return
@@ -143,7 +148,7 @@ func HtmlParse(c *gin.Context) {
 			return
 		}
 
-		htmlContent, err = fetchHTML(req.URL, false)
+		htmlContent, err = fetchHTML(req.URL, false, nil)
 		if err != nil {
 			c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
 			return
@@ -240,7 +245,7 @@ func WebMonitorPreview(c *gin.Context) {
 	htmlContent := req.HTML
 	if strings.TrimSpace(htmlContent) == "" {
 		var err error
-		htmlContent, err = fetchHTML(req.URL, req.UseBrowserless)
+		htmlContent, err = fetchHTML(req.URL, req.UseBrowserless, nil)
 		if err != nil {
 			c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
 			return

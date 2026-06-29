@@ -31,7 +31,8 @@ The HTML to RSS tool allows you to:
 
 1.  Enter the full URL of the webpage you want to scrape (e.g., a blog list or news site).
 2.  **Enhanced Mode**: Enable this if the site requires JavaScript to load content (uses headless browser).
-3.  Click **Fetch and Next**.
+3.  **Pre-navigation actions** (optional): Add click element, wait for element, or wait time actions in order, such as clicking `#tab-a`, `#tab-b`, and `#tab-c` before capturing the final page.
+4.  Click **Fetch and Next**.
 
 ### Step 2: Extract Rules
 

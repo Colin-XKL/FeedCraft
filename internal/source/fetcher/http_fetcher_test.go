@@ -101,6 +101,24 @@ func TestHttpFetcherHTMLPurposeRetriesRetryableStatus(t *testing.T) {
 	}
 }
 
+func TestHttpFetcherRejectsNavigationActionsWithoutBrowserless(t *testing.T) {
+	fetcher := &HttpFetcher{Config: &config.HttpFetcherConfig{
+		URL: "https://example.com",
+		NavigationActions: []config.BrowserNavigationAction{
+			{Type: config.BrowserNavigationActionClick, Selector: "#tab-a"},
+		},
+	}}
+
+	_, err := fetcher.Fetch(context.Background())
+
+	if err == nil {
+		t.Fatal("expected fetch to fail")
+	}
+	if err.Error() != "browser navigation actions require use_browserless" {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
 func TestHttpFetcherFeedPurposeDoesNotRetryOnRetryableStatus(t *testing.T) {
 	attempts := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

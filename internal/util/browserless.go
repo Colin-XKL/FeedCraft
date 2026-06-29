@@ -1,6 +1,7 @@
 package util
 
 import (
+	"FeedCraft/internal/config"
 	"fmt"
 	"net/url"
 	"time"
@@ -31,9 +32,10 @@ type GotoOptions struct {
 }
 
 type BrowserlessOptions struct {
-	Timeout   time.Duration
-	WaitTime  time.Duration
-	WaitUntil string
+	Timeout           time.Duration
+	WaitTime          time.Duration
+	WaitUntil         string
+	NavigationActions []config.BrowserNavigationAction
 }
 
 type BrowserProviderConfig struct {
@@ -58,6 +60,9 @@ func GetBrowserlessContent(websiteUrl string, options BrowserlessOptions) (strin
 
 	if options.Timeout <= 0 {
 		options.Timeout = 30 * time.Second
+	}
+	if err := ValidateBrowserNavigationActions(options.NavigationActions); err != nil {
+		return "", err
 	}
 
 	switch cfg.Provider {
