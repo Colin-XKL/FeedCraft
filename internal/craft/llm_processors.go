@@ -267,11 +267,14 @@ func newLLMFilterProcessor(condition string) *ArticlePredicateProcessor {
 	if condition == "" {
 		condition = "Is this content spam or low quality?"
 	}
+	fullPrompt := buildGenericConditionPrompt(condition)
 	matcher := GetCommonCachedArticlePredicate(
-		newArticleTitleContentCacheKeyGenerator(condition),
+		newArticleLLMPayloadCacheKeyGenerator(fullPrompt, func(article *model.CraftArticle) string {
+			return BuildLLMArticlePayload(article.Title, getPrimaryArticleContent(article))
+		}),
 		func(ctx context.Context, article *model.CraftArticle) (bool, error) {
 			content := getPrimaryArticleContent(article)
-			return CheckConditionWithGenericPrompt(article.Title, content, condition)
+			return CheckConditionWithLLM(article.Title, content, fullPrompt)
 		},
 		"llm filter",
 	)
@@ -333,6 +336,20 @@ func newArticleTitleContentCacheKeyGenerator(prompt string) ArticleCacheKeyGener
 			strings.TrimSpace(getPrimaryArticleContent(article)),
 		}, "|"))
 		return payloadHash, nil
+	}
+}
+
+func newArticleLLMPayloadCacheKeyGenerator(prompt string, payloadBuilder func(article *model.CraftArticle) string) ArticleCacheKeyGenerator {
+	promptHash := util.GetTextContentHash(prompt)
+	return func(article *model.CraftArticle) (string, error) {
+		payload := ""
+		if payloadBuilder != nil {
+			payload = payloadBuilder(article)
+		}
+		return util.GetTextContentHash(strings.Join([]string{
+			promptHash,
+			util.GetTextContentHash(payload),
+		}, "|")), nil
 	}
 }
 

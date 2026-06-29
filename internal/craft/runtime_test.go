@@ -370,6 +370,45 @@ func TestLLMFilterProcessor_RemovesMatchedArticleAndUsesTitleContentPayload(t *t
 	assert.Contains(t, seen[0], "Article Content:")
 }
 
+func TestLLMFilterProcessor_CacheKeyUsesFullPromptAndLLMPayload(t *testing.T) {
+	redis := setupTestRedis(t)
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		t.Fatalf("expected llm-filter to hit cache, got LLM call with prompt %q and context %q", prompt, context)
+		return "false", nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	condition := "filter cached article " + t.Name()
+	title := "Cached Drop " + t.Name()
+	content := "<p>cached body with enough content length for llm filter cache key</p>"
+	fullPrompt := fmt.Sprintf(`
+Evaluate the following content based on this criterion:
+"%s"
+
+If the content matches the criterion, return 'true'.
+Otherwise return 'false'.
+Do not include any other text.
+`, condition)
+	llmPayload := BuildLLMArticlePayload(title, content)
+	hashVal := util.GetTextContentHash(strings.Join([]string{
+		util.GetTextContentHash(fullPrompt),
+		util.GetTextContentHash(llmPayload),
+	}, "|"))
+	redis.SetString(t, getCraftCacheKey("llm filter", hashVal), "true", time.Minute)
+
+	processor := newLLMFilterProcessor(condition)
+	result, err := processor.Process(context.Background(), &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Title: title, Content: content},
+		},
+	})
+
+	require.NoError(t, err)
+	require.Empty(t, result.Articles)
+}
+
 func TestIgnoreAdvertorialProcessor_KeepsArticleOnLLMError(t *testing.T) {
 	setupTestRedis(t)
 

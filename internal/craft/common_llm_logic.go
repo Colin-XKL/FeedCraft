@@ -71,8 +71,11 @@ func BuildLLMArticlePayload(title string, content string) string {
 // CheckConditionWithGenericPrompt 使用通用模板构造 prompt 并调用 LLM
 // userPrompt: 用户提供的判断标准，例如 "Is this regarding politics?"
 func CheckConditionWithGenericPrompt(title string, content string, userPrompt string) (bool, error) {
-	// 构造强制要求 true/false 的完整 prompt
-	fullPrompt := fmt.Sprintf(`
+	return CheckConditionWithLLM(title, content, buildGenericConditionPrompt(userPrompt))
+}
+
+func buildGenericConditionPrompt(userPrompt string) string {
+	return fmt.Sprintf(`
 Evaluate the following content based on this criterion:
 "%s"
 
@@ -80,6 +83,4 @@ If the content matches the criterion, return 'true'.
 Otherwise return 'false'.
 Do not include any other text.
 `, userPrompt)
-
-	return CheckConditionWithLLM(title, content, fullPrompt)
 }
