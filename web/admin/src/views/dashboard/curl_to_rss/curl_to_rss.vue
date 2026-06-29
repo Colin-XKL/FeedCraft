@@ -625,6 +625,8 @@
   });
   const parsedItems = ref<ParsedItem[]>([]);
   const templateVariables = [
+    '${article_id}',
+    '${author.name}',
     '.Item.id',
     '.Fields.Title',
     '.Fields.Link',

@@ -36,9 +36,9 @@ export default {
   'jsonToRss.step2.contentTemplate': '内容/摘要模板（可选）',
   'jsonToRss.step2.templateHelpTitle': '模板说明',
   'jsonToRss.step2.templateHelpDesc':
-    '提取规则负责从当前条目取值，模板负责拼接、补全或清理最终文本。模板可访问当前条目对象和已提取字段。',
+    '提取规则负责从当前条目取值，模板负责拼接、补全或清理最终文本。可用 ${字段名} 读取当前条目字段；需要函数或已提取字段时可使用 Go template。',
   'jsonToRss.step2.templateExamples':
-    '示例：\n链接拼接：https://some-website.com/article/{{ .Item.id }}\n清理标题：{{ .Fields.Title | trimSpace }}\n默认摘要：{{ default .Fields.Description "暂无摘要" }}',
+    '示例：\n链接拼接：https://some-website.com/article/${article_id}\n嵌套字段：作者 ${author.name}\n清理标题：{{ .Fields.Title | trimSpace }}\n默认摘要：{{ default .Fields.Description "暂无摘要" }}',
   'jsonToRss.step2.previewResults': '预览结果 ({count})',
   'jsonToRss.step2.previewPlaceholder': '预览结果将出现在这里',
   'jsonToRss.step2.previewPlaceholder.help': '请配置上方选择器并点击“运行预览”',
@@ -89,7 +89,7 @@ export default {
   'jsonToRss.placeholder.titleTemplate': '{{ .Fields.Title | trimSpace }}',
   'jsonToRss.placeholder.link': '.url',
   'jsonToRss.placeholder.linkTemplate':
-    'https://some-website.com/article/{{ .Item.id }}',
+    'https://some-website.com/article/${article_id}',
   'jsonToRss.placeholder.date': '.created_at',
   'jsonToRss.placeholder.dateTemplate': '{{ .Fields.Date }}',
   'jsonToRss.placeholder.content': '.content',
