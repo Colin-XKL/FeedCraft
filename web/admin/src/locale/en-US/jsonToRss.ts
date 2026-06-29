@@ -39,9 +39,9 @@ export default {
   'jsonToRss.step2.contentTemplate': 'Content/Summary Template (Optional)',
   'jsonToRss.step2.templateHelpTitle': 'Template Help',
   'jsonToRss.step2.templateHelpDesc':
-    'Selectors extract raw values from the current item. Templates let you combine, clean up, or fill in the final text using the current item and extracted fields.',
+    'Selectors extract raw values from the current item. Templates let you combine, clean up, or fill in the final text. Use ${field_name} for current item fields, or Go templates for functions and extracted fields.',
   'jsonToRss.step2.templateExamples':
-    'Examples:\nBuild a link: https://some-website.com/article/{{ .Item.id }}\nTrim a title: {{ .Fields.Title | trimSpace }}\nFallback summary: {{ default .Fields.Description "No summary" }}',
+    'Examples:\nBuild a link: https://some-website.com/article/${article_id}\nNested field: by ${author.name}\nTrim a title: {{ .Fields.Title | trimSpace }}\nFallback summary: {{ default .Fields.Description "No summary" }}',
   'jsonToRss.step2.previewResults': 'Preview Results ({count})',
   'jsonToRss.step2.previewPlaceholder': 'Preview results will appear here',
   'jsonToRss.step2.previewPlaceholder.help':
@@ -95,7 +95,7 @@ export default {
   'jsonToRss.placeholder.titleTemplate': '{{ .Fields.Title | trimSpace }}',
   'jsonToRss.placeholder.link': '.url',
   'jsonToRss.placeholder.linkTemplate':
-    'https://some-website.com/article/{{ .Item.id }}',
+    'https://some-website.com/article/${article_id}',
   'jsonToRss.placeholder.date': '.created_at',
   'jsonToRss.placeholder.dateTemplate': '{{ .Fields.Date }}',
   'jsonToRss.placeholder.content': '.content',
