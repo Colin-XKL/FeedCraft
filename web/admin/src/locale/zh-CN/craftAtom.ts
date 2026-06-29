@@ -20,6 +20,7 @@ export default {
   'craftAtom.form.addParam': '添加参数',
   'craftAtom.form.cancel': '取消',
   'craftAtom.form.save': '保存',
-  'craftAtom.form.rule.templateRequired': 'template is required',
-  'craftAtom.form.rule.nameRequired': 'Name is required',
+  'craftAtom.form.saveSuccess': '保存成功',
+  'craftAtom.form.rule.templateRequired': '模板为必填项',
+  'craftAtom.form.rule.nameRequired': '名称为必填项',
 };

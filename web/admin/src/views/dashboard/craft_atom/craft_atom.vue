@@ -1,30 +1,55 @@
 <template>
-  <div class="py-8 px-16">
-    <x-header
-      :title="t('menu.craftAtom')"
-      :description="t('craftAtom.description')"
-    ></x-header>
+  <CraftManagePage
+    :title="t('menu.craftAtom')"
+    :description="t('craftAtom.description')"
+  >
+    <template #toolbar>
+      <a-space wrap>
+        <a-button :loading="isLoading" @click="listAllCraftAtoms">
+          <template #icon>
+            <icon-refresh />
+          </template>
+          {{ t('craftAtom.query') }}
+        </a-button>
+        <a-button type="primary" @click="handleAdd">
+          <template #icon>
+            <icon-plus />
+          </template>
+          {{ t('craftAtom.create') }}
+        </a-button>
+      </a-space>
+    </template>
 
-    <a-space direction="horizontal" class="mb-6">
-      <a-button type="primary" :loading="isLoading" @click="listAllCraftAtoms">
-        {{ t('craftAtom.query') }}
-      </a-button>
-      <a-button type="outline" @click="handleAdd"
-        >{{ t('craftAtom.create') }}
-      </a-button>
-    </a-space>
-
-    <a-table :data="craftAtoms" :columns="columns" :loading="isLoading">
+    <a-table
+      row-key="name"
+      :data="craftAtoms"
+      :columns="columns"
+      :loading="isLoading"
+      :bordered="false"
+      :pagination="{ pageSize: 10, showTotal: true }"
+    >
+      <template #params="{ record }">
+        <a-space v-if="Object.keys(record.params || {}).length" wrap>
+          <a-tag v-for="(_, key) in record.params" :key="key" color="gray">
+            {{ key }}
+          </a-tag>
+        </a-space>
+        <span v-else class="text-gray-400">{{
+          t('craftAtom.form.noParams')
+        }}</span>
+      </template>
       <template #actions="{ record }">
-        <a-space>
-          <a-button type="outline" @click="editBtnHandler(record)"
+        <a-space wrap>
+          <a-button type="text" size="small" @click="editBtnHandler(record)"
             >{{ t('craftAtom.edit') }}
           </a-button>
           <a-popconfirm
             :content="t('craftAtom.deleteConfirm')"
             @ok="deleteCraftAtomHandler(record.name)"
           >
-            <a-button status="danger">{{ t('craftAtom.delete') }}</a-button>
+            <a-button type="text" status="danger" size="small">
+              {{ t('craftAtom.delete') }}
+            </a-button>
           </a-popconfirm>
         </a-space>
       </template>
@@ -211,11 +236,11 @@
         }}</a-button>
       </template>
     </a-modal>
-  </div>
+  </CraftManagePage>
 </template>
 
 <script setup lang="ts">
-  import XHeader from '@/components/header/x-header.vue';
+  import CraftManagePage from '@/components/craft/CraftManagePage.vue';
   import { onBeforeMount, ref } from 'vue';
   import {
     CraftAtom,
@@ -263,8 +288,13 @@
     { title: t('craftAtom.form.name'), dataIndex: 'name' },
     { title: t('craftAtom.form.description'), dataIndex: 'description' },
     { title: t('craftAtom.form.template'), dataIndex: 'template_name' },
-    { title: t('craftAtom.form.params'), dataIndex: 'params' },
-    { title: t('craftAtom.edit'), slotName: 'actions' },
+    { title: t('craftAtom.form.params'), slotName: 'params' },
+    {
+      title: t('craftAtom.edit'),
+      slotName: 'actions',
+      width: 140,
+      align: 'right',
+    },
   ];
   const rules = {
     template_name: [
@@ -403,6 +433,7 @@
     } else {
       await createCraftAtom(editedCraftAtom.value);
     }
+    Message.success(t('craftAtom.form.saveSuccess'));
     showEditModal.value = false;
     await listAllCraftAtoms();
     isUpdating.value = false;

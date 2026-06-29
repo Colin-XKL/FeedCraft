@@ -1,56 +1,61 @@
 <template>
-  <div class="py-8 px-16">
-    <x-header
-      :title="t('menu.craftFlow')"
-      :description="t('craftFlow.description')"
-    ></x-header>
+  <CraftManagePage
+    :title="t('menu.craftFlow')"
+    :description="t('craftFlow.description')"
+  >
+    <template #toolbar>
+      <a-space wrap>
+        <a-button :loading="isLoading" @click="listAllCraftFlow">
+          <template #icon>
+            <icon-refresh />
+          </template>
+          {{ t('craftFlow.query') }}
+        </a-button>
+        <a-button type="primary" @click="handleAdd">
+          <template #icon>
+            <icon-plus />
+          </template>
+          {{ t('craftFlow.create') }}
+        </a-button>
+      </a-space>
+    </template>
 
-    <a-space direction="horizontal" class="mb-6">
-      <a-button type="primary" :loading="isLoading" @click="listAllCraftFlow">
-        {{ t('craftFlow.query') }}
-      </a-button>
-      <a-button
-        type="outline"
-        @click="
-          () => {
-            showEditModal = true;
-            isUpdating = false;
-            editedCraftFlow = {
-              name: '',
-              description: '',
-              craftList: [],
-            };
-          }
-        "
-        >{{ t('craftFlow.create') }}
-      </a-button>
-    </a-space>
-
-    <a-table :data="craftFlows" :columns="columns" :loading="isLoading">
+    <a-table
+      row-key="name"
+      :data="craftFlows"
+      :columns="columns"
+      :loading="isLoading"
+      :bordered="false"
+      :pagination="{ pageSize: 10, showTotal: true }"
+    >
       <template #craft-flow-item-list="{ record }">
-        <a-tag>开始</a-tag>
-        >
-        <template
-          v-for="(item, index) in record.craft_flow_config"
-          :key="index"
-        >
-          <a-tooltip :content="getCraftDescription(item.craft_name)">
-            <a-tag color="arcoblue">{{ item.craft_name }}</a-tag>
-          </a-tooltip>
+        <div class="craft-flow-chain">
+          <a-tag color="gray">{{ t('craftFlow.flow.start') }}</a-tag>
+          <template
+            v-for="(item, index) in record.craft_flow_config"
+            :key="index"
           >
-        </template>
-        <a-tag>结束</a-tag>
+            <span class="craft-flow-chain__arrow">/</span>
+            <a-tooltip :content="getCraftDescription(item.craft_name)">
+              <a-tag color="arcoblue">{{ item.craft_name }}</a-tag>
+            </a-tooltip>
+          </template>
+          <span class="craft-flow-chain__arrow">/</span>
+          <a-tag color="gray">{{ t('craftFlow.flow.end') }}</a-tag>
+        </div>
       </template>
       <template #actions="{ record }">
-        <a-space>
-          <a-button type="outline" @click="editBtnHandler(record)"
+        <a-space wrap>
+          <a-button type="text" size="small" @click="editBtnHandler(record)"
             >{{ t('craftFlow.edit') }}
           </a-button>
           <a-popconfirm
             :content="t('craftFlow.deleteConfirm')"
             @ok="deleteCraftFlowHandler(record.name)"
           >
-            <a-button status="danger">{{ t('craftFlow.delete') }}</a-button>
+            <a-button type="text" status="danger" size="small">
+              {{ t('craftFlow.delete') }}
+            </a-button>
           </a-popconfirm>
         </a-space>
       </template>
@@ -70,6 +75,7 @@
         :rules="rules"
         :label-col="{ span: 6 }"
         :wrapper-col="{ span: 18 }"
+        layout="vertical"
       >
         <a-form-item :label="t('craftFlow.form.name')" field="name">
           <a-input v-model="editedCraftFlow.name" />
@@ -99,11 +105,11 @@
         }}</a-button>
       </template>
     </a-modal>
-  </div>
+  </CraftManagePage>
 </template>
 
 <script setup lang="ts">
-  import XHeader from '@/components/header/x-header.vue';
+  import CraftManagePage from '@/components/craft/CraftManagePage.vue';
   import { onBeforeMount, ref, computed } from 'vue';
   import {
     CraftFlow,
@@ -125,7 +131,7 @@
     name: [
       {
         required: true,
-        message: 'Name is required',
+        message: t('craftFlow.form.rule.nameRequired'),
         trigger: 'blur',
       },
       namingValidator,
@@ -150,8 +156,24 @@
     { title: t('craftFlow.form.name'), dataIndex: 'name' },
     { title: t('craftFlow.form.description'), dataIndex: 'description' },
     { title: t('craftFlow.form.flow'), slotName: 'craft-flow-item-list' },
-    { title: t('craftFlow.edit'), slotName: 'actions' },
+    {
+      title: t('craftFlow.edit'),
+      slotName: 'actions',
+      width: 140,
+      align: 'right',
+    },
   ];
+
+  const handleAdd = () => {
+    showEditModal.value = true;
+    isUpdating.value = false;
+    editedCraftFlow.value = {
+      name: '',
+      description: '',
+      craftList: [],
+      craft_flow_config: [],
+    };
+  };
 
   const editBtnHandler = (craftFlow: CraftFlow) => {
     // Clone and ensure craftList exists
@@ -273,3 +295,16 @@
     name: 'CraftFlow',
   };
 </script>
+
+<style scoped lang="less">
+  .craft-flow-chain {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .craft-flow-chain__arrow {
+    color: var(--color-text-4);
+  }
+</style>

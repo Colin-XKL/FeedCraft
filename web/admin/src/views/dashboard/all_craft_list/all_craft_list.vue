@@ -1,55 +1,77 @@
 <template>
-  <div class="py-8 px-16">
-    <x-header
-      :title="t('menu.allCraftList')"
-      :description="t('allCraftList.description')"
-    ></x-header>
-
-    <a-space direction="horizontal" class="mb-6">
-      <a-button type="primary" :loading="isLoading" @click="listAllCrafts">
+  <CraftManagePage
+    :title="t('menu.allCraftList')"
+    :description="t('allCraftList.description')"
+  >
+    <template #toolbar>
+      <a-button :loading="isLoading" @click="fetchAllCrafts">
+        <template #icon>
+          <icon-refresh />
+        </template>
         {{ t('allCraftList.query') }}
       </a-button>
-    </a-space>
+    </template>
 
     <a-table
+      row-key="name"
       :data="allCrafts"
       :columns="columns"
       :loading="isLoading"
-    ></a-table>
-  </div>
+      :bordered="false"
+      :pagination="{ pageSize: 10, showTotal: true }"
+    >
+      <template #type="{ record }">
+        <a-tag :color="getCraftTypeColor(record.type)">
+          {{ record.type }}
+        </a-tag>
+      </template>
+      <template #templateOnly="{ record }">
+        <a-tag :color="record.template_only ? 'orange' : 'green'">
+          {{
+            record.template_only
+              ? t('allCraftList.table.templateOnlyYes')
+              : t('allCraftList.table.templateOnlyNo')
+          }}
+        </a-tag>
+      </template>
+    </a-table>
+  </CraftManagePage>
 </template>
 
 <script setup lang="ts">
-  import XHeader from '@/components/header/x-header.vue';
+  import CraftManagePage from '@/components/craft/CraftManagePage.vue';
   import { onBeforeMount, ref } from 'vue';
   import { Message } from '@arco-design/web-vue';
-  import axios from 'axios';
   import { useI18n } from 'vue-i18n';
+  import { CraftItem, listAllCrafts } from '@/api/craft_flow';
 
   const { t } = useI18n();
-
-  interface CraftItem {
-    name: string;
-    description: string;
-    type: string;
-    template_only?: boolean;
-  }
 
   const isLoading = ref(false);
   const allCrafts = ref<CraftItem[]>([]);
 
   const columns = [
     { title: t('allCraftList.table.name'), dataIndex: 'name' },
-    { title: t('allCraftList.table.type'), dataIndex: 'type' },
-    { title: t('allCraftList.table.templateOnly'), dataIndex: 'template_only' },
+    { title: t('allCraftList.table.type'), slotName: 'type', width: 160 },
+    {
+      title: t('allCraftList.table.templateOnly'),
+      slotName: 'templateOnly',
+      width: 140,
+    },
     { title: t('allCraftList.table.description'), dataIndex: 'description' },
   ];
 
-  const listAllCrafts = async () => {
+  const getCraftTypeColor = (type: string) => {
+    if (type?.toLowerCase().includes('flow')) return 'purple';
+    if (type?.toLowerCase().includes('atom')) return 'arcoblue';
+    return 'gray';
+  };
+
+  const fetchAllCrafts = async () => {
     isLoading.value = true;
     try {
-      const response = await axios.get('/api/list-all-craft');
-      allCrafts.value = response.data.data;
+      const response = await listAllCrafts();
+      allCrafts.value = response.data;
     } catch (error) {
       Message.error(t('allCraftList.message.fetchFailed'));
     } finally {
@@ -58,7 +80,7 @@
   };
 
   onBeforeMount(() => {
-    listAllCrafts();
+    fetchAllCrafts();
   });
 </script>
 
