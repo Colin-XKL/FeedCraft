@@ -471,7 +471,7 @@
     gap: 12px;
     padding: 18px;
     text-align: left;
-    background: #fff;
+    background: var(--color-bg-2);
     border: 1px solid var(--color-border-2);
     border-radius: 14px;
     cursor: pointer;
@@ -487,7 +487,7 @@
   }
 
   .mode-card--active {
-    background: linear-gradient(180deg, #f7fbff 0%, #fff 100%);
+    background: var(--color-fill-1);
   }
 
   .mode-card__header {
@@ -503,7 +503,7 @@
     width: 32px;
     height: 32px;
     color: rgb(var(--primary-6));
-    background: rgb(var(--primary-1));
+    background: var(--color-fill-2);
     border-radius: 10px;
     font-size: 18px;
   }
