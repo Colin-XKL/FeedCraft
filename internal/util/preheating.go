@@ -28,6 +28,11 @@ type PreheatingContext struct {
 	running          bool
 }
 
+type preheatingTask struct {
+	recipeName   string
+	timerVersion uint64
+}
+
 // PreheatingScheduler 预热调度器
 type PreheatingScheduler struct {
 	contexts       map[string]*PreheatingContext
@@ -35,7 +40,7 @@ type PreheatingScheduler struct {
 	taskFunc       func(string) error // 实际的长任务函数
 	shouldRun      func(string) bool
 	onSkip         func(string)
-	taskQueue      chan string
+	taskQueue      chan preheatingTask
 	timerVersion   atomic.Uint64
 	maxConcurrency int
 	maxQueueSize   int
@@ -121,7 +126,7 @@ func NewPreheatingScheduler(taskFunc func(payload string) error, shouldRun func(
 	for _, option := range options {
 		option(s)
 	}
-	s.taskQueue = make(chan string, s.maxQueueSize)
+	s.taskQueue = make(chan preheatingTask, s.maxQueueSize)
 	for i := 0; i < s.maxConcurrency; i++ {
 		go s.worker()
 	}
@@ -154,6 +159,7 @@ func (s *PreheatingScheduler) scheduleTask(recipeName string, fromUserRequest bo
 	} else if fromUserRequest {
 		ctx.lastRequestTime = now
 		ctx.preheatingCount = 0
+		ctx.queued = false
 	}
 
 	// 如果存在旧的定时器，先停止
@@ -204,24 +210,27 @@ func (s *PreheatingScheduler) enqueueTask(recipeName string, timerVersion uint64
 	ctx.queued = true
 	s.mutex.Unlock()
 
-	s.taskQueue <- recipeName
-}
-
-func (s *PreheatingScheduler) worker() {
-	for recipeName := range s.taskQueue {
-		if !s.markTaskRunning(recipeName) {
-			continue
-		}
-		s.runTask(recipeName)
+	s.taskQueue <- preheatingTask{
+		recipeName:   recipeName,
+		timerVersion: timerVersion,
 	}
 }
 
-func (s *PreheatingScheduler) markTaskRunning(recipeName string) bool {
+func (s *PreheatingScheduler) worker() {
+	for task := range s.taskQueue {
+		if !s.markTaskRunning(task) {
+			continue
+		}
+		s.runTask(task.recipeName)
+	}
+}
+
+func (s *PreheatingScheduler) markTaskRunning(task preheatingTask) bool {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	ctx, taskExist := s.contexts[recipeName]
-	if !taskExist {
+	ctx, taskExist := s.contexts[task.recipeName]
+	if !taskExist || ctx.timerVersion != task.timerVersion || !ctx.queued {
 		return false
 	}
 	if ctx.running {
