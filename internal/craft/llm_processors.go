@@ -373,6 +373,9 @@ func getPrimaryArticleContent(article *model.CraftArticle) string {
 }
 
 func getArticleContentForPrompt(article *model.CraftArticle, original string) string {
+	// Drop inline base64 images before converting: they carry no useful signal
+	// for LLM processing but can dominate the token budget.
+	original = util.RemoveBase64Images(original)
 	domain, _ := util.ParseDomainFromUrl(article.Link)
 	cleaned := util.HTMLToMarkdown(original, domain)
 	if strings.TrimSpace(cleaned) != "" {

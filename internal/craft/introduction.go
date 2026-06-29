@@ -49,7 +49,9 @@ func processItemContent(item *feeds.Item, processor TextProcessor) string {
 	}
 
 	domain, _ := util.ParseDomainFromUrl(item.Link.Href)
-	cleanedContent := util.HTMLToMarkdown(originalContent, domain)
+	// Drop inline base64 images before converting: they carry no useful signal
+	// for LLM processing but can dominate the token budget.
+	cleanedContent := util.HTMLToMarkdown(util.RemoveBase64Images(originalContent), domain)
 
 	var processedContent string
 	var err error

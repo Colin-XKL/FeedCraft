@@ -67,14 +67,14 @@ func TestProcessContent_KeepsBase64WhenRemoveImageDisabled(t *testing.T) {
 	assert.Equal(t, content, out)
 }
 
-func TestHTMLToMarkdown_StripsBase64Image(t *testing.T) {
+func TestHTMLToMarkdown_PreservesBase64Image(t *testing.T) {
+	// HTMLToMarkdown is a general-purpose converter and must NOT strip content
+	// on its own. LLM-specific callers are responsible for calling
+	// RemoveBase64Images before invoking this function.
 	content := `<p>Article body here.</p><img src="data:image/png;base64,` + tinyBase64PNG + `" alt="diagram">`
 	md := HTMLToMarkdown(content, "")
-	assert.NotContains(t, md, "base64")
-	assert.NotContains(t, md, "data:image")
+	assert.Contains(t, md, "base64", "HTMLToMarkdown must preserve base64 images for non-LLM callers")
 	assert.Contains(t, md, "Article body here.")
-	// Sanity check: the stripped output is far smaller than the base64 blob.
-	assert.Less(t, len(md), len(tinyBase64PNG))
 }
 
 func TestHTMLToMarkdown_KeepsNormalImageLink(t *testing.T) {
