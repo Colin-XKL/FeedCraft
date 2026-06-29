@@ -146,6 +146,29 @@ func compileJSONFieldDefinitions(cfg *config.JsonParserConfig) ([]jsonFieldDefin
 }
 
 func normalizeJSONTemplateSyntax(src string) string {
+	var normalized strings.Builder
+	for len(src) > 0 {
+		actionStart := strings.Index(src, "{{")
+		if actionStart == -1 {
+			normalized.WriteString(normalizeJSONDollarTemplateSegment(src))
+			break
+		}
+
+		normalized.WriteString(normalizeJSONDollarTemplateSegment(src[:actionStart]))
+		actionEnd := strings.Index(src[actionStart+2:], "}}")
+		if actionEnd == -1 {
+			normalized.WriteString(src[actionStart:])
+			break
+		}
+
+		actionEnd += actionStart + 4
+		normalized.WriteString(src[actionStart:actionEnd])
+		src = src[actionEnd:]
+	}
+	return normalized.String()
+}
+
+func normalizeJSONDollarTemplateSegment(src string) string {
 	return jsonDollarTemplatePattern.ReplaceAllString(src, `{{ .ItemField "$1" }}`)
 }
 

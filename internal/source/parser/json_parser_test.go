@@ -167,6 +167,35 @@ func TestJsonParser_Parse_WithTrimPipelineTemplate(t *testing.T) {
 	}
 }
 
+func TestJsonParser_Parse_DollarTemplateDoesNotRewriteGoTemplateActions(t *testing.T) {
+	jsonContent := `{
+	  "items": [
+	    {
+	      "article_id": "42",
+	      "title": "Entry",
+	      "summary": ""
+	    }
+	  ]
+	}`
+
+	cfg := &config.JsonParserConfig{
+		ItemsIterator:       ".items[]",
+		Title:               ".title",
+		TitleTemplate:       "ID ${article_id}: {{ .Fields.Title }}",
+		Description:         ".summary",
+		DescriptionTemplate: "{{ default .Fields.Description \"No ${literal}\" }}",
+	}
+
+	parser := &JsonParser{Config: cfg}
+	feed, err := parser.Parse([]byte(jsonContent))
+
+	assert.NoError(t, err)
+	if assert.NotNil(t, feed) && assert.Len(t, feed.Articles, 1) {
+		assert.Equal(t, "ID 42: Entry", feed.Articles[0].Title)
+		assert.Equal(t, "No ${literal}", feed.Articles[0].Description)
+	}
+}
+
 func TestJsonParser_Parse_LargeNumberID(t *testing.T) {
 	jsonContent := `{
 	  "items": [
