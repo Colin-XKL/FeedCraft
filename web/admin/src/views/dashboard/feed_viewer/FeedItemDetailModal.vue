@@ -43,8 +43,8 @@
   import dayjs from 'dayjs';
   import { useI18n } from 'vue-i18n';
   import type { FeedViewerPreviewItem } from '@/api/feed_viewer';
-  import FeedItemContent from './FeedItemContent.vue';
-  import type { ViewMode } from './FeedItemCard.vue';
+  import FeedItemContent from '@/views/dashboard/feed_viewer/FeedItemContent.vue';
+  import type { ViewMode } from '@/views/dashboard/feed_viewer/FeedItemCard.vue';
 
   interface Props {
     item: FeedViewerPreviewItem;

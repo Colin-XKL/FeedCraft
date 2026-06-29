@@ -108,7 +108,7 @@
   import XHeader from '@/components/header/x-header.vue';
   import buildPublicFeedUrl from '@/utils/publicFeedUrl';
   import { TopicFeed, deleteTopicFeed, listTopicFeeds } from '@/api/topic';
-  import { formatAggregatorSummary } from './topicInputUtils';
+  import { formatAggregatorSummary } from '@/views/dashboard/topic_feed/topicInputUtils';
 
   const { t } = useI18n();
   const router = useRouter();
