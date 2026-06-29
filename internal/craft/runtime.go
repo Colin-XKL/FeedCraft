@@ -59,6 +59,7 @@ var nativeProcessorBuilders = map[string]nativeProcessorBuilder{
 	"fulltext-plus":               buildNativeFulltextPlusProcessor,
 	"summary":                     buildWithStringParam("prompt", func(s string) localProcessor { return newSummaryProcessor(s) }),
 	"introduction":                buildWithStringParam("prompt", func(s string) localProcessor { return newIntroductionProcessor(s) }),
+	"re-title":                    buildWithStringParam("prompt", func(s string) localProcessor { return newRetitleProcessor(s) }),
 	"translate-title":             buildWithStringParam("prompt", func(s string) localProcessor { return newTranslateTitleProcessor(s) }),
 	"translate-content":           buildWithStringParam("prompt", func(s string) localProcessor { return newTranslateContentProcessor(s) }),
 	"translate-content-immersive": buildWithStringParam("prompt", func(s string) localProcessor { return newTranslateContentImmersiveProcessor(s) }),
