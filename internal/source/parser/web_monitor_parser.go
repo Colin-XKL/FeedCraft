@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"FeedCraft/internal/adapter"
 	"FeedCraft/internal/config"
 	"FeedCraft/internal/model"
 	"FeedCraft/internal/util"
@@ -13,6 +14,17 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 )
+
+// DefaultWebMonitorAIJudgeField is the variable name used to store the AI verdict
+// when the user does not specify a custom output field.
+const DefaultWebMonitorAIJudgeField = "ai_verdict"
+
+// webMonitorJudgeCaller performs the underlying LLM call for AI judgement.
+// It is a package-level variable so tests can stub it out without hitting a
+// real LLM or Redis cache. The default implementation reuses
+// adapter.CallLLMUsingContext, which caches results by prompt+context hash and
+// therefore keeps verdicts (and thus the RSS GUID) stable for identical inputs.
+var webMonitorJudgeCaller = adapter.CallLLMUsingContext
 
 type WebMonitorParser struct {
 	Config  *config.WebMonitorParserConfig
@@ -32,12 +44,10 @@ func (p *WebMonitorParser) Parse(data []byte) (*model.CraftFeed, error) {
 		return nil, fmt.Errorf("parser config is nil")
 	}
 
-	doc, values, templates, err := p.prepare(data)
+	doc, values, templates, err := p.prepare(data, p.PageURL)
 	if err != nil {
 		return nil, err
 	}
-
-	values["url"] = p.PageURL
 
 	rendered, err := renderWebMonitorPreview(doc, values, p.Config.KeyFields, templates)
 	if err != nil {
@@ -64,12 +74,11 @@ type webMonitorRendered struct {
 }
 
 func PreviewWebMonitor(data []byte, cfg *config.WebMonitorParserConfig, pageURL string) (*WebMonitorPreviewResult, error) {
-	parser := &WebMonitorParser{Config: cfg}
-	doc, values, templates, err := parser.prepare(data)
+	parser := &WebMonitorParser{Config: cfg, PageURL: pageURL}
+	doc, values, templates, err := parser.prepare(data, pageURL)
 	if err != nil {
 		return nil, err
 	}
-	values["url"] = pageURL
 
 	rendered, err := renderWebMonitorPreview(doc, values, cfg.KeyFields, templates)
 	if err != nil {
@@ -78,7 +87,7 @@ func PreviewWebMonitor(data []byte, cfg *config.WebMonitorParserConfig, pageURL 
 	return rendered.preview, nil
 }
 
-func (p *WebMonitorParser) prepare(data []byte) (*goquery.Document, map[string]string, *compiledWebMonitorTemplates, error) {
+func (p *WebMonitorParser) prepare(data []byte, pageURL string) (*goquery.Document, map[string]string, *compiledWebMonitorTemplates, error) {
 	if len(p.Config.Extractors) == 0 {
 		return nil, nil, nil, fmt.Errorf("extractors are required")
 	}
@@ -93,6 +102,15 @@ func (p *WebMonitorParser) prepare(data []byte) (*goquery.Document, map[string]s
 	}
 
 	values := extractWebMonitorValues(doc, p.Config.Extractors)
+	values["url"] = pageURL
+
+	// Optional AI judgement: derive an extra verdict variable from the
+	// extracted values. It runs before key-field validation so the verdict can
+	// itself be used as a key field driving the RSS GUID.
+	if err := p.applyAIJudge(values); err != nil {
+		return nil, nil, nil, err
+	}
+
 	for _, field := range p.Config.KeyFields {
 		if _, ok := values[field]; !ok {
 			return nil, nil, nil, fmt.Errorf("key field '%s' is not defined in extractors", field)
@@ -105,6 +123,81 @@ func (p *WebMonitorParser) prepare(data []byte) (*goquery.Document, map[string]s
 	}
 
 	return doc, values, templates, nil
+}
+
+// applyAIJudge runs the optional LLM judgement step and injects the verdict into
+// values under the configured output field name.
+func (p *WebMonitorParser) applyAIJudge(values map[string]string) error {
+	cfg := p.Config.AIJudge
+	if cfg == nil || !cfg.Enabled {
+		return nil
+	}
+
+	prompt := strings.TrimSpace(cfg.Prompt)
+	if prompt == "" {
+		return fmt.Errorf("ai_judge prompt is required when ai judge is enabled")
+	}
+
+	outputField := strings.TrimSpace(cfg.OutputField)
+	if outputField == "" {
+		outputField = DefaultWebMonitorAIJudgeField
+	}
+	if outputField == "url" {
+		return fmt.Errorf("ai_judge output_field cannot be the reserved variable 'url'")
+	}
+	if _, exists := p.Config.Extractors[outputField]; exists {
+		return fmt.Errorf("ai_judge output_field '%s' conflicts with an existing extractor name", outputField)
+	}
+
+	verdict, err := webMonitorJudgeCaller(
+		buildWebMonitorJudgePrompt(prompt),
+		buildWebMonitorJudgeContext(values),
+		util.ContentProcessOption{Temperature: util.LowestLLMTemperaturePtr()},
+	)
+	if err != nil {
+		return fmt.Errorf("ai judge failed: %w", err)
+	}
+
+	values[outputField] = normalizeWebMonitorVerdict(verdict)
+	return nil
+}
+
+func buildWebMonitorJudgePrompt(userPrompt string) string {
+	return fmt.Sprintf(`You are a web page change monitoring assistant.
+
+Based on the extracted field values from a web page (provided in the context), follow the user's judgement instruction and output a SHORT verdict label.
+
+User judgement instruction:
+%s
+
+Output requirements:
+- Output ONLY the verdict label. No explanation, punctuation, quotes, or markdown.
+- Keep it short and stable, for example a single word or label such as "available", "unavailable", "yes", or "no".
+- Given identical inputs, you MUST always produce the identical verdict.`, userPrompt)
+}
+
+// buildWebMonitorJudgeContext renders the extracted values into a deterministic,
+// key-sorted text block so the LLM (and its cache) sees stable input.
+func buildWebMonitorJudgeContext(values map[string]string) string {
+	keys := make([]string, 0, len(values))
+	for key := range values {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	parts := make([]string, 0, len(keys))
+	for _, key := range keys {
+		parts = append(parts, fmt.Sprintf("%s: %s", key, values[key]))
+	}
+	return strings.Join(parts, "\n")
+}
+
+func normalizeWebMonitorVerdict(raw string) string {
+	verdict := strings.TrimSpace(raw)
+	if idx := strings.IndexAny(verdict, "\r\n"); idx >= 0 {
+		verdict = strings.TrimSpace(verdict[:idx])
+	}
+	return verdict
 }
 
 func extractWebMonitorValues(doc *goquery.Document, extractors map[string]string) map[string]string {

@@ -64,6 +64,29 @@ type WebMonitorParserConfig struct {
 	TitleTemplate       string            `json:"title_template,omitempty"`
 	DescriptionTemplate string            `json:"description_template,omitempty"`
 	ContentTemplate     string            `json:"content_template,omitempty"`
+
+	// AIJudge is an optional LLM-based judgement step. When enabled, the LLM
+	// evaluates the extracted field values against a user instruction and
+	// produces a short verdict label. The verdict is injected as an extra
+	// template variable (named by OutputField) and can be added to KeyFields so
+	// that the RSS GUID — and therefore change notifications — is driven by the
+	// AI verdict instead of raw text diffs.
+	AIJudge *WebMonitorAIJudgeConfig `json:"ai_judge,omitempty"`
+}
+
+// WebMonitorAIJudgeConfig configures the optional AI judgement step for the web monitor.
+type WebMonitorAIJudgeConfig struct {
+	// Enabled toggles the AI judgement step.
+	Enabled bool `json:"enabled,omitempty"`
+	// Prompt is the user instruction describing what to judge and which verdict
+	// labels to output. Required when Enabled is true.
+	Prompt string `json:"prompt,omitempty"`
+	// OutputField is the variable name that stores the verdict. Defaults to
+	// "ai_verdict" when empty. It must not collide with an existing extractor
+	// name or the reserved "url" variable.
+	OutputField string `json:"output_field,omitempty"`
+	// Model optionally overrides the default LLM model for the judgement call.
+	Model string `json:"model,omitempty"`
 }
 
 // InboxSourceConfig holds the configuration for an inbox source.
