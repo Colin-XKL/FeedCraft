@@ -21,6 +21,10 @@ export interface CraftItem {
   template_only?: boolean;
 }
 
+export function normalizeCraftItems(data: unknown): CraftItem[] {
+  return Array.isArray(data) ? data : [];
+}
+
 const adminApiBase = '/api/admin';
 
 // Define the API base URL
@@ -98,5 +102,8 @@ export function listCraftTemplates(): Promise<APIResponse<CraftTemplate[]>> {
 export function listAllCrafts(): Promise<APIResponse<CraftItem[]>> {
   return axios
     .get<APIResponse<CraftItem[]>>('/api/list-all-craft')
-    .then((res) => res.data);
+    .then((res) => ({
+      ...res.data,
+      data: normalizeCraftItems(res.data.data),
+    }));
 }
