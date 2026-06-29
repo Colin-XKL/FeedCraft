@@ -60,6 +60,12 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 			return GetRelativeLinkFixCraftOptions()
 		},
 	}
+	sysCraftTempList["link-flatten"] = CraftTemplate{
+		Name:                "link-flatten",
+		Description:         "提取 RSS 文章中的链接并打平成新的 RSS 条目",
+		ParamTemplateDefine: linkFlattenParamTmpl,
+		OptionFunc:          linkFlattenCraftLoadParam,
+	}
 	sysCraftTempList["fulltext"] = CraftTemplate{
 		Name:                "fulltext",
 		Description:         "提取 RSS 订阅源的全文",

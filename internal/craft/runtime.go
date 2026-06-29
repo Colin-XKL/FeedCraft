@@ -53,6 +53,7 @@ var nativeProcessorBuilders = map[string]nativeProcessorBuilder{
 	"keyword":                     buildNativeKeywordProcessor,
 	"guid-fix":                    buildNativeGUIDFixProcessor,
 	"relative-link-fix":           buildNativeRelativeLinkFixProcessor,
+	"link-flatten":                buildNativeLinkFlattenProcessor,
 	"cleanup":                     buildZeroArg(func() localProcessor { return newCleanupProcessor() }),
 	"fulltext":                    buildWithFeedURL(func(u string) localProcessor { return newFulltextProcessor(u) }),
 	"fulltext-plus":               buildNativeFulltextPlusProcessor,
