@@ -54,6 +54,7 @@ type FeedViewerPreview struct {
 	Description string                  `json:"description"`
 	Link        string                  `json:"link"`
 	FeedURL     string                  `json:"feedUrl"`
+	FeedType    string                  `json:"feedType"`
 	Copyright   string                  `json:"copyright"`
 	Image       *FeedViewerPreviewImage `json:"image,omitempty"`
 	Items       []FeedViewerPreviewItem `json:"items"`
@@ -291,6 +292,7 @@ func buildFeedViewerPreview(feed *model.CraftFeed, inputURL string) FeedViewerPr
 		Description: feed.Description,
 		Link:        feed.Link,
 		FeedURL:     inputURL,
+		FeedType:    feed.FeedType,
 		Copyright:   feed.Copyright,
 		Items:       make([]FeedViewerPreviewItem, 0, len(feed.Articles)),
 	}
