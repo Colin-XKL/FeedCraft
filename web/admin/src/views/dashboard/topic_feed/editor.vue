@@ -198,8 +198,8 @@
   } from '@/api/topic';
   import XHeader from '@/components/header/x-header.vue';
   import { getRecipeIdRules } from '@/utils/slug';
-  import TopicAggregatorEditor from './components/TopicAggregatorEditor.vue';
-  import TopicInputSourcesEditor from './components/TopicInputSourcesEditor.vue';
+  import TopicAggregatorEditor from '@/views/dashboard/topic_feed/components/TopicAggregatorEditor.vue';
+  import TopicInputSourcesEditor from '@/views/dashboard/topic_feed/components/TopicInputSourcesEditor.vue';
   import {
     defaultFormData,
     formatAggregatorSummary,
@@ -207,7 +207,7 @@
     normalizeTopicPayload,
     topicFeedToFormData,
     type TopicFormData,
-  } from './topicInputUtils';
+  } from '@/views/dashboard/topic_feed/topicInputUtils';
 
   const { t } = useI18n();
   const route = useRoute();

@@ -128,7 +128,7 @@
     type StepType,
     createDefaultStep,
     defaultThreshold,
-  } from '../topicInputUtils';
+  } from '@/views/dashboard/topic_feed/topicInputUtils';
 
   const props = defineProps<{
     modelValue: StepFormItem[];

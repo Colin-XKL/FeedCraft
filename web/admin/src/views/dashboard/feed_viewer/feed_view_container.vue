@@ -54,8 +54,8 @@
   import { computed, ref } from 'vue';
   import { useI18n } from 'vue-i18n';
   import type { FeedViewerPreview } from '@/api/feed_viewer';
-  import FeedItemCard from './FeedItemCard.vue';
-  import type { ViewMode } from './FeedItemCard.vue';
+  import FeedItemCard from '@/views/dashboard/feed_viewer/FeedItemCard.vue';
+  import type { ViewMode } from '@/views/dashboard/feed_viewer/FeedItemCard.vue';
 
   const MAX_VISIBLE_ITEMS = 20;
 

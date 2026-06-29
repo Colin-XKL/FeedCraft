@@ -87,8 +87,8 @@
   import dayjs from 'dayjs';
   import { useI18n } from 'vue-i18n';
   import type { FeedViewerPreviewItem } from '@/api/feed_viewer';
-  import FeedItemContent from './FeedItemContent.vue';
-  import FeedItemDetailModal from './FeedItemDetailModal.vue';
+  import FeedItemContent from '@/views/dashboard/feed_viewer/FeedItemContent.vue';
+  import FeedItemDetailModal from '@/views/dashboard/feed_viewer/FeedItemDetailModal.vue';
 
   export type ViewMode = 'normal' | 'rich' | 'html';
 
