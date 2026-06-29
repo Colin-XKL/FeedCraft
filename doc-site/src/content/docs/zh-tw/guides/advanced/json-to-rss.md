@@ -73,7 +73,7 @@ JSON RSS 生成器可以幫助你：
 - **清理標題空白字元**：`{{ .Fields.Title | trimSpace }}`
 - **拼接完整連結**：`https://example.com/article/${article_id}`
 - **讀取巢狀欄位**：`作者：${author.name}`
-- **移除特定前缀**：`{{ .Fields.Description | trim "Prefix: " }}`
+- **移除特定前置文字**：`{{ .Fields.Description | trim "Prefix: " }}`
 - **預設值兜底**：`{{ default .Fields.Description "暫無摘要" }}`
 
 點擊 **執行預覽 (Run Preview)** 驗證你的選取器，然後點擊 **下一步 (Next Step)**。
