@@ -195,7 +195,7 @@ func newTranslateTitleProcessor(prompt string) *ArticleTextTransformProcessor {
 }
 
 func newRetitleProcessor(prompt string) *ArticleTextTransformProcessor {
-	finalPrompt := renderTargetLangPrompt(prompt, constant.DefaultPrompts[constant.ProcessorTypeRetitle])
+	finalPrompt := renderRetitlePrompt(prompt)
 	transformer := GetCommonCachedArticleTransformer(
 		newArticleTitleContentCacheKeyGenerator(finalPrompt),
 		func(ctx context.Context, article *model.CraftArticle) (string, error) {

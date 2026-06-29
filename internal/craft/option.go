@@ -132,6 +132,9 @@ func OptionTransformFeedItem(processor FeedItemProcessor) LegacyCraftOption {
 
 		// 1. 并发执行并将结果映射为错误切片
 		errs := parallel.Map(feed.Items, func(item *feeds.Item, _ int) error {
+			if item == nil {
+				return nil
+			}
 			err := processor(item, payload)
 			if err != nil {
 				logrus.Warnf("failed to process item [%s], err: %v", item.Title, err)

@@ -323,6 +323,7 @@ func TestRetitleProcessor_UsesArticleContentAndUpdatesTitle(t *testing.T) {
 	original := llmContextCaller
 	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
 		assert.Contains(t, prompt, "custom retitle prompt")
+		assert.Contains(t, prompt, retitleNoChangeSentinel)
 		assert.Contains(t, context, "Original Title")
 		assert.Contains(t, context, "article body worth retitling")
 		return "Sharper Generated Title", nil
@@ -399,6 +400,7 @@ func TestRetitleTemplate_BuildsNativeProcessorWithCustomPrompt(t *testing.T) {
 	original := llmContextCaller
 	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
 		assert.Contains(t, prompt, "custom retitle prompt "+t.Name())
+		assert.Contains(t, prompt, retitleNoChangeSentinel)
 		return "Custom Prompt Title", nil
 	}
 	t.Cleanup(func() { llmContextCaller = original })
@@ -429,16 +431,20 @@ func TestRetitleLegacyOption_KeepsOriginalTitleForNoChangeSentinel(t *testing.T)
 
 	option := GetRetitleCraftOptions("legacy retitle prompt " + t.Name())[0]
 	feed := &feeds.Feed{
-		Items: []*feeds.Item{{
-			Title:       "Legacy Title " + t.Name(),
-			Link:        &feeds.Link{Href: "https://example.com/post"},
-			Description: "<p>legacy body " + t.Name() + "</p>",
-		}},
+		Items: []*feeds.Item{
+			nil,
+			{
+				Title:       "Legacy Title " + t.Name(),
+				Link:        &feeds.Link{Href: "https://example.com/post"},
+				Description: "<p>legacy body " + t.Name() + "</p>",
+			},
+		},
 	}
 
 	err := option(feed, ExtraPayload{originalFeedUrl: "https://example.com/feed.xml"})
 	require.NoError(t, err)
-	assert.Equal(t, "Legacy Title "+t.Name(), feed.Items[0].Title)
+	require.Nil(t, feed.Items[0])
+	assert.Equal(t, "Legacy Title "+t.Name(), feed.Items[1].Title)
 }
 
 func TestBeautifyContentProcessor_WritesHTML(t *testing.T) {
