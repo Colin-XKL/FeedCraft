@@ -10,6 +10,11 @@ const (
 	HttpFetcherPurposeHTML = "html"
 )
 
+const (
+	FeedIconSourceAuto           = "auto"
+	FeedIconSourceFaviconService = "favicon_service"
+)
+
 // --- Fetcher-specific Configurations ---
 
 // HttpFetcherConfig holds the configuration for an HTTP fetcher.
@@ -82,6 +87,7 @@ type FeedMetaConfig struct {
 	AuthorName  string `json:"author_name,omitempty"`
 	AuthorEmail string `json:"author_email,omitempty"`
 	Copyright   string `json:"copyright,omitempty"`
+	IconSource  string `json:"icon_source,omitempty"`
 }
 
 // --- Top-level Source Configuration ---
