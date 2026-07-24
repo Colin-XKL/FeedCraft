@@ -130,8 +130,8 @@
                         :model-value="record.disabled"
                         :loading="inputToggleSavingUri === record.uri"
                         @change="
-                          (value: boolean) =>
-                            toggleInputDisabled(record.uri, value)
+                          (value) =>
+                            toggleInputDisabled(record.uri, Boolean(value))
                         "
                       />
                     </template>
