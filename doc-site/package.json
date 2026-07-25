@@ -18,7 +18,7 @@
     "@astrojs/starlight": "^0.37.6",
     "@catppuccin/starlight": "^1.1.1",
     "astro": "^5.17.1",
-    "sharp": "^0.34.5",
+    "sharp": "^0.35.0",
     "typescript": "^5.9.3"
   },
   "engines": {
