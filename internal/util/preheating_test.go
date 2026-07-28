@@ -422,7 +422,6 @@ func TestPreheatingScheduler_CloseStopsTimersAndRejectsNewTasks(t *testing.T) {
 func TestPreheatingScheduler_CloseCancelsRunningTaskAndWaitsForWorker(t *testing.T) {
 	started := make(chan struct{})
 	cancelled := make(chan struct{})
-	closed := make(chan struct{})
 
 	scheduler := NewPreheatingScheduler(func(ctx context.Context, _ string) error {
 		close(started)
@@ -442,9 +441,12 @@ func TestPreheatingScheduler_CloseCancelsRunningTaskAndWaitsForWorker(t *testing
 		t.Fatal("timed out waiting for task to start")
 	}
 
+	scheduler.Close()
+
+	workersStopped := make(chan struct{})
 	go func() {
-		scheduler.Close()
-		close(closed)
+		scheduler.workers.Wait()
+		close(workersStopped)
 	}()
 
 	select {
@@ -453,9 +455,30 @@ func TestPreheatingScheduler_CloseCancelsRunningTaskAndWaitsForWorker(t *testing
 		t.Fatal("timed out waiting for Close to cancel running task")
 	}
 	select {
-	case <-closed:
+	case <-workersStopped:
 	case <-time.After(time.Second):
 		t.Fatal("timed out waiting for Close to stop worker")
+	}
+}
+
+func TestPreheatingScheduler_CloseFromTaskDoesNotDeadlock(t *testing.T) {
+	closeReturned := make(chan struct{})
+	var scheduler *PreheatingScheduler
+	scheduler = NewPreheatingScheduler(func(context.Context, string) error {
+		scheduler.Close()
+		close(closeReturned)
+		return nil
+	}, nil, nil,
+		WithPreheatingMaxConcurrency(1),
+		WithPreheatingInterval(time.Millisecond),
+		WithPreheatingJitter(0),
+	)
+
+	scheduler.ScheduleTask("self-close")
+	select {
+	case <-closeReturned:
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for Close called from task callback")
 	}
 }
 

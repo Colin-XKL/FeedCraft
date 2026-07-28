@@ -97,6 +97,8 @@ func main() {
 }
 
 func startServer() {
+	defer recipe.Scheduler.Close()
+
 	sentryDsn := os.Getenv("SENTRY_DSN")
 	env := os.Getenv("ENV")
 	if len(env) == 0 { // set env to `prod` or `dev`

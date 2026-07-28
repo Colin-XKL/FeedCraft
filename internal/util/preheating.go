@@ -354,8 +354,9 @@ func (s *PreheatingScheduler) finishTask(recipeName string, shouldReschedule boo
 	s.scheduleTask(recipeName, false)
 }
 
-// Close stops all scheduled timers, cancels running tasks, and waits for workers to exit.
-// It is safe to call Close multiple times.
+// Close stops all scheduled timers and signals workers and running tasks to exit.
+// It does not wait for task functions that ignore context cancellation.
+// It is safe to call Close multiple times, including from a task callback.
 func (s *PreheatingScheduler) Close() {
 	s.closeOnce.Do(func() {
 		s.mutex.Lock()
@@ -370,7 +371,6 @@ func (s *PreheatingScheduler) Close() {
 		s.mutex.Unlock()
 
 		s.lifecycleCancel()
-		s.workers.Wait()
 	})
 }
 
