@@ -100,6 +100,12 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		ParamTemplateDefine: summaryCraftParamTmpl,
 		OptionFunc:          summaryCraftLoadParam,
 	}
+	sysCraftTempList["re-title"] = CraftTemplate{
+		Name:                "re-title",
+		Description:         "使用 LLM 根据文章内容重新生成简洁、有吸引力的标题",
+		ParamTemplateDefine: retitleCraftParamTmpl,
+		OptionFunc:          retitleCraftLoadParam,
+	}
 	sysCraftTempList["ignore-advertorial"] = CraftTemplate{
 		Name:                "ignore-advertorial",
 		Description:         "使用 LLM 排除广告文章",

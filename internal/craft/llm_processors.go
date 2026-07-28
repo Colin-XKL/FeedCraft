@@ -194,6 +194,42 @@ func newTranslateTitleProcessor(prompt string) *ArticleTextTransformProcessor {
 	}
 }
 
+func newRetitleProcessor(prompt string) *ArticleTextTransformProcessor {
+	finalPrompt := renderRetitlePrompt(prompt)
+	transformer := GetCommonCachedArticleTransformer(
+		newArticleTitleContentCacheKeyGenerator(finalPrompt),
+		func(ctx context.Context, article *model.CraftArticle) (string, error) {
+			originalTitle := article.Title
+			originalContent := getPrimaryArticleContent(article)
+			if strings.TrimSpace(originalContent) == "" {
+				return originalTitle, nil
+			}
+			contentForPrompt := getArticleContentForPrompt(article, originalContent)
+			generated, err := CallLLMForArticleTransform(finalPrompt, originalTitle, contentForPrompt, util.ContentProcessOption{})
+			if err != nil {
+				return "", err
+			}
+			if shouldKeepOriginalTitle(generated) {
+				return originalTitle, nil
+			}
+			return strings.TrimSpace(generated), nil
+		},
+		string(constant.ProcessorTypeRetitle),
+	)
+
+	return &ArticleTextTransformProcessor{
+		CraftName: string(constant.ProcessorTypeRetitle),
+		Mutate: func(ctx context.Context, article *model.CraftArticle) error {
+			transformed, err := transformer(ctx, article)
+			if err != nil {
+				return err
+			}
+			article.Title = transformed
+			return nil
+		},
+	}
+}
+
 func newTranslateContentProcessor(prompt string) *ArticleTextTransformProcessor {
 	return newArticleContentLLMProcessor("translate article content", prompt, translateArticleContentPrompt)
 }
