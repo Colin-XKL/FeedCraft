@@ -1,6 +1,7 @@
 package util
 
 import (
+	"context"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -14,7 +15,7 @@ func TestPreheatingScheduler_LimitsConcurrencyAndQueues(t *testing.T) {
 	var completed int32
 	done := make(chan struct{})
 
-	scheduler := NewPreheatingScheduler(func(payload string) error {
+	scheduler := NewPreheatingScheduler(func(_ context.Context, payload string) error {
 		current := atomic.AddInt32(&running, 1)
 		for {
 			previous := atomic.LoadInt32(&maxRunning)
@@ -59,7 +60,7 @@ func TestPreheatingScheduler_DeduplicatesSameRecipeWhileRunning(t *testing.T) {
 	var doneOnce sync.Once
 	var runCount int32
 
-	scheduler := NewPreheatingScheduler(func(payload string) error {
+	scheduler := NewPreheatingScheduler(func(_ context.Context, payload string) error {
 		if atomic.AddInt32(&runCount, 1) == 1 {
 			close(started)
 		}
@@ -111,7 +112,7 @@ func TestPreheatingScheduler_UserRequestsDoNotConsumePreheatingCount(t *testing.
 	done := make(chan struct{})
 	var runCount int32
 
-	scheduler := NewPreheatingScheduler(func(payload string) error {
+	scheduler := NewPreheatingScheduler(func(_ context.Context, payload string) error {
 		if atomic.AddInt32(&runCount, 1) == 1 {
 			close(done)
 		}
@@ -141,7 +142,7 @@ func TestPreheatingScheduler_UserRequestInvalidatesQueuedTask(t *testing.T) {
 	releaseBlocker := make(chan struct{})
 	var targetRuns int32
 
-	scheduler := NewPreheatingScheduler(func(payload string) error {
+	scheduler := NewPreheatingScheduler(func(_ context.Context, payload string) error {
 		if payload == "blocker" {
 			close(blockerStarted)
 			<-releaseBlocker
@@ -184,5 +185,49 @@ func TestPreheatingScheduler_UserRequestInvalidatesQueuedTask(t *testing.T) {
 		default:
 			time.Sleep(time.Millisecond)
 		}
+	}
+}
+
+func TestPreheatingScheduler_TaskTimeoutReleasesWorker(t *testing.T) {
+	slowStarted := make(chan struct{})
+	slowCancelled := make(chan struct{})
+	fastCompleted := make(chan struct{})
+
+	scheduler := NewPreheatingScheduler(func(ctx context.Context, payload string) error {
+		if payload == "slow" {
+			close(slowStarted)
+			<-ctx.Done()
+			close(slowCancelled)
+			return ctx.Err()
+		}
+		close(fastCompleted)
+		return nil
+	}, nil, nil,
+		WithPreheatingMaxConcurrency(1),
+		WithPreheatingQueueSize(10),
+		WithPreheatingInterval(time.Millisecond),
+		WithPreheatingJitter(0),
+		WithPreheatingMaxCount(1),
+		WithPreheatingGraceTime(time.Hour),
+		WithPreheatingTaskTimeout(20*time.Millisecond),
+	)
+
+	scheduler.ScheduleTask("slow")
+	select {
+	case <-slowStarted:
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for slow task to start")
+	}
+
+	scheduler.ScheduleTask("fast")
+	select {
+	case <-slowCancelled:
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for slow task context cancellation")
+	}
+	select {
+	case <-fastCompleted:
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for worker to execute queued task after cancellation")
 	}
 }

@@ -1,6 +1,7 @@
 package util
 
 import (
+	"context"
 	"github.com/sirupsen/logrus"
 	"math/rand"
 	"sync"
@@ -16,6 +17,7 @@ const DEFAULT_PREHEATING_INTERVAL = 8 * time.Hour
 const DEFAULT_PREHEATING_MAX_CONCURRENCY = 2
 const DEFAULT_PREHEATING_QUEUE_SIZE = 1000
 const DEFAULT_PREHEATING_JITTER = 60 * time.Second
+const DEFAULT_PREHEATING_TASK_TIMEOUT = 10 * time.Minute
 
 type PreheatingContext struct {
 	taskKey          string
@@ -37,7 +39,7 @@ type preheatingTask struct {
 type PreheatingScheduler struct {
 	contexts       map[string]*PreheatingContext
 	mutex          sync.RWMutex
-	taskFunc       func(string) error // 实际的长任务函数
+	taskFunc       func(context.Context, string) error // 实际的长任务函数
 	shouldRun      func(string) bool
 	onSkip         func(string)
 	taskQueue      chan preheatingTask
@@ -48,6 +50,7 @@ type PreheatingScheduler struct {
 	graceTime      time.Duration
 	interval       time.Duration
 	jitter         time.Duration
+	taskTimeout    time.Duration
 }
 
 type PreheatingSchedulerOption func(*PreheatingScheduler)
@@ -100,7 +103,15 @@ func WithPreheatingGraceTime(graceTime time.Duration) PreheatingSchedulerOption 
 	}
 }
 
-func NewPreheatingScheduler(taskFunc func(payload string) error, shouldRun func(string) bool, onSkip func(string), options ...PreheatingSchedulerOption) *PreheatingScheduler {
+func WithPreheatingTaskTimeout(taskTimeout time.Duration) PreheatingSchedulerOption {
+	return func(s *PreheatingScheduler) {
+		if taskTimeout > 0 {
+			s.taskTimeout = taskTimeout
+		}
+	}
+}
+
+func NewPreheatingScheduler(taskFunc func(context.Context, string) error, shouldRun func(string) bool, onSkip func(string), options ...PreheatingSchedulerOption) *PreheatingScheduler {
 	s := &PreheatingScheduler{
 		contexts:       make(map[string]*PreheatingContext),
 		taskFunc:       taskFunc,
@@ -112,6 +123,7 @@ func NewPreheatingScheduler(taskFunc func(payload string) error, shouldRun func(
 		graceTime:      MAX_PREHEATING_GRACE_TIME,
 		interval:       DEFAULT_PREHEATING_INTERVAL,
 		jitter:         DEFAULT_PREHEATING_JITTER,
+		taskTimeout:    DEFAULT_PREHEATING_TASK_TIMEOUT,
 	}
 
 	envClient := GetEnvClient()
@@ -121,6 +133,14 @@ func NewPreheatingScheduler(taskFunc func(payload string) error, shouldRun func(
 		}
 		if envQueueSize := envClient.GetInt("PREHEATING_QUEUE_SIZE"); envQueueSize > 0 {
 			s.maxQueueSize = envQueueSize
+		}
+		if envTimeout := envClient.GetString("PREHEATING_TASK_TIMEOUT"); envTimeout != "" {
+			timeout, err := time.ParseDuration(envTimeout)
+			if err != nil || timeout <= 0 {
+				logrus.Warnf("Invalid FC_PREHEATING_TASK_TIMEOUT %q; using default %s", envTimeout, s.taskTimeout)
+			} else {
+				s.taskTimeout = timeout
+			}
 		}
 	}
 	for _, option := range options {
@@ -261,7 +281,9 @@ func (s *PreheatingScheduler) runTask(recipeName string) {
 		return
 	}
 
-	err := s.taskFunc(recipeName)
+	ctx, cancel := context.WithTimeout(context.Background(), s.taskTimeout)
+	defer cancel()
+	err := s.taskFunc(ctx, recipeName)
 	if err != nil {
 		logrus.Errorf("preheating task for recipe [%s] exec failed. err: %v", recipeName, err)
 	}

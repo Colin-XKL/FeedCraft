@@ -30,10 +30,10 @@ var (
 func init() {
 	logrus.Info("Preheating scheduler starting...")
 	// Set up the preheating task function to use the new, encapsulated logic.
-	taskFunc := func(recipeName string) error {
+	taskFunc := func(ctx context.Context, recipeName string) error {
 		// The second return value (*feeds.Feed) is ignored as we only care about
 		// the side effect of caching, which happens inside ProcessRecipeByID.
-		_, err := recipe.ProcessRecipeByIDWithTrigger(context.Background(), recipeName, observability.TriggerPreheating)
+		_, err := recipe.ProcessRecipeByIDWithTrigger(ctx, recipeName, observability.TriggerPreheating)
 		return err
 	}
 	shouldRun := func(recipeName string) bool {
