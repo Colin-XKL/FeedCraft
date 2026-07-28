@@ -8,6 +8,18 @@ import (
 	"time"
 )
 
+func TestPreheatingScheduler_DefaultQueueSizeMatchesConcurrency(t *testing.T) {
+	t.Setenv("FC_PREHEATING_QUEUE_SIZE", "")
+
+	scheduler := NewPreheatingScheduler(func(context.Context, string) error {
+		return nil
+	}, nil, nil, WithPreheatingMaxConcurrency(3))
+
+	if got := cap(scheduler.taskQueue); got != 3 {
+		t.Fatalf("expected default queue size to match concurrency 3, got %d", got)
+	}
+}
+
 func TestPreheatingScheduler_LimitsConcurrencyAndQueues(t *testing.T) {
 	const taskCount = 6
 	var running int32
@@ -50,6 +62,70 @@ func TestPreheatingScheduler_LimitsConcurrencyAndQueues(t *testing.T) {
 
 	if got := atomic.LoadInt32(&maxRunning); got > 2 {
 		t.Fatalf("expected at most 2 concurrent tasks, got %d", got)
+	}
+}
+
+func TestPreheatingScheduler_FullQueueDropsNewestTask(t *testing.T) {
+	blockerStarted := make(chan struct{})
+	releaseBlocker := make(chan struct{})
+	queuedCompleted := make(chan struct{})
+	var releaseOnce sync.Once
+	var droppedRuns int32
+	defer releaseOnce.Do(func() {
+		close(releaseBlocker)
+	})
+
+	scheduler := NewPreheatingScheduler(func(_ context.Context, payload string) error {
+		switch payload {
+		case "blocker":
+			close(blockerStarted)
+			<-releaseBlocker
+		case "queued":
+			close(queuedCompleted)
+		case "dropped":
+			atomic.AddInt32(&droppedRuns, 1)
+		}
+		return nil
+	}, nil, nil,
+		WithPreheatingMaxConcurrency(1),
+		WithPreheatingQueueSize(1),
+		WithPreheatingInterval(time.Millisecond),
+		WithPreheatingJitter(0),
+		WithPreheatingMaxCount(1),
+		WithPreheatingGraceTime(time.Hour),
+	)
+
+	scheduler.ScheduleTask("blocker")
+	select {
+	case <-blockerStarted:
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for blocker preheating task to start")
+	}
+
+	scheduler.ScheduleTask("queued")
+	waitForPreheatingCondition(t, func() bool {
+		return len(scheduler.taskQueue) == 1
+	}, "timed out waiting for task to fill preheating queue")
+
+	scheduler.ScheduleTask("dropped")
+	waitForPreheatingCondition(t, func() bool {
+		return !scheduler.GetContextInfo("dropped").IsActive
+	}, "timed out waiting for full queue to reject newest task")
+
+	if got := len(scheduler.taskQueue); got != 1 {
+		t.Fatalf("expected accepted queued task to remain in queue, got queue length %d", got)
+	}
+
+	releaseOnce.Do(func() {
+		close(releaseBlocker)
+	})
+	select {
+	case <-queuedCompleted:
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for previously queued task to execute")
+	}
+	if got := atomic.LoadInt32(&droppedRuns); got != 0 {
+		t.Fatalf("expected rejected task not to execute, got %d runs", got)
 	}
 }
 
@@ -230,4 +306,17 @@ func TestPreheatingScheduler_TaskTimeoutReleasesWorker(t *testing.T) {
 	case <-time.After(time.Second):
 		t.Fatal("timed out waiting for worker to execute queued task after cancellation")
 	}
+}
+
+func waitForPreheatingCondition(t *testing.T, condition func() bool, failureMessage string) {
+	t.Helper()
+
+	deadline := time.Now().Add(time.Second)
+	for time.Now().Before(deadline) {
+		if condition() {
+			return
+		}
+		time.Sleep(time.Millisecond)
+	}
+	t.Fatal(failureMessage)
 }

@@ -15,7 +15,6 @@ const MAX_PREHEATING_COUNT = 6
 const MAX_PREHEATING_GRACE_TIME = 36 * time.Hour
 const DEFAULT_PREHEATING_INTERVAL = 8 * time.Hour
 const DEFAULT_PREHEATING_MAX_CONCURRENCY = 2
-const DEFAULT_PREHEATING_QUEUE_SIZE = 1000
 const DEFAULT_PREHEATING_TASK_TIMEOUT = 10 * time.Minute
 
 type PreheatingContext struct {
@@ -117,7 +116,6 @@ func NewPreheatingScheduler(taskFunc func(context.Context, string) error, should
 		shouldRun:      shouldRun,
 		onSkip:         onSkip,
 		maxConcurrency: DEFAULT_PREHEATING_MAX_CONCURRENCY,
-		maxQueueSize:   DEFAULT_PREHEATING_QUEUE_SIZE,
 		maxCount:       MAX_PREHEATING_COUNT,
 		graceTime:      MAX_PREHEATING_GRACE_TIME,
 		interval:       DEFAULT_PREHEATING_INTERVAL,
@@ -144,6 +142,9 @@ func NewPreheatingScheduler(taskFunc func(context.Context, string) error, should
 	}
 	for _, option := range options {
 		option(s)
+	}
+	if s.maxQueueSize <= 0 {
+		s.maxQueueSize = s.maxConcurrency
 	}
 	s.taskQueue = make(chan preheatingTask, s.maxQueueSize)
 	for i := 0; i < s.maxConcurrency; i++ {
@@ -229,10 +230,33 @@ func (s *PreheatingScheduler) enqueueTask(recipeName string, timerVersion uint64
 	ctx.queued = true
 	s.mutex.Unlock()
 
-	s.taskQueue <- preheatingTask{
+	task := preheatingTask{
 		recipeName:   recipeName,
 		timerVersion: timerVersion,
 	}
+	select {
+	case s.taskQueue <- task:
+		return
+	default:
+		s.discardQueuedTask(recipeName, timerVersion)
+		logrus.Debugf(
+			"preheating queue full; dropping task for recipe [%s] (queue: %d/%d)",
+			recipeName,
+			len(s.taskQueue),
+			cap(s.taskQueue),
+		)
+	}
+}
+
+func (s *PreheatingScheduler) discardQueuedTask(recipeName string, timerVersion uint64) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	ctx, taskExist := s.contexts[recipeName]
+	if !taskExist || ctx.timerVersion != timerVersion || !ctx.queued {
+		return
+	}
+	delete(s.contexts, recipeName)
 }
 
 func (s *PreheatingScheduler) worker() {
