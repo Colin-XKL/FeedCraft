@@ -129,6 +129,81 @@ func TestPreheatingScheduler_FullQueueDropsNewestTask(t *testing.T) {
 	}
 }
 
+func TestPreheatingScheduler_AcceptedTasksRemainFIFO(t *testing.T) {
+	blockerStarted := make(chan struct{})
+	releaseBlocker := make(chan struct{})
+	order := make(chan string, 2)
+	var releaseOnce sync.Once
+	defer releaseOnce.Do(func() {
+		close(releaseBlocker)
+	})
+
+	scheduler := NewPreheatingScheduler(func(_ context.Context, payload string) error {
+		if payload == "blocker" {
+			close(blockerStarted)
+			<-releaseBlocker
+			return nil
+		}
+		order <- payload
+		return nil
+	}, nil, nil,
+		WithPreheatingMaxConcurrency(1),
+		WithPreheatingQueueSize(2),
+		WithPreheatingInterval(time.Millisecond),
+		WithPreheatingJitter(0),
+		WithPreheatingMaxCount(1),
+		WithPreheatingGraceTime(time.Hour),
+	)
+
+	scheduler.ScheduleTask("blocker")
+	select {
+	case <-blockerStarted:
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for blocker preheating task to start")
+	}
+
+	scheduler.ScheduleTask("first")
+	waitForPreheatingCondition(t, func() bool {
+		return len(scheduler.taskQueue) == 1
+	}, "timed out waiting for first queued task")
+	scheduler.ScheduleTask("second")
+	waitForPreheatingCondition(t, func() bool {
+		return len(scheduler.taskQueue) == 2
+	}, "timed out waiting for second queued task")
+
+	releaseOnce.Do(func() {
+		close(releaseBlocker)
+	})
+	for _, expected := range []string{"first", "second"} {
+		select {
+		case actual := <-order:
+			if actual != expected {
+				t.Fatalf("expected FIFO task %q, got %q", expected, actual)
+			}
+		case <-time.After(time.Second):
+			t.Fatalf("timed out waiting for FIFO task %q", expected)
+		}
+	}
+}
+
+func TestPreheatingScheduler_DiscardQueuedTaskPreservesNewerVersion(t *testing.T) {
+	scheduler := &PreheatingScheduler{
+		contexts: map[string]*PreheatingContext{
+			"recipe": {
+				taskKey:      "recipe",
+				timerVersion: 2,
+				queued:       true,
+			},
+		},
+	}
+
+	scheduler.discardQueuedTask("recipe", 1)
+
+	if !scheduler.GetContextInfo("recipe").IsActive {
+		t.Fatal("expected cleanup for stale timer version to preserve newer context")
+	}
+}
+
 func TestPreheatingScheduler_DeduplicatesSameRecipeWhileRunning(t *testing.T) {
 	started := make(chan struct{})
 	release := make(chan struct{})
