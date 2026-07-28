@@ -374,6 +374,11 @@ func (s *PreheatingScheduler) Close() {
 	})
 }
 
+// Wait blocks until all workers have exited. Call Close before Wait.
+func (s *PreheatingScheduler) Wait() {
+	s.workers.Wait()
+}
+
 type PreheatingTaskInfo struct {
 	IsActive        bool
 	LastRequestTime time.Time

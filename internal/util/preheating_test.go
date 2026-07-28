@@ -14,7 +14,7 @@ func TestPreheatingScheduler_DefaultQueueSizeMatchesConcurrency(t *testing.T) {
 	scheduler := NewPreheatingScheduler(func(context.Context, string) error {
 		return nil
 	}, nil, nil, WithPreheatingMaxConcurrency(3))
-	t.Cleanup(scheduler.Close)
+	registerPreheatingSchedulerCleanup(t, scheduler)
 
 	if got := cap(scheduler.taskQueue); got != 3 {
 		t.Fatalf("expected default queue size to match concurrency 3, got %d", got)
@@ -50,7 +50,7 @@ func TestPreheatingScheduler_LimitsConcurrencyAndQueues(t *testing.T) {
 		WithPreheatingMaxCount(1),
 		WithPreheatingGraceTime(time.Hour),
 	)
-	t.Cleanup(scheduler.Close)
+	registerPreheatingSchedulerCleanup(t, scheduler)
 
 	for i := 0; i < taskCount; i++ {
 		scheduler.ScheduleTask(string(rune('a' + i)))
@@ -96,7 +96,7 @@ func TestPreheatingScheduler_FullQueueDropsNewestTask(t *testing.T) {
 		WithPreheatingMaxCount(1),
 		WithPreheatingGraceTime(time.Hour),
 	)
-	t.Cleanup(scheduler.Close)
+	registerPreheatingSchedulerCleanup(t, scheduler)
 
 	scheduler.ScheduleTask("blocker")
 	select {
@@ -157,7 +157,7 @@ func TestPreheatingScheduler_AcceptedTasksRemainFIFO(t *testing.T) {
 		WithPreheatingMaxCount(1),
 		WithPreheatingGraceTime(time.Hour),
 	)
-	t.Cleanup(scheduler.Close)
+	registerPreheatingSchedulerCleanup(t, scheduler)
 
 	scheduler.ScheduleTask("blocker")
 	select {
@@ -232,7 +232,7 @@ func TestPreheatingScheduler_DeduplicatesSameRecipeWhileRunning(t *testing.T) {
 		WithPreheatingMaxCount(1),
 		WithPreheatingGraceTime(time.Hour),
 	)
-	t.Cleanup(scheduler.Close)
+	registerPreheatingSchedulerCleanup(t, scheduler)
 
 	scheduler.ScheduleTask("same")
 	select {
@@ -281,7 +281,7 @@ func TestPreheatingScheduler_UserRequestsDoNotConsumePreheatingCount(t *testing.
 		WithPreheatingMaxCount(1),
 		WithPreheatingGraceTime(time.Hour),
 	)
-	t.Cleanup(scheduler.Close)
+	registerPreheatingSchedulerCleanup(t, scheduler)
 
 	for i := 0; i < 5; i++ {
 		scheduler.ScheduleTask("frequent")
@@ -315,7 +315,7 @@ func TestPreheatingScheduler_UserRequestInvalidatesQueuedTask(t *testing.T) {
 		WithPreheatingMaxCount(1),
 		WithPreheatingGraceTime(time.Hour),
 	)
-	t.Cleanup(scheduler.Close)
+	registerPreheatingSchedulerCleanup(t, scheduler)
 
 	scheduler.ScheduleTask("blocker")
 	select {
@@ -369,7 +369,7 @@ func TestPreheatingScheduler_TaskTimeoutReleasesWorker(t *testing.T) {
 		WithPreheatingGraceTime(time.Hour),
 		WithPreheatingTaskTimeout(20*time.Millisecond),
 	)
-	t.Cleanup(scheduler.Close)
+	registerPreheatingSchedulerCleanup(t, scheduler)
 
 	scheduler.ScheduleTask("slow")
 	select {
@@ -405,6 +405,7 @@ func TestPreheatingScheduler_CloseStopsTimersAndRejectsNewTasks(t *testing.T) {
 	scheduler.ScheduleTask("scheduled")
 	scheduler.Close()
 	scheduler.Close()
+	scheduler.Wait()
 	scheduler.ScheduleTask("after-close")
 
 	if scheduler.GetContextInfo("scheduled").IsActive {
@@ -445,7 +446,7 @@ func TestPreheatingScheduler_CloseCancelsRunningTaskAndWaitsForWorker(t *testing
 
 	workersStopped := make(chan struct{})
 	go func() {
-		scheduler.workers.Wait()
+		scheduler.Wait()
 		close(workersStopped)
 	}()
 
@@ -480,6 +481,15 @@ func TestPreheatingScheduler_CloseFromTaskDoesNotDeadlock(t *testing.T) {
 	case <-time.After(time.Second):
 		t.Fatal("timed out waiting for Close called from task callback")
 	}
+	scheduler.Wait()
+}
+
+func registerPreheatingSchedulerCleanup(t *testing.T, scheduler *PreheatingScheduler) {
+	t.Helper()
+	t.Cleanup(func() {
+		scheduler.Close()
+		scheduler.Wait()
+	})
 }
 
 func waitForPreheatingCondition(t *testing.T, condition func() bool, failureMessage string) {
