@@ -16,7 +16,6 @@ const MAX_PREHEATING_GRACE_TIME = 36 * time.Hour
 const DEFAULT_PREHEATING_INTERVAL = 8 * time.Hour
 const DEFAULT_PREHEATING_MAX_CONCURRENCY = 2
 const DEFAULT_PREHEATING_QUEUE_SIZE = 1000
-const DEFAULT_PREHEATING_JITTER = 60 * time.Second
 const DEFAULT_PREHEATING_TASK_TIMEOUT = 10 * time.Minute
 
 type PreheatingContext struct {
@@ -122,7 +121,7 @@ func NewPreheatingScheduler(taskFunc func(context.Context, string) error, should
 		maxCount:       MAX_PREHEATING_COUNT,
 		graceTime:      MAX_PREHEATING_GRACE_TIME,
 		interval:       DEFAULT_PREHEATING_INTERVAL,
-		jitter:         DEFAULT_PREHEATING_JITTER,
+		jitter:         60 * time.Second,
 		taskTimeout:    DEFAULT_PREHEATING_TASK_TIMEOUT,
 	}
 
