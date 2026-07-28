@@ -14,6 +14,7 @@ func TestPreheatingScheduler_DefaultQueueSizeMatchesConcurrency(t *testing.T) {
 	scheduler := NewPreheatingScheduler(func(context.Context, string) error {
 		return nil
 	}, nil, nil, WithPreheatingMaxConcurrency(3))
+	t.Cleanup(scheduler.Close)
 
 	if got := cap(scheduler.taskQueue); got != 3 {
 		t.Fatalf("expected default queue size to match concurrency 3, got %d", got)
@@ -49,6 +50,7 @@ func TestPreheatingScheduler_LimitsConcurrencyAndQueues(t *testing.T) {
 		WithPreheatingMaxCount(1),
 		WithPreheatingGraceTime(time.Hour),
 	)
+	t.Cleanup(scheduler.Close)
 
 	for i := 0; i < taskCount; i++ {
 		scheduler.ScheduleTask(string(rune('a' + i)))
@@ -94,6 +96,7 @@ func TestPreheatingScheduler_FullQueueDropsNewestTask(t *testing.T) {
 		WithPreheatingMaxCount(1),
 		WithPreheatingGraceTime(time.Hour),
 	)
+	t.Cleanup(scheduler.Close)
 
 	scheduler.ScheduleTask("blocker")
 	select {
@@ -154,6 +157,7 @@ func TestPreheatingScheduler_AcceptedTasksRemainFIFO(t *testing.T) {
 		WithPreheatingMaxCount(1),
 		WithPreheatingGraceTime(time.Hour),
 	)
+	t.Cleanup(scheduler.Close)
 
 	scheduler.ScheduleTask("blocker")
 	select {
@@ -228,6 +232,7 @@ func TestPreheatingScheduler_DeduplicatesSameRecipeWhileRunning(t *testing.T) {
 		WithPreheatingMaxCount(1),
 		WithPreheatingGraceTime(time.Hour),
 	)
+	t.Cleanup(scheduler.Close)
 
 	scheduler.ScheduleTask("same")
 	select {
@@ -276,6 +281,7 @@ func TestPreheatingScheduler_UserRequestsDoNotConsumePreheatingCount(t *testing.
 		WithPreheatingMaxCount(1),
 		WithPreheatingGraceTime(time.Hour),
 	)
+	t.Cleanup(scheduler.Close)
 
 	for i := 0; i < 5; i++ {
 		scheduler.ScheduleTask("frequent")
@@ -309,6 +315,7 @@ func TestPreheatingScheduler_UserRequestInvalidatesQueuedTask(t *testing.T) {
 		WithPreheatingMaxCount(1),
 		WithPreheatingGraceTime(time.Hour),
 	)
+	t.Cleanup(scheduler.Close)
 
 	scheduler.ScheduleTask("blocker")
 	select {
@@ -362,6 +369,7 @@ func TestPreheatingScheduler_TaskTimeoutReleasesWorker(t *testing.T) {
 		WithPreheatingGraceTime(time.Hour),
 		WithPreheatingTaskTimeout(20*time.Millisecond),
 	)
+	t.Cleanup(scheduler.Close)
 
 	scheduler.ScheduleTask("slow")
 	select {
@@ -380,6 +388,74 @@ func TestPreheatingScheduler_TaskTimeoutReleasesWorker(t *testing.T) {
 	case <-fastCompleted:
 	case <-time.After(time.Second):
 		t.Fatal("timed out waiting for worker to execute queued task after cancellation")
+	}
+}
+
+func TestPreheatingScheduler_CloseStopsTimersAndRejectsNewTasks(t *testing.T) {
+	var runCount int32
+	scheduler := NewPreheatingScheduler(func(context.Context, string) error {
+		atomic.AddInt32(&runCount, 1)
+		return nil
+	}, nil, nil,
+		WithPreheatingMaxConcurrency(1),
+		WithPreheatingInterval(50*time.Millisecond),
+		WithPreheatingJitter(0),
+	)
+
+	scheduler.ScheduleTask("scheduled")
+	scheduler.Close()
+	scheduler.Close()
+	scheduler.ScheduleTask("after-close")
+
+	if scheduler.GetContextInfo("scheduled").IsActive {
+		t.Fatal("expected Close to clear scheduled task context")
+	}
+	if scheduler.GetContextInfo("after-close").IsActive {
+		t.Fatal("expected scheduler to reject tasks after Close")
+	}
+	time.Sleep(75 * time.Millisecond)
+	if got := atomic.LoadInt32(&runCount); got != 0 {
+		t.Fatalf("expected stopped timers not to execute tasks, got %d runs", got)
+	}
+}
+
+func TestPreheatingScheduler_CloseCancelsRunningTaskAndWaitsForWorker(t *testing.T) {
+	started := make(chan struct{})
+	cancelled := make(chan struct{})
+	closed := make(chan struct{})
+
+	scheduler := NewPreheatingScheduler(func(ctx context.Context, _ string) error {
+		close(started)
+		<-ctx.Done()
+		close(cancelled)
+		return ctx.Err()
+	}, nil, nil,
+		WithPreheatingMaxConcurrency(1),
+		WithPreheatingInterval(time.Millisecond),
+		WithPreheatingJitter(0),
+	)
+
+	scheduler.ScheduleTask("running")
+	select {
+	case <-started:
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for task to start")
+	}
+
+	go func() {
+		scheduler.Close()
+		close(closed)
+	}()
+
+	select {
+	case <-cancelled:
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for Close to cancel running task")
+	}
+	select {
+	case <-closed:
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for Close to stop worker")
 	}
 }
 

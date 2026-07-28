@@ -35,20 +35,25 @@ type preheatingTask struct {
 
 // PreheatingScheduler 预热调度器
 type PreheatingScheduler struct {
-	contexts       map[string]*PreheatingContext
-	mutex          sync.RWMutex
-	taskFunc       func(context.Context, string) error // 实际的长任务函数
-	shouldRun      func(string) bool
-	onSkip         func(string)
-	taskQueue      chan preheatingTask
-	timerVersion   atomic.Uint64
-	maxConcurrency int
-	maxQueueSize   int
-	maxCount       int
-	graceTime      time.Duration
-	interval       time.Duration
-	jitter         time.Duration
-	taskTimeout    time.Duration
+	contexts        map[string]*PreheatingContext
+	mutex           sync.RWMutex
+	taskFunc        func(context.Context, string) error // 实际的长任务函数
+	shouldRun       func(string) bool
+	onSkip          func(string)
+	taskQueue       chan preheatingTask
+	timerVersion    atomic.Uint64
+	maxConcurrency  int
+	maxQueueSize    int
+	maxCount        int
+	graceTime       time.Duration
+	interval        time.Duration
+	jitter          time.Duration
+	taskTimeout     time.Duration
+	lifecycleCtx    context.Context
+	lifecycleCancel context.CancelFunc
+	closeOnce       sync.Once
+	workers         sync.WaitGroup
+	closed          bool
 }
 
 type PreheatingSchedulerOption func(*PreheatingScheduler)
@@ -110,17 +115,20 @@ func WithPreheatingTaskTimeout(taskTimeout time.Duration) PreheatingSchedulerOpt
 }
 
 func NewPreheatingScheduler(taskFunc func(context.Context, string) error, shouldRun func(string) bool, onSkip func(string), options ...PreheatingSchedulerOption) *PreheatingScheduler {
+	lifecycleCtx, lifecycleCancel := context.WithCancel(context.Background())
 	s := &PreheatingScheduler{
-		contexts:       make(map[string]*PreheatingContext),
-		taskFunc:       taskFunc,
-		shouldRun:      shouldRun,
-		onSkip:         onSkip,
-		maxConcurrency: DEFAULT_PREHEATING_MAX_CONCURRENCY,
-		maxCount:       MAX_PREHEATING_COUNT,
-		graceTime:      MAX_PREHEATING_GRACE_TIME,
-		interval:       DEFAULT_PREHEATING_INTERVAL,
-		jitter:         60 * time.Second,
-		taskTimeout:    DEFAULT_PREHEATING_TASK_TIMEOUT,
+		contexts:        make(map[string]*PreheatingContext),
+		taskFunc:        taskFunc,
+		shouldRun:       shouldRun,
+		onSkip:          onSkip,
+		maxConcurrency:  DEFAULT_PREHEATING_MAX_CONCURRENCY,
+		maxCount:        MAX_PREHEATING_COUNT,
+		graceTime:       MAX_PREHEATING_GRACE_TIME,
+		interval:        DEFAULT_PREHEATING_INTERVAL,
+		jitter:          60 * time.Second,
+		taskTimeout:     DEFAULT_PREHEATING_TASK_TIMEOUT,
+		lifecycleCtx:    lifecycleCtx,
+		lifecycleCancel: lifecycleCancel,
 	}
 
 	envClient := GetEnvClient()
@@ -147,6 +155,7 @@ func NewPreheatingScheduler(taskFunc func(context.Context, string) error, should
 		s.maxQueueSize = s.maxConcurrency
 	}
 	s.taskQueue = make(chan preheatingTask, s.maxQueueSize)
+	s.workers.Add(s.maxConcurrency)
 	for i := 0; i < s.maxConcurrency; i++ {
 		go s.worker()
 	}
@@ -161,6 +170,9 @@ func (s *PreheatingScheduler) ScheduleTask(recipeName string) {
 func (s *PreheatingScheduler) scheduleTask(recipeName string, fromUserRequest bool) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
+	if s.closed {
+		return
+	}
 
 	ctx, exists := s.contexts[recipeName]
 	now := time.Now()
@@ -217,7 +229,7 @@ func (s *PreheatingScheduler) randomJitter() time.Duration {
 func (s *PreheatingScheduler) enqueueTask(recipeName string, timerVersion uint64) {
 	s.mutex.Lock()
 	ctx, taskExist := s.contexts[recipeName]
-	if !taskExist || ctx.timerVersion != timerVersion {
+	if s.closed || !taskExist || ctx.timerVersion != timerVersion {
 		s.mutex.Unlock()
 		return
 	}
@@ -228,17 +240,22 @@ func (s *PreheatingScheduler) enqueueTask(recipeName string, timerVersion uint64
 		return
 	}
 	ctx.queued = true
-	s.mutex.Unlock()
 
 	task := preheatingTask{
 		recipeName:   recipeName,
 		timerVersion: timerVersion,
 	}
 	select {
+	case <-s.lifecycleCtx.Done():
+		delete(s.contexts, recipeName)
+		s.mutex.Unlock()
+		return
 	case s.taskQueue <- task:
+		s.mutex.Unlock()
 		return
 	default:
-		s.discardQueuedTask(recipeName, timerVersion)
+		delete(s.contexts, recipeName)
+		s.mutex.Unlock()
 		logrus.Debugf(
 			"preheating queue full; dropping task for recipe [%s] (queue: %d/%d)",
 			recipeName,
@@ -260,11 +277,18 @@ func (s *PreheatingScheduler) discardQueuedTask(recipeName string, timerVersion 
 }
 
 func (s *PreheatingScheduler) worker() {
-	for task := range s.taskQueue {
-		if !s.markTaskRunning(task) {
-			continue
+	defer s.workers.Done()
+
+	for {
+		select {
+		case <-s.lifecycleCtx.Done():
+			return
+		case task := <-s.taskQueue:
+			if !s.markTaskRunning(task) {
+				continue
+			}
+			s.runTask(task.recipeName)
 		}
-		s.runTask(task.recipeName)
 	}
 }
 
@@ -304,7 +328,7 @@ func (s *PreheatingScheduler) runTask(recipeName string) {
 		return
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), s.taskTimeout)
+	ctx, cancel := context.WithTimeout(s.lifecycleCtx, s.taskTimeout)
 	defer cancel()
 	err := s.taskFunc(ctx, recipeName)
 	if err != nil {
@@ -328,6 +352,26 @@ func (s *PreheatingScheduler) finishTask(recipeName string, shouldReschedule boo
 	s.mutex.Unlock()
 
 	s.scheduleTask(recipeName, false)
+}
+
+// Close stops all scheduled timers, cancels running tasks, and waits for workers to exit.
+// It is safe to call Close multiple times.
+func (s *PreheatingScheduler) Close() {
+	s.closeOnce.Do(func() {
+		s.mutex.Lock()
+		s.closed = true
+		for _, ctx := range s.contexts {
+			if ctx.timer != nil {
+				ctx.timer.Stop()
+				ctx.timer = nil
+			}
+		}
+		clear(s.contexts)
+		s.mutex.Unlock()
+
+		s.lifecycleCancel()
+		s.workers.Wait()
+	})
 }
 
 type PreheatingTaskInfo struct {
