@@ -75,6 +75,7 @@
               v-model="formData.inputSources"
               :available-recipes="availableRecipes"
               :available-topics="availableTopics"
+              :available-inboxes="availableInboxes"
               :picker-loading="pickerLoading"
               :exclude-topic-id="isEdit ? formData.id : undefined"
             />
@@ -197,6 +198,7 @@
   import { useI18n } from 'vue-i18n';
   import { useRoute, useRouter } from 'vue-router';
   import { CustomRecipe, getCustomRecipes } from '@/api/custom_recipe';
+  import { Inbox, listInboxes } from '@/api/inbox';
   import {
     TopicFeed,
     TopicValidationIssue,
@@ -242,6 +244,7 @@
   const validationWarnings = ref<TopicValidationIssue[]>([]);
   const availableRecipes = ref<CustomRecipe[]>([]);
   const availableTopics = ref<TopicFeed[]>([]);
+  const availableInboxes = ref<Inbox[]>([]);
   const pickerLoading = ref(false);
 
   const configuredInputCount = computed(() =>
@@ -255,12 +258,14 @@
   const loadPickerData = async () => {
     pickerLoading.value = true;
     try {
-      const [recipesRes, topicsRes] = await Promise.all([
+      const [recipesRes, topicsRes, inboxesRes] = await Promise.all([
         getCustomRecipes(),
         listTopicFeeds(),
+        listInboxes(),
       ]);
       availableRecipes.value = recipesRes.data ?? [];
       availableTopics.value = topicsRes.data ?? [];
+      availableInboxes.value = inboxesRes.data ?? [];
     } finally {
       pickerLoading.value = false;
     }
