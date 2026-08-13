@@ -6,7 +6,7 @@
     <x-header :title="pageTitle" :description="t('topic.wizard.description')" />
 
     <a-card class="wizard-card">
-      <a-steps :current="currentStep" class="mb-8">
+      <a-steps :current="currentStep" class="wizard-steps">
         <a-step
           :title="t('topic.wizard.step.basic')"
           :description="t('topic.wizard.step.basic.desc')"
@@ -25,9 +25,18 @@
         />
       </a-steps>
 
-      <a-spin :loading="pageLoading" style="width: 100%">
-        <a-form ref="formRef" :model="formData" layout="vertical">
-          <div v-show="currentStep === 1" class="step-content">
+      <a-spin :loading="pageLoading" class="wizard-spin">
+        <a-form
+          ref="formRef"
+          :model="formData"
+          layout="vertical"
+          label-align="left"
+          class="wizard-form"
+        >
+          <section
+            v-show="currentStep === 1"
+            class="step-panel step-panel--basic"
+          >
             <a-form-item
               field="id"
               :label="t('topic.id')"
@@ -53,11 +62,12 @@
               <a-textarea
                 v-model="formData.description"
                 :placeholder="t('topic.descriptionLabel')"
+                :auto-size="{ minRows: 3, maxRows: 6 }"
               />
             </a-form-item>
-          </div>
+          </section>
 
-          <div v-show="currentStep === 2" class="step-content">
+          <section v-show="currentStep === 2" class="step-panel">
             <a-alert type="info" class="mb-4" show-icon>
               {{ t('topic.inputsHelp') }}
             </a-alert>
@@ -68,16 +78,16 @@
               :picker-loading="pickerLoading"
               :exclude-topic-id="isEdit ? formData.id : undefined"
             />
-          </div>
+          </section>
 
-          <div v-show="currentStep === 3" class="step-content">
+          <section v-show="currentStep === 3" class="step-panel">
             <a-alert type="info" class="mb-4" show-icon>
               {{ t('topic.aggregatorHelp') }}
             </a-alert>
             <TopicAggregatorEditor v-model="formData.aggregator_config" />
-          </div>
+          </section>
 
-          <div v-show="currentStep === 4" class="step-content">
+          <section v-show="currentStep === 4" class="step-panel">
             <a-descriptions :column="1" bordered>
               <a-descriptions-item :label="t('topic.id')">
                 {{ formData.id || '-' }}
@@ -145,7 +155,7 @@
                 >: {{ issue.message }}
               </div>
             </a-alert>
-          </div>
+          </section>
         </a-form>
       </a-spin>
 
@@ -383,13 +393,63 @@
     margin-top: 8px;
   }
 
-  .step-content {
-    max-width: 920px;
-    margin: 0 auto;
+  .wizard-card :deep(.arco-card-body) {
+    display: flex;
+    flex-direction: column;
+    min-height: 560px;
+  }
+
+  .wizard-steps {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--color-border-2);
+  }
+
+  .wizard-spin {
+    display: block;
+    width: 100%;
+    flex: 1;
+  }
+
+  .wizard-form {
+    width: 100%;
+  }
+
+  .wizard-form :deep(.arco-form-item) {
+    display: block;
+    width: 100%;
+  }
+
+  .wizard-form :deep(.arco-form-item-label-col),
+  .wizard-form :deep(.arco-form-item-wrapper-col) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    flex: none;
+    justify-content: flex-start;
+    align-items: stretch;
+    padding-right: 0;
+  }
+
+  .wizard-form :deep(.arco-form-item-content-wrapper),
+  .wizard-form :deep(.arco-form-item-content),
+  .wizard-form :deep(.arco-input-wrapper),
+  .wizard-form :deep(.arco-textarea-wrapper) {
+    width: 100%;
+  }
+
+  .step-panel {
+    width: 100%;
+    max-width: 720px;
+    margin: 0;
+  }
+
+  .step-panel--basic {
+    max-width: 560px;
   }
 
   .wizard-footer {
-    margin-top: 24px;
+    margin-top: auto;
     padding-top: 16px;
     border-top: 1px solid var(--color-border-2);
     display: flex;
