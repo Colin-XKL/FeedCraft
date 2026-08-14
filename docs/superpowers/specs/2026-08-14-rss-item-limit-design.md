@@ -1,4 +1,4 @@
-# RSS Feed 条目全局读取上限设计
+# Feed 输入条目全局读取上限设计
 
 ## 目标
 
@@ -6,7 +6,7 @@
 
 ## 配置
 
-使用环境变量 `FC_RSS_MAX_ITEMS`：
+使用环境变量 `FC_INPUT_FEED_ITEM_LIMIT`：
 
 - 未设置或值为空：使用默认值 `30`。
 - 设为正整数：按发布时间保留最近的 N 篇。
@@ -15,16 +15,16 @@
 
 ## 设计
 
-在 `internal/source` 中提供共享的 feed 条目限制函数。函数使用文章的 `Created` 时间排序；当其为空时使用 `Updated` 时间，并以稳定排序保留相同时间文章的原始相对顺序。启用上限时，函数按降序取最近 N 篇。
+在 `internal/source` 中提供共享的输入 feed 条目限制函数。函数使用文章的 `Created` 时间排序；当其为空时使用 `Updated` 时间，并以稳定排序保留相同时间文章的原始相对顺序。启用上限时，函数按降序取最近 N 篇。
 
 将此函数应用在每一条拉取结果完成的边界：
 
 1. `PipelineSource.Fetch`：覆盖 RSS、HTML、JSON、普通搜索和网页监控源，并在 Recipe/portable 的 craft 链前减少处理量。
 2. 增强搜索源的多 query 合并结果：覆盖绕过通用 Pipeline 的合并路径。
 3. Inbox source 的读取结果：覆盖数据库 feed 源。
-4. Topic 的多源合并结果：在聚合器前再次排序并限制，防止每个源各自最多 N 篇后，合并结果仍过大。
+4. Topic 的每个输入源：各输入源自身在被 Topic 合并前已完成限制。
 
-现有用户明确配置的 `limit` craft 和 Topic aggregator 保持原有执行顺序和语义。全局限制是读取阶段上限，而非对用户配置的替代。
+全局限制仅定义输入阶段上限，不在 Topic 多源合并后再次截断。现有用户明确配置的 `limit` craft 和 Topic aggregator 保持原有执行顺序和语义，并负责控制聚合或输出数量。
 
 ## 错误处理与兼容性
 
@@ -36,5 +36,5 @@
 
 - 环境变量未设置、空值、`0`、正整数及无效值的解析结果。
 - 依据 Created/Updated 时间稳定排序，并且只保留最近 N 篇。
-- Pipeline、增强搜索、Inbox 和 Topic 合并边界均调用限制逻辑。
+- Pipeline、增强搜索和 Inbox 输入边界均调用限制逻辑；Topic 不额外进行输出阶段截断。
 
