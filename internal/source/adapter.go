@@ -31,6 +31,7 @@ func (a *LegacySourceAdapter) Fetch(ctx context.Context) (*model.CraftFeed, erro
 
 	// Ensure feed link is absolute, replicating logic from legacy TransformFeed
 	cf.Link = getAbsFeedLink(a.LegacySource.BaseURL(), cf.Link)
+	applyInputFeedItemLimit(cf)
 
 	return cf, nil
 }
