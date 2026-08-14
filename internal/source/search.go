@@ -138,11 +138,13 @@ func (s *EnhancedSearchSource) Fetch(ctx context.Context) (*model.CraftFeed, err
 	}
 	wg.Wait()
 
-	return &model.CraftFeed{
+	feed := &model.CraftFeed{
 		Title:       fmt.Sprintf("Search: %s", s.Config.SearchFetcher.Query),
 		Description: fmt.Sprintf("Enhanced search results for %s", s.Config.SearchFetcher.Query),
 		Articles:    allItems,
-	}, nil
+	}
+	applyInputFeedItemLimit(feed)
+	return feed, nil
 }
 
 func expandQueryWithLLM(query string) ([]string, error) {
