@@ -328,7 +328,7 @@ tasks:
       - cmd: |
           echo "Running Go linter..."
           if command -v golangci-lint >/dev/null 2>&1; then
-            golangci-lint run ./...
+            golangci-lint run ./... --timeout=10m
           else
             echo "golangci-lint not installed. Please install it to lint Go code."
             exit 1
