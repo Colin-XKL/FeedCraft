@@ -204,6 +204,7 @@
 
   .editor-row {
     display: flex;
+    flex-wrap: wrap;
     gap: 12px;
     align-items: center;
     width: 100%;

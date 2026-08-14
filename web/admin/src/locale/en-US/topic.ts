@@ -36,7 +36,7 @@ export default {
   'topic.noTopics': 'No topics yet',
   'topic.inputs': 'Inputs',
   'topic.inputsHelp':
-    'For External RSS, enter an http/https URL. For Recipe or Topic, pick from the dropdown to use internal FeedCraft resources.',
+    'For External RSS, enter an http/https URL. For Recipe, Topic, or Inbox, pick from the dropdown to use internal FeedCraft resources.',
   'topic.inputPlaceholder': 'For example: feedcraft://recipe/my-recipe',
   'topic.addInput': 'Add Input',
   'topic.inputDescription.placeholder':
@@ -75,9 +75,11 @@ export default {
   'topic.sourceType.external': 'External RSS',
   'topic.sourceType.recipe': 'Recipe',
   'topic.sourceType.topic': 'Topic',
+  'topic.sourceType.inbox': 'Inbox',
   'topic.sourceUrl.placeholder': 'Enter RSS feed URL (http/https)',
   'topic.sourceSelect.placeholder.recipe': 'Select a Custom Recipe…',
   'topic.sourceSelect.placeholder.topic': 'Select a Topic Feed…',
+  'topic.sourceSelect.placeholder.inbox': 'Select an Inbox…',
   'topic.aggregatorConfig': 'Aggregation Rules',
   'topic.aggregatorHelp':
     'Aggregation rules run in order and can deduplicate, sort, or limit the final items.',
