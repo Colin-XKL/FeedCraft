@@ -56,9 +56,16 @@ func PushInboxItems(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: fmt.Sprintf("Item at index %d is missing required 'title'", i)})
 			return
 		}
-		if field, invalidChar, ok := inboxPushInvalidXMLChar(item); ok {
+		if field, invalidChar, characterPosition, byteOffset, ok := inboxPushInvalidXMLChar(item); ok {
 			c.JSON(http.StatusBadRequest, util.APIResponse[any]{
-				Msg: fmt.Sprintf("Item at index %d contains invalid XML 1.0 character U+%04X in field %q", i, invalidChar, field),
+				Msg: fmt.Sprintf(
+					"Item at index %d contains invalid XML 1.0 character U+%04X in field %q at character %d (UTF-8 byte offset %d)",
+					i,
+					invalidChar,
+					field,
+					characterPosition,
+					byteOffset,
+				),
 			})
 			return
 		}
@@ -170,7 +177,7 @@ func PushInboxItems(c *gin.Context) {
 	})
 }
 
-func inboxPushInvalidXMLChar(item InboxPushItem) (string, rune, bool) {
+func inboxPushInvalidXMLChar(item InboxPushItem) (string, rune, int, int, bool) {
 	fields := []struct {
 		name  string
 		value string
@@ -183,13 +190,15 @@ func inboxPushInvalidXMLChar(item InboxPushItem) (string, rune, bool) {
 		{name: "author", value: item.Author},
 	}
 	for _, field := range fields {
-		for _, char := range field.value {
+		characterPosition := 1
+		for byteOffset, char := range field.value {
 			if !isXML10Char(char) {
-				return field.name, char, true
+				return field.name, char, characterPosition, byteOffset, true
 			}
+			characterPosition++
 		}
 	}
-	return "", 0, false
+	return "", 0, 0, 0, false
 }
 
 func isXML10Char(char rune) bool {

@@ -29,7 +29,7 @@ func TestPushInboxItemsRejectsXMLInvalidControlCharacters(t *testing.T) {
 	body, err := json.Marshal([]InboxPushItem{{
 		ID:      "invalid-control-character",
 		Title:   "Invalid XML",
-		Content: "before\u0005after",
+		Content: "前缀\u0005after",
 	}})
 	require.NoError(t, err)
 
@@ -46,6 +46,8 @@ func TestPushInboxItemsRejectsXMLInvalidControlCharacters(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, recorder.Code)
 	assert.Contains(t, recorder.Body.String(), "content")
 	assert.Contains(t, recorder.Body.String(), "U+0005")
+	assert.Contains(t, recorder.Body.String(), "character 3")
+	assert.Contains(t, recorder.Body.String(), "UTF-8 byte offset 6")
 
 	var count int64
 	require.NoError(t, db.Model(&dao.InboxItem{}).Count(&count).Error)
