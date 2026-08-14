@@ -3,8 +3,6 @@ package model
 import (
 	"time"
 
-	"FeedCraft/internal/util"
-
 	"github.com/gorilla/feeds"
 	"github.com/mmcdole/gofeed"
 	"github.com/samber/lo"
@@ -149,26 +147,26 @@ func (cf *CraftFeed) ToFeedsFeed() *feeds.Feed {
 	}
 
 	ff := &feeds.Feed{
-		Title:       util.StripInvalidXMLChars(cf.Title),
-		Link:        &feeds.Link{Href: util.StripInvalidXMLChars(cf.Link)},
-		Description: util.StripInvalidXMLChars(cf.Description),
+		Title:       cf.Title,
+		Link:        &feeds.Link{Href: cf.Link},
+		Description: cf.Description,
 		Updated:     cf.Updated,
 		Created:     cf.Created,
-		Id:          util.StripInvalidXMLChars(cf.Id),
-		Copyright:   util.StripInvalidXMLChars(cf.Copyright),
+		Id:          cf.Id,
+		Copyright:   cf.Copyright,
 	}
 
 	if cf.AuthorName != "" || cf.AuthorEmail != "" {
 		ff.Author = &feeds.Author{
-			Name:  util.StripInvalidXMLChars(cf.AuthorName),
-			Email: util.StripInvalidXMLChars(cf.AuthorEmail),
+			Name:  cf.AuthorName,
+			Email: cf.AuthorEmail,
 		}
 	}
 	if cf.ImageURL != "" {
 		ff.Image = &feeds.Image{
-			Url:   util.StripInvalidXMLChars(cf.ImageURL),
-			Title: util.StripInvalidXMLChars(cf.ImageTitle),
-			Link:  util.StripInvalidXMLChars(cf.ImageURL),
+			Url:   cf.ImageURL,
+			Title: cf.ImageTitle,
+			Link:  cf.ImageURL,
 		}
 	}
 
@@ -185,19 +183,19 @@ func (ca *CraftArticle) ToFeedsItem() *feeds.Item {
 	}
 
 	item := &feeds.Item{
-		Title:       util.StripInvalidXMLChars(ca.Title),
-		Link:        &feeds.Link{Href: util.StripInvalidXMLChars(ca.Link)},
-		Description: util.StripInvalidXMLChars(ca.Description),
-		Id:          util.StripInvalidXMLChars(ca.Id),
+		Title:       ca.Title,
+		Link:        &feeds.Link{Href: ca.Link},
+		Description: ca.Description,
+		Id:          ca.Id,
 		Updated:     ca.Updated,
 		Created:     ca.Created,
-		Content:     util.StripInvalidXMLChars(ca.Content),
+		Content:     ca.Content,
 	}
 
 	if ca.AuthorName != "" || ca.AuthorEmail != "" {
 		item.Author = &feeds.Author{
-			Name:  util.StripInvalidXMLChars(ca.AuthorName),
-			Email: util.StripInvalidXMLChars(ca.AuthorEmail),
+			Name:  ca.AuthorName,
+			Email: ca.AuthorEmail,
 		}
 	}
 

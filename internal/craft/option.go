@@ -4,7 +4,6 @@ import (
 	"FeedCraft/internal/config"
 	"FeedCraft/internal/model"
 	"FeedCraft/internal/source/fetcher"
-	"FeedCraft/internal/util"
 	"bytes"
 	"context"
 	"fmt"
@@ -46,7 +45,7 @@ func NewCraftedFeedFromUrl(feedUrl string, options ...LegacyCraftOption) (Crafte
 	}
 
 	fp := gofeed.NewParser()
-	parsedFeed, err := fp.Parse(bytes.NewReader(util.StripInvalidXMLBytes(raw)))
+	parsedFeed, err := fp.Parse(bytes.NewReader(raw))
 	if err != nil {
 		return ingredient, err
 	}
