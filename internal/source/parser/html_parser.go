@@ -105,8 +105,7 @@ func extractFeedIconURL(doc *goquery.Document) string {
 	iconHref := ""
 	doc.Find("link[rel]").EachWithBreak(func(_ int, s *goquery.Selection) bool {
 		rel, _ := s.Attr("rel")
-		rel = strings.ToLower(rel)
-		if strings.Contains(rel, "icon") {
+		if isIconRel(rel) {
 			iconHref, _ = s.Attr("href")
 			iconHref = strings.TrimSpace(iconHref)
 			return iconHref == ""
@@ -114,4 +113,14 @@ func extractFeedIconURL(doc *goquery.Document) string {
 		return true
 	})
 	return iconHref
+}
+
+func isIconRel(rel string) bool {
+	for _, token := range strings.Fields(strings.ToLower(rel)) {
+		switch token {
+		case "icon", "apple-touch-icon", "apple-touch-icon-precomposed", "mask-icon":
+			return true
+		}
+	}
+	return false
 }

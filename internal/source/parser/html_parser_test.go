@@ -37,3 +37,23 @@ func TestHtmlParserExtractsFeedIcon(t *testing.T) {
 		assert.Equal(t, "Example Site", feed.ImageTitle)
 	}
 }
+
+func TestHtmlParserIgnoresNonIconRelSubstring(t *testing.T) {
+	htmlContent := `
+		<html>
+			<head>
+				<title>Example Site</title>
+				<link rel="application-icon-theme" href="javascript:alert(1)">
+				<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+			</head>
+			<body><article class="item">First post</article></body>
+		</html>`
+	parser := &HtmlParser{Config: &config.HtmlParserConfig{ItemSelector: ".item"}}
+
+	feed, err := parser.Parse([]byte(htmlContent))
+
+	assert.NoError(t, err)
+	if assert.NotNil(t, feed) {
+		assert.Equal(t, "/apple-touch-icon.png", feed.ImageURL)
+	}
+}

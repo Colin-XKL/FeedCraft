@@ -89,6 +89,27 @@ func TestPipelineSourceApplyFeedIconSourceRecipeProviderOverridesGlobal(t *testi
 	assert.Equal(t, "https://icons.duckduckgo.com/ip3/example.com.ico", feed.ImageURL)
 }
 
+func TestBuildFaviconServiceURLPreservesFullPageURLForCustomProvider(t *testing.T) {
+	resetFaviconRegistry(t)
+	if err := favicon.Replace(config.FaviconSettings{
+		DefaultProviderID: "full_url",
+		CustomProviders: []config.FaviconProviderConfig{
+			{
+				ID:          "full_url",
+				Name:        "Full URL",
+				URLTemplate: "https://icons.example.test/favicon?url={url_query}",
+				Enabled:     true,
+			},
+		},
+	}); err != nil {
+		t.Fatalf("replace favicon settings: %v", err)
+	}
+
+	got := buildFaviconServiceURL("", "https://example.com/blog?page=2", "https://fallback.example.com")
+
+	assert.Equal(t, "https://icons.example.test/favicon?url=https%3A%2F%2Fexample.com%2Fblog%3Fpage%3D2", got)
+}
+
 func TestPipelineSourceApplyFeedIconSourceAutoFallback(t *testing.T) {
 	feed := &model.CraftFeed{
 		Title: "Example Site",
