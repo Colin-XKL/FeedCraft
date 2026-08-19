@@ -56,7 +56,7 @@
       </a-table>
 
       <ListEmptyGuide
-        v-else
+        v-else-if="!listFailed"
         :description="t('craftFlow.empty.description')"
         :hint="t('craftFlow.empty.hint')"
         :create-label="t('craftFlow.empty.createFirst')"
@@ -158,6 +158,7 @@
   };
 
   const isLoading = ref(false);
+  const listFailed = ref(false);
   const saving = ref(false);
   const formRef = ref();
   const craftFlows = ref<CraftFlow[]>([]);
@@ -225,6 +226,9 @@
           ) ?? [];
         return ret;
       });
+      listFailed.value = false;
+    } catch {
+      listFailed.value = true;
     } finally {
       isLoading.value = false;
     }

@@ -42,7 +42,7 @@
       </a-table>
 
       <ListEmptyGuide
-        v-else
+        v-else-if="!listFailed"
         :description="t('craftAtom.empty.description')"
         :hint="t('craftAtom.empty.hint')"
         :create-label="t('craftAtom.empty.createFirst')"
@@ -273,6 +273,7 @@
   );
 
   const isLoading = ref(false);
+  const listFailed = ref(false);
   const formRef = ref();
   const craftAtoms = ref<CraftAtom[]>([]);
   const editedCraftAtom = ref<CraftAtom>({
@@ -378,8 +379,14 @@
 
   async function listAllCraftAtoms() {
     isLoading.value = true;
-    craftAtoms.value = (await listCraftAtoms()).data ?? [];
-    isLoading.value = false;
+    try {
+      craftAtoms.value = (await listCraftAtoms()).data ?? [];
+      listFailed.value = false;
+    } catch {
+      listFailed.value = true;
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   const addParam = () => {
