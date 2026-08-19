@@ -50,6 +50,10 @@ export default {
     '自动提取会优先使用页面声明的 favicon；通用服务会按站点域名生成图标地址。',
   'htmlToRss.step3.iconSource.auto': '自动提取',
   'htmlToRss.step3.iconSource.faviconService': '使用通用 favicon 服务',
+  'htmlToRss.step3.faviconProvider': 'Favicon Provider',
+  'htmlToRss.step3.faviconProvider.help':
+    '留空时跟随系统默认；显式选择后，此配方将固定使用对应 Provider。',
+  'htmlToRss.step3.faviconProvider.system': '跟随系统默认',
   'htmlToRss.step3.authorName': '作者姓名',
   'htmlToRss.step3.authorEmail': '作者邮箱',
   'htmlToRss.step4.card.title': '预览并保存配方',
@@ -58,6 +62,7 @@ export default {
   'htmlToRss.step4.feedTitle': 'Feed 标题',
   'htmlToRss.step4.itemCount': '项目数量',
   'htmlToRss.step4.itemCount.value': '检测到 {count} 个项目',
+  'htmlToRss.step4.iconSource': '图标来源',
   'htmlToRss.step4.recipeId': '配方唯一 ID',
   'htmlToRss.step4.recipeId.help': "例如：'tech-news-daily'",
   'htmlToRss.step4.recipeId.placeholder': 'my-recipe-id',

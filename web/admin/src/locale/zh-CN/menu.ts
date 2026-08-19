@@ -44,6 +44,7 @@ export default {
   'menu.changePassword': '修改密码',
   'menu.settings': '设置',
   'menu.settings.searchProvider': '搜索服务提供商',
+  'menu.settings.faviconProvider': 'Favicon 服务提供商',
   'menu.systemHealth': 'Craft 依赖检查',
   'menu.inbox': '收件箱管理',
   'menu.settings.systemAuthToken': '系统授权令牌',

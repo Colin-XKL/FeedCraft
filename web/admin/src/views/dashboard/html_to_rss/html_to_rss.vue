@@ -398,6 +398,25 @@
                   }}</a-radio>
                 </a-radio-group>
               </a-form-item>
+              <a-form-item
+                v-if="feedMeta.icon_source === 'favicon_service'"
+                :label="$t('htmlToRss.step3.faviconProvider')"
+                :help="$t('htmlToRss.step3.faviconProvider.help')"
+              >
+                <a-select
+                  v-model="feedMeta.favicon_provider"
+                  allow-clear
+                  :placeholder="$t('htmlToRss.step3.faviconProvider.system')"
+                >
+                  <a-option
+                    v-for="provider in availableFaviconProviders"
+                    :key="provider.id"
+                    :value="provider.id"
+                  >
+                    {{ provider.name }} ({{ provider.id }})
+                  </a-option>
+                </a-select>
+              </a-form-item>
               <a-row :gutter="16">
                 <a-col :span="12">
                   <a-form-item :label="$t('htmlToRss.step3.authorName')">
@@ -446,6 +465,9 @@
                     count: parsedItems.length,
                   })
                 }}</a-descriptions-item>
+                <a-descriptions-item :label="$t('htmlToRss.step4.iconSource')">
+                  {{ iconSourceSummary }}
+                </a-descriptions-item>
               </a-descriptions>
 
               <a-divider />
@@ -515,7 +537,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive, nextTick, watch } from 'vue';
+  import { ref, reactive, nextTick, watch, computed, onMounted } from 'vue';
   import axios from 'axios';
   import DOMPurify from 'dompurify';
   import { Message } from '@arco-design/web-vue';
@@ -527,6 +549,10 @@
   } from '@arco-design/web-vue/es/icon';
   import XHeader from '@/components/header/x-header.vue';
   import { createCustomRecipe } from '@/api/custom_recipe';
+  import {
+    FaviconProviderDescriptor,
+    getFaviconProviderConfig,
+  } from '@/api/settings';
   import { useRouter } from 'vue-router';
   import { useI18n } from 'vue-i18n';
   import generateRecipeId, { getRecipeIdRules } from '@/utils/slug';
@@ -551,6 +577,7 @@
   const saving = ref(false);
   const htmlContent = ref('');
   const parsedItems = ref<any[]>([]);
+  const availableFaviconProviders = ref<FaviconProviderDescriptor[]>([]);
 
   // Selection State
   const isSelectionMode = ref(true);
@@ -575,12 +602,27 @@
     author_name: '',
     author_email: '',
     icon_source: 'auto',
+    favicon_provider: '',
   });
 
   // Step 4 State
   const recipeMeta = reactive({
     id: '',
     description: '',
+  });
+
+  const iconSourceSummary = computed(() => {
+    if (feedMeta.icon_source === 'auto') {
+      return t('htmlToRss.step3.iconSource.auto');
+    }
+    const provider = availableFaviconProviders.value.find(
+      (item) => item.id === feedMeta.favicon_provider
+    );
+    return provider
+      ? `${t('htmlToRss.step3.iconSource.faviconService')} · ${provider.name}`
+      : `${t('htmlToRss.step3.iconSource.faviconService')} · ${t(
+          'htmlToRss.step3.faviconProvider.system'
+        )}`;
   });
 
   // --- Actions ---
@@ -598,6 +640,19 @@
       currentStep.value = step;
     }
   };
+
+  const loadFaviconProviders = async () => {
+    try {
+      const response = await getFaviconProviderConfig();
+      availableFaviconProviders.value = (
+        response.data.data.providers || []
+      ).filter((provider) => provider.enabled);
+    } catch {
+      availableFaviconProviders.value = [];
+    }
+  };
+
+  onMounted(loadFaviconProviders);
 
   watch(
     () => currentStep.value,
@@ -761,6 +816,10 @@
         author_name: feedMeta.author_name,
         author_email: feedMeta.author_email,
         icon_source: feedMeta.icon_source,
+        favicon_provider:
+          feedMeta.icon_source === 'favicon_service'
+            ? feedMeta.favicon_provider || undefined
+            : undefined,
       },
     };
 

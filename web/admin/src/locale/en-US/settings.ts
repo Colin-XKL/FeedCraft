@@ -63,4 +63,35 @@ export default {
   'settings.searchProvider.checkConnection': 'Check Connection',
   'settings.searchProvider.msg.checkSuccess': 'Connection successful',
   'settings.searchProvider.msg.checkFailed': 'Connection failed',
+  'settings.faviconProvider.title': 'Favicon Providers',
+  'settings.faviconProvider.alert':
+    'Configure the global favicon service used by HTML to RSS. Custom providers use restricted URL templates and take effect immediately without database reads in the RSS request path.',
+  'settings.faviconProvider.defaultProvider': 'Global Default Provider',
+  'settings.faviconProvider.builtInProviders': 'Built-in Providers',
+  'settings.faviconProvider.customProviders': 'Custom Providers',
+  'settings.faviconProvider.add': 'Add Custom Provider',
+  'settings.faviconProvider.empty': 'No custom providers',
+  'settings.faviconProvider.unnamed': 'Unnamed Provider',
+  'settings.faviconProvider.id': 'Unique ID',
+  'settings.faviconProvider.name': 'Name',
+  'settings.faviconProvider.urlTemplate': 'URL Template',
+  'settings.faviconProvider.urlTemplate.help':
+    'Supports {host}, {origin}, {origin_query}, {url_query}, and {size}; the result must be an HTTPS URL.',
+  'settings.faviconProvider.status': 'Status',
+  'settings.faviconProvider.enabled': 'Enabled',
+  'settings.faviconProvider.disabled': 'Disabled',
+  'settings.faviconProvider.delete': 'Delete',
+  'settings.faviconProvider.deleteConfirm': 'Delete this provider?',
+  'settings.faviconProvider.preview': 'Preview',
+  'settings.faviconProvider.previewProvider': 'Preview Provider',
+  'settings.faviconProvider.previewUrl': 'Target Page URL',
+  'settings.faviconProvider.previewAction': 'Generate Preview',
+  'settings.faviconProvider.save': 'Save Configuration',
+  'settings.faviconProvider.msg.saved': 'Favicon provider settings saved',
+  'settings.faviconProvider.msg.loadFailed':
+    'Failed to load favicon provider settings',
+  'settings.faviconProvider.msg.saveFailed':
+    'Failed to save favicon provider settings',
+  'settings.faviconProvider.msg.previewFailed':
+    'Failed to generate favicon preview',
 };
