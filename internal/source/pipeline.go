@@ -33,6 +33,7 @@ func (p *PipelineSource) Fetch(ctx context.Context) (*model.CraftFeed, error) {
 	}
 
 	p.normalizeCraftFeed(feed)
+	applyInputFeedItemLimit(feed)
 
 	return feed, nil
 }

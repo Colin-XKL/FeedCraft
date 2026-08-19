@@ -66,6 +66,7 @@ func (s *InboxSource) Fetch(ctx context.Context) (*model.CraftFeed, error) {
 		feed.Articles = append(feed.Articles, article)
 	}
 
+	applyInputFeedItemLimit(feed)
 	return feed, nil
 }
 
