@@ -5,45 +5,52 @@
       :description="t('craftAtom.description')"
     ></x-header>
 
-    <a-space direction="horizontal" class="mb-6">
-      <a-button type="primary" :loading="isLoading" @click="listAllCraftAtoms">
-        {{ t('craftAtom.query') }}
-      </a-button>
-      <a-button type="outline" @click="handleAdd"
-        >{{ t('craftAtom.create') }}
-      </a-button>
-    </a-space>
-
-    <a-table
-      v-if="isLoading || craftAtoms.length > 0"
-      :data="craftAtoms"
-      :columns="columns"
-      :loading="isLoading"
-    >
-      <template #actions="{ record }">
+    <a-card class="general-card" :title="t('menu.craftAtom')">
+      <template #extra>
         <a-space>
-          <a-button type="outline" @click="editBtnHandler(record)"
-            >{{ t('craftAtom.edit') }}
+          <a-button :loading="isLoading" @click="listAllCraftAtoms">
+            {{ t('craftAtom.query') }}
           </a-button>
-          <a-popconfirm
-            :content="t('craftAtom.deleteConfirm')"
-            @ok="deleteCraftAtomHandler(record.name)"
-          >
-            <a-button status="danger">{{ t('craftAtom.delete') }}</a-button>
-          </a-popconfirm>
+          <a-button type="primary" @click="handleAdd">
+            <template #icon>
+              <icon-plus />
+            </template>
+            {{ t('craftAtom.create') }}
+          </a-button>
         </a-space>
       </template>
-    </a-table>
 
-    <ListEmptyGuide
-      v-else
-      :description="t('craftAtom.empty.description')"
-      :hint="t('craftAtom.empty.hint')"
-      :create-label="t('craftAtom.empty.createFirst')"
-      :docs-label="t('craftAtom.empty.docs')"
-      :docs-href="atomDocsHref"
-      @create="handleAdd"
-    />
+      <a-table
+        v-if="isLoading || craftAtoms.length > 0"
+        :data="craftAtoms"
+        :columns="columns"
+        :loading="isLoading"
+      >
+        <template #actions="{ record }">
+          <a-space>
+            <a-button type="outline" @click="editBtnHandler(record)"
+              >{{ t('craftAtom.edit') }}
+            </a-button>
+            <a-popconfirm
+              :content="t('craftAtom.deleteConfirm')"
+              @ok="deleteCraftAtomHandler(record.name)"
+            >
+              <a-button status="danger">{{ t('craftAtom.delete') }}</a-button>
+            </a-popconfirm>
+          </a-space>
+        </template>
+      </a-table>
+
+      <ListEmptyGuide
+        v-else
+        :description="t('craftAtom.empty.description')"
+        :hint="t('craftAtom.empty.hint')"
+        :create-label="t('craftAtom.empty.createFirst')"
+        :docs-label="t('craftAtom.empty.docs')"
+        :docs-href="atomDocsHref"
+        @create="handleAdd"
+      />
+    </a-card>
 
     <a-modal
       v-model:visible="showEditModal"
