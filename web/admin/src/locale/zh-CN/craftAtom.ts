@@ -22,4 +22,9 @@ export default {
   'craftAtom.form.save': '保存',
   'craftAtom.form.rule.templateRequired': 'template is required',
   'craftAtom.form.rule.nameRequired': 'Name is required',
+  'craftAtom.empty.description': '暂无原子工艺',
+  'craftAtom.empty.hint':
+    '原子工艺决定如何处理 RSS，例如翻译、提取全文或生成摘要。创建第一个 AtomCraft 后即可在配方和组合工艺中复用。',
+  'craftAtom.empty.createFirst': '创建第一个原子工艺',
+  'craftAtom.empty.docs': '查看定制指南',
 };

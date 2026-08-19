@@ -22,6 +22,7 @@
       </template>
 
       <a-table
+        v-if="loading || topics.length > 0"
         :data="topics"
         :loading="loading"
         :pagination="false"
@@ -92,25 +93,35 @@
         </template>
       </a-table>
 
-      <a-empty
-        v-if="!loading && topics.length === 0"
+      <ListEmptyGuide
+        v-else
         :description="t('topic.noTopics')"
+        :hint="t('topic.empty.hint')"
+        :create-label="t('topic.empty.createFirst')"
+        :docs-label="t('topic.empty.docs')"
+        :docs-href="topicDocsHref"
+        @create="handleAdd"
       />
     </a-card>
   </div>
 </template>
 
 <script lang="ts" setup>
-  import { onMounted, ref } from 'vue';
+  import { computed, onMounted, ref } from 'vue';
   import { Message } from '@arco-design/web-vue';
   import { useI18n } from 'vue-i18n';
   import { useRouter } from 'vue-router';
   import XHeader from '@/components/header/x-header.vue';
+  import ListEmptyGuide from '@/components/list-empty-guide/index.vue';
   import buildPublicFeedUrl from '@/utils/publicFeedUrl';
+  import { buildDocsUrl } from '@/utils/docsUrl';
   import { TopicFeed, deleteTopicFeed, listTopicFeeds } from '@/api/topic';
   import { formatAggregatorSummary } from '@/views/dashboard/topic_feed/topicInputUtils';
 
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const topicDocsHref = computed(() =>
+    buildDocsUrl(locale.value, 'guides/start/quick-start')
+  );
   const router = useRouter();
   const topics = ref<TopicFeed[]>([]);
   const loading = ref(false);

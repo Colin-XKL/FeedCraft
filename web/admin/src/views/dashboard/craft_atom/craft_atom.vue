@@ -14,7 +14,12 @@
       </a-button>
     </a-space>
 
-    <a-table :data="craftAtoms" :columns="columns" :loading="isLoading">
+    <a-table
+      v-if="isLoading || craftAtoms.length > 0"
+      :data="craftAtoms"
+      :columns="columns"
+      :loading="isLoading"
+    >
       <template #actions="{ record }">
         <a-space>
           <a-button type="outline" @click="editBtnHandler(record)"
@@ -29,6 +34,16 @@
         </a-space>
       </template>
     </a-table>
+
+    <ListEmptyGuide
+      v-else
+      :description="t('craftAtom.empty.description')"
+      :hint="t('craftAtom.empty.hint')"
+      :create-label="t('craftAtom.empty.createFirst')"
+      :docs-label="t('craftAtom.empty.docs')"
+      :docs-href="atomDocsHref"
+      @create="handleAdd"
+    />
 
     <a-modal
       v-model:visible="showEditModal"
@@ -216,7 +231,9 @@
 
 <script setup lang="ts">
   import XHeader from '@/components/header/x-header.vue';
-  import { onBeforeMount, ref } from 'vue';
+  import ListEmptyGuide from '@/components/list-empty-guide/index.vue';
+  import { computed, onBeforeMount, ref } from 'vue';
+  import { buildDocsUrl } from '@/utils/docsUrl';
   import {
     CraftAtom,
     createCraftAtom,
@@ -243,7 +260,10 @@
     toCraftParamFormValue,
   } from '@/views/dashboard/craft_atom/paramOptions';
 
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const atomDocsHref = computed(() =>
+    buildDocsUrl(locale.value, 'guides/advanced/customization')
+  );
 
   const isLoading = ref(false);
   const formRef = ref();
@@ -351,7 +371,7 @@
 
   async function listAllCraftAtoms() {
     isLoading.value = true;
-    craftAtoms.value = (await listCraftAtoms()).data;
+    craftAtoms.value = (await listCraftAtoms()).data ?? [];
     isLoading.value = false;
   }
 

@@ -34,6 +34,10 @@ export default {
   'topic.deleteAction': 'Delete',
   'topic.deleteConfirm': 'Are you sure you want to delete this topic?',
   'topic.noTopics': 'No topics yet',
+  'topic.empty.hint':
+    'Create your first topic to combine multiple RSS sources into one feed. You can also read the quick start guide first.',
+  'topic.empty.createFirst': 'Create your first topic',
+  'topic.empty.docs': 'Read the quick start guide',
   'topic.inputs': 'Inputs',
   'topic.inputsHelp':
     'For External RSS, enter an http/https URL. For Recipe, Topic, or Inbox, pick from the dropdown to use internal FeedCraft resources.',

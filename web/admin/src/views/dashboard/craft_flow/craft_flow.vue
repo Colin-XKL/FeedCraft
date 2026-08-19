@@ -9,24 +9,17 @@
       <a-button type="primary" :loading="isLoading" @click="listAllCraftFlow">
         {{ t('craftFlow.query') }}
       </a-button>
-      <a-button
-        type="outline"
-        @click="
-          () => {
-            showEditModal = true;
-            isUpdating = false;
-            editedCraftFlow = {
-              name: '',
-              description: '',
-              craftList: [],
-            };
-          }
-        "
+      <a-button type="outline" @click="handleAdd"
         >{{ t('craftFlow.create') }}
       </a-button>
     </a-space>
 
-    <a-table :data="craftFlows" :columns="columns" :loading="isLoading">
+    <a-table
+      v-if="isLoading || craftFlows.length > 0"
+      :data="craftFlows"
+      :columns="columns"
+      :loading="isLoading"
+    >
       <template #craft-flow-item-list="{ record }">
         <a-tag>开始</a-tag>
         >
@@ -55,6 +48,16 @@
         </a-space>
       </template>
     </a-table>
+
+    <ListEmptyGuide
+      v-else
+      :description="t('craftFlow.empty.description')"
+      :hint="t('craftFlow.empty.hint')"
+      :create-label="t('craftFlow.empty.createFirst')"
+      :docs-label="t('craftFlow.empty.docs')"
+      :docs-href="flowDocsHref"
+      @create="handleAdd"
+    />
 
     <a-modal
       v-model:visible="showEditModal"
@@ -104,7 +107,9 @@
 
 <script setup lang="ts">
   import XHeader from '@/components/header/x-header.vue';
+  import ListEmptyGuide from '@/components/list-empty-guide/index.vue';
   import { onBeforeMount, ref, computed } from 'vue';
+  import { buildDocsUrl } from '@/utils/docsUrl';
   import {
     CraftFlow,
     createCraftFlow,
@@ -119,7 +124,20 @@
   import { useI18n } from 'vue-i18n';
   import { Message } from '@arco-design/web-vue';
 
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const flowDocsHref = computed(() =>
+    buildDocsUrl(locale.value, 'guides/advanced/customization')
+  );
+
+  const handleAdd = () => {
+    editedCraftFlow.value = {
+      name: '',
+      description: '',
+      craftList: [],
+    };
+    showEditModal.value = true;
+    isUpdating.value = false;
+  };
 
   const rules = {
     name: [
@@ -191,7 +209,7 @@
     isLoading.value = true;
     try {
       const res = await listCraftFlows();
-      craftFlows.value = res.data.map((item) => {
+      craftFlows.value = (res.data ?? []).map((item) => {
         const ret = item as any;
         const craftFlowConfigList = item.craft_flow_config ?? [];
         ret.craftList =
