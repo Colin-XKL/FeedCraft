@@ -16,6 +16,7 @@ import localeDependencyService from '@/locale/zh-CN/dependencyService';
 import localeHealth from '@/locale/zh-TW/health';
 import localeObservability from '@/locale/zh-CN/observability';
 import localeInbox from '@/locale/zh-TW/inbox';
+import localeWelcome from '@/locale/zh-CN/welcome';
 
 export default {
   ...localeSettings,
@@ -36,4 +37,5 @@ export default {
   ...localeHealth,
   ...localeObservability,
   ...localeInbox,
+  ...localeWelcome,
 };
