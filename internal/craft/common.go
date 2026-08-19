@@ -122,14 +122,7 @@ func CommonCraftHandlerUsingCraftOptionList(c *gin.Context, optionList []LegacyC
 		}
 	}
 
-	rssStr, err := finalCraftFeed.ToFeedsFeed().ToRss()
-	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	c.Header("Content-Type", "application/xml; charset=utf-8")
-	c.String(http.StatusOK, rssStr)
+	ServeCraftedFeed(c, finalCraftFeed.ToFeedsFeed())
 }
 
 type RawTransformer func(item *feeds.Item) (string, error)
