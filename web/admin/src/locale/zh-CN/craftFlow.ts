@@ -21,4 +21,9 @@ export default {
   'craftFlow.editor.moveUp': '上移',
   'craftFlow.editor.moveDown': '下移',
   'craftFlow.editor.remove': '移除',
+  'craftFlow.empty.description': '暂无组合工艺',
+  'craftFlow.empty.hint':
+    '组合工艺把多个原子工艺串成处理流水线。创建第一个 FlowCraft，即可对订阅源按顺序执行提取、筛选和摘要。',
+  'craftFlow.empty.createFirst': '创建第一个组合工艺',
+  'craftFlow.empty.docs': '查看定制指南',
 };

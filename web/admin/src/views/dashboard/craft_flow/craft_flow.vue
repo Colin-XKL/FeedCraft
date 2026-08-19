@@ -5,56 +5,66 @@
       :description="t('craftFlow.description')"
     ></x-header>
 
-    <a-space direction="horizontal" class="mb-6">
-      <a-button type="primary" :loading="isLoading" @click="listAllCraftFlow">
-        {{ t('craftFlow.query') }}
-      </a-button>
-      <a-button
-        type="outline"
-        @click="
-          () => {
-            showEditModal = true;
-            isUpdating = false;
-            editedCraftFlow = {
-              name: '',
-              description: '',
-              craftList: [],
-            };
-          }
-        "
-        >{{ t('craftFlow.create') }}
-      </a-button>
-    </a-space>
-
-    <a-table :data="craftFlows" :columns="columns" :loading="isLoading">
-      <template #craft-flow-item-list="{ record }">
-        <a-tag>开始</a-tag>
-        >
-        <template
-          v-for="(item, index) in record.craft_flow_config"
-          :key="index"
-        >
-          <a-tooltip :content="getCraftDescription(item.craft_name)">
-            <a-tag color="arcoblue">{{ item.craft_name }}</a-tag>
-          </a-tooltip>
-          >
-        </template>
-        <a-tag>结束</a-tag>
-      </template>
-      <template #actions="{ record }">
+    <a-card class="general-card" :title="t('menu.craftFlow')">
+      <template #extra>
         <a-space>
-          <a-button type="outline" @click="editBtnHandler(record)"
-            >{{ t('craftFlow.edit') }}
+          <a-button :loading="isLoading" @click="listAllCraftFlow">
+            {{ t('craftFlow.query') }}
           </a-button>
-          <a-popconfirm
-            :content="t('craftFlow.deleteConfirm')"
-            @ok="deleteCraftFlowHandler(record.name)"
-          >
-            <a-button status="danger">{{ t('craftFlow.delete') }}</a-button>
-          </a-popconfirm>
+          <a-button type="primary" @click="handleAdd">
+            <template #icon>
+              <icon-plus />
+            </template>
+            {{ t('craftFlow.create') }}
+          </a-button>
         </a-space>
       </template>
-    </a-table>
+
+      <a-table
+        v-if="isLoading || craftFlows.length > 0"
+        :data="craftFlows"
+        :columns="columns"
+        :loading="isLoading"
+      >
+        <template #craft-flow-item-list="{ record }">
+          <a-tag>开始</a-tag>
+          >
+          <template
+            v-for="(item, index) in record.craft_flow_config"
+            :key="index"
+          >
+            <a-tooltip :content="getCraftDescription(item.craft_name)">
+              <a-tag color="arcoblue">{{ item.craft_name }}</a-tag>
+            </a-tooltip>
+            >
+          </template>
+          <a-tag>结束</a-tag>
+        </template>
+        <template #actions="{ record }">
+          <a-space>
+            <a-button type="outline" @click="editBtnHandler(record)"
+              >{{ t('craftFlow.edit') }}
+            </a-button>
+            <a-popconfirm
+              :content="t('craftFlow.deleteConfirm')"
+              @ok="deleteCraftFlowHandler(record.name)"
+            >
+              <a-button status="danger">{{ t('craftFlow.delete') }}</a-button>
+            </a-popconfirm>
+          </a-space>
+        </template>
+      </a-table>
+
+      <ListEmptyGuide
+        v-else-if="!listFailed"
+        :description="t('craftFlow.empty.description')"
+        :hint="t('craftFlow.empty.hint')"
+        :create-label="t('craftFlow.empty.createFirst')"
+        :docs-label="t('craftFlow.empty.docs')"
+        :docs-href="flowDocsHref"
+        @create="handleAdd"
+      />
+    </a-card>
 
     <a-modal
       v-model:visible="showEditModal"
@@ -104,7 +114,9 @@
 
 <script setup lang="ts">
   import XHeader from '@/components/header/x-header.vue';
+  import ListEmptyGuide from '@/components/list-empty-guide/index.vue';
   import { onBeforeMount, ref, computed } from 'vue';
+  import { buildDocsUrl } from '@/utils/docsUrl';
   import {
     CraftFlow,
     createCraftFlow,
@@ -119,7 +131,20 @@
   import { useI18n } from 'vue-i18n';
   import { Message } from '@arco-design/web-vue';
 
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const flowDocsHref = computed(() =>
+    buildDocsUrl(locale.value, 'guides/advanced/customization')
+  );
+
+  const handleAdd = () => {
+    editedCraftFlow.value = {
+      name: '',
+      description: '',
+      craftList: [],
+    };
+    showEditModal.value = true;
+    isUpdating.value = false;
+  };
 
   const rules = {
     name: [
@@ -133,6 +158,7 @@
   };
 
   const isLoading = ref(false);
+  const listFailed = ref(false);
   const saving = ref(false);
   const formRef = ref();
   const craftFlows = ref<CraftFlow[]>([]);
@@ -191,7 +217,7 @@
     isLoading.value = true;
     try {
       const res = await listCraftFlows();
-      craftFlows.value = res.data.map((item) => {
+      craftFlows.value = (res.data ?? []).map((item) => {
         const ret = item as any;
         const craftFlowConfigList = item.craft_flow_config ?? [];
         ret.craftList =
@@ -200,6 +226,9 @@
           ) ?? [];
         return ret;
       });
+      listFailed.value = false;
+    } catch {
+      listFailed.value = true;
     } finally {
       isLoading.value = false;
     }
