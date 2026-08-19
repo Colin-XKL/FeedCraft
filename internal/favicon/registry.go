@@ -118,7 +118,6 @@ func Replace(settings config.FaviconSettings) error {
 		return err
 	}
 	activeSnapshot.Store(compiled)
-	warnedFallbacks = sync.Map{}
 	return nil
 }
 

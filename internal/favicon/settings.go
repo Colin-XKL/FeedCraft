@@ -4,7 +4,6 @@ import (
 	"FeedCraft/internal/config"
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/dao"
-	"sync"
 
 	"gorm.io/gorm"
 )
@@ -39,6 +38,5 @@ func Save(db *gorm.DB, settings config.FaviconSettings) error {
 		return err
 	}
 	activeSnapshot.Store(compiled)
-	warnedFallbacks = sync.Map{}
 	return nil
 }
