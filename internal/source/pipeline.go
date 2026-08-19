@@ -8,7 +8,6 @@ import (
 	"FeedCraft/internal/util"
 	"context"
 	"fmt"
-	"net/url"
 )
 
 // PipelineSource is the generic implementation for most scenarios.
@@ -125,7 +124,7 @@ func (p *PipelineSource) applyFeedIconSource(feed *model.CraftFeed, baseURL stri
 	}
 
 	if hasExplicitIconSource {
-		if origin := firstOrigin(feed.Link, baseURL); origin != "" {
+		if origin := firstNonEmptyOrigin(feed.Link, baseURL); origin != "" {
 			feed.ImageURL = origin + "/favicon.ico"
 			feed.ImageTitle = feed.Title
 		}
@@ -133,20 +132,18 @@ func (p *PipelineSource) applyFeedIconSource(feed *model.CraftFeed, baseURL stri
 }
 
 func buildFaviconServiceURL(feedLink string, baseURL string) string {
-	origin := firstOrigin(feedLink, baseURL)
-	if origin == "" {
+	pageURL := firstNonEmptyOrigin(feedLink, baseURL)
+	if pageURL == "" {
 		return ""
 	}
-	return "https://www.google.com/s2/favicons?domain_url=" + url.QueryEscape(origin) + "&sz=64"
+	return util.BuildFaviconURL(pageURL)
 }
 
-func firstOrigin(rawURLs ...string) string {
+func firstNonEmptyOrigin(rawURLs ...string) string {
 	for _, rawURL := range rawURLs {
-		parsedURL, err := url.Parse(rawURL)
-		if err != nil || parsedURL.Scheme == "" || parsedURL.Host == "" {
-			continue
+		if origin := util.OriginFromURL(rawURL); origin != "" {
+			return origin
 		}
-		return parsedURL.Scheme + "://" + parsedURL.Host
 	}
 	return ""
 }

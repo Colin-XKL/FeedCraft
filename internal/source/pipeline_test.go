@@ -40,7 +40,7 @@ func TestPipelineSourceApplyFeedIconSourceFaviconService(t *testing.T) {
 
 	source.applyFeedIconSource(feed, "https://example.com/blog/page")
 
-	assert.Equal(t, "https://www.google.com/s2/favicons?domain_url=https%3A%2F%2Fexample.com&sz=64", feed.ImageURL)
+	assert.Equal(t, "https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https%3A%2F%2Fexample.com&size=64", feed.ImageURL)
 	assert.Equal(t, "Example Site", feed.ImageTitle)
 }
 
