@@ -7,6 +7,7 @@ import (
 	"FeedCraft/internal/favicon"
 	"FeedCraft/internal/source/fetcher/provider"
 	"FeedCraft/internal/util"
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -134,7 +135,12 @@ func SaveFaviconProviderConfig(c *gin.Context) {
 	}
 
 	if err := favicon.Save(util.GetDatabase(), settings); err != nil {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
+		var validationErr *favicon.ValidationError
+		if errors.As(err, &validationErr) {
+			c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: validationErr.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: "failed to save favicon provider settings"})
 		return
 	}
 	c.JSON(http.StatusOK, util.APIResponse[FaviconProviderConfigResponse]{
@@ -162,7 +168,12 @@ func PreviewFaviconProviderConfig(c *gin.Context) {
 
 	iconURL, providerID, err := favicon.BuildURLFromSettings(req.Settings, req.ProviderID, req.PageURL, req.Size)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
+		var validationErr *favicon.ValidationError
+		if errors.As(err, &validationErr) {
+			c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: validationErr.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: "failed to preview favicon provider"})
 		return
 	}
 	if iconURL == "" {

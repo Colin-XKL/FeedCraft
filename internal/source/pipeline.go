@@ -120,12 +120,16 @@ func (p *PipelineSource) applyFeedIconSource(feed *model.CraftFeed, baseURL stri
 
 	if feed.ImageURL != "" {
 		if absURL, err := util.BuildAbsoluteURL(baseURL, feed.ImageURL); err == nil {
-			feed.ImageURL = absURL
+			if favicon.OriginFromURL(absURL) != "" {
+				feed.ImageURL = absURL
+				if feed.ImageTitle == "" {
+					feed.ImageTitle = feed.Title
+				}
+				return
+			}
 		}
-		if feed.ImageTitle == "" {
-			feed.ImageTitle = feed.Title
-		}
-		return
+		feed.ImageURL = ""
+		feed.ImageTitle = ""
 	}
 
 	if hasExplicitIconSource {

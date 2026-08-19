@@ -265,8 +265,16 @@
   };
 
   const addCustomProvider = () => {
+    const usedIDs = new Set([
+      ...providers.value.map((provider) => provider.id),
+      ...form.custom_providers.map((provider) => provider.id),
+    ]);
+    let suffix = 1;
+    while (usedIDs.has(`custom_${suffix}`)) {
+      suffix += 1;
+    }
     const provider: FaviconProviderConfig = {
-      id: `custom_${form.custom_providers.length + 1}`,
+      id: `custom_${suffix}`,
       name: '',
       url_template: '',
       enabled: true,

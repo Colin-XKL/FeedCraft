@@ -35,6 +35,18 @@ type ProviderDescriptor struct {
 	BuiltIn     bool   `json:"built_in"`
 }
 
+type ValidationError struct {
+	err error
+}
+
+func (e *ValidationError) Error() string {
+	return e.err.Error()
+}
+
+func (e *ValidationError) Unwrap() error {
+	return e.err
+}
+
 type providerBuilder func(pageURL string, size int) string
 
 type provider struct {
@@ -167,7 +179,7 @@ func BuildURL(providerID string, pageURL string, size int) (string, string) {
 func BuildURLFromSettings(settings config.FaviconSettings, providerID string, pageURL string, size int) (string, string, error) {
 	compiled, err := compileSnapshot(settings)
 	if err != nil {
-		return "", "", err
+		return "", "", &ValidationError{err: err}
 	}
 	result, resolvedID := buildURL(compiled, providerID, pageURL, size)
 	return result, resolvedID, nil
@@ -190,7 +202,14 @@ func buildURL(current *snapshot, providerID string, pageURL string, size int) (s
 	if size <= 0 {
 		size = defaultIconSize
 	}
-	return item.build(pageURL, size), resolvedID
+	result := item.build(pageURL, size)
+	if result != "" || resolvedID == defaultProvider {
+		return result, resolvedID
+	}
+
+	warnProviderFallback(resolvedID, defaultProvider)
+	fallback := current.providers[defaultProvider]
+	return fallback.build(pageURL, size), defaultProvider
 }
 
 func OriginFromURL(rawURL string) string {
@@ -328,11 +347,16 @@ func compileTemplate(template string) (providerBuilder, error) {
 	}
 
 	sample := builder(sampleTargetURL, defaultIconSize)
-	parsedTemplateURL, err := url.Parse(sample)
-	if err != nil || parsedTemplateURL.Scheme != "https" || parsedTemplateURL.Host == "" || parsedTemplateURL.User != nil {
+	if !validProviderOutput(sample) {
 		return nil, fmt.Errorf("URL template must render an absolute HTTPS URL without credentials")
 	}
-	return builder, nil
+	return func(pageURL string, size int) string {
+		rendered := builder(pageURL, size)
+		if !validProviderOutput(rendered) {
+			return ""
+		}
+		return rendered
+	}, nil
 }
 
 func warnProviderFallback(providerID string, defaultID string) {
@@ -393,4 +417,12 @@ func parseTargetURL(rawURL string) *url.URL {
 		return nil
 	}
 	return parsedURL
+}
+
+func validProviderOutput(rawURL string) bool {
+	parsedURL, err := url.Parse(rawURL)
+	return err == nil &&
+		parsedURL.Scheme == "https" &&
+		parsedURL.Host != "" &&
+		parsedURL.User == nil
 }

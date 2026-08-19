@@ -132,6 +132,33 @@ func TestDisabledProviderFallsBackToDefault(t *testing.T) {
 	}
 }
 
+func TestCustomProviderRuntimeHTTPOutputFallsBackToGstaticCN(t *testing.T) {
+	resetRegistryForTest(t)
+	if err := Replace(config.FaviconSettings{
+		DefaultProviderID: "raw_origin",
+		CustomProviders: []config.FaviconProviderConfig{
+			{
+				ID:          "raw_origin",
+				Name:        "Raw origin",
+				URLTemplate: "{origin}/favicon.ico",
+				Enabled:     true,
+			},
+		},
+	}); err != nil {
+		t.Fatalf("Replace() error = %v", err)
+	}
+
+	got, providerID := BuildURL("", "http://example.com/path", 64)
+
+	const want = "https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http%3A%2F%2Fexample.com&size=64"
+	if got != want {
+		t.Fatalf("BuildURL() = %q, want %q", got, want)
+	}
+	if providerID != ProviderGstaticCN {
+		t.Fatalf("provider ID = %q, want %q", providerID, ProviderGstaticCN)
+	}
+}
+
 func TestRegistryConcurrentBuildAndReplace(t *testing.T) {
 	resetRegistryForTest(t)
 

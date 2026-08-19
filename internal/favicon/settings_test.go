@@ -5,6 +5,7 @@ import (
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/dao"
 	"fmt"
+	"sync"
 	"testing"
 
 	"github.com/glebarez/sqlite"
@@ -87,6 +88,34 @@ func TestSaveInvalidSettingsDoesNotPersistOrPublish(t *testing.T) {
 	}
 	if got := Settings(); got.DefaultProviderID != before.DefaultProviderID {
 		t.Fatalf("active settings changed: %+v", got)
+	}
+}
+
+func TestConcurrentSaveKeepsDatabaseAndSnapshotConsistent(t *testing.T) {
+	resetRegistryForTest(t)
+	db := newSettingsTestDB(t)
+	providers := []string{ProviderGoogle, ProviderDuckDuckGo, ProviderYandex, ProviderGstaticCN}
+
+	var wg sync.WaitGroup
+	for index := 0; index < 40; index++ {
+		providerID := providers[index%len(providers)]
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if err := Save(db, config.FaviconSettings{DefaultProviderID: providerID}); err != nil {
+				t.Errorf("Save() error = %v", err)
+			}
+		}()
+	}
+	wg.Wait()
+
+	var persisted config.FaviconSettings
+	if err := dao.GetJsonSetting(db, constant.KeyFaviconProviderConfig, &persisted); err != nil {
+		t.Fatalf("read persisted settings: %v", err)
+	}
+	active := Settings()
+	if active.DefaultProviderID != persisted.DefaultProviderID {
+		t.Fatalf("active provider %q differs from persisted provider %q", active.DefaultProviderID, persisted.DefaultProviderID)
 	}
 }
 

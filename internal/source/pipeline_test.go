@@ -106,6 +106,24 @@ func TestPipelineSourceApplyFeedIconSourceAutoFallback(t *testing.T) {
 	assert.Equal(t, "Example Site", feed.ImageTitle)
 }
 
+func TestPipelineSourceApplyFeedIconSourceRejectsUnsafeExtractedIcon(t *testing.T) {
+	feed := &model.CraftFeed{
+		Title:    "Example Site",
+		Link:     "https://example.com/blog",
+		ImageURL: "javascript:alert(1)",
+	}
+	source := &PipelineSource{
+		Config: &config.SourceConfig{
+			FeedMeta: &config.FeedMetaConfig{IconSource: config.FeedIconSourceAuto},
+		},
+	}
+
+	source.applyFeedIconSource(feed, "https://example.com/blog/page")
+
+	assert.Equal(t, "https://example.com/favicon.ico", feed.ImageURL)
+	assert.Equal(t, "Example Site", feed.ImageTitle)
+}
+
 func TestPipelineSourceApplyFeedIconSourceDoesNotFallbackWithoutExplicitSource(t *testing.T) {
 	feed := &model.CraftFeed{
 		Title: "Example Site",
