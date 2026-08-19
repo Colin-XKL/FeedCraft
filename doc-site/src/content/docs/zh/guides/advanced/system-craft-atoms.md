@@ -23,11 +23,11 @@ FeedCraft 内置了一系列“原子工艺 (AtomCrafts)”，用于对订阅源
 - **适用场景:** 针对通过 JavaScript 动态渲染内容或有较强反爬虫措施的网站。
 - **机制:** 连接到配置的浏览器提供方（`browserless-restful` 或 `cdp`）来渲染页面。速度较慢但兼容性更强。
 - **参数:**
-  - `mode` (默认: `networkidle2`): 页面加载等待模式。
-    - `load`: 等待 `load` 事件。
+  - `mode` (默认: `load`): 页面加载等待模式。
+    - `load`: 等待 `load` 事件。默认值，对大多数站点最稳定。
     - `domcontentloaded`: 等待 `DOMContentLoaded` 事件。
     - `networkidle0`: 等待直到 500ms 内没有活跃的网络连接。
-    - `networkidle2`: 等待直到 500ms 内活跃的网络连接数不超过 **2** 个。(推荐用于 SPA 单页应用)。
+    - `networkidle2`: 等待直到 500ms 内活跃的网络连接数不超过 **2** 个。(适合 SPA；若页面存在长连接可能一直等不到空闲。)
   - `wait` (默认: `0`): 显式等待时间（秒），例如 `5`。
 
 ### `proxy` (代理)

@@ -20,12 +20,13 @@ func getBrowserlessRESTContent(browserURI string, websiteUrl string, options Bro
 		URL:                 websiteUrl,
 		RejectResourceTypes: []string{"image"},
 		WaitFor:             int(options.WaitTime.Milliseconds()),
+		GotoOptions: &GotoOptions{
+			Timeout: options.Timeout.Milliseconds(),
+		},
 	}
 
 	if options.WaitUntil != "" {
-		reqBody.GotoOptions = &GotoOptions{
-			WaitUntil: options.WaitUntil,
-		}
+		reqBody.GotoOptions.WaitUntil = options.WaitUntil
 	}
 
 	response, err := client.R().SetHeaders(headers).SetBody(reqBody).Post("/content")

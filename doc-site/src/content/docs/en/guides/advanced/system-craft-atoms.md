@@ -23,11 +23,11 @@ Extracts full content using a headless browser (Puppeteer).
 - **Use case:** For websites that require JavaScript to render content or have strong anti-bot protections.
 - **Mechanism:** Connects to the configured browser provider (`browserless-restful` or `cdp`) to render the page. Slower but more robust.
 - **Parameters:**
-  - `mode` (default: `networkidle2`): Wait condition.
-    - `load`: Wait for the `load` event.
+  - `mode` (default: `load`): Wait condition.
+    - `load`: Wait for the `load` event. Default, and the most reliable for most sites.
     - `domcontentloaded`: Wait for the `DOMContentLoaded` event.
     - `networkidle0`: Wait until there are **0** active network connections for at least 500ms.
-    - `networkidle2`: Wait until there are no more than **2** active network connections for at least 500ms. (Recommended for SPAs).
+    - `networkidle2`: Wait until there are no more than **2** active network connections for at least 500ms. (Useful for SPAs; can hang on pages with long-lived connections.)
   - `wait` (default: `0`): Explicit wait time in seconds (e.g., `5`).
 
 ### `proxy`
