@@ -161,6 +161,9 @@ func RegisterRouters(router *gin.Engine) {
 		adminApi.GET("/settings/search-provider", controller.GetSearchProviderConfig)
 		adminApi.POST("/settings/search-provider", controller.SaveSearchProviderConfig)
 		adminApi.POST("/settings/search-provider/check", controller.CheckSearchProviderConfig)
+		adminApi.GET("/settings/favicon-provider", controller.GetFaviconProviderConfig)
+		adminApi.POST("/settings/favicon-provider", controller.SaveFaviconProviderConfig)
+		adminApi.POST("/settings/favicon-provider/preview", controller.PreviewFaviconProviderConfig)
 
 		adminApi.GET("/dependencies", controller.GetDependencyStatus)
 		adminApi.POST("/dependencies/check", controller.CheckDependencyStatus)

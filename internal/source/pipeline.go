@@ -2,6 +2,7 @@ package source
 
 import (
 	"FeedCraft/internal/config"
+	"FeedCraft/internal/favicon"
 	"FeedCraft/internal/model"
 	"FeedCraft/internal/source/fetcher"
 	"FeedCraft/internal/source/parser"
@@ -106,7 +107,11 @@ func (p *PipelineSource) applyFeedIconSource(feed *model.CraftFeed, baseURL stri
 	}
 
 	if iconSource == config.FeedIconSourceFaviconService {
-		if serviceURL := buildFaviconServiceURL(feed.Link, baseURL); serviceURL != "" {
+		providerID := ""
+		if p.Config != nil && p.Config.FeedMeta != nil {
+			providerID = p.Config.FeedMeta.FaviconProvider
+		}
+		if serviceURL := buildFaviconServiceURL(providerID, feed.Link, baseURL); serviceURL != "" {
 			feed.ImageURL = serviceURL
 			feed.ImageTitle = feed.Title
 		}
@@ -131,17 +136,18 @@ func (p *PipelineSource) applyFeedIconSource(feed *model.CraftFeed, baseURL stri
 	}
 }
 
-func buildFaviconServiceURL(feedLink string, baseURL string) string {
+func buildFaviconServiceURL(providerID string, feedLink string, baseURL string) string {
 	pageURL := firstNonEmptyOrigin(feedLink, baseURL)
 	if pageURL == "" {
 		return ""
 	}
-	return util.BuildFaviconURL(pageURL)
+	serviceURL, _ := favicon.BuildURL(providerID, pageURL, 64)
+	return serviceURL
 }
 
 func firstNonEmptyOrigin(rawURLs ...string) string {
 	for _, rawURL := range rawURLs {
-		if origin := util.OriginFromURL(rawURL); origin != "" {
+		if origin := favicon.OriginFromURL(rawURL); origin != "" {
 			return origin
 		}
 	}

@@ -11,9 +11,12 @@ import (
 	"FeedCraft/internal/config"
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/dao"
+	"FeedCraft/internal/favicon"
 	"FeedCraft/internal/util"
 
 	"github.com/gin-gonic/gin"
+	"github.com/glebarez/sqlite"
+	"gorm.io/gorm"
 )
 
 func TestSaveSearchProviderConfig(t *testing.T) {
@@ -142,4 +145,139 @@ func TestSaveSearchProviderConfig(t *testing.T) {
 	if savedCfg.APIKey != "newer-key" {
 		t.Errorf("Expected newer-key, got %s", savedCfg.APIKey)
 	}
+}
+
+func TestFaviconProviderSettingsAPI(t *testing.T) {
+	db, err := gorm.Open(sqlite.Open("file:favicon-settings-controller?mode=memory&cache=shared"), &gorm.Config{})
+	if err != nil {
+		t.Fatalf("open test database: %v", err)
+	}
+	util.SetDatabaseForTest(db)
+	if err := db.AutoMigrate(&dao.SystemSetting{}); err != nil {
+		t.Fatalf("Failed to migrate: %v", err)
+	}
+	previous := favicon.Settings()
+	t.Cleanup(func() {
+		if err := favicon.Replace(previous); err != nil {
+			t.Fatalf("restore favicon settings: %v", err)
+		}
+	})
+	if err := favicon.Replace(favicon.DefaultSettings()); err != nil {
+		t.Fatalf("reset favicon settings: %v", err)
+	}
+
+	gin.SetMode(gin.TestMode)
+	r := gin.New()
+	r.GET("/settings", GetFaviconProviderConfig)
+	r.POST("/settings", SaveFaviconProviderConfig)
+	r.POST("/preview", PreviewFaviconProviderConfig)
+
+	settings := config.FaviconSettings{
+		DefaultProviderID: "self_hosted",
+		CustomProviders: []config.FaviconProviderConfig{
+			{
+				ID:          "self_hosted",
+				Name:        "Self hosted",
+				URLTemplate: "https://icons.example.test/favicon?domain={host}&size={size}",
+				Enabled:     true,
+			},
+		},
+	}
+	saveResponse := performJSONRequest(t, r, http.MethodPost, "/settings", settings)
+	if saveResponse.Code != http.StatusOK {
+		t.Fatalf("save status = %d, body = %s", saveResponse.Code, saveResponse.Body.String())
+	}
+
+	_, activeProvider := favicon.BuildURL("", "https://example.com/path", 64)
+	if activeProvider != "self_hosted" {
+		t.Fatalf("active provider = %q, want self_hosted", activeProvider)
+	}
+
+	var persisted config.FaviconSettings
+	if err := dao.GetJsonSetting(db, constant.KeyFaviconProviderConfig, &persisted); err != nil {
+		t.Fatalf("read persisted settings: %v", err)
+	}
+	if persisted.DefaultProviderID != "self_hosted" {
+		t.Fatalf("persisted provider = %q", persisted.DefaultProviderID)
+	}
+
+	getResponse := performJSONRequest(t, r, http.MethodGet, "/settings", nil)
+	if getResponse.Code != http.StatusOK {
+		t.Fatalf("get status = %d, body = %s", getResponse.Code, getResponse.Body.String())
+	}
+	var getBody util.APIResponse[FaviconProviderConfigResponse]
+	if err := json.Unmarshal(getResponse.Body.Bytes(), &getBody); err != nil {
+		t.Fatalf("decode get response: %v", err)
+	}
+	if getBody.Data.DefaultProviderID != "self_hosted" {
+		t.Fatalf("GET default provider = %q", getBody.Data.DefaultProviderID)
+	}
+	if len(getBody.Data.Providers) != 5 {
+		t.Fatalf("GET provider count = %d, want 5", len(getBody.Data.Providers))
+	}
+
+	invalidResponse := performJSONRequest(t, r, http.MethodPost, "/settings", config.FaviconSettings{
+		DefaultProviderID: "missing",
+	})
+	if invalidResponse.Code != http.StatusBadRequest {
+		t.Fatalf("invalid status = %d, body = %s", invalidResponse.Code, invalidResponse.Body.String())
+	}
+	_, activeProvider = favicon.BuildURL("", "https://example.com/path", 64)
+	if activeProvider != "self_hosted" {
+		t.Fatalf("invalid save changed active provider to %q", activeProvider)
+	}
+
+	previewSettings := config.FaviconSettings{
+		DefaultProviderID: "preview_only",
+		CustomProviders: []config.FaviconProviderConfig{
+			{
+				ID:          "preview_only",
+				Name:        "Preview only",
+				URLTemplate: "https://preview.example.test/{host}?size={size}",
+				Enabled:     true,
+			},
+		},
+	}
+	previewResponse := performJSONRequest(t, r, http.MethodPost, "/preview", FaviconProviderPreviewRequest{
+		Settings:   previewSettings,
+		ProviderID: "preview_only",
+		PageURL:    "https://example.com/path",
+		Size:       32,
+	})
+	if previewResponse.Code != http.StatusOK {
+		t.Fatalf("preview status = %d, body = %s", previewResponse.Code, previewResponse.Body.String())
+	}
+	var previewBody util.APIResponse[FaviconProviderPreviewResponse]
+	if err := json.Unmarshal(previewResponse.Body.Bytes(), &previewBody); err != nil {
+		t.Fatalf("decode preview response: %v", err)
+	}
+	if previewBody.Data.URL != "https://preview.example.test/example.com?size=32" {
+		t.Fatalf("preview URL = %q", previewBody.Data.URL)
+	}
+	_, activeProvider = favicon.BuildURL("", "https://example.com/path", 64)
+	if activeProvider != "self_hosted" {
+		t.Fatalf("preview changed active provider to %q", activeProvider)
+	}
+}
+
+func performJSONRequest(t *testing.T, handler http.Handler, method string, path string, body interface{}) *httptest.ResponseRecorder {
+	t.Helper()
+	var requestBody *bytes.Reader
+	if body == nil {
+		requestBody = bytes.NewReader(nil)
+	} else {
+		jsonBytes, err := json.Marshal(body)
+		if err != nil {
+			t.Fatalf("encode request: %v", err)
+		}
+		requestBody = bytes.NewReader(jsonBytes)
+	}
+	req, err := http.NewRequest(method, path, requestBody)
+	if err != nil {
+		t.Fatalf("new request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	recorder := httptest.NewRecorder()
+	handler.ServeHTTP(recorder, req)
+	return recorder
 }

@@ -2,6 +2,7 @@ package source
 
 import (
 	"FeedCraft/internal/config"
+	"FeedCraft/internal/favicon"
 	"FeedCraft/internal/model"
 	"testing"
 
@@ -27,6 +28,7 @@ func TestPipelineSourceApplyFeedIconSourceAuto(t *testing.T) {
 }
 
 func TestPipelineSourceApplyFeedIconSourceFaviconService(t *testing.T) {
+	resetFaviconRegistry(t)
 	feed := &model.CraftFeed{
 		Title:    "Example Site",
 		Link:     "https://example.com/blog",
@@ -42,6 +44,49 @@ func TestPipelineSourceApplyFeedIconSourceFaviconService(t *testing.T) {
 
 	assert.Equal(t, "https://t0.gstatic.cn/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https%3A%2F%2Fexample.com&size=64", feed.ImageURL)
 	assert.Equal(t, "Example Site", feed.ImageTitle)
+}
+
+func TestPipelineSourceApplyFeedIconSourceUsesGlobalProvider(t *testing.T) {
+	resetFaviconRegistry(t)
+	if err := favicon.Replace(config.FaviconSettings{DefaultProviderID: favicon.ProviderYandex}); err != nil {
+		t.Fatalf("replace favicon settings: %v", err)
+	}
+	feed := &model.CraftFeed{
+		Title: "Example Site",
+		Link:  "https://example.com/blog",
+	}
+	source := &PipelineSource{
+		Config: &config.SourceConfig{
+			FeedMeta: &config.FeedMetaConfig{IconSource: config.FeedIconSourceFaviconService},
+		},
+	}
+
+	source.applyFeedIconSource(feed, "https://example.com/blog/page")
+
+	assert.Equal(t, "https://favicon.yandex.net/favicon/example.com", feed.ImageURL)
+}
+
+func TestPipelineSourceApplyFeedIconSourceRecipeProviderOverridesGlobal(t *testing.T) {
+	resetFaviconRegistry(t)
+	if err := favicon.Replace(config.FaviconSettings{DefaultProviderID: favicon.ProviderYandex}); err != nil {
+		t.Fatalf("replace favicon settings: %v", err)
+	}
+	feed := &model.CraftFeed{
+		Title: "Example Site",
+		Link:  "https://example.com/blog",
+	}
+	source := &PipelineSource{
+		Config: &config.SourceConfig{
+			FeedMeta: &config.FeedMetaConfig{
+				IconSource:      config.FeedIconSourceFaviconService,
+				FaviconProvider: favicon.ProviderDuckDuckGo,
+			},
+		},
+	}
+
+	source.applyFeedIconSource(feed, "https://example.com/blog/page")
+
+	assert.Equal(t, "https://icons.duckduckgo.com/ip3/example.com.ico", feed.ImageURL)
 }
 
 func TestPipelineSourceApplyFeedIconSourceAutoFallback(t *testing.T) {
@@ -72,4 +117,17 @@ func TestPipelineSourceApplyFeedIconSourceDoesNotFallbackWithoutExplicitSource(t
 
 	assert.Empty(t, feed.ImageURL)
 	assert.Empty(t, feed.ImageTitle)
+}
+
+func resetFaviconRegistry(t *testing.T) {
+	t.Helper()
+	previous := favicon.Settings()
+	t.Cleanup(func() {
+		if err := favicon.Replace(previous); err != nil {
+			t.Fatalf("restore favicon settings: %v", err)
+		}
+	})
+	if err := favicon.Replace(favicon.DefaultSettings()); err != nil {
+		t.Fatalf("reset favicon settings: %v", err)
+	}
 }
