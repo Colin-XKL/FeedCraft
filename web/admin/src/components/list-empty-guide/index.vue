@@ -1,28 +1,20 @@
 <template>
   <div class="list-empty-guide">
-    <a-empty :description="description">
-      <template #extra>
-        <div class="list-empty-guide__extra">
-          <p v-if="hint" class="list-empty-guide__hint">{{ hint }}</p>
-          <a-space>
-            <a-button type="primary" @click="$emit('create')">
-              <template #icon>
-                <icon-plus />
-              </template>
-              {{ createLabel }}
-            </a-button>
-            <a-link
-              :href="docsHref"
-              target="_blank"
-              rel="noopener noreferrer"
-              icon
-            >
-              {{ docsLabel }}
-            </a-link>
-          </a-space>
-        </div>
-      </template>
-    </a-empty>
+    <a-empty :description="description" />
+    <div class="list-empty-guide__extra">
+      <p v-if="hint" class="list-empty-guide__hint">{{ hint }}</p>
+      <a-space>
+        <a-button type="primary" @click="$emit('create')">
+          <template #icon>
+            <icon-plus />
+          </template>
+          {{ createLabel }}
+        </a-button>
+        <a-link :href="docsHref" target="_blank" rel="noopener noreferrer" icon>
+          {{ docsLabel }}
+        </a-link>
+      </a-space>
+    </div>
   </div>
 </template>
 
