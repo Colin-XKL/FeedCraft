@@ -232,6 +232,9 @@
   watch(
     enabledProviderOptions,
     (options) => {
+      if (!options.some((item) => item.id === form.default_provider_id)) {
+        form.default_provider_id = 'gstatic_cn';
+      }
       if (!options.some((item) => item.id === previewProviderId.value)) {
         previewProviderId.value =
           form.default_provider_id || options[0]?.id || 'gstatic_cn';
@@ -244,7 +247,7 @@
     loading.value = true;
     try {
       const response = await getFaviconProviderConfig();
-      const data = response.data.data;
+      const { data } = response.data;
       form.default_provider_id = data.default_provider_id || 'gstatic_cn';
       form.custom_providers = (data.custom_providers || []).map((item) => ({
         ...item,
