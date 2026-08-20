@@ -343,10 +343,10 @@
   .section-toolbar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    margin: 8px 0 16px;
-    padding-bottom: 12px;
+    justify-content: flex-start;
+    gap: 12px;
+    margin: 20px 0 16px;
+    padding-bottom: 16px;
     border-bottom: 1px solid var(--color-border-2);
   }
 

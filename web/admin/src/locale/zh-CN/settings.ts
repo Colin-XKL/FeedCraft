@@ -63,7 +63,7 @@ export default {
   'settings.faviconProvider.defaultProvider': '全局默认 Provider',
   'settings.faviconProvider.builtInProviders': '内置 Provider',
   'settings.faviconProvider.customProviders': '自定义 Provider',
-  'settings.faviconProvider.add': '添加自定义 Provider',
+  'settings.faviconProvider.add': '添加',
   'settings.faviconProvider.empty': '暂无自定义 Provider',
   'settings.faviconProvider.unnamed': '未命名 Provider',
   'settings.faviconProvider.id': '唯一 ID',

@@ -69,7 +69,7 @@ export default {
   'settings.faviconProvider.defaultProvider': 'Global Default Provider',
   'settings.faviconProvider.builtInProviders': 'Built-in Providers',
   'settings.faviconProvider.customProviders': 'Custom Providers',
-  'settings.faviconProvider.add': 'Add Custom Provider',
+  'settings.faviconProvider.add': 'Add',
   'settings.faviconProvider.empty': 'No custom providers',
   'settings.faviconProvider.unnamed': 'Unnamed Provider',
   'settings.faviconProvider.id': 'Unique ID',
