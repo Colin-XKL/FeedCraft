@@ -189,7 +189,7 @@
                     />
                     <a-textarea
                       v-else
-                      v-model="param.value"
+                      :model-value="String(param.value)"
                       :placeholder="t('craftAtom.form.value')"
                       :auto-size="
                         isEmbeddingFilterAnchorsParam(
@@ -199,6 +199,7 @@
                           ? { minRows: 4, maxRows: 8 }
                           : { minRows: 2, maxRows: 4 }
                       "
+                      @update:model-value="param.value = $event"
                     />
                   </a-col>
                   <a-col :span="2">

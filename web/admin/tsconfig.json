@@ -2,16 +2,15 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "ES2020",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "strict": true,
     "jsx": "preserve",
     "jsxImportSource": "vue",
     "sourceMap": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     },
     "lib": ["es2020", "dom"],
     "skipLibCheck": true

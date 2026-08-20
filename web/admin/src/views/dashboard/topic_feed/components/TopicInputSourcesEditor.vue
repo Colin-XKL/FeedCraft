@@ -27,7 +27,7 @@
             <a-switch
               :model-value="source.disabled"
               size="small"
-              @change="(value: boolean) => setDisabled(idx, value)"
+              @change="(value) => setDisabled(idx, Boolean(value))"
             />
           </div>
           <a-button

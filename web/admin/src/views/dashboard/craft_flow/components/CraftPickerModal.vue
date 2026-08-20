@@ -63,7 +63,9 @@
             : [];
         } else {
           localValue.value = Array.isArray(props.modelValue)
-            ? [...props.modelValue]
+            ? props.modelValue.filter(
+                (value): value is string => typeof value === 'string'
+              )
             : [];
         }
       }
