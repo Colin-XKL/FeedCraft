@@ -31,9 +31,6 @@ func (p *HtmlParser) Parse(data []byte) (*model.CraftFeed, error) {
 	// For now, we might try to extract title from <title> if not provided via overrides
 	feed.Title = strings.TrimSpace(doc.Find("title").Text())
 	feed.ImageURL = extractFeedIconURL(doc)
-	if feed.ImageURL != "" {
-		feed.ImageTitle = feed.Title
-	}
 
 	doc.Find(p.Config.ItemSelector).Each(func(i int, s *goquery.Selection) {
 		item := &model.CraftArticle{}

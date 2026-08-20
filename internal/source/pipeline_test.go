@@ -145,6 +145,51 @@ func TestPipelineSourceApplyFeedIconSourceRejectsUnsafeExtractedIcon(t *testing.
 	assert.Equal(t, "Example Site", feed.ImageTitle)
 }
 
+func TestPipelineSourceOverriddenFeedTitleFillsEmptyImageTitle(t *testing.T) {
+	feed := &model.CraftFeed{
+		Title:    "Example Site",
+		Link:     "https://example.com/blog",
+		ImageURL: "/assets/icon.png",
+	}
+	source := &PipelineSource{
+		Config: &config.SourceConfig{
+			FeedMeta: &config.FeedMetaConfig{
+				Title:      "Custom Feed Title",
+				IconSource: config.FeedIconSourceAuto,
+			},
+		},
+	}
+
+	source.applyFeedMetaOverrides(feed)
+	source.applyFeedIconSource(feed, "https://example.com/blog/page")
+
+	assert.Equal(t, "Custom Feed Title", feed.Title)
+	assert.Equal(t, "https://example.com/assets/icon.png", feed.ImageURL)
+	assert.Equal(t, "Custom Feed Title", feed.ImageTitle)
+}
+
+func TestPipelineSourceApplyFeedIconSourcePreservesExistingImageTitle(t *testing.T) {
+	feed := &model.CraftFeed{
+		Title:      "Custom Feed Title",
+		Link:       "https://example.com/blog",
+		ImageURL:   "https://example.com/logo.png",
+		ImageTitle: "Site Logo",
+	}
+	source := &PipelineSource{
+		Config: &config.SourceConfig{
+			FeedMeta: &config.FeedMetaConfig{
+				Title:      "Custom Feed Title",
+				IconSource: config.FeedIconSourceAuto,
+			},
+		},
+	}
+
+	source.applyFeedIconSource(feed, "https://example.com/blog/page")
+
+	assert.Equal(t, "https://example.com/logo.png", feed.ImageURL)
+	assert.Equal(t, "Site Logo", feed.ImageTitle)
+}
+
 func TestPipelineSourceApplyFeedIconSourceDoesNotFallbackWithoutExplicitSource(t *testing.T) {
 	feed := &model.CraftFeed{
 		Title: "Example Site",

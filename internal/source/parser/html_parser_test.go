@@ -34,7 +34,7 @@ func TestHtmlParserExtractsFeedIcon(t *testing.T) {
 	if assert.NotNil(t, feed) {
 		assert.Equal(t, "Example Site", feed.Title)
 		assert.Equal(t, "/favicon-32.png", feed.ImageURL)
-		assert.Equal(t, "Example Site", feed.ImageTitle)
+		assert.Empty(t, feed.ImageTitle)
 	}
 }
 
