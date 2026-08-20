@@ -43,17 +43,17 @@
             </template>
           </a-table>
 
-          <div class="section-toolbar">
-            <h3 class="section-toolbar__title">
+          <a-divider orientation="left">
+            <span class="section-label">
               {{ $t('settings.faviconProvider.customProviders') }}
-            </h3>
-            <a-button type="outline" @click="addCustomProvider">
-              <template #icon>
-                <icon-plus />
-              </template>
-              {{ $t('settings.faviconProvider.add') }}
-            </a-button>
-          </div>
+              <a-button type="outline" size="small" @click="addCustomProvider">
+                <template #icon>
+                  <icon-plus />
+                </template>
+                {{ $t('settings.faviconProvider.add') }}
+              </a-button>
+            </span>
+          </a-divider>
 
           <a-empty
             v-if="form.custom_providers.length === 0"
@@ -340,28 +340,15 @@
 </script>
 
 <style scoped>
-  .section-toolbar {
-    display: flex;
+  .section-label {
+    display: inline-flex;
     align-items: center;
-    justify-content: flex-start;
     gap: 12px;
-    margin: 20px 0 16px;
-    padding-bottom: 16px;
-    border-bottom: 1px solid var(--color-border-2);
   }
 
-  .section-toolbar__title {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 500;
-    line-height: 32px;
-    color: var(--color-text-1);
-    white-space: nowrap;
-  }
-
-  .section-toolbar :deep(.arco-btn) {
-    flex: none;
-    white-space: nowrap;
+  .section-label :deep(.arco-btn) {
+    font-size: 14px;
+    font-weight: 400;
   }
 
   .favicon-preview {
