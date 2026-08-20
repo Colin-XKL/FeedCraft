@@ -3,9 +3,9 @@
     <x-header :title="title" :description="description" />
 
     <a-card class="craft-manage-page__card" :bordered="false">
-      <template v-if="$slots.toolbar" #extra>
+      <div v-if="$slots.toolbar" class="craft-manage-page__toolbar">
         <slot name="toolbar" />
-      </template>
+      </div>
       <slot />
     </a-card>
   </div>
@@ -37,8 +37,10 @@
     box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
   }
 
-  :deep(.arco-card-header) {
-    min-height: 64px;
+  .craft-manage-page__toolbar {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 16px;
   }
 
   :deep(.arco-card-body) {
