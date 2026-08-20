@@ -109,6 +109,40 @@ func TestConcurrentSaveKeepsDatabaseAndSnapshotConsistent(t *testing.T) {
 	}
 	wg.Wait()
 
+	assertActiveSnapshotMatchesPersisted(t, db)
+}
+
+func TestConcurrentLoadAndSaveKeepsDatabaseAndSnapshotConsistent(t *testing.T) {
+	resetRegistryForTest(t)
+	db := newSettingsTestDB(t)
+	providers := []string{ProviderGoogle, ProviderDuckDuckGo, ProviderYandex, ProviderGstaticCN}
+
+	var wg sync.WaitGroup
+	for index := 0; index < 40; index++ {
+		providerID := providers[index%len(providers)]
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if err := Save(db, config.FaviconSettings{DefaultProviderID: providerID}); err != nil {
+				t.Errorf("Save() error = %v", err)
+			}
+		}()
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if err := Load(db); err != nil {
+				t.Errorf("Load() error = %v", err)
+			}
+		}()
+	}
+	wg.Wait()
+
+	assertActiveSnapshotMatchesPersisted(t, db)
+}
+
+func assertActiveSnapshotMatchesPersisted(t *testing.T, db *gorm.DB) {
+	t.Helper()
+
 	var persisted config.FaviconSettings
 	if err := dao.GetJsonSetting(db, constant.KeyFaviconProviderConfig, &persisted); err != nil {
 		t.Fatalf("read persisted settings: %v", err)

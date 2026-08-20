@@ -25,7 +25,12 @@ func Load(db *gorm.DB) error {
 	if persisted.DefaultProviderID != "" || len(persisted.CustomProviders) > 0 {
 		settings = persisted
 	}
-	return Replace(settings)
+	compiled, err := compileSnapshot(settings)
+	if err != nil {
+		return err
+	}
+	activeSnapshot.Store(compiled)
+	return nil
 }
 
 // Reload is an explicit hook for future multi-instance invalidation.
