@@ -23,6 +23,16 @@ const SETTINGS: AppRouteRecordRaw = {
       },
     },
     {
+      path: 'favicon_provider',
+      name: 'FaviconProvider',
+      component: () => import('@/views/settings/favicon_provider/index.vue'),
+      meta: {
+        locale: 'menu.settings.faviconProvider',
+        requiresAuth: true,
+        roles: ['*'],
+      },
+    },
+    {
       path: 'dependencies',
       name: 'DependencyStatus',
       component: () => import('@/views/dashboard/dependency_service/index.vue'),

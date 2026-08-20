@@ -49,6 +49,15 @@ export default {
   'htmlToRss.step3.feedDesc.placeholder': 'A brief description of this feed...',
   'htmlToRss.step3.siteLink': 'Site Link',
   'htmlToRss.step3.siteLink.placeholder': 'Original website URL',
+  'htmlToRss.step3.iconSource': 'Feed Icon Source',
+  'htmlToRss.step3.iconSource.help':
+    'Auto extraction uses the favicon declared by the page first. The generic service builds an icon URL from the site domain.',
+  'htmlToRss.step3.iconSource.auto': 'Auto extract',
+  'htmlToRss.step3.iconSource.faviconService': 'Use generic favicon service',
+  'htmlToRss.step3.faviconProvider': 'Favicon Provider',
+  'htmlToRss.step3.faviconProvider.help':
+    'Leave empty to follow the system default. An explicit selection pins this recipe to that provider.',
+  'htmlToRss.step3.faviconProvider.system': 'Follow system default',
   'htmlToRss.step3.authorName': 'Author Name',
   'htmlToRss.step3.authorEmail': 'Author Email',
   'htmlToRss.step4.card.title': 'Review & Save Recipe',
@@ -57,6 +66,7 @@ export default {
   'htmlToRss.step4.feedTitle': 'Feed Title',
   'htmlToRss.step4.itemCount': 'Item Count',
   'htmlToRss.step4.itemCount.value': '{count} items detected',
+  'htmlToRss.step4.iconSource': 'Icon Source',
   'htmlToRss.step4.recipeId': 'Recipe Unique ID',
   'htmlToRss.step4.recipeId.help': "e.g., 'tech-news-daily'",
   'htmlToRss.step4.recipeId.placeholder': 'my-recipe-id',

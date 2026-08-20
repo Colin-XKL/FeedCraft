@@ -10,6 +10,11 @@ const (
 	HttpFetcherPurposeHTML = "html"
 )
 
+const (
+	FeedIconSourceAuto           = "auto"
+	FeedIconSourceFaviconService = "favicon_service"
+)
+
 // --- Fetcher-specific Configurations ---
 
 // HttpFetcherConfig holds the configuration for an HTTP fetcher.
@@ -76,12 +81,14 @@ type InboxSourceConfig struct {
 // FeedMetaConfig holds overrides for the final feed's metadata.
 // These values will be used to replace any metadata parsed from the source.
 type FeedMetaConfig struct {
-	Title       string `json:"title,omitempty"`       // Force-override the feed title
-	Link        string `json:"link,omitempty"`        // Force-override the feed's website link
-	Description string `json:"description,omitempty"` // Force-override the feed description
-	AuthorName  string `json:"author_name,omitempty"`
-	AuthorEmail string `json:"author_email,omitempty"`
-	Copyright   string `json:"copyright,omitempty"`
+	Title           string `json:"title,omitempty"`       // Force-override the feed title
+	Link            string `json:"link,omitempty"`        // Force-override the feed's website link
+	Description     string `json:"description,omitempty"` // Force-override the feed description
+	AuthorName      string `json:"author_name,omitempty"`
+	AuthorEmail     string `json:"author_email,omitempty"`
+	Copyright       string `json:"copyright,omitempty"`
+	IconSource      string `json:"icon_source,omitempty"`
+	FaviconProvider string `json:"favicon_provider,omitempty"`
 }
 
 // --- Top-level Source Configuration ---

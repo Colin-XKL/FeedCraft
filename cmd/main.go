@@ -2,6 +2,7 @@ package main
 
 import (
 	"FeedCraft/internal/dao"
+	"FeedCraft/internal/favicon"
 	"FeedCraft/internal/observability"
 	"FeedCraft/internal/recipe"
 	"FeedCraft/internal/router"
@@ -148,6 +149,9 @@ func startServer() {
 
 	router.RegisterRouters(r)
 	dao.MigrateDatabases()
+	if err := favicon.Load(util.GetDatabase()); err != nil {
+		logrus.Warnf("failed to load favicon provider settings; using current defaults: %v", err)
+	}
 	observability.Init(util.GetDatabase())
 	defer observability.Shutdown()
 	defer func() {

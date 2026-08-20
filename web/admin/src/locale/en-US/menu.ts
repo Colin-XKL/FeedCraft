@@ -44,6 +44,7 @@ export default {
   // other menu
   'menu.settings': 'Settings',
   'menu.settings.searchProvider': 'Search Provider',
+  'menu.settings.faviconProvider': 'Favicon Provider',
   'menu.systemHealth': 'Craft Dependencies',
   'menu.inbox': 'Inbox Management',
   'menu.settings.systemAuthToken': 'System Auth Token',
