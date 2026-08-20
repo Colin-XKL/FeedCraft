@@ -43,11 +43,18 @@
             </template>
           </a-table>
 
-          <div class="flex items-center justify-between">
+          <div class="section-header">
             <a-divider orientation="left">
               {{ $t('settings.faviconProvider.customProviders') }}
             </a-divider>
-            <a-button type="outline" @click="addCustomProvider">
+            <a-button
+              type="outline"
+              class="section-header__action"
+              @click="addCustomProvider"
+            >
+              <template #icon>
+                <icon-plus />
+              </template>
               {{ $t('settings.faviconProvider.add') }}
             </a-button>
           </div>
@@ -175,6 +182,7 @@
 <script setup lang="ts">
   import { computed, onMounted, reactive, ref, watch } from 'vue';
   import { Message } from '@arco-design/web-vue';
+  import { IconPlus } from '@arco-design/web-vue/es/icon';
   import { useI18n } from 'vue-i18n';
   import {
     FaviconProviderConfig,
@@ -336,6 +344,25 @@
 </script>
 
 <style scoped>
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 8px 0 16px;
+  }
+
+  .section-header :deep(.arco-divider-horizontal) {
+    flex: 1 1 auto;
+    min-width: 0;
+    width: auto;
+    margin: 0;
+  }
+
+  .section-header__action {
+    flex: none;
+    white-space: nowrap;
+  }
+
   .favicon-preview {
     width: 64px;
     height: 64px;
