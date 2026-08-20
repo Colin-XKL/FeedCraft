@@ -43,15 +43,11 @@
             </template>
           </a-table>
 
-          <div class="section-header">
-            <a-divider orientation="left">
+          <div class="section-toolbar">
+            <h3 class="section-toolbar__title">
               {{ $t('settings.faviconProvider.customProviders') }}
-            </a-divider>
-            <a-button
-              type="outline"
-              class="section-header__action"
-              @click="addCustomProvider"
-            >
+            </h3>
+            <a-button type="outline" @click="addCustomProvider">
               <template #icon>
                 <icon-plus />
               </template>
@@ -344,21 +340,26 @@
 </script>
 
 <style scoped>
-  .section-header {
+  .section-toolbar {
     display: flex;
     align-items: center;
+    justify-content: space-between;
     gap: 16px;
     margin: 8px 0 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--color-border-2);
   }
 
-  .section-header :deep(.arco-divider-horizontal) {
-    flex: 1 1 auto;
-    min-width: 0;
-    width: auto;
+  .section-toolbar__title {
     margin: 0;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 32px;
+    color: var(--color-text-1);
+    white-space: nowrap;
   }
 
-  .section-header__action {
+  .section-toolbar :deep(.arco-btn) {
     flex: none;
     white-space: nowrap;
   }
