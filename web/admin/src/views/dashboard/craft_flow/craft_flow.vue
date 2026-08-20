@@ -271,7 +271,7 @@
         craftList: [],
         craft_flow_config: [],
       };
-    } catch (err) {
+    } catch {
       // Error handling is done by interceptor or default handling
     } finally {
       saving.value = false;

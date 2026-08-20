@@ -78,7 +78,7 @@
     try {
       const response = await listAllCrafts();
       allCrafts.value = response.data;
-    } catch (error) {
+    } catch {
       Message.error(t('allCraftList.message.fetchFailed'));
     } finally {
       isLoading.value = false;
