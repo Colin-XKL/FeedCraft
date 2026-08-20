@@ -66,6 +66,8 @@ sidebar:
 - **FC_BROWSER_PROVIDER**: 浏览器渲染提供方。支持 `browserless-restful`（Browserless REST `/content`）和 `cdp`（Chrome DevTools Protocol，例如 CloakBrowser `cloakserve`）。
 - **FC_BROWSER_ENDPOINT**: 所选浏览器提供方的地址。`fulltext-plus` 和 HTML 转 RSS 增强模式必须。
 - **FC_PUPPETEER_HTTP_ENDPOINT**: 旧版 Browserless 地址别名。仅在 `FC_BROWSER_ENDPOINT` 为空时继续生效。
+- **FC_BROWSER_TIMEOUT**: （可选）单次浏览器渲染超时。支持 Go duration（`60s`）或毫秒（`60000`），默认 `60s`。建议不超过 browserless 的 `CONNECTION_TIMEOUT`。
+- **FC_BROWSER_MAX_CONCURRENCY**: （可选）全局浏览器渲染最大并发数（默认：`2`）。避免 `fulltext-plus` 一次打开过多 Chrome 会话。
 - **FC_REDIS_URI**: Redis 连接地址。用于缓存，加快处理速度并减少 AI Token 消耗。
 - **FC_HTTP_USER_AGENT_FEED**: （可选）feed 类外部请求的默认 `User-Agent`，例如抓取 RSS/XML 资源时使用。搜索提供方请求目前也临时归入这一规则。
 - **FC_HTTP_USER_AGENT_HTML**: （可选）HTML 页面抓取的默认 `User-Agent`，例如全文提取和 HTML 转 RSS 工具使用。**注意：** 如果该值包含空格或括号，必须使用引号括起来。

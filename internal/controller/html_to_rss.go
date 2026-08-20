@@ -73,7 +73,7 @@ func validateURL(rawUrl string) error {
 func fetchHTML(targetURL string, useBrowserless bool) (string, error) {
 	if useBrowserless {
 		return util.GetBrowserlessContent(targetURL, util.BrowserlessOptions{
-			Timeout: craft.DefaultExtractFulltextTimeout,
+			Timeout: util.ResolveBrowserRenderTimeout(),
 		})
 	}
 

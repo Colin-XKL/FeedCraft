@@ -66,6 +66,8 @@ You can configure FeedCraft using environment variables in `docker-compose.yml`.
 - **FC_BROWSER_PROVIDER**: Browser rendering provider. Supported values: `browserless-restful` (Browserless REST `/content`) and `cdp` (Chrome DevTools Protocol, such as CloakBrowser `cloakserve`).
 - **FC_BROWSER_ENDPOINT**: Endpoint of the selected browser provider. Required for `fulltext-plus` and HTML-to-RSS Enhanced Mode.
 - **FC_PUPPETEER_HTTP_ENDPOINT**: Legacy Browserless endpoint alias. Still supported when `FC_BROWSER_ENDPOINT` is empty.
+- **FC_BROWSER_TIMEOUT**: (Optional) Timeout for a single browser render. Accepts Go duration (`60s`) or milliseconds (`60000`). Default: `60s`. Keep this at or below the browserless `CONNECTION_TIMEOUT`.
+- **FC_BROWSER_MAX_CONCURRENCY**: (Optional) Global max concurrent browser render jobs (default: `2`). Prevents `fulltext-plus` from opening too many Chrome sessions at once.
 - **FC_REDIS_URI**: Redis connection address. Used for caching to speed up processing and reduce AI token consumption.
 - **FC_HTTP_USER_AGENT_FEED**: (Optional) Default `User-Agent` for feed-style outbound requests, such as fetching RSS/XML resources. Search provider requests are temporarily grouped into this same rule.
 - **FC_HTTP_USER_AGENT_HTML**: (Optional) Default `User-Agent` for HTML page fetches, such as fulltext extraction and the HTML-to-RSS tooling. **Note:** If the value contains spaces or parentheses, it must be enclosed in quotes.

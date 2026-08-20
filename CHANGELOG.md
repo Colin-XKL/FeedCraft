@@ -22,6 +22,7 @@
 - settings: 修复读取现有 search provider config 时的错误处理
 - 修复 search provider active check 并增加 timeout
 - monitor: 修复并暴露 search provider check 中的 db errors
+- 修复 `fulltext-plus` 调用 browserless 时默认超时过短、并发过高导致全体条目超时 500；浏览器渲染失败时回退到 HTTP 全文提取
 
 ### 📝 文档与杂项 (Documentation & Chores)
 

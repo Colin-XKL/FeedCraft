@@ -2,10 +2,13 @@ package util
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -40,6 +43,7 @@ func TestGetBrowserlessContentUsesBrowserEndpointForBrowserlessProvider(t *testi
 	assert.Equal(t, 2000, captured.WaitFor)
 	require.NotNil(t, captured.GotoOptions)
 	assert.Equal(t, "networkidle2", captured.GotoOptions.WaitUntil)
+	assert.Equal(t, int64(1000), captured.GotoOptions.Timeout)
 }
 
 func TestResolveBrowserProviderConfigFallsBackToLegacyBrowserlessEndpoint(t *testing.T) {
@@ -80,4 +84,66 @@ func TestGetBrowserlessContentWithCloakBrowserCDP(t *testing.T) {
 
 	require.NoError(t, err)
 	assert.True(t, strings.Contains(content, "cloak-ok"), content)
+}
+
+func TestResolveBrowserRenderTimeoutFromEnv(t *testing.T) {
+	t.Setenv("FC_BROWSER_TIMEOUT", "")
+	assert.Equal(t, DefaultBrowserRenderTimeout, ResolveBrowserRenderTimeout())
+
+	t.Setenv("FC_BROWSER_TIMEOUT", "90s")
+	assert.Equal(t, 90*time.Second, ResolveBrowserRenderTimeout())
+
+	t.Setenv("FC_BROWSER_TIMEOUT", "120000")
+	assert.Equal(t, 120*time.Second, ResolveBrowserRenderTimeout())
+}
+
+func TestResolveBrowserMaxConcurrencyFromEnv(t *testing.T) {
+	t.Setenv("FC_BROWSER_MAX_CONCURRENCY", "")
+	assert.Equal(t, DefaultBrowserMaxConcurrency, ResolveBrowserMaxConcurrency())
+
+	t.Setenv("FC_BROWSER_MAX_CONCURRENCY", "4")
+	assert.Equal(t, 4, ResolveBrowserMaxConcurrency())
+}
+
+func TestGetBrowserlessContentLimitsGlobalConcurrency(t *testing.T) {
+	var inflight atomic.Int32
+	var maxInflight atomic.Int32
+	var started sync.WaitGroup
+	started.Add(4)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		current := inflight.Add(1)
+		for {
+			prev := maxInflight.Load()
+			if current <= prev || maxInflight.CompareAndSwap(prev, current) {
+				break
+			}
+		}
+		started.Done()
+		time.Sleep(150 * time.Millisecond)
+		inflight.Add(-1)
+		_, _ = w.Write([]byte("<html><body>ok</body></html>"))
+	}))
+	defer server.Close()
+
+	t.Setenv("FC_BROWSER_PROVIDER", "browserless-restful")
+	t.Setenv("FC_BROWSER_ENDPOINT", server.URL)
+	t.Setenv("FC_BROWSER_MAX_CONCURRENCY", "2")
+	resetBrowserRenderGateForTest()
+
+	var wg sync.WaitGroup
+	for i := 0; i < 4; i++ {
+		wg.Add(1)
+		go func(i int) {
+			defer wg.Done()
+			_, err := GetBrowserlessContent(fmt.Sprintf("https://example.com/article-%d", i), BrowserlessOptions{
+				Timeout: 2 * time.Second,
+			})
+			assert.NoError(t, err)
+		}(i)
+	}
+	wg.Wait()
+
+	assert.LessOrEqual(t, maxInflight.Load(), int32(2))
+	assert.Equal(t, int32(2), maxInflight.Load())
 }
