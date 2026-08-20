@@ -146,7 +146,7 @@ func fulltextPlusLoadParam(m map[string]string) []LegacyCraftOption {
 func parseFulltextPlusConfig(m map[string]string) FulltextPlusConfig {
 	config := FulltextPlusConfig{
 		Wait: 0,
-		Mode: "load",
+		Mode: "networkidle2",
 	}
 
 	if val, ok := m["wait"]; ok {
@@ -170,6 +170,6 @@ var fulltextPlusParamTmpl = []ParamTemplate{
 	{
 		Key:         "mode",
 		Description: "Page load wait mode (load, domcontentloaded, networkidle0, networkidle2)",
-		Default:     "load",
+		Default:     "networkidle2",
 	},
 }

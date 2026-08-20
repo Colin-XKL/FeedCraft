@@ -19,7 +19,7 @@ import (
 func TestParseFulltextPlusConfigDefaults(t *testing.T) {
 	config := parseFulltextPlusConfig(map[string]string{})
 	assert.Equal(t, 0, config.Wait)
-	assert.Equal(t, "load", config.Mode)
+	assert.Equal(t, "networkidle2", config.Mode)
 }
 
 func TestBuildFulltextPlusOptionsUsesBrowserTimeout(t *testing.T) {
