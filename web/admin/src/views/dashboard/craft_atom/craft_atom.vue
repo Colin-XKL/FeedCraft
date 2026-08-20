@@ -5,30 +5,52 @@
       :description="t('craftAtom.description')"
     ></x-header>
 
-    <a-space direction="horizontal" class="mb-6">
-      <a-button type="primary" :loading="isLoading" @click="listAllCraftAtoms">
-        {{ t('craftAtom.query') }}
-      </a-button>
-      <a-button type="outline" @click="handleAdd"
-        >{{ t('craftAtom.create') }}
-      </a-button>
-    </a-space>
-
-    <a-table :data="craftAtoms" :columns="columns" :loading="isLoading">
-      <template #actions="{ record }">
+    <a-card class="general-card" :title="t('menu.craftAtom')">
+      <template #extra>
         <a-space>
-          <a-button type="outline" @click="editBtnHandler(record)"
-            >{{ t('craftAtom.edit') }}
+          <a-button :loading="isLoading" @click="listAllCraftAtoms">
+            {{ t('craftAtom.query') }}
           </a-button>
-          <a-popconfirm
-            :content="t('craftAtom.deleteConfirm')"
-            @ok="deleteCraftAtomHandler(record.name)"
-          >
-            <a-button status="danger">{{ t('craftAtom.delete') }}</a-button>
-          </a-popconfirm>
+          <a-button type="primary" @click="handleAdd">
+            <template #icon>
+              <icon-plus />
+            </template>
+            {{ t('craftAtom.create') }}
+          </a-button>
         </a-space>
       </template>
-    </a-table>
+
+      <a-table
+        v-if="isLoading || craftAtoms.length > 0"
+        :data="craftAtoms"
+        :columns="columns"
+        :loading="isLoading"
+      >
+        <template #actions="{ record }">
+          <a-space>
+            <a-button type="outline" @click="editBtnHandler(record)"
+              >{{ t('craftAtom.edit') }}
+            </a-button>
+            <a-popconfirm
+              :content="t('craftAtom.deleteConfirm')"
+              @ok="deleteCraftAtomHandler(record.name)"
+            >
+              <a-button status="danger">{{ t('craftAtom.delete') }}</a-button>
+            </a-popconfirm>
+          </a-space>
+        </template>
+      </a-table>
+
+      <ListEmptyGuide
+        v-else-if="!listFailed"
+        :description="t('craftAtom.empty.description')"
+        :hint="t('craftAtom.empty.hint')"
+        :create-label="t('craftAtom.empty.createFirst')"
+        :docs-label="t('craftAtom.empty.docs')"
+        :docs-href="atomDocsHref"
+        @create="handleAdd"
+      />
+    </a-card>
 
     <a-modal
       v-model:visible="showEditModal"
@@ -217,7 +239,9 @@
 
 <script setup lang="ts">
   import XHeader from '@/components/header/x-header.vue';
-  import { onBeforeMount, ref } from 'vue';
+  import ListEmptyGuide from '@/components/list-empty-guide/index.vue';
+  import { computed, onBeforeMount, ref } from 'vue';
+  import { buildDocsUrl } from '@/utils/docsUrl';
   import {
     CraftAtom,
     createCraftAtom,
@@ -244,9 +268,13 @@
     toCraftParamFormValue,
   } from '@/views/dashboard/craft_atom/paramOptions';
 
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const atomDocsHref = computed(() =>
+    buildDocsUrl(locale.value, 'guides/advanced/customization')
+  );
 
   const isLoading = ref(false);
+  const listFailed = ref(false);
   const formRef = ref();
   const craftAtoms = ref<CraftAtom[]>([]);
   const editedCraftAtom = ref<CraftAtom>({
@@ -352,8 +380,14 @@
 
   async function listAllCraftAtoms() {
     isLoading.value = true;
-    craftAtoms.value = (await listCraftAtoms()).data;
-    isLoading.value = false;
+    try {
+      craftAtoms.value = (await listCraftAtoms()).data ?? [];
+      listFailed.value = false;
+    } catch {
+      listFailed.value = true;
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   const addParam = () => {

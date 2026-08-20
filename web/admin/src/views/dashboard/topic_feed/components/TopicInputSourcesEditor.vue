@@ -15,8 +15,9 @@
           <a-radio value="external">{{
             t('topic.sourceType.external')
           }}</a-radio>
-          <a-radio value="recipe">Recipe</a-radio>
-          <a-radio value="topic">Topic</a-radio>
+          <a-radio value="recipe">{{ t('topic.sourceType.recipe') }}</a-radio>
+          <a-radio value="topic">{{ t('topic.sourceType.topic') }}</a-radio>
+          <a-radio value="inbox">{{ t('topic.sourceType.inbox') }}</a-radio>
         </a-radio-group>
         <a-space wrap>
           <div v-if="showDisabledToggle" class="disable-toggle">
@@ -78,7 +79,7 @@
         </a-option>
       </a-select>
       <a-select
-        v-else
+        v-else-if="source.sourceType === 'topic'"
         v-model="source.resourceId"
         :loading="pickerLoading"
         allow-search
@@ -93,6 +94,26 @@
         >
           <span class="option-id">{{ tp.id }}</span>
           <span v-if="tp.title" class="option-desc"> — {{ tp.title }}</span>
+        </a-option>
+      </a-select>
+      <a-select
+        v-else-if="source.sourceType === 'inbox'"
+        v-model="source.resourceId"
+        :loading="pickerLoading"
+        allow-search
+        allow-clear
+        :placeholder="t('topic.sourceSelect.placeholder.inbox')"
+      >
+        <a-option
+          v-for="inbox in availableInboxes"
+          :key="inbox.id"
+          :value="inbox.id"
+          :label="inbox.title ? `${inbox.id} — ${inbox.title}` : inbox.id"
+        >
+          <span class="option-id">{{ inbox.id }}</span>
+          <span v-if="inbox.title" class="option-desc">
+            — {{ inbox.title }}
+          </span>
         </a-option>
       </a-select>
 
@@ -137,6 +158,7 @@
   import { computed, nextTick, ref } from 'vue';
   import { useI18n } from 'vue-i18n';
   import type { CustomRecipe } from '@/api/custom_recipe';
+  import type { Inbox } from '@/api/inbox';
   import type { TopicFeed } from '@/api/topic';
   import FeedPreviewPanel from '@/components/feed-preview/FeedPreviewPanel.vue';
   import {
@@ -150,12 +172,14 @@
       modelValue: InputSourceItem[];
       availableRecipes: CustomRecipe[];
       availableTopics: TopicFeed[];
+      availableInboxes?: Inbox[];
       pickerLoading?: boolean;
       excludeTopicId?: string;
       showDisabledToggle?: boolean;
     }>(),
     {
       showDisabledToggle: true,
+      availableInboxes: () => [],
     }
   );
 
@@ -303,6 +327,10 @@
     justify-content: space-between;
     align-items: center;
     gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .source-header :deep(.arco-radio-group) {
     flex-wrap: wrap;
   }
 

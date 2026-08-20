@@ -33,9 +33,13 @@ export default {
   'topic.deleteAction': '删除',
   'topic.deleteConfirm': '确定要删除这个主题吗？',
   'topic.noTopics': '暂无主题',
+  'topic.empty.hint':
+    '创建第一个主题，把多个 RSS 源聚合到同一条订阅里。也可以先阅读快速开始文档了解核心概念。',
+  'topic.empty.createFirst': '创建第一个主题',
+  'topic.empty.docs': '查看快速开始文档',
   'topic.inputs': '输入源',
   'topic.inputsHelp':
-    '外部 RSS 直接填入 http/https 地址；选择 Recipe 或 Topic 可从下拉列表中选取 FeedCraft 内部资源。',
+    '外部 RSS 直接填入 http/https 地址；选择 Recipe、Topic 或 Inbox 可从下拉列表中选取 FeedCraft 内部资源。',
   'topic.inputPlaceholder': '例如 feedcraft://recipe/my-recipe',
   'topic.addInput': '添加输入源',
   'topic.inputDescription.placeholder': '备注名称，便于识别此输入源（可选）',
@@ -70,9 +74,11 @@ export default {
   'topic.sourceType.external': '外部 RSS',
   'topic.sourceType.recipe': 'Recipe',
   'topic.sourceType.topic': 'Topic',
+  'topic.sourceType.inbox': 'Inbox',
   'topic.sourceUrl.placeholder': '输入 RSS 订阅地址 (http/https)',
   'topic.sourceSelect.placeholder.recipe': '选择 Custom Recipe…',
   'topic.sourceSelect.placeholder.topic': '选择 Topic Feed…',
+  'topic.sourceSelect.placeholder.inbox': '选择 Inbox…',
   'topic.aggregatorConfig': '聚合规则',
   'topic.aggregatorHelp':
     '聚合规则会按顺序执行。可用于去重、排序和限制最终文章数量。',

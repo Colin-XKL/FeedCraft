@@ -676,6 +676,7 @@ func (p *InboxProvider) Fetch(ctx context.Context) (*model.CraftFeed, error) {
 		})
 	}
 
+	source.ApplyInputFeedItemLimit(feed)
 	return feed, nil
 }
 

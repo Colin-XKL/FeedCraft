@@ -12,6 +12,7 @@ import (
 	"FeedCraft/internal/util"
 
 	"github.com/glebarez/sqlite"
+	"github.com/gorilla/feeds"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
@@ -316,6 +317,136 @@ func TestTranslateTitleProcessor_UsesNativeLLMFlow(t *testing.T) {
 	assert.Equal(t, "Original Title "+t.Name(), feed.Articles[0].Title)
 }
 
+func TestRetitleProcessor_UsesArticleContentAndUpdatesTitle(t *testing.T) {
+	setupTestRedis(t)
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		assert.Contains(t, prompt, "custom retitle prompt")
+		assert.Contains(t, prompt, retitleNoChangeSentinel)
+		assert.Contains(t, context, "Original Title")
+		assert.Contains(t, context, "article body worth retitling")
+		return "Sharper Generated Title", nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	processor := newRetitleProcessor("custom retitle prompt " + t.Name())
+	feed := &model.CraftFeed{
+		Articles: []*model.CraftArticle{{
+			Title:   "Original Title " + t.Name(),
+			Content: "<p>article body worth retitling " + t.Name() + "</p>",
+		}},
+	}
+
+	result, err := processor.Process(context.Background(), feed)
+	require.NoError(t, err)
+	assert.Equal(t, "Sharper Generated Title", result.Articles[0].Title)
+	assert.Equal(t, "Original Title "+t.Name(), feed.Articles[0].Title)
+}
+
+func TestRetitleProcessor_KeepsOriginalTitleForNoChangeSentinel(t *testing.T) {
+	setupTestRedis(t)
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		return retitleNoChangeSentinel, nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	processor := newRetitleProcessor("retitle prompt " + t.Name())
+	feed := &model.CraftFeed{
+		Articles: []*model.CraftArticle{{
+			Title:   "Original Title " + t.Name(),
+			Content: "<p>too little signal</p>",
+		}},
+	}
+
+	result, err := processor.Process(context.Background(), feed)
+	require.NoError(t, err)
+	assert.Equal(t, "Original Title "+t.Name(), result.Articles[0].Title)
+}
+
+func TestRetitleProcessor_SkipsEmptyContent(t *testing.T) {
+	setupTestRedis(t)
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		t.Fatalf("llm should not be called for empty article content")
+		return "", nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	processor := newRetitleProcessor("retitle prompt " + t.Name())
+	feed := &model.CraftFeed{
+		Articles: []*model.CraftArticle{{
+			Title: "Original Title " + t.Name(),
+		}},
+	}
+
+	result, err := processor.Process(context.Background(), feed)
+	require.NoError(t, err)
+	assert.Equal(t, "Original Title "+t.Name(), result.Articles[0].Title)
+}
+
+func TestRetitleTemplate_BuildsNativeProcessorWithCustomPrompt(t *testing.T) {
+	setupTestRedis(t)
+	db := newCraftRuntimeTestDB(t)
+	require.NoError(t, dao.CreateCraftAtom(db, &dao.CraftAtom{
+		Name:         "custom-retitle",
+		TemplateName: "re-title",
+		Params:       map[string]string{"prompt": "custom retitle prompt " + t.Name()},
+	}))
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		assert.Contains(t, prompt, "custom retitle prompt "+t.Name())
+		assert.Contains(t, prompt, retitleNoChangeSentinel)
+		return "Custom Prompt Title", nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	processor, err := BuildOptionChain(db, "custom-retitle", "https://example.com/feed.xml")
+	require.NoError(t, err)
+	require.NotNil(t, processor)
+
+	result, err := processor(context.Background(), &model.CraftFeed{
+		Articles: []*model.CraftArticle{{
+			Title:   "Original Title " + t.Name(),
+			Content: "<p>article body worth retitling " + t.Name() + "</p>",
+		}},
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "Custom Prompt Title", result.Articles[0].Title)
+}
+
+func TestRetitleLegacyOption_KeepsOriginalTitleForNoChangeSentinel(t *testing.T) {
+	setupTestRedis(t)
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		assert.Contains(t, context, "legacy body")
+		return retitleNoChangeSentinel, nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	option := GetRetitleCraftOptions("legacy retitle prompt " + t.Name())[0]
+	feed := &feeds.Feed{
+		Items: []*feeds.Item{
+			nil,
+			{
+				Title:       "Legacy Title " + t.Name(),
+				Link:        &feeds.Link{Href: "https://example.com/post"},
+				Description: "<p>legacy body " + t.Name() + "</p>",
+			},
+		},
+	}
+
+	err := option(feed, ExtraPayload{originalFeedUrl: "https://example.com/feed.xml"})
+	require.NoError(t, err)
+	require.Nil(t, feed.Items[0])
+	assert.Equal(t, "Legacy Title "+t.Name(), feed.Items[1].Title)
+}
+
 func TestBeautifyContentProcessor_WritesHTML(t *testing.T) {
 	setupTestRedis(t)
 
@@ -368,6 +499,45 @@ func TestLLMFilterProcessor_RemovesMatchedArticleAndUsesTitleContentPayload(t *t
 	require.Len(t, seen, 2)
 	assert.Contains(t, seen[0], "Article Title:")
 	assert.Contains(t, seen[0], "Article Content:")
+}
+
+func TestLLMFilterProcessor_CacheKeyUsesFullPromptAndLLMPayload(t *testing.T) {
+	redis := setupTestRedis(t)
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		t.Fatalf("expected llm-filter to hit cache, got LLM call with prompt %q and context %q", prompt, context)
+		return "false", nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	condition := "filter cached article " + t.Name()
+	title := "Cached Drop " + t.Name()
+	content := "<p>cached body with enough content length for llm filter cache key</p>"
+	fullPrompt := fmt.Sprintf(`
+Evaluate the following content based on this criterion:
+"%s"
+
+If the content matches the criterion, return 'true'.
+Otherwise return 'false'.
+Do not include any other text.
+`, condition)
+	llmPayload := BuildLLMArticlePayload(title, content)
+	hashVal := util.GetTextContentHash(strings.Join([]string{
+		util.GetTextContentHash(fullPrompt),
+		util.GetTextContentHash(llmPayload),
+	}, "|"))
+	redis.SetString(t, getCraftCacheKey("llm filter", hashVal), "true", time.Minute)
+
+	processor := newLLMFilterProcessor(condition)
+	result, err := processor.Process(context.Background(), &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Title: title, Content: content},
+		},
+	})
+
+	require.NoError(t, err)
+	require.Empty(t, result.Articles)
 }
 
 func TestIgnoreAdvertorialProcessor_KeepsArticleOnLLMError(t *testing.T) {

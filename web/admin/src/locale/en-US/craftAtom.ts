@@ -22,4 +22,9 @@ export default {
   'craftAtom.form.save': 'Save',
   'craftAtom.form.rule.templateRequired': 'Template is required',
   'craftAtom.form.rule.nameRequired': 'Name is required',
+  'craftAtom.empty.description': 'No AtomCrafts yet',
+  'craftAtom.empty.hint':
+    'AtomCrafts define how an RSS feed is processed, such as translation, full-text extraction, or summarization. Create your first one to reuse it in recipes and FlowCrafts.',
+  'craftAtom.empty.createFirst': 'Create your first AtomCraft',
+  'craftAtom.empty.docs': 'Read the customization guide',
 };

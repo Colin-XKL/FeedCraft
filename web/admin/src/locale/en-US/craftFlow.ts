@@ -21,4 +21,9 @@ export default {
   'craftFlow.editor.moveUp': 'Move Up',
   'craftFlow.editor.moveDown': 'Move Down',
   'craftFlow.editor.remove': 'Remove',
+  'craftFlow.empty.description': 'No FlowCrafts yet',
+  'craftFlow.empty.hint':
+    'A FlowCraft chains multiple AtomCrafts into a processing pipeline. Create your first one to run extraction, filtering, and summarization in sequence.',
+  'craftFlow.empty.createFirst': 'Create your first FlowCraft',
+  'craftFlow.empty.docs': 'Read the customization guide',
 };

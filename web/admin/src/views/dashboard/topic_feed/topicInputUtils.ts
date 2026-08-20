@@ -1,7 +1,7 @@
 import type { AggregatorStep, TopicFeed, TopicInput } from '@/api/topic';
 
 export type StepType = 'deduplicate' | 'sort' | 'limit';
-export type SourceType = 'external' | 'recipe' | 'topic';
+export type SourceType = 'external' | 'recipe' | 'topic' | 'inbox';
 
 export const STRATEGIES_WITH_THRESHOLD = [
   'by_simhash',
@@ -84,6 +84,15 @@ export const parseUriToSource = (
       disabled,
     };
   }
+  if (uri.startsWith('feedcraft://inbox/')) {
+    return {
+      sourceType: 'inbox',
+      externalUrl: '',
+      resourceId: uri.slice('feedcraft://inbox/'.length),
+      description,
+      disabled,
+    };
+  }
   return {
     sourceType: 'external',
     externalUrl: uri,
@@ -99,6 +108,9 @@ export const sourceToUri = (source: InputSourceItem): string => {
   }
   if (source.sourceType === 'topic') {
     return `feedcraft://topic/${source.resourceId}`;
+  }
+  if (source.sourceType === 'inbox') {
+    return `feedcraft://inbox/${source.resourceId}`;
   }
   return source.externalUrl.trim();
 };

@@ -92,7 +92,7 @@ graph TD
 
 ## 4. 技术栈总结
 
-- **核心语言**: Go 1.24.4
+- **核心语言**: Go 1.25
 - **Web 框架**: Gin
 - **解析引擎**: `goquery` (HTML), `gojq` (JSON), `gofeed` (RSS)
 - **数据库/缓存**: SQLite (GORM) / Redis
