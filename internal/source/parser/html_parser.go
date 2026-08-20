@@ -6,6 +6,7 @@ import (
 	"FeedCraft/internal/util"
 	"bytes"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -102,25 +103,127 @@ func (p *HtmlParser) Parse(data []byte) (*model.CraftFeed, error) {
 }
 
 func extractFeedIconURL(doc *goquery.Document) string {
-	iconHref := ""
-	doc.Find("link[rel]").EachWithBreak(func(_ int, s *goquery.Selection) bool {
+	bestHref := ""
+	bestScore := 0
+	found := false
+	doc.Find("link[rel]").Each(func(_ int, s *goquery.Selection) {
 		rel, _ := s.Attr("rel")
-		if !hasFeedIconRel(rel) {
-			return true
+		kind := feedIconRelKind(rel)
+		if kind == feedIconKindNone {
+			return
 		}
-		iconHref, _ = s.Attr("href")
-		iconHref = strings.TrimSpace(iconHref)
-		return iconHref == ""
+		href := strings.TrimSpace(s.AttrOr("href", ""))
+		if href == "" {
+			return
+		}
+		score := scoreFeedIcon(kind, s.AttrOr("sizes", ""), s.AttrOr("type", ""))
+		if !found || score > bestScore {
+			found = true
+			bestScore = score
+			bestHref = href
+		}
 	})
-	return iconHref
+	return bestHref
 }
 
+type feedIconKind int
+
+const (
+	feedIconKindNone feedIconKind = iota
+	feedIconKindFallback
+	feedIconKindStandard
+)
+
 func hasFeedIconRel(rel string) bool {
+	return feedIconRelKind(rel) != feedIconKindNone
+}
+
+func feedIconRelKind(rel string) feedIconKind {
+	kind := feedIconKindNone
 	for _, token := range strings.Fields(strings.ToLower(rel)) {
 		switch token {
-		case "icon", "apple-touch-icon", "apple-touch-icon-precomposed", "mask-icon":
-			return true
+		case "icon":
+			kind = feedIconKindStandard
+		case "apple-touch-icon", "apple-touch-icon-precomposed", "mask-icon":
+			if kind != feedIconKindStandard {
+				kind = feedIconKindFallback
+			}
 		}
 	}
-	return false
+	return kind
+}
+
+func scoreFeedIcon(kind feedIconKind, sizes, typ string) int {
+	score := 0
+	if kind == feedIconKindStandard {
+		score += 1000
+	}
+	score += feedIconSizeScore(sizes)
+	score += feedIconTypeScore(typ)
+	return score
+}
+
+func feedIconSizeScore(sizes string) int {
+	sizes = strings.ToLower(strings.TrimSpace(sizes))
+	if sizes == "" {
+		return 50
+	}
+	if sizes == "any" {
+		return 95
+	}
+	best := 0
+	for _, part := range strings.Fields(sizes) {
+		dim, ok := parseIconSize(part)
+		if !ok {
+			continue
+		}
+		score := 20
+		switch {
+		case dim == 32:
+			score = 100
+		case dim == 16 || dim == 48:
+			score = 80
+		case dim >= 16 && dim <= 64:
+			score = 70
+		case dim <= 128:
+			score = 40
+		}
+		if score > best {
+			best = score
+		}
+	}
+	if best == 0 {
+		return 50
+	}
+	return best
+}
+
+func parseIconSize(part string) (int, bool) {
+	widthStr, heightStr, ok := strings.Cut(strings.ToLower(part), "x")
+	if !ok {
+		return 0, false
+	}
+	width, errW := strconv.Atoi(widthStr)
+	height, errH := strconv.Atoi(heightStr)
+	if errW != nil || errH != nil || width <= 0 || height <= 0 {
+		return 0, false
+	}
+	if height < width {
+		return height, true
+	}
+	return width, true
+}
+
+func feedIconTypeScore(typ string) int {
+	typ = strings.ToLower(typ)
+	switch {
+	case strings.Contains(typ, "svg"):
+		return 25
+	case strings.Contains(typ, "png"), strings.Contains(typ, "icon"):
+		return 18
+	case typ == "":
+		return 10
+	default:
+		return 5
+	}
 }

@@ -2,6 +2,7 @@ package parser
 
 import (
 	"FeedCraft/internal/config"
+	"FeedCraft/internal/model"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -78,4 +79,67 @@ func TestHasFeedIconRel(t *testing.T) {
 	assert.False(t, hasFeedIconRel("stylesheet"))
 	assert.False(t, hasFeedIconRel("preload"))
 	assert.False(t, hasFeedIconRel(""))
+}
+
+func TestHtmlParserPrefersShortcutIconOverAppleTouchIcon(t *testing.T) {
+	feed := parseHTMLFeed(t, `
+		<html>
+			<head>
+				<title>Example Site</title>
+				<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch.png">
+				<link rel="mask-icon" href="/safari-pinned-tab.svg">
+				<link rel="shortcut icon" href="/favicon.ico">
+			</head>
+			<body>
+				<article class="item"><a class="title" href="/posts/1">First post</a></article>
+			</body>
+		</html>`)
+
+	assert.Equal(t, "/favicon.ico", feed.ImageURL)
+}
+
+func TestHtmlParserPrefersStandardIconSizeNear32(t *testing.T) {
+	feed := parseHTMLFeed(t, `
+		<html>
+			<head>
+				<title>Example Site</title>
+				<link rel="icon" sizes="192x192" type="image/png" href="/icon-192.png">
+				<link rel="icon" sizes="32x32" type="image/png" href="/icon-32.png">
+				<link rel="icon" sizes="16x16" type="image/png" href="/icon-16.png">
+			</head>
+			<body>
+				<article class="item"><a class="title" href="/posts/1">First post</a></article>
+			</body>
+		</html>`)
+
+	assert.Equal(t, "/icon-32.png", feed.ImageURL)
+}
+
+func TestHtmlParserPrefersSVGIconWhenSizesAny(t *testing.T) {
+	feed := parseHTMLFeed(t, `
+		<html>
+			<head>
+				<title>Example Site</title>
+				<link rel="icon" sizes="192x192" type="image/png" href="/icon-192.png">
+				<link rel="icon" type="image/svg+xml" sizes="any" href="/icon.svg">
+			</head>
+			<body>
+				<article class="item"><a class="title" href="/posts/1">First post</a></article>
+			</body>
+		</html>`)
+
+	assert.Equal(t, "/icon.svg", feed.ImageURL)
+}
+
+func parseHTMLFeed(t *testing.T, htmlContent string) *model.CraftFeed {
+	t.Helper()
+	parser := &HtmlParser{Config: &config.HtmlParserConfig{
+		ItemSelector: ".item",
+		Title:        ".title",
+		Link:         ".title",
+	}}
+	feed, err := parser.Parse([]byte(htmlContent))
+	require.NoError(t, err)
+	require.NotNil(t, feed)
+	return feed
 }
