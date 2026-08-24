@@ -29,6 +29,7 @@ import { Steps } from '@astrojs/starlight/components';
 ### 创建收件箱
 
 <Steps>
+
 1. 点击**新建收件箱**。
 2. 填写必要字段：
    - **收件箱 ID**：唯一的 URL 安全标识符（只允许小写字母、数字、连字符、下划线）。创建后无法修改。
@@ -36,6 +37,7 @@ import { Steps } from '@astrojs/starlight/components';
    - **最大保存数**：最多保留的文章数量，超出后按**创建时间**从旧到新自动删除（默认 100）。若设为 `0` 会立即删除该收件箱的所有条目，请用大数值代替"无限制"。
    - **公开可见性**：开启后，任何人可直接拉取文章内容；关闭后需提供系统授权令牌。
 3. 点击**确定**保存。
+
 </Steps>
 
 ### 编辑收件箱
@@ -55,9 +57,11 @@ import { Steps } from '@astrojs/starlight/components';
 前往 **设置 > 系统授权令牌**，创建用于鉴权推送请求的 API 令牌。
 
 <Steps>
+
 1. 点击**生成新令牌**。
 2. 输入描述性标签（例如"iPhone 快捷指令"、"Home Assistant"）。
 3. 立即复制生成的令牌——它只会显示一次，之后无法再次查看。
+
 </Steps>
 
 随时可点击**删除**撤销令牌。使用该令牌的所有集成将立即失效。
@@ -151,6 +155,7 @@ GET /inbox/{inbox_id}/rss
 若需要对收件箱内容进行 Craft 处理（如 AI 翻译、摘要生成、内容过滤），则创建自定义配方。
 
 <Steps>
+
 1. 前往**工作台 > 自定义配方**，点击**新建配方**。
 2. 将**数据源类型 (Source Type)** 设置为 `inbox`。
 3. 在 **Source Config JSON** 字段中输入：
@@ -159,6 +164,7 @@ GET /inbox/{inbox_id}/rss
    ```
 4. 将 **Craft** 设置为所需的处理链（例如 `translate-content`、`summary`）。
 5. 保存配方后，在配方列表中点击**复制链接**即可获取 RSS 订阅地址。
+
 </Steps>
 
 :::tip

@@ -29,6 +29,7 @@ Navigate to **Worktable > Inbox Management** in the admin dashboard.
 ### Creating an Inbox
 
 <Steps>
+
 1. Click **Create Inbox**.
 2. Fill in the required fields:
    - **Inbox ID**: A unique, URL-safe identifier (lowercase letters, numbers, hyphens, underscores). Cannot be changed after creation.
@@ -36,6 +37,7 @@ Navigate to **Worktable > Inbox Management** in the admin dashboard.
    - **Max Items**: Maximum number of articles to retain. When the limit is exceeded, the items with the oldest **creation time** are pruned first (default: 100). Set to `0` to impose no limit — note that `0` actually deletes all items immediately, so use a large number instead.
    - **Public Access**: If enabled, article content can be fetched without authentication. If disabled, a valid System Auth Token must be provided.
 3. Click **OK** to save.
+
 </Steps>
 
 ### Editing an Inbox
@@ -55,9 +57,11 @@ Click **Delete** in the actions column. This permanently removes the inbox and *
 Navigate to **Settings > System Auth Token** to create API tokens that authorise push requests.
 
 <Steps>
+
 1. Click **Generate Token**.
 2. Enter a descriptive label (e.g., "iPhone Shortcut", "Home Assistant").
 3. Copy the generated token immediately — it is only shown once and cannot be retrieved later.
+
 </Steps>
 
 Tokens can be revoked at any time by clicking **Delete**. All integrations using the revoked token will stop working immediately.
@@ -151,6 +155,7 @@ Copy this URL and paste it directly into your RSS reader. For a **private inbox*
 Create a Custom Recipe if you want to apply Craft processing on top of the inbox (e.g., AI translation, summarization, or filtering).
 
 <Steps>
+
 1. Navigate to **Worktable > Custom Recipe** and click **Create Recipe**.
 2. Set **Source Type** to `inbox`.
 3. In the **Source Config JSON** field, enter:
@@ -159,6 +164,7 @@ Create a Custom Recipe if you want to apply Craft processing on top of the inbox
    ```
 4. Set **Craft** to the desired processing chain (e.g., `translate-content`, `summary`).
 5. Save the recipe and click **Copy Link** in the recipe list to get the RSS URL.
+
 </Steps>
 
 :::tip
