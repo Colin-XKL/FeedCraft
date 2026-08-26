@@ -2,7 +2,6 @@ package dao
 
 import (
 	"database/sql"
-	"errors"
 	"time"
 
 	"gorm.io/gorm"
@@ -44,14 +43,6 @@ func CreateCustomRecipe(db *gorm.DB, recipe *CustomRecipe) error {
 
 // CreateCustomRecipeV2 creates a new CustomRecipeV2 record
 func CreateCustomRecipeV2(db *gorm.DB, recipe *CustomRecipeV2) error {
-	_, err := GetCustomRecipeByIDV2(db, recipe.ID)
-	if err == nil {
-		return ErrRecipeAlreadyExists
-	}
-	if !errors.Is(err, gorm.ErrRecordNotFound) {
-		return err
-	}
-
 	if err := db.Create(recipe).Error; err != nil {
 		if IsUniqueConstraintError(err) {
 			return ErrRecipeAlreadyExists

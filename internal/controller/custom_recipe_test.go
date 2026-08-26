@@ -44,11 +44,10 @@ func TestCreateCustomRecipe_DuplicateIDReturnsConflictWithoutSQL(t *testing.T) {
 
 	var response util.APIResponse[any]
 	require.NoError(t, json.Unmarshal(second.Body.Bytes(), &response))
-	assert.NotEmpty(t, response.Msg)
+	assert.Equal(t, msgRecipeNameExists, response.Msg)
 	assert.NotContains(t, strings.ToLower(response.Msg), "unique constraint")
 	assert.NotContains(t, strings.ToLower(response.Msg), "sqlite")
 	assert.NotContains(t, response.Msg, "custom_recipes_v2")
-	assert.Contains(t, strings.ToLower(response.Msg), "already exists")
 }
 
 func TestCreateCustomRecipe_InvalidID(t *testing.T) {
