@@ -27,6 +27,10 @@ func CreateCustomRecipe(c *gin.Context) {
 	db := util.GetDatabase()
 
 	if err := dao.CreateCustomRecipeV2(db, &recipeData); err != nil {
+		if errors.Is(err, dao.ErrRecipeAlreadyExists) {
+			c.JSON(http.StatusConflict, util.APIResponse[any]{Msg: "A recipe with this name already exists. Please choose a different name."})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}

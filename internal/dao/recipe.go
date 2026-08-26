@@ -2,8 +2,10 @@ package dao
 
 import (
 	"database/sql"
-	"gorm.io/gorm"
+	"errors"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type BaseModelWithoutPK struct {
@@ -42,7 +44,21 @@ func CreateCustomRecipe(db *gorm.DB, recipe *CustomRecipe) error {
 
 // CreateCustomRecipeV2 creates a new CustomRecipeV2 record
 func CreateCustomRecipeV2(db *gorm.DB, recipe *CustomRecipeV2) error {
-	return db.Create(recipe).Error
+	_, err := GetCustomRecipeByIDV2(db, recipe.ID)
+	if err == nil {
+		return ErrRecipeAlreadyExists
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		return err
+	}
+
+	if err := db.Create(recipe).Error; err != nil {
+		if IsUniqueConstraintError(err) {
+			return ErrRecipeAlreadyExists
+		}
+		return err
+	}
+	return nil
 }
 
 // GetCustomRecipeByID retrieves a CustomRecipe record by its ID
