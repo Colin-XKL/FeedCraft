@@ -25,7 +25,8 @@ FeedCraft documentation MUST be kept in sync across all supported languages (`en
 
 Since we use the [Starlight](https://starlight.astro.build/components/using-components/) framework, you should leverage its built-in components to create more readable and interactive documentation:
 
-- **Asides**: Use `:::note`, `:::tip`, `:::caution`, or `:::danger` for callouts.
+- **File extension**: Pages that `import` or use JSX components (`<Steps>`, `<Tabs>`, `<Card>`, etc.) MUST use the `.mdx` extension. Regular `.md` files will render `import` statements and component tags as raw text.
+- **Asides**: Use `:::note`, `:::tip`, `:::caution`, or `:::danger` for callouts. These work in both `.md` and `.mdx`.
 - **Steps**: Use the `<Steps>` component for multi-step instructions (e.g., deployment or configuration).
 - **Tabs**: Use the `<Tabs>` and `<TabItem>` components when showing multiple options (e.g., different deployment methods or model configurations).
 - **Cards**: Use `<Card>` or `<CardGrid>` for high-level overviews or navigation.
