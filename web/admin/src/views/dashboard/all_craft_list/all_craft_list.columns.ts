@@ -1,13 +1,15 @@
-export const ALL_CRAFT_LIST_SCROLL_X = 900;
+export const ALL_CRAFT_LIST_SCROLL_X = 1000;
+export const ALL_CRAFT_ID_CELL_CLASS = 'all-craft-id-cell';
 
 export function getAllCraftListColumns(t: (key: string) => string) {
   return [
     {
       title: t('allCraftList.table.name'),
       dataIndex: 'name',
-      width: 280,
+      width: 360,
       ellipsis: true,
       tooltip: true,
+      bodyCellClass: ALL_CRAFT_ID_CELL_CLASS,
     },
     {
       title: t('allCraftList.table.type'),
@@ -15,6 +17,7 @@ export function getAllCraftListColumns(t: (key: string) => string) {
       width: 140,
       ellipsis: true,
       tooltip: true,
+      bodyCellClass: ALL_CRAFT_ID_CELL_CLASS,
     },
     {
       title: t('allCraftList.table.templateOnly'),
@@ -24,6 +27,7 @@ export function getAllCraftListColumns(t: (key: string) => string) {
     {
       title: t('allCraftList.table.description'),
       dataIndex: 'description',
+      bodyCellClass: 'all-craft-desc-cell',
     },
   ];
 }

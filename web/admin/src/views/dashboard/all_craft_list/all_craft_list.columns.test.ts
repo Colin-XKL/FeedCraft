@@ -12,8 +12,9 @@ describe('all craft list table columns', () => {
       (column) => column.dataIndex === 'name'
     );
 
-    expect(name?.width).toBeGreaterThanOrEqual(240);
+    expect(name?.width).toBeGreaterThanOrEqual(320);
     expect(name?.ellipsis).toBe(true);
+    expect(name?.bodyCellClass).toBe('all-craft-id-cell');
   });
 
   it('keeps type identifiers like @sys/atom from wrapping mid-token', () => {
@@ -23,6 +24,7 @@ describe('all craft list table columns', () => {
 
     expect(type?.width).toBeGreaterThanOrEqual(120);
     expect(type?.ellipsis).toBe(true);
+    expect(type?.bodyCellClass).toBe('all-craft-id-cell');
   });
 
   it('enables horizontal scroll so fixed identifier columns are not crushed', () => {

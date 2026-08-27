@@ -63,11 +63,23 @@
 </script>
 
 <style scoped>
-  /* Arco Table defaults to word-break: break-all, which splits English
-     identifiers mid-token when a column is squeezed. Prefer wrapping at
-     word/hyphen boundaries; identifier columns also use nowrap+ellipsis. */
+  /* Arco Table defaults to word-break: break-all. Identifier columns must
+     stay on one line; description may wrap at word/hyphen boundaries. */
   .all-craft-list-table :deep(.arco-table-td) {
     word-break: normal;
+  }
+
+  .all-craft-list-table :deep(.all-craft-id-cell),
+  .all-craft-list-table :deep(.all-craft-id-cell .arco-table-td-content),
+  .all-craft-list-table :deep(.all-craft-id-cell .arco-auto-tooltip-content) {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    word-break: keep-all;
+    overflow-wrap: normal;
+  }
+
+  .all-craft-list-table :deep(.all-craft-desc-cell) {
     overflow-wrap: break-word;
   }
 </style>
