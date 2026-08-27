@@ -12,9 +12,11 @@
     </a-space>
 
     <a-table
+      class="all-craft-list-table"
       :data="allCrafts"
       :columns="columns"
       :loading="isLoading"
+      :scroll="{ x: ALL_CRAFT_LIST_SCROLL_X }"
     ></a-table>
   </div>
 </template>
@@ -25,6 +27,10 @@
   import { Message } from '@arco-design/web-vue';
   import axios from 'axios';
   import { useI18n } from 'vue-i18n';
+  import {
+    ALL_CRAFT_LIST_SCROLL_X,
+    getAllCraftListColumns,
+  } from './all_craft_list.columns';
 
   const { t } = useI18n();
 
@@ -37,13 +43,7 @@
 
   const isLoading = ref(false);
   const allCrafts = ref<CraftItem[]>([]);
-
-  const columns = [
-    { title: t('allCraftList.table.name'), dataIndex: 'name' },
-    { title: t('allCraftList.table.type'), dataIndex: 'type' },
-    { title: t('allCraftList.table.templateOnly'), dataIndex: 'template_only' },
-    { title: t('allCraftList.table.description'), dataIndex: 'description' },
-  ];
+  const columns = getAllCraftListColumns(t);
 
   const listAllCrafts = async () => {
     isLoading.value = true;
@@ -62,4 +62,12 @@
   });
 </script>
 
-<style scoped></style>
+<style scoped>
+  /* Arco Table defaults to word-break: break-all, which splits English
+     identifiers mid-token when a column is squeezed. Prefer wrapping at
+     word/hyphen boundaries; identifier columns also use nowrap+ellipsis. */
+  .all-craft-list-table :deep(.arco-table-td) {
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+</style>
