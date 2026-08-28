@@ -136,6 +136,7 @@
       "
     >
       <a-form
+        ref="formRef"
         :model="form"
         :label-col="{ span: 6 }"
         :rules="rules"
@@ -150,7 +151,11 @@
         >
           <a-input v-model="form.description" />
         </a-form-item>
-        <a-form-item :label="t('customRecipe.form.craft')" field="craft">
+        <a-form-item
+          :label="t('customRecipe.form.craft')"
+          field="craft"
+          :validate-trigger="['change', 'blur']"
+        >
           <CraftSelector
             v-model="craftList"
             mode="multiple"
@@ -160,18 +165,9 @@
 
         <!-- Quick Create Fields -->
         <template v-if="quickCreate">
-          <a-form-item
-            :label="t('customRecipe.form.feedURL')"
-            field="feed_url"
-            :rules="[
-              {
-                required: true,
-                message: t('customRecipe.form.rule.rssUrlRequired'),
-              },
-            ]"
-          >
+          <a-form-item :label="t('customRecipe.form.feedURL')" field="feed_url">
             <a-input
-              v-model="rssUrl"
+              v-model="form.feed_url"
               :placeholder="t('customRecipe.form.placeholder.rssUrl')"
             />
           </a-form-item>
@@ -255,6 +251,7 @@
 
 <script setup lang="ts">
   import { ref, onMounted, computed } from 'vue';
+  import type { FormInstance } from '@arco-design/web-vue';
   import {
     createCustomRecipe,
     CustomRecipe,
@@ -276,21 +273,26 @@
   const { t } = useI18n();
   const router = useRouter();
 
+  type RecipeForm = CustomRecipe & { feed_url: string };
+
+  const emptyForm = (): RecipeForm => ({
+    id: '',
+    description: '',
+    craft: '',
+    source_type: 'rss',
+    source_config: '',
+    feed_url: '',
+  });
+
   const recipes = ref<CustomRecipe[]>([]);
   const showModal = ref(false);
   const showConfigModal = ref(false);
   const currentConfig = ref('');
   const currentLink = ref('');
   const quickCreate = ref(false);
-  const rssUrl = ref('');
+  const formRef = ref<FormInstance>();
 
-  const form = ref<CustomRecipe>({
-    id: '',
-    description: '',
-    craft: '',
-    source_type: 'rss',
-    source_config: '',
-  });
+  const form = ref<RecipeForm>(emptyForm());
 
   const craftList = computed({
     get: () =>
@@ -374,37 +376,54 @@
   onMounted(() => {
     listCustomRecipes();
   });
-  const rules = {
-    id: [
-      {
-        required: true,
-        message: t('customRecipe.form.rule.nameRequired'),
-        trigger: 'blur',
-      },
-      namingValidator,
-    ],
-    craft: [
-      {
-        required: true,
-        message: t('customRecipe.form.rule.craftRequired'),
-        trigger: 'blur',
-      },
-    ],
-    source_type: [
-      {
-        required: true,
-        message: t('customRecipe.form.rule.sourceTypeRequired'),
-        trigger: 'change',
-      },
-    ],
-    source_config: [
-      {
-        required: true,
-        message: t('customRecipe.form.rule.sourceConfigRequired'),
-        trigger: 'blur',
-      },
-    ],
-  };
+  const rules = computed(() => {
+    const requiredNameAndCraft = {
+      id: [
+        {
+          required: true,
+          message: t('customRecipe.form.rule.nameRequired'),
+          trigger: ['blur', 'input'],
+        },
+        namingValidator,
+      ],
+      craft: [
+        {
+          required: true,
+          message: t('customRecipe.form.rule.craftRequired'),
+          trigger: ['change', 'blur'],
+        },
+      ],
+    };
+    if (quickCreate.value) {
+      return {
+        ...requiredNameAndCraft,
+        feed_url: [
+          {
+            required: true,
+            message: t('customRecipe.form.rule.rssUrlRequired'),
+            trigger: ['blur', 'input'],
+          },
+        ],
+      };
+    }
+    return {
+      ...requiredNameAndCraft,
+      source_type: [
+        {
+          required: true,
+          message: t('customRecipe.form.rule.sourceTypeRequired'),
+          trigger: 'change',
+        },
+      ],
+      source_config: [
+        {
+          required: true,
+          message: t('customRecipe.form.rule.sourceConfigRequired'),
+          trigger: 'blur',
+        },
+      ],
+    };
+  });
 
   const humanReadableConfig = (configStr: string) => {
     try {
@@ -452,22 +471,34 @@
       craft: recipe.craft,
       source_type: recipe.source_type,
       source_config: prettyConfig,
+      feed_url: '',
     };
     showModal.value = true;
   };
 
+  const toRecipePayload = (): CustomRecipe => ({
+    id: form.value.id,
+    description: form.value.description,
+    craft: form.value.craft,
+    source_type: form.value.source_type,
+    source_config: form.value.source_config,
+  });
+
   const saveRecipe = async () => {
+    const errors = await formRef.value?.validate();
+    if (errors) {
+      return;
+    }
+
     if (quickCreate.value && !editing.value) {
-      // Construct JSON for Quick Create
       const config = {
         http_fetcher: {
-          url: rssUrl.value,
+          url: form.value.feed_url,
         },
       };
       form.value.source_config = JSON.stringify(config);
       form.value.source_type = 'rss';
     } else {
-      // Validate JSON before saving in Advanced mode
       try {
         JSON.parse(form.value.source_config);
       } catch (e) {
@@ -478,33 +509,27 @@
 
     saving.value = true;
     try {
+      const payload = toRecipePayload();
       if (editing.value) {
         if (selectedRecipe.value) {
-          await updateCustomRecipe(form.value);
-          selectedRecipe.value.description = form.value.description;
-          selectedRecipe.value.craft = form.value.craft;
-          selectedRecipe.value.source_type = form.value.source_type;
-          selectedRecipe.value.source_config = form.value.source_config;
+          await updateCustomRecipe(payload);
+          selectedRecipe.value.description = payload.description;
+          selectedRecipe.value.craft = payload.craft;
+          selectedRecipe.value.source_type = payload.source_type;
+          selectedRecipe.value.source_config = payload.source_config;
         }
       } else {
-        await createCustomRecipe(form.value as CustomRecipe);
+        await createCustomRecipe(payload);
         await listCustomRecipes();
       }
       showModal.value = false;
-      form.value = {
-        id: '',
-        description: '',
-        craft: '',
-        source_type: 'rss',
-        source_config: '',
-      };
+      form.value = emptyForm();
       editing.value = false;
       isUpdating.value = false;
       selectedRecipe.value = null;
       quickCreate.value = false;
-      rssUrl.value = '';
-    } catch (e) {
-      Message.error(t('customRecipe.form.error.saveFailed'));
+    } catch {
+      // Axios interceptor already shows the API error toast.
     } finally {
       saving.value = false;
     }
@@ -523,15 +548,9 @@
   };
 
   function resetForm() {
-    form.value = {
-      id: '',
-      description: '',
-      craft: '',
-      source_type: 'rss',
-      source_config: '',
-    };
+    form.value = emptyForm();
     quickCreate.value = false;
-    rssUrl.value = '';
+    formRef.value?.clearValidate();
   }
 </script>
 

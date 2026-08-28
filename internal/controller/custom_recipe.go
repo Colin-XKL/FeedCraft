@@ -15,7 +15,7 @@ import (
 func CreateCustomRecipe(c *gin.Context) {
 	var recipeData dao.CustomRecipeV2
 	if err := c.ShouldBindJSON(&recipeData); err != nil {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: util.FriendlyJSONBindError(err)})
 		return
 	}
 
@@ -89,7 +89,7 @@ func UpdateCustomRecipe(c *gin.Context) {
 	id := c.Param("id")
 	var recipeData dao.CustomRecipeV2
 	if err := c.ShouldBindJSON(&recipeData); err != nil {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: util.FriendlyJSONBindError(err)})
 		return
 	}
 	db := util.GetDatabase()
