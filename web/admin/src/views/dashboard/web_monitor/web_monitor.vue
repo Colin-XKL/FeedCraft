@@ -596,7 +596,10 @@
         fetchError.value = res.msg || t('webMonitor.msg.fetchFailed');
       }
     } catch (err: any) {
-      fetchError.value = err.message || t('webMonitor.msg.errorFetching');
+      fetchError.value =
+        err?.response?.data?.msg ||
+        err.message ||
+        t('webMonitor.msg.errorFetching');
     } finally {
       fetching.value = false;
     }

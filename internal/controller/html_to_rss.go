@@ -51,23 +51,34 @@ type WebMonitorPreviewReq struct {
 func validateURL(rawUrl string) error {
 	u, err := url.Parse(rawUrl)
 	if err != nil {
-		return err
+		return fmt.Errorf("please enter a valid http(s) URL")
 	}
 	if u.Scheme != "http" && u.Scheme != "https" {
-		return fmt.Errorf("invalid scheme: %s", u.Scheme)
+		return fmt.Errorf("please use an http or https URL")
+	}
+	host := u.Hostname()
+	if host == "" {
+		return fmt.Errorf("please enter a valid http(s) URL")
 	}
 
-	ips, err := net.LookupIP(u.Hostname())
+	ips, err := net.LookupIP(host)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to resolve host %s. Please check the address and try again", host)
 	}
 
 	for _, ip := range ips {
-		if ip.IsLoopback() || ip.IsPrivate() {
-			return fmt.Errorf("access to private IP %s is forbidden", ip.String())
+		if isBlockedHTMLFetchIP(ip) {
+			return fmt.Errorf("access to address %s is forbidden. Link-local and cloud metadata addresses cannot be fetched", ip.String())
 		}
 	}
 	return nil
+}
+
+// isBlockedHTMLFetchIP blocks link-local/metadata/multicast targets while
+// allowing loopback and RFC1918 addresses so admin HTML-to-RSS can fetch
+// local mock sources (localhost, host.docker.internal, LAN).
+func isBlockedHTMLFetchIP(ip net.IP) bool {
+	return ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsMulticast() || ip.IsUnspecified()
 }
 
 // fetchHTML extracts common fetching logic with browser emulation and error handling
