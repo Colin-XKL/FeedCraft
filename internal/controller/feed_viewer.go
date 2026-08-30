@@ -2,10 +2,12 @@ package controller
 
 import (
 	"FeedCraft/internal/craft"
+	"FeedCraft/internal/engine"
 	"FeedCraft/internal/feedruntime"
 	"FeedCraft/internal/model"
 	"FeedCraft/internal/observability"
 	"FeedCraft/internal/util"
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -14,7 +16,6 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mmcdole/gofeed"
 	"gorm.io/gorm"
 )
 
@@ -144,14 +145,15 @@ func PreviewEmbeddingFilter(c *gin.Context) {
 		return
 	}
 
-	craftedFeed, err := buildCraftPreviewWithOptions(feed, cfg.inputURL, []craft.LegacyCraftOption{craft.OptionEmbeddingFilterWithContext(
-		c.Request.Context(),
-		cfg.anchors,
-		cfg.threshold,
-		cfg.maxContentLength,
-		cfg.instruction,
-		cfg.mode,
-	)})
+	craftedFeed, err := buildCraftPreviewWithOptions(c.Request.Context(), feed, []engine.CraftOption{
+		craft.WrapLocalProcessor(craft.NewEmbeddingFilterProcessor(
+			cfg.anchors,
+			cfg.threshold,
+			cfg.maxContentLength,
+			cfg.instruction,
+			cfg.mode,
+		)),
+	})
 	if err != nil {
 		status, msg := classifyFeedViewerError(err)
 		c.JSON(status, util.APIResponse[any]{StatusCode: -1, Msg: msg})
@@ -182,7 +184,7 @@ func loadFeedViewerPreview(c *gin.Context, req FeedViewerPreviewReq) (*model.Cra
 		return feed, nil
 	}
 
-	craftedFeed, err := buildCraftPreview(feed, req.InputURL, req.CraftName)
+	craftedFeed, err := buildCraftPreview(c.Request.Context(), feed, req.InputURL, req.CraftName)
 	if err != nil {
 		return nil, err
 	}
@@ -248,42 +250,22 @@ func normalizeEmbeddingFilterPreviewRequest(req EmbeddingFilterPreviewReq) (embe
 	return cfg, nil
 }
 
-func buildCraftPreview(feed *model.CraftFeed, inputURL, craftName string) (*model.CraftFeed, error) {
-	atomXML, err := feed.ToFeedsFeed().ToAtom()
+func buildCraftPreview(ctx context.Context, feed *model.CraftFeed, inputURL, craftName string) (*model.CraftFeed, error) {
+	option, err := craft.BuildOptionChain(nil, craftName, inputURL)
 	if err != nil {
 		return nil, err
 	}
-
-	parsedFeed, err := gofeed.NewParser().ParseString(atomXML)
-	if err != nil {
-		return nil, err
+	if option == nil {
+		return feed, nil
 	}
-
-	craftedFeed, err := craft.ProcessFeed(parsedFeed, inputURL, craftName)
-	if err != nil {
-		return nil, err
-	}
-
-	return model.FromFeedsFeed(craftedFeed), nil
+	return option(ctx, feed)
 }
 
-func buildCraftPreviewWithOptions(feed *model.CraftFeed, inputURL string, options []craft.LegacyCraftOption) (*model.CraftFeed, error) {
-	atomXML, err := feed.ToFeedsFeed().ToAtom()
-	if err != nil {
-		return nil, err
+func buildCraftPreviewWithOptions(ctx context.Context, feed *model.CraftFeed, options []engine.CraftOption) (*model.CraftFeed, error) {
+	if len(options) == 0 {
+		return feed, nil
 	}
-
-	parsedFeed, err := gofeed.NewParser().ParseString(atomXML)
-	if err != nil {
-		return nil, err
-	}
-
-	craftedFeed, err := craft.NewCraftedFeedFromGofeed(parsedFeed, inputURL, options...)
-	if err != nil {
-		return nil, err
-	}
-
-	return model.FromFeedsFeed(craftedFeed.OutputFeed), nil
+	return engine.ComposeOptions(options...)(ctx, feed)
 }
 
 func buildFeedViewerPreview(feed *model.CraftFeed, inputURL string) FeedViewerPreview {
