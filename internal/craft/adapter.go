@@ -39,13 +39,54 @@ func applyLocalProcessorToLegacyFeed(ctx context.Context, processor localProcess
 	if feed == nil {
 		return nil
 	}
+	originalItems := feed.Items
 	out, err := processor.Process(ctx, model.FromFeedsFeed(feed))
 	if err != nil {
 		return err
 	}
 	converted := out.ToFeedsFeed()
+	restoreLegacyItemMetadata(originalItems, converted)
 	*feed = *converted
 	return nil
+}
+
+func restoreLegacyItemMetadata(originals []*feeds.Item, converted *feeds.Feed) {
+	if converted == nil || len(originals) == 0 {
+		return
+	}
+	index := make(map[string]*feeds.Item, len(originals))
+	for _, item := range originals {
+		if item == nil {
+			continue
+		}
+		index[legacyItemKey(item)] = item
+	}
+	for _, item := range converted.Items {
+		if item == nil {
+			continue
+		}
+		orig, ok := index[legacyItemKey(item)]
+		if !ok {
+			continue
+		}
+		if item.Enclosure == nil {
+			item.Enclosure = orig.Enclosure
+		}
+		if item.IsPermaLink == "" {
+			item.IsPermaLink = orig.IsPermaLink
+		}
+	}
+}
+
+func legacyItemKey(item *feeds.Item) string {
+	link := ""
+	if item.Link != nil {
+		link = item.Link.Href
+	}
+	if item.Id != "" {
+		return item.Id + "\x00" + link
+	}
+	return item.Title + "\x00" + link
 }
 
 func articleFromFeedItem(item *feeds.Item) *model.CraftArticle {
