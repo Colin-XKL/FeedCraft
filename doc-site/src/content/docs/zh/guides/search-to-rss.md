@@ -20,7 +20,7 @@ FeedCraft 包含一个 **搜索转 RSS (Search to RSS)** 工具，允许你将�
 
 ## 如何使用
 
-1.  在管理后台导航至 **工作台 > 搜索 转 RSS**。
+1.  在管理后台导航至 **工作台 > Feed源生成 > 搜索转 RSS**。
 
 ### 第一步：搜索查询 (Search Query)
 
@@ -54,7 +54,7 @@ FeedCraft 包含一个 **搜索转 RSS (Search to RSS)** 工具，允许你将�
 
 ## 访问你的订阅源
 
-保存后，该配方将作为 **自定义配方 (Custom Recipe)** 存储。你可以在 **Custom Recipes** 仪表板中管理它。
+保存后，该配方将作为 **配方管理 (Recipes)** 中的配方存储。你可以在 **工作台 > Feed源管理 > 配方管理** 中管理它。
 
 你的新订阅源将通过以下地址访问：
 \`http://your-feedcraft-instance/rss/custom/{recipe-unique-id}\`

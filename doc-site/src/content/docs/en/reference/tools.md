@@ -8,14 +8,14 @@ related:
   - guides/customization
 ---
 
-FeedCraft provides several built-in tools to help you debug your RSS feeds and monitor the system's health. You can access these tools under the **Tools** menu in the admin dashboard.
+You can access these tools under the **Tools** menu in the admin dashboard.
 
 ## RSS Viewer
 
 The **RSS Viewer** (Feed Viewer) allows you to preview any RSS feed as FeedCraft sees it.
 
 - **Usage**:
-  1. Navigate to **Tools > RSS Viewer**.
+  1. Navigate to **Tools > Preview Feed Sources > Feed Viewer**.
   2. Enter an RSS/Atom URL.
   3. Click **Preview**.
 - **Purpose**: Verify if FeedCraft can successfully fetch and parse a feed before setting up a recipe.
@@ -26,7 +26,7 @@ The **RSS Viewer** (Feed Viewer) allows you to preview any RSS feed as FeedCraft
 The **Example RSS Feeds** page provides built-in subscriptions for testing how RSS readers render HTML, CSS, and media content, plus whether they support RSS 1.0, RSS 2.0, Atom, and JSON Feed documents.
 
 - **Usage**:
-  1. Navigate to **Tools > Example RSS Feeds**.
+  1. Navigate to **Tools > Preview Feed Sources > Example Feeds**.
   2. Copy one of the subscription URLs, such as `/example-rss-feeds/html-elements.xml`.
   3. Subscribe to it in your RSS reader.
 - **Available feeds**:
@@ -45,7 +45,7 @@ The **Example RSS Feeds** page provides built-in subscriptions for testing how R
 The **Feed Compare** tool lets you visualize the effect of a Craft (Atom or Flow) on a feed.
 
 - **Usage**:
-  1. Navigate to **Tools > Feed Compare**.
+  1. Navigate to **Tools > Preview Feed Sources > Feed Viewer** (craft comparison is built into this page).
   2. Enter the original RSS feed URL.
   3. Select a **FlowCraft** or **AtomCraft** to apply.
   4. Click **Compare**.
@@ -59,7 +59,7 @@ The **Feed Compare** tool lets you visualize the effect of a Craft (Atom or Flow
 The **Craft Dependencies** (System Health) tool visualizes the internal relationships between your Recipes, FlowCrafts, and AtomCrafts.
 
 - **Usage**:
-  1. Navigate to **Tools > Craft Dependencies**.
+  1. Navigate to **Tools > System Status > Craft Dependencies**.
   2. Click **Analyze Craft Dependencies**.
 - **Features**:
   - Generates a tree view of all dependencies.
@@ -76,7 +76,7 @@ If you encounter errors like "Craft not found", use this tool to trace the broke
 The **System Runtime** (Observability) tool provides a comprehensive dashboard for monitoring the health and execution status of your resources.
 
 - **Usage**:
-  1. Navigate to **Tools > System Runtime**.
+  1. Navigate to **Tools > System Status > System Runtime**.
 - **Features**:
   - **Resource Health**: View the current status (Healthy, Degraded, Paused) of Recipes and other components, including consecutive failures.
   - **Execution Logs**: Track detailed execution history, success rates, and specific error types (e.g., Timeout, Network, Parse) across all runs.

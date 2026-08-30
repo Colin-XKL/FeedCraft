@@ -30,7 +30,7 @@ You can define a FlowCraft named `digest-and-translate` containing the following
 
 ### Managing FlowCraft
 
-Navigate to **Worktable > FlowCraft** to create and manage FlowCrafts.
+Navigate to **Worktable > Process Feed Sources > FlowCraft** to create and manage FlowCrafts.
 The editor allows you to add AtomCrafts and arrange their execution order. Use arrow buttons (⬆️/⬇️) to adjust the order, or the trash icon to remove them from the flow.
 
 ## Recipe
@@ -38,7 +38,7 @@ The editor allows you to add AtomCrafts and arrange their execution order. Use a
 **Recipe** binds a specific RSS source URL to an AtomCraft or FlowCraft. This allows you to create a persistent, customized feed URL.
 
 **Managing Recipes:**
-Navigate to **Worktable > Custom Recipe** to manage all your created recipes.
+Navigate to **Worktable > Manage Feed Sources > Recipes** to manage all your created recipes.
 
 - **Create**: Bind a new URL and craft.
 - **Preview**: Click the preview button to verify the output directly in the built-in Feed Viewer.
@@ -71,7 +71,7 @@ Rules run in the order you define them. A typical pipeline is: **Sort** (newest 
 
 **Managing Topic Feeds:**
 
-Navigate to **Worktable > Topic Feed** to create and manage topics.
+Navigate to **Worktable > Manage Feed Sources > Topic Feeds** to create and manage topics.
 
 - **Create**: Define a title, add multiple input sources using the type picker (supports external RSS URLs, custom recipes, or nesting other topics), and configure your aggregation rules.
 - **Public Access**: Your new topic feed will be available without authentication at `http://your-feedcraft-instance/topic/{id}`.

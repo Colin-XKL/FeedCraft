@@ -206,7 +206,7 @@ FC_EMBEDDING_MAX_INPUT_CHARS=8000
 
 #### 管理後台使用流程
 
-1. 打開 **工作台 → AtomCraft**。
+1. 打開 **工作台 → Feed源處理 → 原子工藝**。
 2. 新增一個 AtomCraft，例如 `ai-news-only`。
 3. 模板選擇 `embedding-filter`。
 4. 在 `anchors` 中每行填寫一個主題。

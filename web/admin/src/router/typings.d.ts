@@ -12,5 +12,12 @@ declare module 'vue-router' {
     order?: number; // Sort routing menu items. If set key, the higher the value, the more forward it is
     noAffix?: boolean; // if set true, the tag will not affix in the tab-bar
     ignoreCache?: boolean; // if set true, the page will not be cached
+    menuGroup?:
+      | 'feedSourceGenerate'
+      | 'feedSourceProcess'
+      | 'feedSourceManage'
+      | 'feedSourcePreview'
+      | 'feedSourceDebug'
+      | 'systemStatus';
   }
 }

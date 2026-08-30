@@ -8,6 +8,7 @@
   import { openWindow, regexUrl } from '@/utils';
   import { resolveExternalMenuUrl } from '@/utils/docsUrl';
   import useMenuTree from '@/components/menu/use-menu-tree';
+  import { DEFAULT_OPEN_MENU_KEYS } from '@/router/menu-groups';
 
   export default defineComponent({
     emit: ['collapse'],
@@ -28,7 +29,7 @@
       });
 
       const topMenu = computed(() => appStore.topMenu);
-      const openKeys = ref<string[]>([]);
+      const openKeys = ref<string[]>([...DEFAULT_OPEN_MENU_KEYS]);
       const selectedKey = ref<string[]>([]);
 
       const goto = (item: RouteRecordRaw) => {

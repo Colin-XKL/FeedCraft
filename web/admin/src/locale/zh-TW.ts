@@ -1,5 +1,5 @@
 import localeSettings from '@/locale/zh-CN/settings';
-import localeMenu from '@/locale/zh-CN/menu';
+import localeMenu from '@/locale/zh-TW/menu';
 import localeCraftAtom from '@/locale/zh-CN/craftAtom';
 import localeCraftFlow from '@/locale/zh-CN/craftFlow';
 import localeCustomRecipe from '@/locale/zh-CN/customRecipe';

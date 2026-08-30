@@ -13,12 +13,94 @@ const WORKTABLE: AppRouteRecordRaw = {
   },
   children: [
     {
+      path: 'html-to-rss',
+      name: 'HtmlToRss',
+      component: () => import('@/views/dashboard/html_to_rss/html_to_rss.vue'),
+      meta: {
+        locale: 'menu.rssGenerator',
+        requiresAuth: true,
+        menuGroup: 'feedSourceGenerate',
+      },
+    },
+    {
+      path: 'json-to-rss',
+      name: 'JsonToRss',
+      component: () => import('@/views/dashboard/curl_to_rss/curl_to_rss.vue'),
+      meta: {
+        locale: 'menu.jsonToRss',
+        requiresAuth: true,
+        menuGroup: 'feedSourceGenerate',
+      },
+    },
+    {
+      path: 'search-to-rss',
+      name: 'SearchToRss',
+      component: () => import('@/views/dashboard/search_to_rss/index.vue'),
+      meta: {
+        locale: 'menu.searchToRss',
+        requiresAuth: true,
+        menuGroup: 'feedSourceGenerate',
+      },
+    },
+    {
+      path: 'web-monitor',
+      name: 'WebMonitor',
+      component: () => import('@/views/dashboard/web_monitor/web_monitor.vue'),
+      meta: {
+        locale: 'menu.webMonitor',
+        requiresAuth: true,
+        menuGroup: 'feedSourceGenerate',
+      },
+    },
+    {
+      path: 'inbox',
+      name: 'InboxManager',
+      component: () => import('@/views/dashboard/inbox/index.vue'),
+      meta: {
+        locale: 'menu.inbox',
+        requiresAuth: true,
+        menuGroup: 'feedSourceGenerate',
+      },
+    },
+    {
+      path: 'craft_atom',
+      name: 'CraftAtom',
+      component: () => import('@/views/dashboard/craft_atom/craft_atom.vue'),
+      meta: {
+        requiresAuth: true,
+        locale: 'menu.craftAtom',
+        menuGroup: 'feedSourceProcess',
+      },
+    },
+    {
+      path: 'craft_flow',
+      name: 'CraftFlow',
+      component: () => import('@/views/dashboard/craft_flow/craft_flow.vue'),
+      meta: {
+        requiresAuth: true,
+        locale: 'menu.craftFlow',
+        menuGroup: 'feedSourceProcess',
+      },
+    },
+    {
+      path: 'custom_recipe',
+      name: 'CustomRecipe',
+      component: () =>
+        import('@/views/dashboard/custom_recipe/custom_recipe.vue'),
+      meta: {
+        requiresAuth: true,
+        locale: 'menu.customRecipe',
+        menuGroup: 'feedSourceManage',
+      },
+    },
+    {
       path: 'topic_feed',
       name: 'TopicFeed',
       component: () => import('@/views/dashboard/topic_feed/topic_feed.vue'),
       meta: {
         requiresAuth: true,
         locale: 'menu.topicFeed',
+        menuGroup: 'feedSourceManage',
       },
     },
     {
@@ -49,80 +131,6 @@ const WORKTABLE: AppRouteRecordRaw = {
         requiresAuth: true,
         locale: 'menu.topicFeed',
         hideInMenu: true,
-      },
-    },
-    {
-      path: 'custom_recipe',
-      name: 'CustomRecipe',
-      component: () =>
-        import('@/views/dashboard/custom_recipe/custom_recipe.vue'),
-      meta: {
-        requiresAuth: true,
-        locale: 'menu.customRecipe',
-      },
-    },
-    {
-      path: 'craft_atom',
-      name: 'CraftAtom',
-      component: () => import('@/views/dashboard/craft_atom/craft_atom.vue'),
-      meta: {
-        requiresAuth: true,
-        locale: 'menu.craftAtom',
-      },
-    },
-    {
-      path: 'craft_flow',
-      name: 'CraftFlow',
-      component: () => import('@/views/dashboard/craft_flow/craft_flow.vue'),
-      meta: {
-        requiresAuth: true,
-        locale: 'menu.craftFlow',
-      },
-    },
-
-    {
-      path: 'html-to-rss',
-      name: 'HtmlToRss',
-      component: () => import('@/views/dashboard/html_to_rss/html_to_rss.vue'),
-      meta: {
-        locale: 'menu.rssGenerator',
-        requiresAuth: true,
-      },
-    },
-    {
-      path: 'web-monitor',
-      name: 'WebMonitor',
-      component: () => import('@/views/dashboard/web_monitor/web_monitor.vue'),
-      meta: {
-        locale: 'menu.webMonitor',
-        requiresAuth: true,
-      },
-    },
-    {
-      path: 'json-to-rss',
-      name: 'JsonToRss',
-      component: () => import('@/views/dashboard/curl_to_rss/curl_to_rss.vue'),
-      meta: {
-        locale: 'menu.jsonToRss',
-        requiresAuth: true,
-      },
-    },
-    {
-      path: 'search-to-rss',
-      name: 'SearchToRss',
-      component: () => import('@/views/dashboard/search_to_rss/index.vue'),
-      meta: {
-        locale: 'menu.searchToRss',
-        requiresAuth: true,
-      },
-    },
-    {
-      path: 'inbox',
-      name: 'InboxManager',
-      component: () => import('@/views/dashboard/inbox/index.vue'),
-      meta: {
-        locale: 'menu.inbox',
-        requiresAuth: true,
       },
     },
   ],

@@ -1,5 +1,5 @@
 export default {
-  'menu.customRecipe': '自定义配方',
+  'menu.customRecipe': '配方管理',
   'customRecipe.description': '管理自定义配方，从各种来源生成 RSS 源。',
   'customRecipe.viewConfig': '查看配置',
   'customRecipe.preview': '预览',

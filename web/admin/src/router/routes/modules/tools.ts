@@ -19,6 +19,7 @@ const TOOLS: AppRouteRecordRaw = {
       meta: {
         locale: 'menu.feedViewer',
         requiresAuth: false,
+        menuGroup: 'feedSourcePreview',
       },
     },
     {
@@ -28,6 +29,17 @@ const TOOLS: AppRouteRecordRaw = {
       meta: {
         locale: 'menu.exampleRssFeeds',
         requiresAuth: false,
+        menuGroup: 'feedSourcePreview',
+      },
+    },
+    {
+      path: 'llm-debug',
+      name: 'LlmDebug',
+      component: () => import('@/views/dashboard/llm_debug/llm-test.vue'),
+      meta: {
+        locale: 'menu.llmDebug',
+        requiresAuth: true,
+        menuGroup: 'feedSourceDebug',
       },
     },
     {
@@ -38,6 +50,7 @@ const TOOLS: AppRouteRecordRaw = {
       meta: {
         requiresAuth: true,
         locale: 'menu.embeddingFilterDebug',
+        menuGroup: 'feedSourceDebug',
       },
     },
     {
@@ -47,24 +60,7 @@ const TOOLS: AppRouteRecordRaw = {
       meta: {
         locale: 'menu.adCheckDebug',
         requiresAuth: true,
-      },
-    },
-    {
-      path: 'llm-debug',
-      name: 'LlmDebug',
-      component: () => import('@/views/dashboard/llm_debug/llm-test.vue'),
-      meta: {
-        locale: 'menu.llmDebug',
-        requiresAuth: true,
-      },
-    },
-    {
-      path: 'health',
-      name: 'SystemHealth',
-      component: () => import('@/views/dashboard/health/index.vue'),
-      meta: {
-        locale: 'menu.systemHealth',
-        requiresAuth: true,
+        menuGroup: 'feedSourceDebug',
       },
     },
     {
@@ -74,6 +70,17 @@ const TOOLS: AppRouteRecordRaw = {
       meta: {
         locale: 'menu.observability',
         requiresAuth: true,
+        menuGroup: 'systemStatus',
+      },
+    },
+    {
+      path: 'health',
+      name: 'SystemHealth',
+      component: () => import('@/views/dashboard/health/index.vue'),
+      meta: {
+        locale: 'menu.systemHealth',
+        requiresAuth: true,
+        menuGroup: 'systemStatus',
       },
     },
   ],
