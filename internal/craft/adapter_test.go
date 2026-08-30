@@ -18,6 +18,28 @@ func (nilResultProcessor) Process(ctx context.Context, feed *model.CraftFeed) (*
 	return nil, nil
 }
 
+func TestRestoreLegacyItemMetadata_PreservesDistinctDuplicateKeys(t *testing.T) {
+	enc1 := &feeds.Enclosure{Url: "https://example.com/a.mp3"}
+	enc2 := &feeds.Enclosure{Url: "https://example.com/b.mp3"}
+	originals := []*feeds.Item{
+		{Id: "same", Link: &feeds.Link{Href: "https://example.com/p"}, Enclosure: enc1, IsPermaLink: "true"},
+		{Id: "same", Link: &feeds.Link{Href: "https://example.com/p"}, Enclosure: enc2, IsPermaLink: "false"},
+	}
+	converted := &feeds.Feed{
+		Items: []*feeds.Item{
+			{Id: "same", Link: &feeds.Link{Href: "https://example.com/p"}},
+			{Id: "same", Link: &feeds.Link{Href: "https://example.com/p"}},
+		},
+	}
+
+	restoreLegacyItemMetadata(originals, converted)
+
+	require.Equal(t, enc1, converted.Items[0].Enclosure)
+	require.Equal(t, "true", converted.Items[0].IsPermaLink)
+	require.Equal(t, enc2, converted.Items[1].Enclosure)
+	require.Equal(t, "false", converted.Items[1].IsPermaLink)
+}
+
 func TestApplyLocalProcessorToLegacyFeed_NilProcessorResultDoesNotPanic(t *testing.T) {
 	feed := &feeds.Feed{
 		Title: "keep original",

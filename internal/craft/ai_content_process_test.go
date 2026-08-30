@@ -1,16 +1,39 @@
 package craft
 
 import (
+	"context"
 	"strings"
 	"testing"
 	"time"
 
+	"FeedCraft/internal/model"
 	"FeedCraft/internal/util"
 
 	"github.com/gorilla/feeds"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestAIContentProcessProcessorHonorsCanceledContextBeforeLLM(t *testing.T) {
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		t.Fatal("canceled context should not start LLM evaluation")
+		return "", nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	processor := newAIContentProcessProcessor("提取要点", "article_content", string(aiContentProcessPlacementReplace))
+	_, err := processor.Process(ctx, &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Title: "Original", Content: "<p>body</p>"},
+		},
+	})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "canceled")
+}
 
 func TestOptionAIContentProcessPrependsGeneratedMarkdownAsHTML(t *testing.T) {
 	setupTestRedis(t)

@@ -61,21 +61,25 @@ func restoreLegacyItemMetadata(originals []*feeds.Item, converted *feeds.Feed) {
 	if converted == nil || len(originals) == 0 {
 		return
 	}
-	index := make(map[string]*feeds.Item, len(originals))
+	index := make(map[string][]*feeds.Item, len(originals))
 	for _, item := range originals {
 		if item == nil {
 			continue
 		}
-		index[legacyItemKey(item)] = item
+		key := legacyItemKey(item)
+		index[key] = append(index[key], item)
 	}
 	for _, item := range converted.Items {
 		if item == nil {
 			continue
 		}
-		orig, ok := index[legacyItemKey(item)]
-		if !ok {
+		key := legacyItemKey(item)
+		matches := index[key]
+		if len(matches) == 0 {
 			continue
 		}
+		orig := matches[0]
+		index[key] = matches[1:]
 		if item.Enclosure == nil {
 			item.Enclosure = orig.Enclosure
 		}
