@@ -36,12 +36,12 @@ Since we use the [Starlight](https://starlight.astro.build/components/using-comp
 
 Documents follow a four-quadrant layout. Put new pages in the group that matches the writing contract:
 
-| Directory | Sidebar label | Writing contract |
-| --- | --- | --- |
-| `start/` | Getting Started / 上手 | First-time path. The reader should be able to follow it end-to-end. |
-| `guides/` | Guides / 指南 | One concrete task per page. Do not mix background essays into a how-to. |
-| `concepts/` | Concepts / 概念 | Background, philosophy, and design decisions. Explain *why*. |
-| `reference/` | Reference / 参考 | Complete lists and parameters. Map the product; do not narrate a tutorial. |
+| Directory    | Sidebar label          | Writing contract                                                           |
+| ------------ | ---------------------- | -------------------------------------------------------------------------- |
+| `start/`     | Getting Started / 上手 | First-time path. The reader should be able to follow it end-to-end.        |
+| `guides/`    | Guides / 指南          | One concrete task per page. Do not mix background essays into a how-to.    |
+| `concepts/`  | Concepts / 概念        | Background, philosophy, and design decisions. Explain _why_.               |
+| `reference/` | Reference / 参考       | Complete lists and parameters. Map the product; do not narrate a tutorial. |
 
 Current files:
 
