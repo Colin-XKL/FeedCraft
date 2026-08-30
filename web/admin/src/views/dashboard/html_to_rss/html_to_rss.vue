@@ -873,8 +873,10 @@
         fetchError.value = errorMsg;
       }
     } catch (err: any) {
-      // Axios interceptor throws an error with the backend message
-      const errorMsg = err.message || t('htmlToRss.msg.errorFetching');
+      const errorMsg =
+        err?.response?.data?.msg ||
+        err.message ||
+        t('htmlToRss.msg.errorFetching');
       fetchError.value = errorMsg;
     } finally {
       fetching.value = false;
