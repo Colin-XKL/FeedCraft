@@ -17,6 +17,9 @@ jobs:
       # a set release-type input forces Manifest.fromConfig and ignores
       # release-please-config.json (including extra-files that bump package.json).
       # Keep release-type inside the config file instead.
+      #
+      # changelog-path is CHANGELOG.md only. RELEASES.md is human-maintained
+      # and must not be touched by this workflow.
       - uses: googleapis/release-please-action@v4
         with:
           target-branch: main

@@ -131,6 +131,32 @@ task frontend-build
 
 If `task fix` fails, inspect the exact lint output. During recent development it was blocked by pre-existing staticcheck warnings in `internal/controller/feed_viewer.go` about capitalized error strings; do not silently ignore failures.
 
+## Release Process
+
+Daily work merges into `dev`. When `dev` is ready, merge it into `main`. Only tags on `main` trigger the official image build.
+
+```text
+PR → dev
+  → merge dev into main
+  → release-please (on main push) opens a release PR:
+       version bump + CHANGELOG.md + web/admin & doc-site package.json
+  → human review
+  → update RELEASES.md on that same PR (亮点 / 重要变更 / 升级注意)
+  → merge the release PR
+  → tag + GitHub Release
+```
+
+Two changelog files:
+
+| File | Owner | Purpose |
+| --- | --- | --- |
+| `CHANGELOG.md` | release-please | Full technical changelog from commits |
+| `RELEASES.md` | humans only | Reader-facing notes per version |
+
+`release-please-config.json` keeps `changelog-path: "CHANGELOG.md"` and must not point at `RELEASES.md`. Do not let any automation rewrite `RELEASES.md`.
+
+Write the `RELEASES.md` section **before** merging the release PR. Merge creates the tag immediately; there is no later window on `main` before the tag exists.
+
 ## Development Lessons from AI Craft Work
 
 - Keep legacy `CraftOption` behavior and native processor behavior separate unless the task explicitly asks to touch both.
