@@ -3,8 +3,10 @@ import Default from "@astrojs/starlight/components/MarkdownContent.astro";
 import { getCollection } from "astro:content";
 
 const route = Astro.locals.starlightRoute;
-const relatedSlugs: string[] = route.entry.data.related ?? [];
-const locale = route.id.split("/")[0] ?? "en";
+const relatedSlugs: string[] = Array.isArray(route.entry.data.related)
+  ? route.entry.data.related
+  : [];
+const locale = route.locale || "en";
 
 const RELATED_HEADING: Record<string, string> = {
   en: "Related docs",
@@ -12,18 +14,20 @@ const RELATED_HEADING: Record<string, string> = {
   "zh-tw": "相關文件",
 };
 
+function normalizeId(id: string): string {
+  return id.replaceAll("\\", "/").replace(/\.(md|mdx)$/, "");
+}
+
 let items: { href: string; title: string }[] = [];
 if (relatedSlugs.length > 0) {
   const docs = await getCollection("docs");
-  items = relatedSlugs.flatMap((slug) => {
-    const id = `${locale}/${slug}`;
-    const hit =
-      docs.find((doc) => doc.id === id) ??
-      docs.find((doc) => doc.id === slug && "locale" in doc && doc.locale === locale);
-    if (!hit) {
-      return [];
-    }
-    return [{ href: `/${locale}/${slug}/`, title: hit.data.title }];
+  items = relatedSlugs.map((slug) => {
+    const hit = docs.find((doc) => normalizeId(doc.id) === `${locale}/${slug}`)
+      ?? docs.find((doc) => normalizeId(doc.id) === slug);
+    return {
+      href: `/${locale}/${slug}/`,
+      title: hit?.data.title ?? slug,
+    };
   });
 }
 
