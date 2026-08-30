@@ -39,6 +39,7 @@ type CraftArticle struct {
 	Content     string
 	AuthorName  string
 	AuthorEmail string
+	Source      string // RSS <source> / Atom source href, if present
 
 	// Internal metadata for future expansion (Topic aggregation, fission, etc.)
 	OriginalFeedID string // The ID of the raw source it came from
@@ -198,6 +199,9 @@ func (ca *CraftArticle) ToFeedsItem() *feeds.Item {
 			Email: ca.AuthorEmail,
 		}
 	}
+	if ca.Source != "" {
+		item.Source = &feeds.Link{Href: ca.Source}
+	}
 
 	return item
 }
@@ -229,7 +233,10 @@ func FromFeedsFeed(ff *feeds.Feed) *CraftFeed {
 		cf.ImageTitle = ff.Image.Title
 	}
 
-	cf.Articles = lo.Map(ff.Items, func(item *feeds.Item, _ int) *CraftArticle {
+	cf.Articles = lo.FilterMap(ff.Items, func(item *feeds.Item, _ int) (*CraftArticle, bool) {
+		if item == nil {
+			return nil, false
+		}
 		ca := &CraftArticle{
 			Title:       item.Title,
 			Description: item.Description,
@@ -245,7 +252,10 @@ func FromFeedsFeed(ff *feeds.Feed) *CraftFeed {
 			ca.AuthorName = item.Author.Name
 			ca.AuthorEmail = item.Author.Email
 		}
-		return ca
+		if item.Source != nil {
+			ca.Source = item.Source.Href
+		}
+		return ca, true
 	})
 
 	return cf

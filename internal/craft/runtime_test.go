@@ -560,6 +560,87 @@ func TestIgnoreAdvertorialProcessor_KeepsArticleOnLLMError(t *testing.T) {
 	assert.Equal(t, "Maybe Ad", result.Articles[0].Title)
 }
 
+func TestBuildOptionChain_AIFilterUsesNativeProcessor(t *testing.T) {
+	setupTestRedis(t)
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		if strings.Contains(context, "drop me") {
+			return `{"reason":"excluded","result":"drop"}`, nil
+		}
+		return `{"reason":"kept","result":"keep"}`, nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	db := newCraftRuntimeTestDB(t)
+	require.NoError(t, dao.CreateCraftAtom(db, &dao.CraftAtom{
+		Name:         "native-ai-filter",
+		TemplateName: "ai-filter",
+		Params:       map[string]string{"rule": "只保留科技文章", "extra-payload": "article_content"},
+	}))
+
+	processor, err := BuildOptionChain(db, "native-ai-filter", "https://example.com/feed.xml")
+	require.NoError(t, err)
+	require.NotNil(t, processor)
+
+	result, err := processor(context.Background(), &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Title: "Drop", Content: "<p>drop me</p>"},
+			{Title: "Keep", Content: "<p>keep me</p>"},
+		},
+	})
+	require.NoError(t, err)
+	require.Len(t, result.Articles, 1)
+	assert.Equal(t, "Keep", result.Articles[0].Title)
+}
+
+func TestBuildOptionChain_AIContentProcessUsesNativeProcessor(t *testing.T) {
+	setupTestRedis(t)
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		return "## Note\n\nprocessed", nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	db := newCraftRuntimeTestDB(t)
+	require.NoError(t, dao.CreateCraftAtom(db, &dao.CraftAtom{
+		Name:         "native-ai-content",
+		TemplateName: "ai-content-process",
+		Params: map[string]string{
+			"rule":          "提取要点",
+			"extra-payload": "article_content",
+			"placement":     "replace",
+		},
+	}))
+
+	processor, err := BuildOptionChain(db, "native-ai-content", "https://example.com/feed.xml")
+	require.NoError(t, err)
+
+	result, err := processor(context.Background(), &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Title: "Original", Content: "<p>original body</p>"},
+		},
+	})
+	require.NoError(t, err)
+	require.Len(t, result.Articles, 1)
+	assert.Contains(t, result.Articles[0].Content, "processed")
+	assert.NotContains(t, result.Articles[0].Content, "original body")
+}
+
+func TestBuildOptionChain_EmbeddingFilterRejectsEmptyAnchors(t *testing.T) {
+	db := newCraftRuntimeTestDB(t)
+	require.NoError(t, dao.CreateCraftAtom(db, &dao.CraftAtom{
+		Name:         "native-embedding-empty",
+		TemplateName: "embedding-filter",
+		Params:       map[string]string{"anchors": ""},
+	}))
+
+	_, err := BuildOptionChain(db, "native-embedding-empty", "https://example.com/feed.xml")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "anchors")
+}
+
 func newCraftRuntimeTestDB(t *testing.T) *gorm.DB {
 	t.Helper()
 	dsn := "file:" + t.Name() + "?mode=memory&cache=shared"

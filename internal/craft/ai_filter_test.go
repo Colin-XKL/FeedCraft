@@ -1,12 +1,14 @@
 package craft
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
 	"testing"
 	"time"
 
+	"FeedCraft/internal/model"
 	"FeedCraft/internal/util"
 
 	"github.com/gorilla/feeds"
@@ -23,13 +25,13 @@ func TestParseAIFilterDecisionAcceptsFencedJSON(t *testing.T) {
 }
 
 func TestBuildAIFilterArticlePayloadIncludesRequestedContent(t *testing.T) {
-	item := &feeds.Item{
+	article := &model.CraftArticle{
 		Title:       "AI chip news",
 		Description: "short description",
 		Content:     "<p>complete article content</p>",
 	}
 
-	payload, err := buildAIFilterArticlePayload(item, []aiFilterExtraPayloadType{aiFilterExtraPayloadArticleContent}, "")
+	payload, err := buildAIFilterArticlePayload(article, []aiFilterExtraPayloadType{aiFilterExtraPayloadArticleContent}, "")
 
 	require.NoError(t, err)
 	assert.Contains(t, payload, "Article Title:")
@@ -111,6 +113,85 @@ func TestOptionAIFilterKeepsArticleOnInvalidLLMResponse(t *testing.T) {
 	assert.Equal(t, "Keep on malformed response", feed.Items[0].Title)
 }
 
+func TestAIFilterProcessorRejectsBlankRuleOnEmptyFeed(t *testing.T) {
+	processor := newAIFilterProcessor("", "article_content")
+	_, err := processor.Process(context.Background(), &model.CraftFeed{})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "requires rule param")
+}
+
+func TestAIFilterProcessorHonorsCanceledContextBeforeLLM(t *testing.T) {
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		t.Fatal("canceled context should not start LLM evaluation")
+		return "", nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	processor := newAIFilterProcessor("只保留科技有关的文章", "article_content")
+	_, err := processor.Process(ctx, &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Title: "Keep", Content: "<p>article</p>"},
+		},
+	})
+	require.ErrorIs(t, err, context.Canceled)
+}
+
+func TestOptionAIFilterPreservesEnclosureAndPermalink(t *testing.T) {
+	setupTestRedis(t)
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		return `{"reason":"keep","result":"keep"}`, nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	enclosure := &feeds.Enclosure{Url: "https://example.com/audio.mp3", Length: "123", Type: "audio/mpeg"}
+	feed := &feeds.Feed{
+		Items: []*feeds.Item{
+			{
+				Title:       "Podcast",
+				Id:          "guid-keep",
+				Link:        &feeds.Link{Href: "https://example.com/post"},
+				Content:     "<p>episode</p>",
+				Enclosure:   enclosure,
+				IsPermaLink: "true",
+			},
+		},
+	}
+
+	err := OptionAIFilter("只保留科技有关的文章", "article_content")(feed, ExtraPayload{})
+	require.NoError(t, err)
+	require.Len(t, feed.Items, 1)
+	assert.Equal(t, enclosure, feed.Items[0].Enclosure)
+	assert.Equal(t, "true", feed.Items[0].IsPermaLink)
+}
+
+func TestOptionAIFilterSkipsNilItems(t *testing.T) {
+	setupTestRedis(t)
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		return `{"reason":"keep","result":"keep"}`, nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	feed := &feeds.Feed{
+		Items: []*feeds.Item{
+			nil,
+			{Title: "Keep", Id: "guid-keep", Content: "<p>ok</p>"},
+		},
+	}
+
+	err := OptionAIFilter("只保留科技有关的文章", "article_content")(feed, ExtraPayload{})
+	require.NoError(t, err)
+	require.Len(t, feed.Items, 1)
+	assert.Equal(t, "Keep", feed.Items[0].Title)
+}
+
 func TestAIFilterCraftLoadParamUsesRuleParam(t *testing.T) {
 	setupTestRedis(t)
 
@@ -173,14 +254,16 @@ func TestBuildAIFilterArticlePayloadIncludesRawRSSItemAsJSON(t *testing.T) {
 		Content:     "<p>Raw item content</p>",
 		Id:          "guid-1",
 		Link:        &feeds.Link{Href: "https://example.com/post"},
+		Source:      &feeds.Link{Href: "https://origin.example.com/feed.xml"},
 		Created:     time.Date(2026, 5, 16, 10, 0, 0, 0, time.UTC),
 	}
 
-	payload, err := buildAIFilterArticlePayload(item, []aiFilterExtraPayloadType{aiFilterExtraPayloadRawRSSItem}, "")
+	payload, err := buildAIFilterArticlePayload(articleFromFeedItem(item), []aiFilterExtraPayloadType{aiFilterExtraPayloadRawRSSItem}, "")
 
 	require.NoError(t, err)
 	assert.Contains(t, payload, "Raw RSS Item JSON:")
 	assert.Contains(t, payload, `"title":"Raw item title"`)
 	assert.Contains(t, payload, `"link":"https://example.com/post"`)
+	assert.Contains(t, payload, `"source":"https://origin.example.com/feed.xml"`)
 	assert.Contains(t, payload, fmt.Sprintf(`"created":%q`, item.Created.Format(time.RFC3339)))
 }
