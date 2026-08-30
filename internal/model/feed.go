@@ -233,7 +233,10 @@ func FromFeedsFeed(ff *feeds.Feed) *CraftFeed {
 		cf.ImageTitle = ff.Image.Title
 	}
 
-	cf.Articles = lo.Map(ff.Items, func(item *feeds.Item, _ int) *CraftArticle {
+	cf.Articles = lo.FilterMap(ff.Items, func(item *feeds.Item, _ int) (*CraftArticle, bool) {
+		if item == nil {
+			return nil, false
+		}
 		ca := &CraftArticle{
 			Title:       item.Title,
 			Description: item.Description,
@@ -252,7 +255,7 @@ func FromFeedsFeed(ff *feeds.Feed) *CraftFeed {
 		if item.Source != nil {
 			ca.Source = item.Source.Href
 		}
-		return ca
+		return ca, true
 	})
 
 	return cf
