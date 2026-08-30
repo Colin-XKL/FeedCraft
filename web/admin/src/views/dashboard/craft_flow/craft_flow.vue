@@ -140,7 +140,7 @@
 
   const { t, locale } = useI18n();
   const flowDocsHref = computed(() =>
-    buildDocsUrl(locale.value, 'guides/advanced/customization')
+    buildDocsUrl(locale.value, 'guides/customization')
   );
 
   const rules = {

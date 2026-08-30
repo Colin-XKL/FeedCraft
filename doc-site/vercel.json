@@ -1,0 +1,104 @@
+{
+  "redirects": [
+    {
+      "source": "/:locale/guides/start/quick-start",
+      "destination": "/:locale/start/quick-start/",
+      "permanent": true
+    },
+    {
+      "source": "/:locale/guides/start/quick-start/",
+      "destination": "/:locale/start/quick-start/",
+      "permanent": true
+    },
+    {
+      "source": "/:locale/guides/start/concepts",
+      "destination": "/:locale/concepts/concepts/",
+      "permanent": true
+    },
+    {
+      "source": "/:locale/guides/start/concepts/",
+      "destination": "/:locale/concepts/concepts/",
+      "permanent": true
+    },
+    {
+      "source": "/:locale/guides/advanced/comparison",
+      "destination": "/:locale/concepts/comparison/",
+      "permanent": true
+    },
+    {
+      "source": "/:locale/guides/advanced/comparison/",
+      "destination": "/:locale/concepts/comparison/",
+      "permanent": true
+    },
+    {
+      "source": "/:locale/guides/advanced/customization",
+      "destination": "/:locale/guides/customization/",
+      "permanent": true
+    },
+    {
+      "source": "/:locale/guides/advanced/customization/",
+      "destination": "/:locale/guides/customization/",
+      "permanent": true
+    },
+    {
+      "source": "/:locale/guides/advanced/html-to-rss",
+      "destination": "/:locale/guides/html-to-rss/",
+      "permanent": true
+    },
+    {
+      "source": "/:locale/guides/advanced/html-to-rss/",
+      "destination": "/:locale/guides/html-to-rss/",
+      "permanent": true
+    },
+    {
+      "source": "/:locale/guides/advanced/json-to-rss",
+      "destination": "/:locale/guides/json-to-rss/",
+      "permanent": true
+    },
+    {
+      "source": "/:locale/guides/advanced/json-to-rss/",
+      "destination": "/:locale/guides/json-to-rss/",
+      "permanent": true
+    },
+    {
+      "source": "/:locale/guides/advanced/search-to-rss",
+      "destination": "/:locale/guides/search-to-rss/",
+      "permanent": true
+    },
+    {
+      "source": "/:locale/guides/advanced/search-to-rss/",
+      "destination": "/:locale/guides/search-to-rss/",
+      "permanent": true
+    },
+    {
+      "source": "/:locale/guides/advanced/inbox",
+      "destination": "/:locale/guides/inbox/",
+      "permanent": true
+    },
+    {
+      "source": "/:locale/guides/advanced/inbox/",
+      "destination": "/:locale/guides/inbox/",
+      "permanent": true
+    },
+    {
+      "source": "/:locale/guides/advanced/system-craft-atoms",
+      "destination": "/:locale/reference/system-craft-atoms/",
+      "permanent": true
+    },
+    {
+      "source": "/:locale/guides/advanced/system-craft-atoms/",
+      "destination": "/:locale/reference/system-craft-atoms/",
+      "permanent": true
+    },
+    {
+      "source": "/:locale/guides/advanced/tools",
+      "destination": "/:locale/reference/tools/",
+      "permanent": true
+    },
+    {
+      "source": "/:locale/guides/advanced/tools/",
+      "destination": "/:locale/reference/tools/",
+      "permanent": true
+    }
+  ]
+}

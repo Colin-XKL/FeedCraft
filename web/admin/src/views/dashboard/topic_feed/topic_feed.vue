@@ -120,7 +120,7 @@
 
   const { t, locale } = useI18n();
   const topicDocsHref = computed(() =>
-    buildDocsUrl(locale.value, 'guides/start/quick-start')
+    buildDocsUrl(locale.value, 'start/quick-start')
   );
   const router = useRouter();
   const topics = ref<TopicFeed[]>([]);

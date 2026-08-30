@@ -8,7 +8,7 @@ hero:
     file: ../../../assets/logo-header.png
   actions:
     - text: Quick Start
-      link: /en/guides/start/quick-start/
+      link: /en/start/quick-start/
       icon: right-arrow
       variant: primary
     - text: View on GitHub
@@ -18,13 +18,22 @@ hero:
 
 import { Card, CardGrid } from "@astrojs/starlight/components";
 
-## Next steps
+## Find your way
 
-<CardGrid stagger>
-  <Card title="Quick Start" icon="pencil">
-    Check out the [Quick Start guide](/en/guides/start/quick-start/).
+<CardGrid>
+  <Card title="Getting Started" icon="rocket">
+    Follow the [Quick Start](/en/start/quick-start/) and process a feed in
+    minutes.
   </Card>
-  <Card title="Customization" icon="setting">
-    Learn how to [customize](/en/guides/advanced/customization/) your feeds.
+  <Card title="Guides" icon="open-book">
+    One task per page: [HTML / JSON / Search to RSS](/en/guides/), Inbox, and
+    customization.
+  </Card>
+  <Card title="Concepts" icon="puzzle">
+    The ideas behind the product: [core concepts](/en/concepts/) and philosophy.
+  </Card>
+  <Card title="Reference" icon="list-format">
+    Lookup tables: [system AtomCrafts](/en/reference/) and tools, grouped by
+    job.
   </Card>
 </CardGrid>
