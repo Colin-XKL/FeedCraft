@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"text/template"
 
 	"FeedCraft/internal/constant"
@@ -28,23 +29,27 @@ func (p *ArticleTextTransformProcessor) Process(ctx context.Context, feed *model
 	}
 
 	cloned := cloneCraftFeed(feed)
+	errs := make([]error, len(cloned.Articles))
+	forEachArticleConcurrently(cloned.Articles, func(index int, article *model.CraftArticle) {
+		errs[index] = p.Mutate(ctx, article)
+	})
+
 	var (
 		lastErr   error
 		successes int
 		attempted int
 	)
-
-	for _, article := range cloned.Articles {
+	for index, article := range cloned.Articles {
 		if article == nil {
 			continue
 		}
-		attempted += 1
-		if err := p.Mutate(ctx, article); err != nil {
+		attempted++
+		if err := errs[index]; err != nil {
 			lastErr = err
 			logrus.Warnf("failed to apply craft [%s] for article [%s], err: %v", p.CraftName, article.Title, err)
 			continue
 		}
-		successes += 1
+		successes++
 	}
 
 	if attempted > 0 && successes == 0 {
@@ -64,23 +69,41 @@ func (p *ArticlePredicateProcessor) Process(ctx context.Context, feed *model.Cra
 	}
 
 	cloned := cloneCraftFeed(feed)
+	matches := make([]bool, len(cloned.Articles))
+	errs := make([]error, len(cloned.Articles))
+	forEachArticleConcurrently(cloned.Articles, func(index int, article *model.CraftArticle) {
+		matches[index], errs[index] = p.Match(ctx, article)
+	})
+
 	filtered := make([]*model.CraftArticle, 0, len(cloned.Articles))
-	for _, article := range cloned.Articles {
+	for index, article := range cloned.Articles {
 		if article == nil {
 			continue
 		}
-		matched, err := p.Match(ctx, article)
-		if err != nil {
+		if err := errs[index]; err != nil {
 			logrus.Warnf("failed to evaluate craft [%s] for article [%s], err: %v", p.CraftName, article.Title, err)
 			filtered = append(filtered, article)
 			continue
 		}
-		if !matched {
+		if !matches[index] {
 			filtered = append(filtered, article)
 		}
 	}
 	cloned.Articles = filtered
 	return cloned, nil
+}
+
+func forEachArticleConcurrently(articles []*model.CraftArticle, process func(index int, article *model.CraftArticle)) {
+	var workers sync.WaitGroup
+	for index, article := range articles {
+		if article == nil {
+			continue
+		}
+		workers.Go(func() {
+			process(index, article)
+		})
+	}
+	workers.Wait()
 }
 
 func CallLLMForArticleTransform(prompt, title, content string, option util.ContentProcessOption) (string, error) {
