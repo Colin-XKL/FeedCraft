@@ -1,9 +1,14 @@
+import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
 import svgLoader from 'vite-svg-loader';
 import configArcoStyleImportPlugin from './plugin/arcoStyleImport';
+
+const pkg = JSON.parse(
+  readFileSync(resolve(__dirname, '../package.json'), 'utf-8')
+) as { version: string };
 
 export default defineConfig({
   plugins: [
@@ -35,6 +40,7 @@ export default defineConfig({
   },
   define: {
     'process.env': {},
+    '__APP_VERSION__': JSON.stringify(pkg.version),
   },
   css: {
     preprocessorOptions: {

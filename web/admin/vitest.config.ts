@@ -7,6 +7,9 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
     },
   },
+  define: {
+    __APP_VERSION__: JSON.stringify('1.0.0'),
+  },
   test: {
     environment: 'node',
     include: ['src/**/*.test.ts'],

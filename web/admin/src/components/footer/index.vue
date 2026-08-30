@@ -1,8 +1,12 @@
 <template>
-  <a-layout-footer class="footer">FeedCraft</a-layout-footer>
+  <a-layout-footer class="footer">{{ footerText }}</a-layout-footer>
 </template>
 
-<script lang="ts" setup></script>
+<script lang="ts" setup>
+  import { getAdminFooterVersion } from '@/utils/appVersion';
+
+  const footerText = getAdminFooterVersion();
+</script>
 
 <style lang="less" scoped>
   .footer {

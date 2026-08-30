@@ -18,7 +18,41 @@ env:
   DOCKERHUB_IMAGE_NAME: colinxkl/feed-craft
 
 jobs:
+  # Tag pushes do not carry a source branch. Official semver images are only
+  # built when the tagged commit is already on main. Branch builds (main/dev)
+  # are unaffected and still produce latest / dev-<hash> preview images.
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.decide.outputs.proceed }}
+    steps:
+      - name: Checkout repository
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Decide whether to build
+        id: decide
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_REF}" != refs/tags/* ]]; then
+            echo "Not a tag push; proceeding with image build"
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git fetch origin main --prune
+          if git merge-base --is-ancestor "${GITHUB_SHA}" origin/main; then
+            echo "Tag ${GITHUB_REF_NAME} is on main; proceeding with official image build"
+            echo "proceed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Tag ${GITHUB_REF_NAME} (${GITHUB_SHA}) is not on main; skipping official image build"
+            echo "proceed=false" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
+    needs: gate
+    if: needs.gate.outputs.proceed == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
