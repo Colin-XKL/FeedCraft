@@ -72,8 +72,10 @@ export function resolveFeedViewerRouteState(
       ? 'compare'
       : 'preview';
 
-  let state = emptyState(pageMode);
-  state.selectedCraft = firstQueryValue(query.craft || query.craft_name);
+  const state = {
+    ...emptyState(pageMode),
+    selectedCraft: firstQueryValue(query.craft || query.craft_name),
+  };
 
   const target = firstQueryValue(query.target || query.mode);
   const id = firstQueryValue(query.id);
