@@ -15,7 +15,7 @@ FeedCraft 提供了一些內建工具來幫助您除錯 RSS 來源並監控系�
 **RSS 預覽** (Feed Viewer) 允許您按照 FeedCraft 的解析方式預覽任何 RSS 來源。
 
 - **使用方法**:
-  1. 導航至 **實用工具 > Feed源預覽 > Feed 預覽**。
+  1. 導航至 **實用工具 > Feed 源預覽 > Feed 預覽**。
   2. 輸入一個 RSS/Atom 地址。
   3. 點擊 **預覽 (Preview)**。
 - **目的**: 在設定配方 (Recipe) 之前，驗證 FeedCraft 是否能夠成功抓取和解析某個 Feed。
@@ -26,7 +26,7 @@ FeedCraft 提供了一些內建工具來幫助您除錯 RSS 來源並監控系�
 **RSS 範例訂閱** 頁面提供內建訂閱地址，用來測試 RSS 閱讀器對 HTML、CSS 和媒體內容的渲染支援情況，以及對 RSS 1.0、RSS 2.0、Atom、JSON Feed 文件的格式支援。
 
 - **使用方法**:
-  1. 導航至 **實用工具 > Feed源預覽 > 示例 Feed源**。
+  1. 導航至 **實用工具 > Feed 源預覽 > 示例 Feed 源**。
   2. 複製其中一個訂閱地址，例如 `/example-rss-feeds/html-elements.xml`。
   3. 在您的 RSS 閱讀器中訂閱它。
 - **可用 Feed**:
@@ -45,7 +45,7 @@ FeedCraft 提供了一些內建工具來幫助您除錯 RSS 來源並監控系�
 **Feed 比對** 工具讓您可以直觀地看到某個 Craft（Atom 或 Flow）對 Feed 的處理效果。
 
 - **使用方法**:
-  1. 導航至 **實用工具 > Feed源預覽 > Feed 預覽**（工藝效果對比已併入該頁）。
+  1. 導航至 **實用工具 > Feed 源預覽 > Feed 預覽**（工藝效果對比已併入該頁）。
   2. 輸入原始 RSS Feed 地址。
   3. 選擇一個 **FlowCraft** 或 **AtomCraft**。
   4. 點擊 **比對 (Compare)**。

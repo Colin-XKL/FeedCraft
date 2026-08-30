@@ -15,7 +15,7 @@ FeedCraft 提供了一些内置工具来帮助您调试 RSS 源并监控系统�
 **RSS 预览** (Feed Viewer) 允许您按照 FeedCraft 的解析方式预览任何 RSS 源。
 
 - **使用方法**:
-  1. 导航至 **实用工具 > Feed源预览 > Feed 预览**。
+  1. 导航至 **实用工具 > Feed 源预览 > Feed 预览**。
   2. 输入一个 RSS/Atom 地址。
   3. 点击 **预览 (Preview)**。
 - **目的**: 在设置配方 (Recipe) 之前，验证 FeedCraft 是否能够成功抓取和解析某个 Feed。
@@ -26,7 +26,7 @@ FeedCraft 提供了一些内置工具来帮助您调试 RSS 源并监控系统�
 **RSS 示例订阅** 页面提供内置订阅地址，用来测试 RSS 阅读器对 HTML、CSS 和媒体内容的渲染支持情况，以及对 RSS 1.0、RSS 2.0、Atom、JSON Feed 文档的格式支持。
 
 - **使用方法**:
-  1. 导航至 **实用工具 > Feed源预览 > 示例 Feed源**。
+  1. 导航至 **实用工具 > Feed 源预览 > 示例 Feed 源**。
   2. 复制其中一个订阅地址，例如 `/example-rss-feeds/html-elements.xml`。
   3. 在您的 RSS 阅读器中订阅它。
 - **可用 Feed**:
@@ -45,7 +45,7 @@ FeedCraft 提供了一些内置工具来帮助您调试 RSS 源并监控系统�
 **Feed 对比** 工具让您可以直观地看到某个 Craft（Atom 或 Flow）对 Feed 的处理效果。
 
 - **使用方法**:
-  1. 导航至 **实用工具 > Feed源预览 > Feed 预览**（工艺效果对比已并入该页）。
+  1. 导航至 **实用工具 > Feed 源预览 > Feed 预览**（工艺效果对比已并入该页）。
   2. 输入原始 RSS Feed 地址。
   3. 选择一个 **FlowCraft** 或 **AtomCraft**。
   4. 点击 **对比 (Compare)**。
