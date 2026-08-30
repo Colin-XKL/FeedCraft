@@ -3,8 +3,10 @@ package util
 import "strings"
 
 const (
-	defaultLLMPromptMaxChars = 12000
-	llmPromptTruncationMark  = "\n\n[...truncated...]\n\n"
+	defaultLLMPromptMaxChars    = 12000
+	llmPromptTruncationMark     = "\n\n[...truncated...]\n\n"
+	llmPromptTruncationShort    = "[...]"
+	llmPromptTruncationEllipsis = "…"
 )
 
 // LLMPromptMaxChars returns the max rune count allowed in LLM article payloads.
@@ -20,7 +22,7 @@ func LLMPromptMaxChars() int {
 }
 
 // TruncateHeadTail keeps the start and end of s when it exceeds maxChars runes.
-// This preserves lead-in and conclusion while bounding LLM token cost.
+// Oversized input always includes a truncation marker so the LLM can tell content was cut.
 func TruncateHeadTail(s string, maxChars int) string {
 	if maxChars <= 0 {
 		return s
@@ -30,12 +32,15 @@ func TruncateHeadTail(s string, maxChars int) string {
 		return s
 	}
 
-	mark := []rune(llmPromptTruncationMark)
-	if maxChars <= len(mark)+2 {
-		return string(runes[:maxChars])
+	mark := truncationMarkerForLimit(maxChars)
+	remain := maxChars - len(mark)
+	if remain < 2 {
+		if remain < 0 {
+			return string(mark[:maxChars])
+		}
+		return string(runes[:remain]) + string(mark)
 	}
 
-	remain := maxChars - len(mark)
 	head := remain * 3 / 5
 	if head < 1 {
 		head = 1
@@ -49,7 +54,26 @@ func TruncateHeadTail(s string, maxChars int) string {
 	var b strings.Builder
 	b.Grow(maxChars)
 	b.WriteString(string(runes[:head]))
-	b.WriteString(llmPromptTruncationMark)
+	b.WriteString(string(mark))
 	b.WriteString(string(runes[len(runes)-tail:]))
 	return b.String()
+}
+
+func truncationMarkerForLimit(maxChars int) []rune {
+	candidates := []string{
+		llmPromptTruncationMark,
+		llmPromptTruncationShort,
+		llmPromptTruncationEllipsis,
+	}
+	for _, candidate := range candidates {
+		mark := []rune(candidate)
+		if maxChars >= len(mark)+2 {
+			return mark
+		}
+	}
+	mark := []rune(llmPromptTruncationEllipsis)
+	if len(mark) > maxChars {
+		return mark[:maxChars]
+	}
+	return mark
 }

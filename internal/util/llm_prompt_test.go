@@ -23,6 +23,20 @@ func TestTruncateHeadTail_KeepsHeadAndTail(t *testing.T) {
 	require.NotContains(t, got, "MMMM")
 }
 
+func TestTruncateHeadTail_TinyLimitStillMarksTruncation(t *testing.T) {
+	input := strings.Repeat("A", 50) + strings.Repeat("Z", 50)
+
+	got := TruncateHeadTail(input, 10)
+	require.LessOrEqual(t, len([]rune(got)), 10)
+	require.Contains(t, got, "[...]")
+	require.True(t, strings.HasPrefix(got, "A"))
+	require.True(t, strings.HasSuffix(got, "Z"))
+
+	got = TruncateHeadTail(input, 3)
+	require.LessOrEqual(t, len([]rune(got)), 3)
+	require.Contains(t, got, "…")
+}
+
 func TestLLMPromptMaxChars_DefaultAndEnv(t *testing.T) {
 	t.Setenv("FC_LLM_PROMPT_MAX_CHARS", "")
 	require.Equal(t, defaultLLMPromptMaxChars, LLMPromptMaxChars())
