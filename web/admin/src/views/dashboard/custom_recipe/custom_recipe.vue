@@ -537,6 +537,10 @@
   };
 
   const saveRecipe = async () => {
+    if (quickCreate.value && !editing.value) {
+      form.value.feed_url = form.value.feed_url.trim();
+    }
+
     const invalid = await formRef.value?.validate();
     if (invalid) {
       return;
@@ -545,7 +549,7 @@
     if (quickCreate.value && !editing.value) {
       form.value.source_config = JSON.stringify({
         http_fetcher: {
-          url: form.value.feed_url.trim(),
+          url: form.value.feed_url,
         },
       });
       form.value.source_type = 'rss';
@@ -601,6 +605,9 @@
   function resetForm() {
     form.value = emptyRecipeForm();
     quickCreate.value = false;
+    editing.value = false;
+    isUpdating.value = false;
+    selectedRecipe.value = null;
   }
 </script>
 
