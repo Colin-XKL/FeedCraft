@@ -108,6 +108,9 @@ axios.interceptors.response.use(
     }
 
     const respMsg = error?.response?.data?.msg;
+    if (respMsg && typeof respMsg === 'string') {
+      error.message = respMsg;
+    }
     Message.error({
       content: respMsg || error.message || 'Request Error',
       duration: 5 * 1000,
