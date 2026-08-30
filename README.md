@@ -10,14 +10,11 @@ Craft all your feed in one place!
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/Colin-XKL/FeedCraft)
 ![GitHub Release](https://img.shields.io/github/v/release/Colin-XKL/FeedCraft)
 ![GitHub Discussions](https://img.shields.io/github/discussions/Colin-XKL/FeedCraft?link=https%3A%2F%2Fgithub.com%2FColin-XKL%2FFeedCraft%2Fdiscussions)
-![Container Image Size On GHCR](https://ghcr-badge.egpl.dev/colin-xkl/feed-craft/size?color=%2344cc11&tag=latest&label=image+size)
 ![Arch Badge](https://img.shields.io/badge/arch-amd64|arm64-blue)
 ![Open Source Love](https://badges.frapsoft.com/os/v2/open-source.svg?v=103)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/Colin-XKL/FeedCraft)
 
 Doc: [English](https://feed-craft-doc.vercel.app/en) | [简体中文](https://feed-craft-doc.vercel.app/zh) | [繁體中文](https://feed-craft-doc.vercel.app/zh-tw)
-
-Releases: [人工发行说明](./RELEASES.md) | [技术变更日志](./CHANGELOG.md)（release-please 自动生成，下一次正式发版后出现）
 
 **FeedCraft** is a simple, powerful RSS feed processing tool.  
 It can serve as middleware to handle your RSS feeds; you can use it to extract the main text, perform intelligent translation, generate article summaries through AI, filter articles using natural language, and more.  
@@ -145,8 +142,6 @@ services:
     restart: unless-stopped
 ```
 
-如果你希望使用 CloakBrowser，可以将 `FC_BROWSER_PROVIDER` 改为通用 CDP provider：`cdp`，并把 `FC_BROWSER_ENDPOINT` 指向官方 `cloakserve` 容器，例如 `http://service.cloakbrowser:9222?fingerprint=feedcraft`。
-
 ## 关于 FeedCraft
 
 FeedCraft 的名称和 Logo 参考并致敬两款游戏: MineCraft 和塞尔达, 初衷和愿景是做一个简单易用、同时足够灵活, 能够有更多可能性的 RSS 工具.
@@ -179,5 +174,5 @@ GPLv3
 **创建 AtomCraft 自定义 Prompt**
 <img width="1918" alt="Xnip2024-08-08_00-46-13" src="https://github.com/user-attachments/assets/ff15fe79-3792-4a96-b991-f121d2a8973e">
 
-**自定义 recipe, 指定使用哪个 AtomCraft 处理哪个 RSS 源**
+**自定义 recipe** 指定使用哪个 AtomCraft 处理哪个 RSS 源
 <img width="1900" alt="Xnip2024-08-08_00-48-34" src="https://github.com/user-attachments/assets/5794de1d-28b6-45ff-8737-16f8adc6ed8a">
