@@ -624,7 +624,10 @@
     content_template: '',
   });
   const parsedItems = ref<ParsedItem[]>([]);
+  const templatePrefix = '$';
   const templateVariables = [
+    `${templatePrefix}{article_id}`,
+    `${templatePrefix}{author.name}`,
     '.Item.id',
     '.Fields.Title',
     '.Fields.Link',
