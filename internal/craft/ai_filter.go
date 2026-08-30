@@ -81,7 +81,9 @@ func newAIFilterProcessor(rule string, extraPayloadRaw string) *AIFilterProcesso
 }
 
 func (p *AIFilterProcessor) Process(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
-	_ = ctx
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	if p.rule == "" {
 		return nil, fmt.Errorf("ai-filter requires rule param")
 	}
@@ -94,6 +96,9 @@ func (p *AIFilterProcessor) Process(ctx context.Context, feed *model.CraftFeed) 
 		if article == nil {
 			return true
 		}
+		if err := ctx.Err(); err != nil {
+			return false
+		}
 		decision, err := p.evaluateAIFilterArticle(article)
 		if err != nil {
 			logrus.Warnf("failed to evaluate ai-filter for article [%s], err: %v", article.Title, err)
@@ -101,6 +106,9 @@ func (p *AIFilterProcessor) Process(ctx context.Context, feed *model.CraftFeed) 
 		}
 		return decision.Result == aiFilterResultDrop
 	})
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 
 	filtered := make([]*model.CraftArticle, 0, len(cloned.Articles))
 	for idx, article := range cloned.Articles {

@@ -120,6 +120,56 @@ func TestAIFilterProcessorRejectsBlankRuleOnEmptyFeed(t *testing.T) {
 	assert.Contains(t, err.Error(), "requires rule param")
 }
 
+func TestAIFilterProcessorHonorsCanceledContextBeforeLLM(t *testing.T) {
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		t.Fatal("canceled context should not start LLM evaluation")
+		return "", nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	processor := newAIFilterProcessor("只保留科技有关的文章", "article_content")
+	_, err := processor.Process(ctx, &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Title: "Keep", Content: "<p>article</p>"},
+		},
+	})
+	require.ErrorIs(t, err, context.Canceled)
+}
+
+func TestOptionAIFilterPreservesEnclosureAndPermalink(t *testing.T) {
+	setupTestRedis(t)
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		return `{"reason":"keep","result":"keep"}`, nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	enclosure := &feeds.Enclosure{Url: "https://example.com/audio.mp3", Length: "123", Type: "audio/mpeg"}
+	feed := &feeds.Feed{
+		Items: []*feeds.Item{
+			{
+				Title:       "Podcast",
+				Id:          "guid-keep",
+				Link:        &feeds.Link{Href: "https://example.com/post"},
+				Content:     "<p>episode</p>",
+				Enclosure:   enclosure,
+				IsPermaLink: "true",
+			},
+		},
+	}
+
+	err := OptionAIFilter("只保留科技有关的文章", "article_content")(feed, ExtraPayload{})
+	require.NoError(t, err)
+	require.Len(t, feed.Items, 1)
+	assert.Equal(t, enclosure, feed.Items[0].Enclosure)
+	assert.Equal(t, "true", feed.Items[0].IsPermaLink)
+}
+
 func TestAIFilterCraftLoadParamUsesRuleParam(t *testing.T) {
 	setupTestRedis(t)
 
