@@ -3,6 +3,7 @@ package adapter
 import (
 	"FeedCraft/internal/util"
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"math/rand"
@@ -24,7 +25,10 @@ Handle LLM calling and processing, support OpenAI and all compatible services.
 
 const UseDefaultModel = ""
 
-var llmCallTimeout = 10 * time.Minute
+const defaultLLMCallTimeout = 3 * time.Minute
+
+// llmCallTimeout, when > 0, overrides env/default. Tests use this to inject a short deadline.
+var llmCallTimeout time.Duration
 var (
 	// llmClients acts as a lazy-loaded singleton registry, NOT a traditional acquire/release connection pool.
 	// It maps configuration keys to a single llms.Model instance.
@@ -60,12 +64,24 @@ func getLLMDispatcher() *util.PriorityDispatcher[string] {
 			concurrency = 3
 		}
 		llmDispatcher = util.NewPriorityDispatcher[string](concurrency)
-		// Fallback timeout to prevent tasks from sticking forever
-		// llmCallTimeout is 10 min, we set fallback to 11 min
-		llmDispatcher.MaxTaskDuration = llmCallTimeout + time.Minute
 		logrus.Infof("LLM Global Priority Dispatcher initialized with max concurrency: %d", concurrency)
 	})
+	// Keep fallback slightly above the per-call timeout so GenerateContent can fail first.
+	llmDispatcher.MaxTaskDuration = currentLLMCallTimeout() + time.Minute
 	return llmDispatcher
+}
+
+func currentLLMCallTimeout() time.Duration {
+	if llmCallTimeout > 0 {
+		return llmCallTimeout
+	}
+	envClient := util.GetEnvClient()
+	if envClient != nil {
+		if seconds := envClient.GetInt("LLM_CALL_TIMEOUT"); seconds > 0 {
+			return time.Duration(seconds) * time.Second
+		}
+	}
+	return defaultLLMCallTimeout
 }
 
 type llmModelClient struct {
@@ -74,18 +90,29 @@ type llmModelClient struct {
 }
 
 func SimpleLLMCall(model string, promptInput string) (string, error) {
-	return simpleLLMCallWithOptions(model, promptInput, defaultLLMRetryConfig, nil)
+	return SimpleLLMCallContext(context.Background(), model, promptInput)
+}
+
+func SimpleLLMCallContext(ctx context.Context, model string, promptInput string) (string, error) {
+	return simpleLLMCallWithOptions(ctx, model, promptInput, defaultLLMRetryConfig, nil)
 }
 
 func SimpleLLMCallWithOptions(model string, promptInput string, callOptions ...llms.CallOption) (string, error) {
-	return simpleLLMCallWithOptions(model, promptInput, defaultLLMRetryConfig, callOptions)
+	return SimpleLLMCallWithOptionsContext(context.Background(), model, promptInput, callOptions...)
+}
+
+func SimpleLLMCallWithOptionsContext(ctx context.Context, model string, promptInput string, callOptions ...llms.CallOption) (string, error) {
+	return simpleLLMCallWithOptions(ctx, model, promptInput, defaultLLMRetryConfig, callOptions)
 }
 
 func simpleLLMCall(model string, promptInput string, retryConfig llmRetryConfig) (string, error) {
-	return simpleLLMCallWithOptions(model, promptInput, retryConfig, nil)
+	return simpleLLMCallWithOptions(context.Background(), model, promptInput, retryConfig, nil)
 }
 
-func simpleLLMCallWithOptions(model string, promptInput string, retryConfig llmRetryConfig, callOptions []llms.CallOption) (string, error) {
+func simpleLLMCallWithOptions(ctx context.Context, model string, promptInput string, retryConfig llmRetryConfig, callOptions []llms.CallOption) (string, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	envClient := util.GetEnvClient()
 	if envClient == nil {
 		log.Fatalf("get env client error.")
@@ -203,21 +230,23 @@ func simpleLLMCallWithOptions(model string, promptInput string, retryConfig llmR
 	currentModel := ""
 	maxAttempts := uint(len(modelClients)) * retryConfig.attemptsPerModel
 
+	callTimeout := currentLLMCallTimeout()
+	requestCtx := ctx
 	result, err := retry.DoWithData(
 		func() (string, error) {
 			modelClient := modelClients[attemptIndex%len(modelClients)]
 			attemptIndex++
 			currentModel = modelClient.model
 
-			return dispatcher.Execute(context.Background(), isUrgent, func(ctx context.Context) (string, error) {
-				ctx, cancel := context.WithTimeout(ctx, llmCallTimeout)
+			return dispatcher.Execute(requestCtx, isUrgent, func(taskCtx context.Context) (string, error) {
+				callCtx, cancel := context.WithTimeout(taskCtx, callTimeout)
 				defer cancel()
 
 				content := []llms.MessageContent{
 					llms.TextParts(llms.ChatMessageTypeHuman, promptInput),
 				}
 
-				resp, err := modelClient.llm.GenerateContent(ctx, content, callOptions...)
+				resp, err := modelClient.llm.GenerateContent(callCtx, content, callOptions...)
 				if err != nil {
 					return "", err
 				}
@@ -231,6 +260,9 @@ func simpleLLMCallWithOptions(model string, promptInput string, retryConfig llmR
 		retry.DelayType(modelRotationBackoffDelay(len(modelClients))),
 		retry.Delay(retryConfig.delay),
 		retry.MaxDelay(retryConfig.maxDelay),
+		retry.RetryIf(func(err error) bool {
+			return !isNonRetryableLLMContextError(err)
+		}),
 		retry.OnRetry(func(n uint, err error) {
 			isUrgent = true // Elevate priority on retry
 			nextModel := modelClients[attemptIndex%len(modelClients)].model
@@ -245,6 +277,10 @@ func simpleLLMCallWithOptions(model string, promptInput string, retryConfig llmR
 	lastErr = err
 	logrus.Warnf("LLM call failed after retries: %v", err)
 	return "", fmt.Errorf("all models failed, last error: %v", lastErr)
+}
+
+func isNonRetryableLLMContextError(err error) bool {
+	return errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded)
 }
 
 func modelRotationBackoffDelay(modelCount int) retry.DelayTypeFunc {

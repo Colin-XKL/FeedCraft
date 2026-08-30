@@ -2,14 +2,15 @@ package craft
 
 import (
 	"FeedCraft/internal/util"
+	"context"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/feeds"
 	"github.com/samber/lo"
 	"github.com/samber/lo/parallel"
-
-	"net/http"
-	"time"
 )
 
 /**
@@ -38,7 +39,7 @@ const promptCheckIfAdvertorial = "请阅读下面的文章, 并判断是不是�
 
 // CheckIfAdvertorial 判断是否为软文, 非常有把握则返回true, 如果不是或者不确定或是发生错误则返回false
 func CheckIfAdvertorial(title string, content string, prompt string) bool {
-	res, _ := CheckConditionWithLLM(title, content, prompt)
+	res, _ := CheckConditionWithLLM(context.Background(), title, content, prompt)
 	return res
 }
 

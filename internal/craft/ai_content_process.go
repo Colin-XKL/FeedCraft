@@ -1,6 +1,7 @@
 package craft
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -64,19 +65,19 @@ func OptionAIContentProcess(rule string, extraPayloadRaw string, placementRaw st
 
 func cachedAIContentProcessItem(item *feeds.Item, prompt string, payloadTypes []aiFilterExtraPayloadType, placement aiContentProcessPlacement) (string, error) {
 	original := getPrimaryFeedItemContent(item)
-	context, err := buildAIContentProcessArticlePayload(item, payloadTypes)
+	articleContext, err := buildAIContentProcessArticlePayload(item, payloadTypes)
 	if err != nil {
 		return "", err
 	}
 	cacheKey := getCraftCacheKey("ai-content-process-result", util.GetTextContentHash(strings.Join([]string{
 		util.GetTextContentHash(prompt),
-		util.GetTextContentHash(context),
+		util.GetTextContentHash(articleContext),
 		string(placement),
 		util.GetTextContentHash(original),
 	}, "|")))
 
 	return util.CachedFuncWithPreLog(cacheKey, func() (string, error) {
-		result, callErr := llmContextCaller(prompt, context, util.ContentProcessOption{
+		result, callErr := llmContextCaller(context.Background(), prompt, articleContext, util.ContentProcessOption{
 			RemoveImage: true,
 			ConvertToMd: true,
 			Temperature: util.LowestLLMTemperaturePtr(),

@@ -7,6 +7,7 @@ import (
 	"FeedCraft/internal/model"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const testTinyBase64PNG = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
@@ -50,4 +51,20 @@ func TestGetArticleContentForPrompt_KeepsNormalImages(t *testing.T) {
 		strings.Contains(result, "example.com/pic.png") || strings.Contains(result, "diagram"),
 		"normal image reference should be preserved",
 	)
+}
+
+func TestGetArticleContentForPrompt_TruncatesLongContent(t *testing.T) {
+	t.Setenv("FC_LLM_PROMPT_MAX_CHARS", "80")
+	article := &model.CraftArticle{
+		Title: "Long",
+		Link:  "https://example.com/post/3",
+	}
+	original := "<p>" + strings.Repeat("HeadContent", 20) + strings.Repeat("TailContent", 20) + "</p>"
+
+	result := getArticleContentForPrompt(article, original)
+
+	require.LessOrEqual(t, len([]rune(result)), 80)
+	assert.Contains(t, result, "[...truncated...]")
+	assert.Contains(t, result, "Head")
+	assert.Contains(t, result, "Tail")
 }

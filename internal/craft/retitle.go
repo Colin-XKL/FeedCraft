@@ -1,6 +1,7 @@
 package craft
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -49,12 +50,13 @@ func getFeedsItemContentForPrompt(item *feeds.Item, original string) string {
 	if item.Link != nil {
 		link = item.Link.Href
 	}
+	original = util.RemoveBase64Images(original)
 	domain, _ := util.ParseDomainFromUrl(link)
 	cleaned := util.HTMLToMarkdown(original, domain)
 	if strings.TrimSpace(cleaned) != "" {
-		return cleaned
+		return util.TruncateHeadTail(cleaned, util.LLMPromptMaxChars())
 	}
-	return original
+	return util.TruncateHeadTail(original, util.LLMPromptMaxChars())
 }
 
 func GetRetitleCraftOptions(prompt string) []LegacyCraftOption {
@@ -81,7 +83,7 @@ func GetRetitleCraftOptions(prompt string) []LegacyCraftOption {
 			return originalTitle, nil
 		}
 		contentForPrompt := getFeedsItemContentForPrompt(item, originalContent)
-		generated, err := CallLLMForArticleTransform(finalPrompt, originalTitle, contentForPrompt, util.ContentProcessOption{})
+		generated, err := CallLLMForArticleTransform(context.Background(), finalPrompt, originalTitle, contentForPrompt, util.ContentProcessOption{})
 		if err != nil {
 			return "", err
 		}

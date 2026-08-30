@@ -1,6 +1,7 @@
 package craft
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -46,7 +47,7 @@ func TestOptionAIFilterDropsOnlyDropDecisionAndUsesSummaryPayload(t *testing.T) 
 	var filterContexts []string
 	var summaryContexts []string
 	var seenMu sync.Mutex
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		if strings.Contains(prompt, "professional summarizer") {
 			seenMu.Lock()
 			summaryContexts = append(summaryContexts, context)
@@ -91,7 +92,7 @@ func TestOptionAIFilterKeepsArticleOnInvalidLLMResponse(t *testing.T) {
 	setupTestRedis(t)
 
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		require.NotNil(t, option.Temperature)
 		assert.Equal(t, 0.0, *option.Temperature)
 		return "not json", nil
@@ -115,7 +116,7 @@ func TestAIFilterCraftLoadParamUsesRuleParam(t *testing.T) {
 	setupTestRedis(t)
 
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		assert.Contains(t, prompt, "只保留科技有关的文章")
 		return `{"reason":"not a tech article","result":"drop"}`, nil
 	}
@@ -144,7 +145,7 @@ func TestEvaluateAIFilterItemCachesDecision(t *testing.T) {
 
 	original := llmContextCaller
 	filterCalls := 0
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		filterCalls += 1
 		return `{"reason":"cached decision","result":"keep"}`, nil
 	}

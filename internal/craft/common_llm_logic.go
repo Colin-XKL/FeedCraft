@@ -3,13 +3,14 @@ package craft
 import (
 	"FeedCraft/internal/adapter"
 	"FeedCraft/internal/util"
+	"context"
 	"fmt"
 	"strings"
 
 	"github.com/sirupsen/logrus"
 )
 
-var llmContextCaller = adapter.CallLLMUsingContext
+var llmContextCaller = adapter.CallLLMUsingRequestContext
 
 // CheckConditionWithLLM 检查文章内容是否符合特定条件
 // prompt: 用户提供的 prompt 模板，必须明确要求返回 'true' 或 'false'
@@ -18,7 +19,7 @@ var llmContextCaller = adapter.CallLLMUsingContext
 // 返回值: (bool, error)
 // true: 表示符合条件
 // false: 表示不符合条件或无法判断
-func CheckConditionWithLLM(title string, content string, conditionPrompt string) (bool, error) {
+func CheckConditionWithLLM(ctx context.Context, title string, content string, conditionPrompt string) (bool, error) {
 	const MinContentLength = 20
 	if len(strings.TrimSpace(content)) < MinContentLength {
 		return false, nil
@@ -34,7 +35,7 @@ func CheckConditionWithLLM(title string, content string, conditionPrompt string)
 
 	contextData := BuildLLMArticlePayload(title, content)
 
-	result, err := llmContextCaller(conditionPrompt, contextData, option)
+	result, err := llmContextCaller(ctx, conditionPrompt, contextData, option)
 	if err != nil {
 		logrus.Errorf("Error checking condition with LLM: %v", err)
 		return false, err
@@ -70,8 +71,8 @@ func BuildLLMArticlePayload(title string, content string) string {
 
 // CheckConditionWithGenericPrompt 使用通用模板构造 prompt 并调用 LLM
 // userPrompt: 用户提供的判断标准，例如 "Is this regarding politics?"
-func CheckConditionWithGenericPrompt(title string, content string, userPrompt string) (bool, error) {
-	return CheckConditionWithLLM(title, content, buildGenericConditionPrompt(userPrompt))
+func CheckConditionWithGenericPrompt(ctx context.Context, title string, content string, userPrompt string) (bool, error) {
+	return CheckConditionWithLLM(ctx, title, content, buildGenericConditionPrompt(userPrompt))
 }
 
 func buildGenericConditionPrompt(userPrompt string) string {

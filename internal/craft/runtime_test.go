@@ -271,7 +271,7 @@ func TestSummaryProcessor_UsesDescriptionFallback(t *testing.T) {
 	setupTestRedis(t)
 
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		assert.Contains(t, context, "Article Title:")
 		assert.Contains(t, context, "fallback body")
 		return "generated summary", nil
@@ -300,7 +300,7 @@ func TestTranslateTitleProcessor_UsesNativeLLMFlow(t *testing.T) {
 	setupTestRedis(t)
 
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		assert.Contains(t, context, "Original Title")
 		return "Translated Title", nil
 	}
@@ -321,7 +321,7 @@ func TestRetitleProcessor_UsesArticleContentAndUpdatesTitle(t *testing.T) {
 	setupTestRedis(t)
 
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		assert.Contains(t, prompt, "custom retitle prompt")
 		assert.Contains(t, prompt, retitleNoChangeSentinel)
 		assert.Contains(t, context, "Original Title")
@@ -348,7 +348,7 @@ func TestRetitleProcessor_KeepsOriginalTitleForNoChangeSentinel(t *testing.T) {
 	setupTestRedis(t)
 
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		return retitleNoChangeSentinel, nil
 	}
 	t.Cleanup(func() { llmContextCaller = original })
@@ -370,7 +370,7 @@ func TestRetitleProcessor_SkipsEmptyContent(t *testing.T) {
 	setupTestRedis(t)
 
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		t.Fatalf("llm should not be called for empty article content")
 		return "", nil
 	}
@@ -398,7 +398,7 @@ func TestRetitleTemplate_BuildsNativeProcessorWithCustomPrompt(t *testing.T) {
 	}))
 
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		assert.Contains(t, prompt, "custom retitle prompt "+t.Name())
 		assert.Contains(t, prompt, retitleNoChangeSentinel)
 		return "Custom Prompt Title", nil
@@ -423,7 +423,7 @@ func TestRetitleLegacyOption_KeepsOriginalTitleForNoChangeSentinel(t *testing.T)
 	setupTestRedis(t)
 
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		assert.Contains(t, context, "legacy body")
 		return retitleNoChangeSentinel, nil
 	}
@@ -451,7 +451,7 @@ func TestBeautifyContentProcessor_WritesHTML(t *testing.T) {
 	setupTestRedis(t)
 
 	original := llmCaller
-	llmCaller = func(model string, promptInput string) (string, error) {
+	llmCaller = func(_ context.Context, model string, promptInput string) (string, error) {
 		assert.Contains(t, promptInput, "<p>Body</p>")
 		return "# Heading\n\nBeautified body", nil
 	}
@@ -473,7 +473,7 @@ func TestLLMFilterProcessor_RemovesMatchedArticleAndUsesTitleContentPayload(t *t
 
 	original := llmContextCaller
 	var seen []string
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		require.NotNil(t, option.Temperature)
 		assert.Equal(t, 0.0, *option.Temperature)
 		seen = append(seen, context)
@@ -505,7 +505,7 @@ func TestLLMFilterProcessor_CacheKeyUsesFullPromptAndLLMPayload(t *testing.T) {
 	redis := setupTestRedis(t)
 
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		t.Fatalf("expected llm-filter to hit cache, got LLM call with prompt %q and context %q", prompt, context)
 		return "false", nil
 	}
@@ -544,7 +544,7 @@ func TestIgnoreAdvertorialProcessor_KeepsArticleOnLLMError(t *testing.T) {
 	setupTestRedis(t)
 
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		return "", fmt.Errorf("temporary llm error")
 	}
 	t.Cleanup(func() { llmContextCaller = original })

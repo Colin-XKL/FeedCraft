@@ -3,6 +3,7 @@ package craft
 import (
 	"FeedCraft/internal/adapter"
 	"FeedCraft/internal/util"
+	"context"
 	"fmt"
 	"strings"
 
@@ -10,7 +11,7 @@ import (
 )
 
 // llmCaller is a variable to allow mocking in tests
-var llmCaller = adapter.SimpleLLMCall
+var llmCaller = adapter.SimpleLLMCallContext
 
 const beautifyArticleContentPrompt = `
 You are a professional editor. Your task is to reformat the following article content into clean, standard Markdown.
@@ -24,17 +25,17 @@ Follow these rules:
 6. Return ONLY the Markdown content. Do not include any explanations or conversational text.
 `
 
-func beautifyArticleContent(content string, prompt string) (string, error) {
+func beautifyArticleContent(ctx context.Context, content string, prompt string) (string, error) {
 	// 1. Prepare prompt with original HTML content
 	// Check if content is empty
 	if strings.TrimSpace(content) == "" {
 		return "", fmt.Errorf("empty content")
 	}
 
-	finalPrompt := fmt.Sprintf("%s\n\n---\n\n%s", prompt, content)
+	finalPrompt := fmt.Sprintf("%s\n\n---\n\n%s", prompt, util.TruncateHeadTail(content, util.LLMPromptMaxChars()))
 
 	// 2. Call LLM to beautify the content and convert to Markdown
-	beautifiedMd, err := llmCaller(adapter.UseDefaultModel, finalPrompt)
+	beautifiedMd, err := llmCaller(ctx, adapter.UseDefaultModel, finalPrompt)
 	if err != nil {
 		return "", err
 	}
@@ -49,7 +50,7 @@ func GetBeautifyContentCraftOptions(prompt string) []LegacyCraftOption {
 		if content == "" {
 			content = item.Description
 		}
-		return beautifyArticleContent(content, prompt)
+		return beautifyArticleContent(context.Background(), content, prompt)
 	}
 
 	cachedTransformer := GetCommonCachedTransformer(

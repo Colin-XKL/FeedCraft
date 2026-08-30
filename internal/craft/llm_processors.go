@@ -83,13 +83,13 @@ func (p *ArticlePredicateProcessor) Process(ctx context.Context, feed *model.Cra
 	return cloned, nil
 }
 
-func CallLLMForArticleTransform(prompt, title, content string, option util.ContentProcessOption) (string, error) {
+func CallLLMForArticleTransform(ctx context.Context, prompt, title, content string, option util.ContentProcessOption) (string, error) {
 	contextData := BuildLLMArticlePayload(title, content)
-	return llmContextCaller(prompt, contextData, option)
+	return llmContextCaller(ctx, prompt, contextData, option)
 }
 
-func CallLLMForArticlePredicate(prompt, title, content string) (bool, error) {
-	return CheckConditionWithLLM(title, content, prompt)
+func CallLLMForArticlePredicate(ctx context.Context, prompt, title, content string) (bool, error) {
+	return CheckConditionWithLLM(ctx, title, content, prompt)
 }
 
 func newSummaryProcessor(prompt string) *ArticleTextTransformProcessor {
@@ -102,7 +102,7 @@ func newSummaryProcessor(prompt string) *ArticleTextTransformProcessor {
 				return "", nil
 			}
 			processed := getArticleContentForPrompt(article, original)
-			generated, err := CallLLMForArticleTransform(finalPrompt, article.Title, processed, util.ContentProcessOption{})
+			generated, err := CallLLMForArticleTransform(ctx, finalPrompt, article.Title, processed, util.ContentProcessOption{})
 			if err != nil {
 				return "", err
 			}
@@ -139,7 +139,7 @@ func newIntroductionProcessor(prompt string) *ArticleTextTransformProcessor {
 				return "", nil
 			}
 			processed := getArticleContentForPrompt(article, original)
-			generated, err := CallLLMForArticleTransform(finalPrompt, article.Title, processed, util.ContentProcessOption{})
+			generated, err := CallLLMForArticleTransform(ctx, finalPrompt, article.Title, processed, util.ContentProcessOption{})
 			if err != nil {
 				return "", err
 			}
@@ -176,7 +176,7 @@ func newTranslateTitleProcessor(prompt string) *ArticleTextTransformProcessor {
 			if title == "" || util.IsSameLanguage(title, targetLangCode) {
 				return title, nil
 			}
-			return CallLLMForArticleTransform(finalPrompt, "", title, util.ContentProcessOption{})
+			return CallLLMForArticleTransform(ctx, finalPrompt, "", title, util.ContentProcessOption{})
 		},
 		"translate title",
 	)
@@ -205,7 +205,7 @@ func newRetitleProcessor(prompt string) *ArticleTextTransformProcessor {
 				return originalTitle, nil
 			}
 			contentForPrompt := getArticleContentForPrompt(article, originalContent)
-			generated, err := CallLLMForArticleTransform(finalPrompt, originalTitle, contentForPrompt, util.ContentProcessOption{})
+			generated, err := CallLLMForArticleTransform(ctx, finalPrompt, originalTitle, contentForPrompt, util.ContentProcessOption{})
 			if err != nil {
 				return "", err
 			}
@@ -248,7 +248,7 @@ func newArticleContentLLMProcessor(craftName, prompt, defaultPrompt string) *Art
 			if strings.TrimSpace(content) == "" || util.IsSameLanguage(content, targetLangCode) {
 				return content, nil
 			}
-			return CallLLMForArticleTransform(finalPrompt, "", content, util.ContentProcessOption{})
+			return CallLLMForArticleTransform(ctx, finalPrompt, "", content, util.ContentProcessOption{})
 		},
 		craftName,
 	)
@@ -279,7 +279,7 @@ func newBeautifyContentProcessor(prompt string) *ArticleTextTransformProcessor {
 			if strings.TrimSpace(content) == "" {
 				return "", nil
 			}
-			return beautifyArticleContent(content, finalPrompt)
+			return beautifyArticleContent(ctx, content, finalPrompt)
 		},
 		"beautify article content",
 	)
@@ -310,7 +310,7 @@ func newLLMFilterProcessor(condition string) *ArticlePredicateProcessor {
 		}),
 		func(ctx context.Context, article *model.CraftArticle) (bool, error) {
 			content := getPrimaryArticleContent(article)
-			return CheckConditionWithLLM(article.Title, content, fullPrompt)
+			return CheckConditionWithLLM(ctx, article.Title, content, fullPrompt)
 		},
 		"llm filter",
 	)
@@ -329,7 +329,7 @@ func newIgnoreAdvertorialProcessor(prompt string) *ArticlePredicateProcessor {
 		newArticleTitleContentCacheKeyGenerator(finalPrompt),
 		func(ctx context.Context, article *model.CraftArticle) (bool, error) {
 			content := getPrimaryArticleContent(article)
-			return CallLLMForArticlePredicate(finalPrompt, article.Title, content)
+			return CallLLMForArticlePredicate(ctx, finalPrompt, article.Title, content)
 		},
 		"ignore advertorial",
 	)
@@ -432,9 +432,9 @@ func getArticleContentForPrompt(article *model.CraftArticle, original string) st
 	domain, _ := util.ParseDomainFromUrl(article.Link)
 	cleaned := util.HTMLToMarkdown(original, domain)
 	if strings.TrimSpace(cleaned) != "" {
-		return cleaned
+		return util.TruncateHeadTail(cleaned, util.LLMPromptMaxChars())
 	}
-	return original
+	return util.TruncateHeadTail(original, util.LLMPromptMaxChars())
 }
 
 func combineArticleHTMLWithGeneratedMarkdown(originalHTML string, generatedMarkdown string) string {

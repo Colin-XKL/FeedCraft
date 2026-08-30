@@ -1,6 +1,7 @@
 package craft
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
@@ -16,7 +17,7 @@ const longBody = "this article body is long enough to exceed the minimum content
 
 func TestOptionIgnoreAdvertorial_RemovesArticlesMarkedAsAds(t *testing.T) {
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		if strings.Contains(context, "Sponsored Deal") {
 			return "true", nil
 		}
@@ -40,7 +41,7 @@ func TestOptionIgnoreAdvertorial_RemovesArticlesMarkedAsAds(t *testing.T) {
 func TestOptionIgnoreAdvertorial_UsesDescriptionWhenContentEmpty(t *testing.T) {
 	var seenContexts []string
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		seenContexts = append(seenContexts, context)
 		return "false", nil
 	}
@@ -61,7 +62,7 @@ func TestOptionIgnoreAdvertorial_UsesDescriptionWhenContentEmpty(t *testing.T) {
 
 func TestOptionIgnoreAdvertorial_KeepsArticleOnLLMError(t *testing.T) {
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		return "", fmt.Errorf("llm down")
 	}
 	t.Cleanup(func() { llmContextCaller = original })
@@ -86,7 +87,7 @@ func TestOptionIgnoreAdvertorial_EmptyFeedIsNoop(t *testing.T) {
 
 func TestOptionLLMFilterGeneric_RemovesMatchingArticles(t *testing.T) {
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		if strings.Contains(context, "Sports") {
 			return "true", nil
 		}
@@ -108,7 +109,7 @@ func TestOptionLLMFilterGeneric_RemovesMatchingArticles(t *testing.T) {
 
 func TestOptionLLMFilterGeneric_KeepsArticleWhenLLMErrors(t *testing.T) {
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		return "", fmt.Errorf("llm error")
 	}
 	t.Cleanup(func() { llmContextCaller = original })

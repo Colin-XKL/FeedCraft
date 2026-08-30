@@ -7,6 +7,7 @@ import (
 
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/util"
+	"context"
 
 	"github.com/gorilla/feeds"
 	"github.com/samber/lo"
@@ -157,15 +158,15 @@ Examples:
 {"reason":"The article is unrelated to the requested topic.","result":"drop"}`, rule)
 }
 
-func cachedAIFilterDecision(title string, prompt string, context string) (aiFilterDecision, error) {
+func cachedAIFilterDecision(title string, prompt string, articleContext string) (aiFilterDecision, error) {
 	hashVal := util.GetTextContentHash(strings.Join([]string{
 		util.GetTextContentHash(prompt),
-		util.GetTextContentHash(context),
+		util.GetTextContentHash(articleContext),
 	}, "|"))
 	cacheKey := getCraftCacheKey("ai-filter", hashVal)
 
 	cached, err := util.CachedFuncWithPreLog(cacheKey, func() (string, error) {
-		result, err := llmContextCaller(prompt, context, util.ContentProcessOption{
+		result, err := llmContextCaller(context.Background(), prompt, articleContext, util.ContentProcessOption{
 			RemoveImage: true,
 			ConvertToMd: true,
 			Temperature: util.LowestLLMTemperaturePtr(),
@@ -254,7 +255,7 @@ func generateAIFilterArticleSummary(item *feeds.Item) (string, error) {
 		if strings.TrimSpace(cleanedContent) != "" {
 			processedContent = cleanedContent
 		}
-		return llmContextCaller(summaryPrompt, processedContent, util.ContentProcessOption{
+		return llmContextCaller(context.Background(), summaryPrompt, processedContent, util.ContentProcessOption{
 			Temperature: util.LowestLLMTemperaturePtr(),
 		})
 	}, func(isCached bool) {

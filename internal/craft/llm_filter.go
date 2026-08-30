@@ -1,6 +1,8 @@
 package craft
 
 import (
+	"context"
+
 	"github.com/gorilla/feeds"
 	"github.com/samber/lo"
 	"github.com/samber/lo/parallel"
@@ -43,7 +45,7 @@ func OptionLLMFilterGeneric(condition string) LegacyCraftOption {
 			if len(content) == 0 {
 				content = itm.Description
 			}
-			match, err := CheckConditionWithGenericPrompt(itm.Title, content, condition)
+			match, err := CheckConditionWithGenericPrompt(context.Background(), itm.Title, content, condition)
 			if err != nil {
 				return false
 			}

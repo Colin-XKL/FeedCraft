@@ -4,13 +4,16 @@ import (
 	"FeedCraft/internal/constant"
 	"context"
 	"errors"
+	"log"
 	"strings"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
-	"log"
-	"time"
+	"golang.org/x/sync/singleflight"
 )
+
+var cacheFlight singleflight.Group
 
 // GetRedisClient 返回一个非空的redis client
 func GetRedisClient() *redis.Client {
@@ -83,31 +86,48 @@ func CacheGetString(key string) (string, error) {
 	return rdb.Get(context.Background(), key).Result()
 }
 
-// CachedFuncWithPreLog tries to get from cache, invokes preLog if provided, and if absent, calls valFunc and saves to cache
+// CachedFuncWithPreLog tries to get from cache, invokes preLog if provided, and if absent, calls valFunc and saves to cache.
+// Concurrent misses for the same key are coalesced with singleflight to avoid cache stampede.
 func CachedFuncWithPreLog(cacheKey string, valFunc func() (string, error), preLog func(isCached bool)) (string, error) {
-	final := ""
-	cached, err := CacheGetString(cacheKey)
-	isCached := err == nil && cached != ""
+	return cachedFuncWithStore(cacheKey, CacheGetString, func(value string) error {
+		return CacheSetString(cacheKey, value, constant.WebContentExpire)
+	}, valFunc, preLog)
+}
 
+func cachedFuncWithStore(
+	cacheKey string,
+	get func(string) (string, error),
+	set func(string) error,
+	valFunc func() (string, error),
+	preLog func(isCached bool),
+) (string, error) {
+	cached, err := get(cacheKey)
+	isCached := err == nil && cached != ""
 	if preLog != nil {
 		preLog(isCached)
 	}
+	if isCached {
+		return cached, nil
+	}
 
-	if !isCached {
+	v, flightErr, _ := cacheFlight.Do(cacheKey, func() (interface{}, error) {
+		cached, err := get(cacheKey)
+		if err == nil && cached != "" {
+			return cached, nil
+		}
 		processedContent, getValErr := valFunc()
 		if getValErr != nil {
 			return "", getValErr
-		} else {
-			final = processedContent
-			cacheErr := CacheSetString(cacheKey, processedContent, constant.WebContentExpire)
-			if cacheErr != nil {
-				logrus.Warn("failed to cache result")
-			}
 		}
-	} else {
-		final = cached
+		if cacheErr := set(processedContent); cacheErr != nil {
+			logrus.Warn("failed to cache result")
+		}
+		return processedContent, nil
+	})
+	if flightErr != nil {
+		return "", flightErr
 	}
-
+	final, _ := v.(string)
 	return final, nil
 }
 
