@@ -28,7 +28,7 @@ func LLMDebug(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
-	ret, err := adapter.SimpleLLMCall(reqBody.Model, reqBody.Input)
+	ret, err := adapter.SimpleLLMCallContext(c.Request.Context(), reqBody.Model, reqBody.Input)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return

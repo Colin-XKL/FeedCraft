@@ -1,6 +1,7 @@
 package craft
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -49,6 +50,7 @@ func getFeedsItemContentForPrompt(item *feeds.Item, original string) string {
 	if item.Link != nil {
 		link = item.Link.Href
 	}
+	original = util.RemoveBase64Images(original)
 	domain, _ := util.ParseDomainFromUrl(link)
 	cleaned := util.HTMLToMarkdown(original, domain)
 	if strings.TrimSpace(cleaned) != "" {
@@ -71,7 +73,7 @@ func GetRetitleCraftOptions(prompt string) []LegacyCraftOption {
 		}, "|"))
 		return payloadHash, nil
 	}
-	transFunc := func(item *feeds.Item) (string, error) {
+	transFunc := func(ctx context.Context, item *feeds.Item) (string, error) {
 		if item == nil {
 			return "", nil
 		}
@@ -81,7 +83,7 @@ func GetRetitleCraftOptions(prompt string) []LegacyCraftOption {
 			return originalTitle, nil
 		}
 		contentForPrompt := getFeedsItemContentForPrompt(item, originalContent)
-		generated, err := CallLLMForArticleTransform(finalPrompt, originalTitle, contentForPrompt, util.ContentProcessOption{})
+		generated, err := CallLLMForArticleTransform(ctx, finalPrompt, originalTitle, contentForPrompt, util.ContentProcessOption{})
 		if err != nil {
 			return "", err
 		}
@@ -90,9 +92,9 @@ func GetRetitleCraftOptions(prompt string) []LegacyCraftOption {
 		}
 		return strings.TrimSpace(generated), nil
 	}
-	transformer := GetCommonCachedTransformer(cacheKeyGenerator, transFunc, string(constant.ProcessorTypeRetitle))
+	transformer := GetCommonCachedTransformerWithContext(cacheKeyGenerator, transFunc, string(constant.ProcessorTypeRetitle))
 	return []LegacyCraftOption{
-		OptionTransformFeedItem(GetArticleTitleProcessor(transformer)),
+		OptionTransformFeedItem(GetArticleTitleProcessorWithContext(transformer)),
 	}
 }
 

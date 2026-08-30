@@ -43,7 +43,7 @@ func OptionLLMFilterGeneric(condition string) LegacyCraftOption {
 			if len(content) == 0 {
 				content = itm.Description
 			}
-			match, err := CheckConditionWithGenericPrompt(itm.Title, content, condition)
+			match, err := CheckConditionWithGenericPrompt(payload.Context(), itm.Title, content, condition)
 			if err != nil {
 				return false
 			}

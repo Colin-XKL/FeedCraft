@@ -83,7 +83,7 @@ type EnhancedSearchSource struct {
 }
 
 func (s *EnhancedSearchSource) Fetch(ctx context.Context) (*model.CraftFeed, error) {
-	queries, err := expandQueryWithLLM(s.Config.SearchFetcher.Query)
+	queries, err := expandQueryWithLLM(ctx, s.Config.SearchFetcher.Query)
 	if err != nil {
 		logrus.Warnf("LLM expansion failed: %v, falling back to original query", err)
 		queries = []string{s.Config.SearchFetcher.Query}
@@ -147,11 +147,11 @@ func (s *EnhancedSearchSource) Fetch(ctx context.Context) (*model.CraftFeed, err
 	return feed, nil
 }
 
-func expandQueryWithLLM(query string) ([]string, error) {
+func expandQueryWithLLM(ctx context.Context, query string) ([]string, error) {
 	cacheKey := "search_expansion:" + query
-	jsonStr, err := util.CachedFunc(cacheKey, func() (string, error) {
+	jsonStr, err := util.CachedFuncContext(ctx, cacheKey, func(sharedCtx context.Context) (string, error) {
 		prompt := fmt.Sprintf("Analyze the following search query and generate 3-5 distinct, optimized search queries to cover different aspects, languages (if implicit), and sub-topics. Original Query: %s. Return strictly a JSON array of strings, e.g., [\"query1\", \"query2\"]. Do not output any other text, markdown formatting, or code blocks. Just the raw JSON string.", query)
-		return adapter.SimpleLLMCall(adapter.UseDefaultModel, prompt)
+		return adapter.SimpleLLMCallContext(sharedCtx, adapter.UseDefaultModel, prompt)
 	})
 	if err != nil {
 		return nil, err

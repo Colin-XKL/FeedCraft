@@ -76,6 +76,8 @@ sidebar:
 - **FC_LLM_API_BASE**: API 接口地址。如果是兼容 OpenAI 的 API，通常以 `/v1` 结尾。
 - **FC_LLM_API_TYPE**: (可选) `openai` (默认) 或 `ollama`.
 - **FC_LLM_MAX_CONCURRENCY**: (可选) 全局最大 LLM 并发请求数（默认: `3`）。用于限制并发请求数量以防止触发 API 速率限制。
+- **FC_LLM_CALL_TIMEOUT**: (可选) 单次 LLM 调用超时秒数（默认: `180`）。超时或请求取消后不再重试，避免挂起的上游长时间占用并发额度。
+- **FC_LLM_PROMPT_MAX_CHARS**: (可选) 送入 LLM 的文章正文最大字符数（按 rune 计，默认: `12000`）。超长内容会保留头尾并插入截断标记。
 - **FC_DOMAIN_MAX_CONCURRENCY**: (可选) 网页抓取（如全文提取）时每个目标域名的最大并发数（默认: `3`）。防止抓取目标服务器负载过高。
 - **FC_PREHEATING_MAX_CONCURRENCY**: （可选）后台预热任务的最大并发数（默认：`2`）。
 - **FC_PREHEATING_QUEUE_SIZE**: （可选）预热等待队列的最大任务数；默认与预热并发数相同。

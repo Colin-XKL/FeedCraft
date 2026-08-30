@@ -12,9 +12,10 @@ func AdaptLegacyOption(option LegacyCraftOption, extra ExtraPayload) CraftOption
 	}
 
 	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
-		_ = ctx
+		requestExtra := extra
+		requestExtra.ctx = ctx
 		legacyFeed := feed.ToFeedsFeed()
-		if err := option(legacyFeed, extra); err != nil {
+		if err := option(legacyFeed, requestExtra); err != nil {
 			return nil, err
 		}
 		return model.FromFeedsFeed(legacyFeed), nil

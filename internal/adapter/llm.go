@@ -2,6 +2,7 @@ package adapter
 
 import (
 	"FeedCraft/internal/util"
+	"context"
 	"fmt"
 	"strings"
 
@@ -9,20 +10,29 @@ import (
 )
 
 // CallLLMUsingContext using openai compatible api
-func CallLLMUsingContext(prompt, context string, option util.ContentProcessOption) (string, error) {
-	processedContext := util.ProcessContent(context, option)
+func CallLLMUsingContext(prompt, articleContext string, option util.ContentProcessOption) (string, error) {
+	return CallLLMUsingRequestContext(context.Background(), prompt, articleContext, option)
+}
+
+// CallLLMUsingRequestContext is CallLLMUsingContext bound to a request/task context.
+func CallLLMUsingRequestContext(ctx context.Context, prompt, articleContext string, option util.ContentProcessOption) (string, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	processedContext := util.ProcessContent(articleContext, option)
 	// Remove backticks to avoid breaking the markdown code block
 	processedContext = strings.ReplaceAll(processedContext, "`", "")
+	processedContext = util.TruncateHeadTail(processedContext, util.LLMPromptMaxChars())
 
 	finalPrompt := fmt.Sprintf("%s \n```\n%s\n```", prompt, processedContext)
 	cacheKey := fmt.Sprintf("llm_call_%s_%s", util.GetTextContentHash(finalPrompt), llmCallTemperatureCachePart(option))
-	valFunc := func() (string, error) {
+	valFunc := func(sharedCtx context.Context) (string, error) {
 		if option.Temperature != nil {
-			return SimpleLLMCallWithOptions(UseDefaultModel, finalPrompt, llms.WithTemperature(*option.Temperature))
+			return SimpleLLMCallWithOptionsContext(sharedCtx, UseDefaultModel, finalPrompt, llms.WithTemperature(*option.Temperature))
 		}
-		return SimpleLLMCall(UseDefaultModel, finalPrompt)
+		return SimpleLLMCallContext(sharedCtx, UseDefaultModel, finalPrompt)
 	}
-	return util.CachedFunc(cacheKey, valFunc)
+	return util.CachedFuncContext(ctx, cacheKey, valFunc)
 }
 
 func llmCallTemperatureCachePart(option util.ContentProcessOption) string {

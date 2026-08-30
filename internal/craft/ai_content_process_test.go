@@ -1,6 +1,7 @@
 package craft
 
 import (
+	"context"
 	"strings"
 	"testing"
 	"time"
@@ -18,7 +19,7 @@ func TestOptionAIContentProcessPrependsGeneratedMarkdownAsHTML(t *testing.T) {
 	original := llmContextCaller
 	var seenPrompt string
 	var seenContext string
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		seenPrompt = prompt
 		seenContext = context
 		assert.True(t, option.ConvertToMd)
@@ -60,7 +61,7 @@ func TestOptionAIContentProcessSupportsReplaceAndAppendPlacements(t *testing.T) 
 	setupTestRedis(t)
 
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		return "### Generated\n\nreplacement or appendix", nil
 	}
 	t.Cleanup(func() { llmContextCaller = original })
@@ -108,7 +109,7 @@ func TestOptionAIContentProcessCacheKeyIncludesPlacement(t *testing.T) {
 	setupTestRedis(t)
 
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		return "Generated note", nil
 	}
 	t.Cleanup(func() { llmContextCaller = original })
@@ -138,7 +139,7 @@ func TestOptionAIContentProcessCacheKeyIncludesArticleDatePayload(t *testing.T) 
 
 	original := llmContextCaller
 	calls := 0
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		calls += 1
 		if strings.Contains(context, "2026-05-02") {
 			return "Generated for May 2", nil
@@ -182,7 +183,7 @@ func TestAIContentProcessCraftLoadParamUsesDefaultsAndRegistersTemplate(t *testi
 
 	original := llmContextCaller
 	var seenContext string
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		seenContext = context
 		return "Generated default summary", nil
 	}

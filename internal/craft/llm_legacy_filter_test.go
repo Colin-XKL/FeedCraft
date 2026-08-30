@@ -1,10 +1,13 @@
 package craft
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
+	"FeedCraft/internal/model"
 	"FeedCraft/internal/util"
 
 	"github.com/gorilla/feeds"
@@ -16,7 +19,7 @@ const longBody = "this article body is long enough to exceed the minimum content
 
 func TestOptionIgnoreAdvertorial_RemovesArticlesMarkedAsAds(t *testing.T) {
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		if strings.Contains(context, "Sponsored Deal") {
 			return "true", nil
 		}
@@ -40,7 +43,7 @@ func TestOptionIgnoreAdvertorial_RemovesArticlesMarkedAsAds(t *testing.T) {
 func TestOptionIgnoreAdvertorial_UsesDescriptionWhenContentEmpty(t *testing.T) {
 	var seenContexts []string
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		seenContexts = append(seenContexts, context)
 		return "false", nil
 	}
@@ -61,7 +64,7 @@ func TestOptionIgnoreAdvertorial_UsesDescriptionWhenContentEmpty(t *testing.T) {
 
 func TestOptionIgnoreAdvertorial_KeepsArticleOnLLMError(t *testing.T) {
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		return "", fmt.Errorf("llm down")
 	}
 	t.Cleanup(func() { llmContextCaller = original })
@@ -86,7 +89,7 @@ func TestOptionIgnoreAdvertorial_EmptyFeedIsNoop(t *testing.T) {
 
 func TestOptionLLMFilterGeneric_RemovesMatchingArticles(t *testing.T) {
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		if strings.Contains(context, "Sports") {
 			return "true", nil
 		}
@@ -108,7 +111,7 @@ func TestOptionLLMFilterGeneric_RemovesMatchingArticles(t *testing.T) {
 
 func TestOptionLLMFilterGeneric_KeepsArticleWhenLLMErrors(t *testing.T) {
 	original := llmContextCaller
-	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+	llmContextCaller = func(_ context.Context, prompt, context string, option util.ContentProcessOption) (string, error) {
 		return "", fmt.Errorf("llm error")
 	}
 	t.Cleanup(func() { llmContextCaller = original })
@@ -122,4 +125,29 @@ func TestOptionLLMFilterGeneric_KeepsArticleWhenLLMErrors(t *testing.T) {
 	option := OptionLLMFilterGeneric("Is this spam?")
 	require.NoError(t, option(feed, ExtraPayload{}))
 	assert.Equal(t, []string{"Kept On Error"}, itemTitles(feed.Items))
+}
+
+func TestAdaptLegacyOption_PropagatesContextToLLMFilter(t *testing.T) {
+	original := llmContextCaller
+	seen := make(chan context.Context, 1)
+	llmContextCaller = func(ctx context.Context, prompt, articleContext string, option util.ContentProcessOption) (string, error) {
+		seen <- ctx
+		return "", ctx.Err()
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	adapted := AdaptLegacyOption(OptionLLMFilterGeneric("Is this spam?"), ExtraPayload{})
+	_, err := adapted(ctx, &model.CraftFeed{
+		Articles: []*model.CraftArticle{{Title: "Article", Content: longBody}},
+	})
+	require.NoError(t, err)
+
+	select {
+	case callCtx := <-seen:
+		require.ErrorIs(t, callCtx.Err(), context.Canceled)
+	case <-time.After(time.Second):
+		t.Fatal("legacy LLM call did not receive request context")
+	}
 }

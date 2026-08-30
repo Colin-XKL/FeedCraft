@@ -1,6 +1,7 @@
 package adapter
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
@@ -380,4 +381,84 @@ func TestSimpleLLMCallFailsOverToHealthyModel(t *testing.T) {
 	mu.Lock()
 	defer mu.Unlock()
 	require.Contains(t, requested, "model-good", "应当在坏模型失败后切换到健康模型")
+}
+
+func TestCurrentLLMCallTimeoutDefaultAndEnv(t *testing.T) {
+	old := llmCallTimeout
+	llmCallTimeout = 0
+	t.Cleanup(func() { llmCallTimeout = old })
+
+	t.Setenv("FC_LLM_CALL_TIMEOUT", "")
+	require.Equal(t, defaultLLMCallTimeout, currentLLMCallTimeout())
+	require.Equal(t, 3*time.Minute, defaultLLMCallTimeout)
+
+	t.Setenv("FC_LLM_CALL_TIMEOUT", "90")
+	require.Equal(t, 90*time.Second, currentLLMCallTimeout())
+
+	llmCallTimeout = 50 * time.Millisecond
+	require.Equal(t, 50*time.Millisecond, currentLLMCallTimeout(), "测试注入的 llmCallTimeout 应覆盖环境变量")
+}
+
+func TestSimpleLLMCallContextCanceledDoesNotRetry(t *testing.T) {
+	resetLLMClients(t)
+
+	var calls int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		atomic.AddInt32(&calls, 1)
+		select {
+		case <-r.Context().Done():
+		case <-time.After(2 * time.Second):
+		}
+	}))
+	t.Cleanup(server.Close)
+
+	setOpenAILLMEnv(t, server.URL)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 80*time.Millisecond)
+	defer cancel()
+
+	start := time.Now()
+	_, err := SimpleLLMCallContext(ctx, "model-a", "hi")
+	elapsed := time.Since(start)
+
+	require.Error(t, err)
+	require.Less(t, elapsed, 2*time.Second)
+	require.LessOrEqual(t, atomic.LoadInt32(&calls), int32(1), "请求取消后不应再重试占用并发额度")
+}
+
+func TestSimpleLLMCallContextCanceledDuringBackoffDoesNotRetry(t *testing.T) {
+	resetLLMClients(t)
+
+	firstCall := make(chan struct{})
+	var calls int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if atomic.AddInt32(&calls, 1) == 1 {
+			close(firstCall)
+		}
+		http.Error(w, "retryable", http.StatusServiceUnavailable)
+	}))
+	t.Cleanup(server.Close)
+	setOpenAILLMEnv(t, server.URL)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan error, 1)
+	go func() {
+		_, err := simpleLLMCallWithOptions(ctx, "model-a", "hi", llmRetryConfig{
+			attemptsPerModel: 3,
+			delay:            time.Second,
+			maxDelay:         time.Second,
+		}, nil)
+		done <- err
+	}()
+
+	<-firstCall
+	time.Sleep(20 * time.Millisecond)
+	cancel()
+	select {
+	case err := <-done:
+		require.Error(t, err)
+	case <-time.After(500 * time.Millisecond):
+		t.Fatal("cancellation did not interrupt retry backoff")
+	}
+	require.Equal(t, int32(1), atomic.LoadInt32(&calls))
 }

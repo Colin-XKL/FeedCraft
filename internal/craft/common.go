@@ -5,6 +5,7 @@ import (
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/source"
 	"FeedCraft/internal/util"
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -128,25 +129,37 @@ func CommonCraftHandlerUsingCraftOptionList(c *gin.Context, optionList []LegacyC
 type RawTransformer func(item *feeds.Item) (string, error)
 
 func GetCommonCachedTransformer(cacheKeyGenerator ContentCacheKeyGenerator, rawTransformer TransFunc, craftName string) TransFunc {
-	ret := func(item *feeds.Item) (string, error) {
+	contextual := GetCommonCachedTransformerWithContext(
+		cacheKeyGenerator,
+		func(_ context.Context, item *feeds.Item) (string, error) {
+			return rawTransformer(item)
+		},
+		craftName,
+	)
+	return func(item *feeds.Item) (string, error) {
+		return contextual(context.Background(), item)
+	}
+}
+
+func GetCommonCachedTransformerWithContext(cacheKeyGenerator ContentCacheKeyGenerator, rawTransformer ContextTransFunc, craftName string) ContextTransFunc {
+	return func(ctx context.Context, item *feeds.Item) (string, error) {
 		originalTitle := item.Title
 
 		hashVal, _ := cacheKeyGenerator(item)
 		cacheKey := getCraftCacheKey(craftName, hashVal)
 
-		valFunc := func() (string, error) {
-			ret, err := rawTransformer(item)
+		valFunc := func(sharedCtx context.Context) (string, error) {
+			ret, err := rawTransformer(sharedCtx, item)
 			if err != nil {
 				logrus.Warnf("failed to apply craft [%s] for article [%s], err: %v\n", craftName, originalTitle, err)
 			}
 			return ret, err
 		}
 
-		return util.CachedFuncWithPreLog(cacheKey, valFunc, func(isCached bool) {
+		return util.CachedFuncWithPreLogContext(ctx, cacheKey, valFunc, func(isCached bool) {
 			logrus.Infof("applying craft [%s] to article [%s], cached: %v", craftName, originalTitle, isCached)
 		})
 	}
-	return ret
 }
 
 func TransformArticleContent(item *gofeed.Item, transFunc func(item *gofeed.Item) string) *feeds.Item {
