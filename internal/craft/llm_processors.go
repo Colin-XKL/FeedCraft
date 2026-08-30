@@ -99,11 +99,9 @@ func forEachArticleConcurrently(articles []*model.CraftArticle, process func(ind
 		if article == nil {
 			continue
 		}
-		workers.Add(1)
-		go func() {
-			defer workers.Done()
+		workers.Go(func() {
 			process(index, article)
-		}()
+		})
 	}
 	workers.Wait()
 }

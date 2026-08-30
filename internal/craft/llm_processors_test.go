@@ -74,6 +74,8 @@ func observeConcurrentStart(started <-chan struct{}, release chan struct{}) bool
 }
 
 func TestArticleTextTransformProcessor_Process_RunsConcurrentlyAndPreservesOrder(t *testing.T) {
+	t.Setenv("FC_LLM_MAX_CONCURRENCY", "1")
+
 	started := make(chan struct{}, 3)
 	release := make(chan struct{})
 	processor := &ArticleTextTransformProcessor{
@@ -154,6 +156,8 @@ func TestArticleTextTransformProcessor_Process_AllFailuresReturnError(t *testing
 }
 
 func TestArticlePredicateProcessor_Process_RunsConcurrentlyAndPreservesOrder(t *testing.T) {
+	t.Setenv("FC_LLM_MAX_CONCURRENCY", "1")
+
 	started := make(chan struct{}, 4)
 	release := make(chan struct{})
 	processor := &ArticlePredicateProcessor{
