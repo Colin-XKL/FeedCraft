@@ -221,9 +221,11 @@
   import { listTopicFeeds, type TopicFeed } from '@/api/topic';
   import { listInboxes, type Inbox } from '@/api/inbox';
   import { Message } from '@arco-design/web-vue';
-
-  type PreviewMode = 'url' | 'recipe' | 'topic' | 'inbox' | 'uri';
-  type PageMode = 'preview' | 'compare';
+  import {
+    resolveFeedViewerRouteState,
+    type PageMode,
+    type PreviewMode,
+  } from './feedViewerRoute';
 
   const { t } = useI18n();
   const route = useRoute();
@@ -360,82 +362,17 @@
     }
   }
 
-  function firstQueryValue(value: unknown): string {
-    if (Array.isArray(value)) return String(value[0] || '');
-    return typeof value === 'string' ? value : '';
-  }
-
-  function selectInputURI(inputURI: string) {
-    if (!inputURI) return;
-    try {
-      const parsed = new URL(inputURI);
-      if (parsed.protocol === 'feedcraft:') {
-        const id = parsed.pathname.replace(/^\/+/, '');
-        if (parsed.hostname === 'recipe') {
-          previewMode.value = 'recipe';
-          selectedRecipeId.value = id;
-          return;
-        }
-        if (parsed.hostname === 'topic') {
-          previewMode.value = 'topic';
-          selectedTopicId.value = id;
-          return;
-        }
-        if (parsed.hostname === 'inbox') {
-          previewMode.value = 'inbox';
-          selectedInboxId.value = id;
-          return;
-        }
-      }
-      if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
-        previewMode.value = 'url';
-        feedUrl.value = inputURI;
-        return;
-      }
-    } catch {
-      // Fall through to advanced URI mode.
-    }
-    previewMode.value = 'uri';
-    advancedURI.value = inputURI;
-  }
-
-  function resetPreviewTarget() {
-    previewMode.value = 'url';
-    feedUrl.value = '';
-    advancedURI.value = '';
-    selectedRecipeId.value = '';
-    selectedTopicId.value = '';
-    selectedInboxId.value = '';
-    clearPreviewState();
-  }
-
   function applyRouteQuery() {
-    const target = firstQueryValue(route.query.target || route.query.mode);
-    const id = firstQueryValue(route.query.id);
-    if (target === 'recipe') {
-      previewMode.value = 'recipe';
-      selectedRecipeId.value = id || firstQueryValue(route.query.recipe_id);
-      return;
-    }
-    if (target === 'topic') {
-      previewMode.value = 'topic';
-      selectedTopicId.value = id || firstQueryValue(route.query.topic_id);
-      return;
-    }
-    if (target === 'inbox') {
-      previewMode.value = 'inbox';
-      selectedInboxId.value = id || firstQueryValue(route.query.inbox_id);
-      return;
-    }
-
-    const inputURI = firstQueryValue(
-      route.query.input_uri || route.query.uri || route.query.url
-    );
-    if (inputURI) {
-      selectInputURI(inputURI);
-      return;
-    }
-    resetPreviewTarget();
+    const state = resolveFeedViewerRouteState(route.path, route.query);
+    pageMode.value = state.pageMode;
+    previewMode.value = state.previewMode;
+    feedUrl.value = state.feedUrl;
+    advancedURI.value = state.advancedURI;
+    selectedRecipeId.value = state.selectedRecipeId;
+    selectedTopicId.value = state.selectedTopicId;
+    selectedInboxId.value = state.selectedInboxId;
+    selectedCraft.value = state.selectedCraft;
+    clearPreviewState();
   }
 
   async function loadPreviewResources() {

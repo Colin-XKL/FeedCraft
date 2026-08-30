@@ -74,7 +74,8 @@ http://localhost:5173
 Useful routes:
 
 - AtomCraft management: `http://localhost:5173/worktable/craft_atom`
-- Feed Compare: `http://localhost:5173/tools/feed_compare`
+- RSS Viewer: `http://localhost:5173/tools/viewer`
+- Feed Compare (legacy URL, opens RSS Viewer compare mode): `http://localhost:5173/tools/feed_compare`
 
 ## Mocking LLM and Feeds for Manual Testing
 
