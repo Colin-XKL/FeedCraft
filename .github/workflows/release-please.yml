@@ -13,9 +13,12 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
+      # Do not pass `release-type` here. In googleapis/release-please-action@v4,
+      # a set release-type input forces Manifest.fromConfig and ignores
+      # release-please-config.json (including extra-files that bump package.json).
+      # Keep release-type inside the config file instead.
       - uses: googleapis/release-please-action@v4
         with:
           target-branch: main
-          release-type: simple
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
