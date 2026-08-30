@@ -44,6 +44,23 @@ export default {
   'webMonitor.step2.nextStep': 'Next Step',
   'webMonitor.step2.remove': 'Remove',
   'webMonitor.step2.defaultVarName': 'field',
+  'webMonitor.step2.aiJudge': 'AI Judgement (optional)',
+  'webMonitor.step2.aiJudge.enable': 'Enable AI judgement',
+  'webMonitor.step2.aiJudge.tooltip':
+    'Let an LLM produce a verdict label (e.g. available/unavailable) from the extracted values. Mark the verdict as a key field to notify only when the AI verdict changes.',
+  'webMonitor.step2.aiJudge.prompt': 'Judgement Instruction',
+  'webMonitor.step2.aiJudge.prompt.placeholder':
+    'e.g. Decide whether the product is purchasable from the stock text. Answer only available or unavailable.',
+  'webMonitor.step2.aiJudge.outputField': 'Output Variable',
+  'webMonitor.step2.aiJudge.outputField.help':
+    'The verdict is stored in this variable, usable in templates (e.g. {{.ai_verdict}}) and selectable as a key field.',
+  'webMonitor.step2.aiJudge.model': 'Model (optional)',
+  'webMonitor.step2.aiJudge.model.placeholder':
+    'Leave empty to use the default model',
+  'webMonitor.step2.aiJudge.useAsKey': 'Use AI verdict as a key field',
+  'webMonitor.step2.aiJudge.verdict': 'AI Verdict',
+  'webMonitor.msg.aiPromptRequired':
+    'Judgement instruction is required when AI judgement is enabled',
   'webMonitor.step3.feedTitle': 'Feed Title',
   'webMonitor.step3.feedTitle.placeholder': 'e.g. PS5 Price Monitor',
   'webMonitor.step3.feedDesc': 'Feed Description',

@@ -169,6 +169,64 @@
                   </a-button>
                 </a-card>
 
+                <a-card size="small" class="mb-4 border-purple-100">
+                  <template #title>
+                    <div class="flex items-center gap-2">
+                      <span>{{ t('webMonitor.step2.aiJudge') }}</span>
+                      <a-tooltip
+                        :content="t('webMonitor.step2.aiJudge.tooltip')"
+                      >
+                        <icon-info-circle class="text-gray-400" />
+                      </a-tooltip>
+                    </div>
+                  </template>
+                  <template #extra>
+                    <a-switch v-model="aiJudge.enabled" size="small" />
+                  </template>
+                  <a-form v-show="aiJudge.enabled" layout="vertical">
+                    <a-form-item :label="t('webMonitor.step2.aiJudge.prompt')">
+                      <a-textarea
+                        v-model="aiJudge.prompt"
+                        :placeholder="
+                          t('webMonitor.step2.aiJudge.prompt.placeholder')
+                        "
+                        :auto-size="{ minRows: 2, maxRows: 4 }"
+                        allow-clear
+                      />
+                    </a-form-item>
+                    <a-row :gutter="12">
+                      <a-col :span="12">
+                        <a-form-item
+                          :label="t('webMonitor.step2.aiJudge.outputField')"
+                          :help="t('webMonitor.step2.aiJudge.outputField.help')"
+                        >
+                          <a-input
+                            v-model="aiJudge.outputField"
+                            placeholder="ai_verdict"
+                            allow-clear
+                          />
+                        </a-form-item>
+                      </a-col>
+                      <a-col :span="12">
+                        <a-form-item
+                          :label="t('webMonitor.step2.aiJudge.model')"
+                        >
+                          <a-input
+                            v-model="aiJudge.model"
+                            :placeholder="
+                              t('webMonitor.step2.aiJudge.model.placeholder')
+                            "
+                            allow-clear
+                          />
+                        </a-form-item>
+                      </a-col>
+                    </a-row>
+                    <a-checkbox v-model="aiJudge.useAsKey">
+                      {{ t('webMonitor.step2.aiJudge.useAsKey') }}
+                    </a-checkbox>
+                  </a-form>
+                </a-card>
+
                 <a-card :title="t('webMonitor.step2.preview')" size="small">
                   <a-form layout="vertical">
                     <a-form-item :label="t('webMonitor.step2.previewTitle')">
@@ -198,6 +256,12 @@
                     "
                   >
                     <a-divider />
+                    <div v-if="aiVerdict" class="mb-2">
+                      <div class="text-xs text-gray-500 mb-1">
+                        {{ t('webMonitor.step2.aiJudge.verdict') }}
+                      </div>
+                      <a-tag color="purple">{{ aiVerdict }}</a-tag>
+                    </div>
                     <div class="mb-2">
                       <div class="text-xs text-gray-500 mb-1">
                         {{ t('webMonitor.step2.previewResultTitle') }}
@@ -393,6 +457,7 @@
   import { Message } from '@arco-design/web-vue';
   import {
     IconArrowRight,
+    IconInfoCircle,
     IconRefresh,
     IconSave,
   } from '@arco-design/web-vue/es/icon';
@@ -447,6 +512,18 @@
     content: '价格：{{.price}}\n状态：{{.stock}}\n链接：{{.url}}',
   });
 
+  const aiJudge = reactive({
+    enabled: false,
+    prompt: '',
+    outputField: 'ai_verdict',
+    model: '',
+    useAsKey: true,
+  });
+
+  const aiJudgeFieldName = computed(
+    () => aiJudge.outputField.trim() || 'ai_verdict'
+  );
+
   const preview = reactive<WebMonitorPreview>({
     values: {},
     key_fields: [],
@@ -477,12 +554,22 @@
       'url',
       ...fields.value.map((field) => field.name).filter(Boolean),
     ];
+    if (aiJudge.enabled) {
+      vars.push(aiJudgeFieldName.value);
+    }
     return vars.map((item) => `{{.${item}}}`).join(', ');
   });
-  const selectedKeyFields = computed(() =>
-    fields.value
+  const selectedKeyFields = computed(() => {
+    const keys = fields.value
       .filter((field) => field.isKey && field.name.trim())
-      .map((field) => field.name.trim())
+      .map((field) => field.name.trim());
+    if (aiJudge.enabled && aiJudge.useAsKey) {
+      keys.push(aiJudgeFieldName.value);
+    }
+    return keys;
+  });
+  const aiVerdict = computed(
+    () => preview.values?.[aiJudgeFieldName.value] || ''
   );
   const canProceedFromStep2 = computed(
     () =>
@@ -634,6 +721,11 @@
       return false;
     }
 
+    if (aiJudge.enabled && !aiJudge.prompt.trim()) {
+      Message.warning(t('webMonitor.msg.aiPromptRequired'));
+      return false;
+    }
+
     if (selectedKeyFields.value.length === 0) {
       Message.warning(t('webMonitor.msg.keyRequired'));
       return false;
@@ -641,26 +733,39 @@
     return true;
   };
 
+  const buildParserConfig = () => {
+    const extractors = Object.fromEntries(
+      fields.value.map((field) => [field.name.trim(), field.selector.trim()])
+    );
+    const parser: Record<string, any> = {
+      extractors,
+      key_fields: selectedKeyFields.value,
+      title_template: templates.title,
+      description_template: templates.description,
+      content_template: templates.content,
+    };
+    if (aiJudge.enabled) {
+      parser.ai_judge = {
+        enabled: true,
+        prompt: aiJudge.prompt.trim(),
+        output_field: aiJudgeFieldName.value,
+        ...(aiJudge.model.trim() ? { model: aiJudge.model.trim() } : {}),
+      };
+    }
+    return parser;
+  };
+
   const runPreview = async () => {
     if (!validateFields()) return;
     parsing.value = true;
     try {
-      const extractors = Object.fromEntries(
-        fields.value.map((field) => [field.name.trim(), field.selector.trim()])
-      );
       const { data: res } = (await axios.post(
         '/api/admin/tools/web-monitor/preview',
         {
           html: htmlContent.value,
           url: url.value,
           use_browserless: enhancedMode.value,
-          web_monitor_parser: {
-            extractors,
-            key_fields: selectedKeyFields.value,
-            title_template: templates.title,
-            description_template: templates.description,
-            content_template: templates.content,
-          },
+          web_monitor_parser: buildParserConfig(),
         }
       )) as any;
 
@@ -685,9 +790,6 @@
     if (!validateFields()) return;
 
     saving.value = true;
-    const extractors = Object.fromEntries(
-      fields.value.map((field) => [field.name.trim(), field.selector.trim()])
-    );
 
     const sourceConfig = {
       type: 'web_monitor',
@@ -695,13 +797,7 @@
         url: url.value,
         use_browserless: enhancedMode.value,
       },
-      web_monitor_parser: {
-        extractors,
-        key_fields: selectedKeyFields.value,
-        title_template: templates.title,
-        description_template: templates.description,
-        content_template: templates.content,
-      },
+      web_monitor_parser: buildParserConfig(),
       feed_meta: {
         title: feedMeta.title,
         link: feedMeta.link,

@@ -42,6 +42,21 @@ export default {
   'webMonitor.step2.nextStep': '下一步',
   'webMonitor.step2.remove': '删除',
   'webMonitor.step2.defaultVarName': '字段',
+  'webMonitor.step2.aiJudge': 'AI 判定（可选）',
+  'webMonitor.step2.aiJudge.enable': '启用 AI 判定',
+  'webMonitor.step2.aiJudge.tooltip':
+    '让 AI 根据提取到的字段值产出一个判定标签（如 available/unavailable）。把该标签勾选为关键字段后，仅当 AI 判定结果变化时才会推送更新。',
+  'webMonitor.step2.aiJudge.prompt': '判定指令',
+  'webMonitor.step2.aiJudge.prompt.placeholder':
+    '例如：根据库存文案判断商品是否可购买，只回答 available 或 unavailable',
+  'webMonitor.step2.aiJudge.outputField': '输出变量名',
+  'webMonitor.step2.aiJudge.outputField.help':
+    '判定结果会写入该变量，可在模板中引用（如 {{.ai_verdict}}），也可勾选为关键字段。',
+  'webMonitor.step2.aiJudge.model': '模型（可选）',
+  'webMonitor.step2.aiJudge.model.placeholder': '留空使用默认模型',
+  'webMonitor.step2.aiJudge.useAsKey': '将 AI 判定结果用作关键字段',
+  'webMonitor.step2.aiJudge.verdict': 'AI 判定结果',
+  'webMonitor.msg.aiPromptRequired': '启用 AI 判定后，判定指令不能为空',
   'webMonitor.step3.feedTitle': 'Feed 标题',
   'webMonitor.step3.feedTitle.placeholder': '例如：PS5 价格监控',
   'webMonitor.step3.feedDesc': 'Feed 描述',
