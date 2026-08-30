@@ -67,5 +67,8 @@ func articleFromFeedItem(item *feeds.Item) *model.CraftArticle {
 		article.AuthorName = item.Author.Name
 		article.AuthorEmail = item.Author.Email
 	}
+	if item.Source != nil {
+		article.Source = item.Source.Href
+	}
 	return article
 }

@@ -174,6 +174,7 @@ func TestBuildAIFilterArticlePayloadIncludesRawRSSItemAsJSON(t *testing.T) {
 		Content:     "<p>Raw item content</p>",
 		Id:          "guid-1",
 		Link:        &feeds.Link{Href: "https://example.com/post"},
+		Source:      &feeds.Link{Href: "https://origin.example.com/feed.xml"},
 		Created:     time.Date(2026, 5, 16, 10, 0, 0, 0, time.UTC),
 	}
 
@@ -183,5 +184,6 @@ func TestBuildAIFilterArticlePayloadIncludesRawRSSItemAsJSON(t *testing.T) {
 	assert.Contains(t, payload, "Raw RSS Item JSON:")
 	assert.Contains(t, payload, `"title":"Raw item title"`)
 	assert.Contains(t, payload, `"link":"https://example.com/post"`)
+	assert.Contains(t, payload, `"source":"https://origin.example.com/feed.xml"`)
 	assert.Contains(t, payload, fmt.Sprintf(`"created":%q`, item.Created.Format(time.RFC3339)))
 }
