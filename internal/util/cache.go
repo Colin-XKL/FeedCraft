@@ -182,7 +182,7 @@ func CacheGetString(key string) (string, error) {
 }
 
 // CachedFuncWithPreLog tries to get from cache, invokes preLog if provided, and if absent, calls valFunc and saves to cache.
-// Concurrent misses for the same key are coalesced with singleflight to avoid cache stampede.
+// Concurrent misses for the same key are coalesced to avoid cache stampede.
 func CachedFuncWithPreLog(cacheKey string, valFunc func() (string, error), preLog func(isCached bool)) (string, error) {
 	return CachedFuncWithPreLogContext(context.Background(), cacheKey, func(context.Context) (string, error) {
 		return valFunc()
