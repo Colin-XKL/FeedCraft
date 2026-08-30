@@ -5,6 +5,8 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"text/template"
 
 	"FeedCraft/internal/constant"
@@ -30,24 +32,24 @@ func (p *ArticleTextTransformProcessor) Process(ctx context.Context, feed *model
 	cloned := cloneCraftFeed(feed)
 	var (
 		lastErr   error
-		successes int
-		attempted int
+		errMu     sync.Mutex
+		successes atomic.Int32
+		attempted atomic.Int32
 	)
 
-	for _, article := range cloned.Articles {
-		if article == nil {
-			continue
-		}
-		attempted += 1
+	forEachArticleConcurrently(cloned.Articles, func(_ int, article *model.CraftArticle) {
+		attempted.Add(1)
 		if err := p.Mutate(ctx, article); err != nil {
+			errMu.Lock()
 			lastErr = err
+			errMu.Unlock()
 			logrus.Warnf("failed to apply craft [%s] for article [%s], err: %v", p.CraftName, article.Title, err)
-			continue
+			return
 		}
-		successes += 1
-	}
+		successes.Add(1)
+	})
 
-	if attempted > 0 && successes == 0 {
+	if attempted.Load() > 0 && successes.Load() == 0 {
 		return nil, fmt.Errorf("all items failed to process. last error: %v", lastErr)
 	}
 	return cloned, nil
@@ -64,23 +66,60 @@ func (p *ArticlePredicateProcessor) Process(ctx context.Context, feed *model.Cra
 	}
 
 	cloned := cloneCraftFeed(feed)
-	filtered := make([]*model.CraftArticle, 0, len(cloned.Articles))
-	for _, article := range cloned.Articles {
-		if article == nil {
-			continue
-		}
+	keep := make([]bool, len(cloned.Articles))
+	forEachArticleConcurrently(cloned.Articles, func(i int, article *model.CraftArticle) {
 		matched, err := p.Match(ctx, article)
 		if err != nil {
 			logrus.Warnf("failed to evaluate craft [%s] for article [%s], err: %v", p.CraftName, article.Title, err)
-			filtered = append(filtered, article)
-			continue
+			keep[i] = true
+			return
 		}
 		if !matched {
-			filtered = append(filtered, article)
+			keep[i] = true
 		}
+	})
+
+	filtered := make([]*model.CraftArticle, 0, len(cloned.Articles))
+	for i, article := range cloned.Articles {
+		if article == nil || !keep[i] {
+			continue
+		}
+		filtered = append(filtered, article)
 	}
 	cloned.Articles = filtered
 	return cloned, nil
+}
+
+func articleProcessConcurrency() int {
+	envClient := util.GetEnvClient()
+	if envClient != nil {
+		if n := envClient.GetInt("LLM_MAX_CONCURRENCY"); n > 0 {
+			return n
+		}
+	}
+	return 3
+}
+
+func forEachArticleConcurrently(articles []*model.CraftArticle, fn func(index int, article *model.CraftArticle)) {
+	concurrency := articleProcessConcurrency()
+	if concurrency < 1 {
+		concurrency = 1
+	}
+	sem := make(chan struct{}, concurrency)
+	var wg sync.WaitGroup
+	for i, article := range articles {
+		if article == nil {
+			continue
+		}
+		wg.Add(1)
+		sem <- struct{}{}
+		go func(i int, article *model.CraftArticle) {
+			defer wg.Done()
+			defer func() { <-sem }()
+			fn(i, article)
+		}(i, article)
+	}
+	wg.Wait()
 }
 
 func CallLLMForArticleTransform(prompt, title, content string, option util.ContentProcessOption) (string, error) {
