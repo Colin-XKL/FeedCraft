@@ -38,10 +38,13 @@
     </a-space>
 
     <a-table
+      class="custom-recipe-table"
       :data="recipes"
       :columns="columns"
       :bordered="true"
       :loading="isLoading"
+      :scroll="{ x: 1180 }"
+      column-resizable
     >
       <template #status="{ record }">
         <a-tooltip
@@ -352,17 +355,49 @@
   const saving = ref(false);
 
   const columns = [
-    { title: t('customRecipe.form.name'), dataIndex: 'id' },
-    { title: t('customRecipe.form.description'), dataIndex: 'description' },
-    { title: t('customRecipe.form.craft'), dataIndex: 'craft' },
-    { title: t('customRecipe.status.active'), slotName: 'status' },
-    { title: t('customRecipe.form.sourceType'), dataIndex: 'source_type' },
+    {
+      title: t('customRecipe.form.name'),
+      dataIndex: 'id',
+      width: 200,
+      ellipsis: true,
+      tooltip: true,
+    },
+    {
+      title: t('customRecipe.form.description'),
+      dataIndex: 'description',
+      width: 180,
+      ellipsis: true,
+      tooltip: true,
+    },
+    {
+      title: t('customRecipe.form.craft'),
+      dataIndex: 'craft',
+      width: 220,
+      ellipsis: true,
+      tooltip: true,
+    },
+    {
+      title: t('customRecipe.status.active'),
+      slotName: 'status',
+      width: 90,
+    },
+    {
+      title: t('customRecipe.form.sourceType'),
+      dataIndex: 'source_type',
+      width: 100,
+    },
     {
       title: t('customRecipe.form.sourceConfig'),
       dataIndex: 'source_config',
       slotName: 'source_config',
+      width: 220,
     },
-    { title: t('customRecipe.actions'), slotName: 'actions' },
+    {
+      title: t('customRecipe.actions'),
+      slotName: 'actions',
+      width: 240,
+      fixed: 'right',
+    },
   ];
 
   async function listCustomRecipes() {
@@ -535,4 +570,23 @@
   }
 </script>
 
-<style scoped></style>
+<style scoped lang="less">
+  .custom-recipe-table {
+    :deep(.arco-table-td) {
+      word-break: break-word;
+      overflow-wrap: anywhere;
+    }
+
+    :deep(.arco-table-cell) {
+      min-width: 0;
+    }
+
+    :deep(.arco-table-cell-text-ellipsis),
+    :deep(.arco-table-text-ellipsis) {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      word-break: normal;
+    }
+  }
+</style>
