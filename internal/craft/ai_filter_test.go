@@ -170,6 +170,28 @@ func TestOptionAIFilterPreservesEnclosureAndPermalink(t *testing.T) {
 	assert.Equal(t, "true", feed.Items[0].IsPermaLink)
 }
 
+func TestOptionAIFilterSkipsNilItems(t *testing.T) {
+	setupTestRedis(t)
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		return `{"reason":"keep","result":"keep"}`, nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	feed := &feeds.Feed{
+		Items: []*feeds.Item{
+			nil,
+			{Title: "Keep", Id: "guid-keep", Content: "<p>ok</p>"},
+		},
+	}
+
+	err := OptionAIFilter("只保留科技有关的文章", "article_content")(feed, ExtraPayload{})
+	require.NoError(t, err)
+	require.Len(t, feed.Items, 1)
+	assert.Equal(t, "Keep", feed.Items[0].Title)
+}
+
 func TestAIFilterCraftLoadParamUsesRuleParam(t *testing.T) {
 	setupTestRedis(t)
 
