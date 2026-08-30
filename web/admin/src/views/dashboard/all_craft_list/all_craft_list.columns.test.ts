@@ -14,6 +14,7 @@ describe('all craft list table columns', () => {
     );
 
     expect(name?.width).toBeGreaterThanOrEqual(320);
+    expect(name?.minWidth).toBeGreaterThanOrEqual(320);
     expect(name?.ellipsis).toBe(true);
     expect(name?.bodyCellClass).toBe(ALL_CRAFT_ID_CELL_CLASS);
   });

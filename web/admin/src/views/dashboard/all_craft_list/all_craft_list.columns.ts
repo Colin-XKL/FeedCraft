@@ -8,6 +8,7 @@ export function getAllCraftListColumns(t: (key: string) => string) {
       dataIndex: 'name',
       slotName: 'name',
       width: 360,
+      minWidth: 360,
       ellipsis: true,
       tooltip: true,
       bodyCellClass: ALL_CRAFT_ID_CELL_CLASS,
