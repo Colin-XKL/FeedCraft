@@ -55,7 +55,6 @@
      wrap at word/hyphen boundaries instead of mid-token. */
   :deep(.arco-table-td) {
     word-break: normal;
-    overflow-wrap: break-word;
   }
 
   @media (max-width: 768px) {
