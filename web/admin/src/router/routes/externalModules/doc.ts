@@ -1,6 +1,8 @@
+import { DOCS_CENTER_ROUTE_NAME, DOCS_ORIGIN } from '@/utils/docsUrl';
+
 export default {
-  path: 'https://feed-craft-doc.vercel.app/en',
-  name: 'doc-center',
+  path: DOCS_ORIGIN,
+  name: DOCS_CENTER_ROUTE_NAME,
   meta: {
     locale: 'menu.doc',
     icon: 'icon-book',

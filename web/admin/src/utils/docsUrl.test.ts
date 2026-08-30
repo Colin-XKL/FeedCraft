@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { buildDocsUrl } from '@/utils/docsUrl';
+import {
+  buildDocsUrl,
+  DOCS_ORIGIN,
+  resolveExternalMenuUrl,
+} from '@/utils/docsUrl';
 
 describe('buildDocsUrl', () => {
   it('maps zh-CN to the simplified Chinese docs site', () => {
@@ -27,5 +31,49 @@ describe('buildDocsUrl', () => {
     expect(buildDocsUrl('zh-CN', '/guides/start/quick-start/')).toBe(
       'https://feed-craft-doc.vercel.app/zh/guides/start/quick-start/'
     );
+  });
+
+  it('returns the locale homepage without a double slash when path is empty', () => {
+    expect(buildDocsUrl('zh-CN', '')).toBe(
+      'https://feed-craft-doc.vercel.app/zh/'
+    );
+    expect(buildDocsUrl('zh-TW')).toBe(
+      'https://feed-craft-doc.vercel.app/zh-tw/'
+    );
+    expect(buildDocsUrl('en-US', '')).toBe(
+      'https://feed-craft-doc.vercel.app/en/'
+    );
+    expect(buildDocsUrl('fr-FR', '/')).toBe(
+      'https://feed-craft-doc.vercel.app/en/'
+    );
+  });
+});
+
+describe('resolveExternalMenuUrl', () => {
+  it('rewrites the docs center menu to the current UI language homepage', () => {
+    expect(resolveExternalMenuUrl(DOCS_ORIGIN, 'zh-CN', 'doc-center')).toBe(
+      'https://feed-craft-doc.vercel.app/zh/'
+    );
+    expect(
+      resolveExternalMenuUrl(`${DOCS_ORIGIN}/en`, 'zh-TW', 'doc-center')
+    ).toBe('https://feed-craft-doc.vercel.app/zh-tw/');
+    expect(
+      resolveExternalMenuUrl(`${DOCS_ORIGIN}/en`, 'en-US', 'doc-center')
+    ).toBe('https://feed-craft-doc.vercel.app/en/');
+  });
+
+  it('leaves deep docs paths unchanged unless the route is the docs center menu', () => {
+    expect(
+      resolveExternalMenuUrl(
+        `${DOCS_ORIGIN}/zh/guides/start/quick-start/`,
+        'en-US'
+      )
+    ).toBe(`${DOCS_ORIGIN}/zh/guides/start/quick-start/`);
+  });
+
+  it('leaves unrelated external links unchanged', () => {
+    expect(
+      resolveExternalMenuUrl('https://github.com/Colin-XKL/FeedCraft', 'zh-CN')
+    ).toBe('https://github.com/Colin-XKL/FeedCraft');
   });
 });
