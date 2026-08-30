@@ -5,7 +5,6 @@
 ### ⚠️ 破坏性变更 (Breaking Changes)
 
 - Embedding 模型必须显式配置 `FC_EMBEDDING_API_MODEL`，不再提供默认值
-- Craft 处理链路迁移到原生 CraftFeed（v3），原 option 式处理器标记为 legacy
 
 ### ✨ 新特性 (Features)
 
