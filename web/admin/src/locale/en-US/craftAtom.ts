@@ -20,6 +20,7 @@ export default {
   'craftAtom.form.addParam': 'Add Parameter',
   'craftAtom.form.cancel': 'Cancel',
   'craftAtom.form.save': 'Save',
+  'craftAtom.form.saveSuccess': 'Saved successfully',
   'craftAtom.form.rule.templateRequired': 'Template is required',
   'craftAtom.form.rule.nameRequired': 'Name is required',
   'craftAtom.empty.description': 'No AtomCrafts yet',
