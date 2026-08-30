@@ -50,6 +50,29 @@ func TestCreateCustomRecipe_DuplicateIDReturnsConflictWithoutSQL(t *testing.T) {
 	assert.NotContains(t, response.Msg, "custom_recipes_v2")
 }
 
+func TestCreateCustomRecipe_MissingRequiredFieldsReturnsFriendlyMessage(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	db := customRecipeTestDatabase(t)
+	require.NoError(t, db.AutoMigrate(&dao.CustomRecipeV2{}))
+
+	router := gin.New()
+	router.POST("/api/admin/recipes", CreateCustomRecipe)
+
+	recorder := postCustomRecipe(t, router, map[string]string{
+		"description": "empty required fields",
+	})
+
+	assert.Equal(t, http.StatusBadRequest, recorder.Code, recorder.Body.String())
+
+	var response util.APIResponse[any]
+	require.NoError(t, json.Unmarshal(recorder.Body.Bytes(), &response))
+	assert.Contains(t, response.Msg, "name is required")
+	assert.Contains(t, response.Msg, "craft is required")
+	assert.NotContains(t, response.Msg, "Key:")
+	assert.NotContains(t, response.Msg, "CustomRecipeV2")
+	assert.NotContains(t, response.Msg, "failed on the")
+}
+
 func TestCreateCustomRecipe_InvalidID(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	db := customRecipeTestDatabase(t)

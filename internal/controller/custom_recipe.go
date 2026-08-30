@@ -17,7 +17,7 @@ const msgRecipeNameExists = "A recipe with this name already exists. Please choo
 func CreateCustomRecipe(c *gin.Context) {
 	var recipeData dao.CustomRecipeV2
 	if err := c.ShouldBindJSON(&recipeData); err != nil {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: util.FriendlyBindError(err)})
 		return
 	}
 
@@ -95,7 +95,7 @@ func UpdateCustomRecipe(c *gin.Context) {
 	id := c.Param("id")
 	var recipeData dao.CustomRecipeV2
 	if err := c.ShouldBindJSON(&recipeData); err != nil {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: util.FriendlyBindError(err)})
 		return
 	}
 	db := util.GetDatabase()
