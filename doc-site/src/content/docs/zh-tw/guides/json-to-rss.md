@@ -24,7 +24,7 @@ JSON RSS 生成器可以幫助你：
 
 ## 如何使用
 
-在管理後台導航至 **工作台 > JSON 轉 RSS**。
+在管理後台導航至 **工作台 > Feed 源生成 > 介面轉 RSS**。
 
 ### 第一步：請求配置 (Request Configuration)
 

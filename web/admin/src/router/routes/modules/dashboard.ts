@@ -40,6 +40,7 @@ const DASHBOARD: AppRouteRecordRaw = {
       meta: {
         requiresAuth: true,
         locale: 'menu.allCraftList',
+        hideInMenu: true,
       },
     },
   ],

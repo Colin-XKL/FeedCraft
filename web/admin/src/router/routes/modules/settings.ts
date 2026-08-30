@@ -33,6 +33,15 @@ const SETTINGS: AppRouteRecordRaw = {
       },
     },
     {
+      path: 'system_auth_token',
+      name: 'SystemAuthTokenManager',
+      component: () => import('@/views/settings/system_auth_token/index.vue'),
+      meta: {
+        locale: 'menu.settings.systemAuthToken',
+        requiresAuth: true,
+      },
+    },
+    {
       path: 'dependencies',
       name: 'DependencyStatus',
       component: () => import('@/views/dashboard/dependency_service/index.vue'),
@@ -47,15 +56,6 @@ const SETTINGS: AppRouteRecordRaw = {
       component: () => import('@/views/dashboard/admin/pass.vue'),
       meta: {
         locale: 'menu.changePassword',
-        requiresAuth: true,
-      },
-    },
-    {
-      path: 'system_auth_token',
-      name: 'SystemAuthTokenManager',
-      component: () => import('@/views/settings/system_auth_token/index.vue'),
-      meta: {
-        locale: 'menu.settings.systemAuthToken',
         requiresAuth: true,
       },
     },

@@ -8,14 +8,14 @@ related:
   - guides/customization
 ---
 
-FeedCraft 提供了一些內建工具來幫助您除錯 RSS 來源並監控系統健康狀況。您可以在管理後台的 **工具 (Tools)** 選單下訪問這些工具。
+FeedCraft 提供了一些內建工具來幫助您除錯 RSS 來源並監控系統健康狀況。您可以在管理後台的 **實用工具** 選單下訪問這些工具。
 
 ## RSS 預覽 (RSS Viewer)
 
 **RSS 預覽** (Feed Viewer) 允許您按照 FeedCraft 的解析方式預覽任何 RSS 來源。
 
 - **使用方法**:
-  1. 導航至 **工具 > RSS 預覽**。
+  1. 導航至 **實用工具 > Feed 源預覽 > Feed 預覽**。
   2. 輸入一個 RSS/Atom 地址。
   3. 點擊 **預覽 (Preview)**。
 - **目的**: 在設定配方 (Recipe) 之前，驗證 FeedCraft 是否能夠成功抓取和解析某個 Feed。
@@ -26,7 +26,7 @@ FeedCraft 提供了一些內建工具來幫助您除錯 RSS 來源並監控系�
 **RSS 範例訂閱** 頁面提供內建訂閱地址，用來測試 RSS 閱讀器對 HTML、CSS 和媒體內容的渲染支援情況，以及對 RSS 1.0、RSS 2.0、Atom、JSON Feed 文件的格式支援。
 
 - **使用方法**:
-  1. 導航至 **工具 > RSS 範例訂閱**。
+  1. 導航至 **實用工具 > Feed 源預覽 > 示例 Feed 源**。
   2. 複製其中一個訂閱地址，例如 `/example-rss-feeds/html-elements.xml`。
   3. 在您的 RSS 閱讀器中訂閱它。
 - **可用 Feed**:
@@ -45,7 +45,7 @@ FeedCraft 提供了一些內建工具來幫助您除錯 RSS 來源並監控系�
 **Feed 比對** 工具讓您可以直觀地看到某個 Craft（Atom 或 Flow）對 Feed 的處理效果。
 
 - **使用方法**:
-  1. 導航至 **工具 > Feed 比對**。
+  1. 導航至 **實用工具 > Feed 源預覽 > Feed 預覽**（工藝效果對比已併入該頁）。
   2. 輸入原始 RSS Feed 地址。
   3. 選擇一個 **FlowCraft** 或 **AtomCraft**。
   4. 點擊 **比對 (Compare)**。
@@ -59,7 +59,7 @@ FeedCraft 提供了一些內建工具來幫助您除錯 RSS 來源並監控系�
 **Craft 依賴檢查** (System Health) 工具可視化您的 Recipes、FlowCrafts 和 AtomCrafts 之間的內部關係。
 
 - **使用方法**:
-  1. 導航至 **工具 > Craft 依賴檢查**。
+  1. 導航至 **實用工具 > 系統狀態 > Craft 依賴檢查**。
   2. 點擊 **分析 Craft 依賴 (Analyze Craft Dependencies)**。
 - **功能**:
   - 生成所有依賴關係的樹狀視圖。
@@ -76,7 +76,7 @@ FeedCraft 提供了一些內建工具來幫助您除錯 RSS 來源並監控系�
 **系統運行狀態** (Observability) 工具提供了一個全面的儀表板，用於監控資源的健康狀況和執行狀態。
 
 - **使用方法**:
-  1. 導航至 **工具 > 系統運行狀態**。
+  1. 導航至 **實用工具 > 系統狀態 > 執行狀態**。
 - **功能**:
   - **資源健康 (Resource Health)**: 查看配方及其他組件的當前狀態（健康、降級、暫停），包括連續失敗次數。
   - **執行日誌 (Execution Logs)**: 追蹤詳細的執行歷史、成功率以及每次運行的具體錯誤類型（例如：超時、網路錯誤、解析錯誤）。
