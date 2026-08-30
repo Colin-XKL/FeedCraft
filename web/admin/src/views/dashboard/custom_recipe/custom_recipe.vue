@@ -168,10 +168,7 @@
 
         <!-- Quick Create Fields -->
         <template v-if="quickCreate">
-          <a-form-item
-            :label="t('customRecipe.form.feedURL')"
-            field="feed_url"
-          >
+          <a-form-item :label="t('customRecipe.form.feedURL')" field="feed_url">
             <a-input
               v-model="form.feed_url"
               :placeholder="t('customRecipe.form.placeholder.rssUrl')"
@@ -256,7 +253,14 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted, computed, nextTick, watch, type ComputedRef } from 'vue';
+  import {
+    ref,
+    onMounted,
+    computed,
+    nextTick,
+    watch,
+    type ComputedRef,
+  } from 'vue';
   import {
     createCustomRecipe,
     CustomRecipe,
