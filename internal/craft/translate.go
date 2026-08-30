@@ -11,7 +11,7 @@ import (
 
 const translateArticleContentPrompt = "下面是一篇文章的内容,请将其翻译为{{.TargetLang}}. 如果文章内有图片或者链接尽量保留它们, 对于专有名词也请保持原样. 注意只需要输出翻译后的文章内容即可，不要包括其他无关的内容。"
 
-const translateArticleTitlePrompt = "下面是一篇文章的标题, 请将其翻译为{{.TargetLang}}. 对于专有名词等请保持原样。注意只需要输出一句翻译后的内容即可，不要包括其他无关的内容。"
+const translateArticleTitlePrompt = "下面是一篇文章的标题, 请将其翻译为{{.TargetLang}}. 对于专有名词等请保持原样。注意只输出一句翻译后的标题，不要添加「文章内容：」「标题：」等前缀，也不要包括其他无关内容。"
 
 const immersiveTranslatePrompt = `
 你是一名精通多语言的翻译专家。请将输入的文章翻译为{{.TargetLang}}，按段落逐段处理，输出时每段原文后紧跟对应的译文，原文与译文之间留一空行。

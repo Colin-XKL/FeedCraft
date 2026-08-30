@@ -209,13 +209,19 @@ func newTranslateTitleProcessor(prompt string) *ArticleTextTransformProcessor {
 	finalPrompt := renderTargetLangPrompt(prompt, translateArticleTitlePrompt)
 	targetLangCode := util.GetDefaultTargetLang()
 	transformer := GetCommonCachedArticleTransformer(
-		newArticleTitleContentCacheKeyGenerator(finalPrompt),
+		newArticleLLMPayloadCacheKeyGenerator(finalPrompt, func(article *model.CraftArticle) string {
+			return BuildLLMArticlePayload(strings.TrimSpace(article.Title), "")
+		}),
 		func(ctx context.Context, article *model.CraftArticle) (string, error) {
 			title := strings.TrimSpace(article.Title)
 			if title == "" || util.IsSameLanguage(title, targetLangCode) {
 				return title, nil
 			}
-			return CallLLMForArticleTransform(finalPrompt, "", title, util.ContentProcessOption{})
+			translated, err := CallLLMForArticleTransform(finalPrompt, title, "", util.ContentProcessOption{})
+			if err != nil {
+				return "", err
+			}
+			return sanitizeTranslatedTitle(translated), nil
 		},
 		"translate title",
 	)
@@ -231,6 +237,30 @@ func newTranslateTitleProcessor(prompt string) *ArticleTextTransformProcessor {
 			return nil
 		},
 	}
+}
+
+func sanitizeTranslatedTitle(raw string) string {
+	s := strings.TrimSpace(raw)
+	s = strings.Trim(s, `"'“”「」『』`)
+	if i := strings.IndexByte(s, '\n'); i >= 0 {
+		s = strings.TrimSpace(s[:i])
+	}
+	prefixes := []string{
+		"文章内容：", "文章内容:",
+		"Article Content：", "Article Content:",
+		"文章标题：", "文章标题:",
+		"Article Title：", "Article Title:",
+		"标题：", "标题:",
+		"Title：", "Title:",
+	}
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(s, prefix) {
+			s = strings.TrimSpace(s[len(prefix):])
+			s = strings.Trim(s, `"'“”「」『』`)
+			break
+		}
+	}
+	return s
 }
 
 func newRetitleProcessor(prompt string) *ArticleTextTransformProcessor {

@@ -213,3 +213,10 @@ func TestForEachArticleConcurrently_RespectsLLMMaxConcurrency(t *testing.T) {
 
 	assert.Equal(t, int32(2), maxInFlight.Load())
 }
+
+func TestSanitizeTranslatedTitle_StripsLeakedLabels(t *testing.T) {
+	assert.Equal(t, "香港楼市降温", sanitizeTranslatedTitle("文章内容：香港楼市降温"))
+	assert.Equal(t, "Hong Kong housing cools", sanitizeTranslatedTitle("Article Content: Hong Kong housing cools"))
+	assert.Equal(t, "只留第一行", sanitizeTranslatedTitle("标题：只留第一行\n第二行"))
+	assert.Equal(t, "干净标题", sanitizeTranslatedTitle("「干净标题」"))
+}

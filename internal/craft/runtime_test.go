@@ -302,7 +302,9 @@ func TestTranslateTitleProcessor_UsesNativeLLMFlow(t *testing.T) {
 	original := llmContextCaller
 	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
 		assert.Contains(t, context, "Original Title")
-		return "Translated Title", nil
+		assert.Contains(t, context, "Article Title:")
+		assert.NotContains(t, context, "Article Content:")
+		return "文章内容：Translated Title", nil
 	}
 	t.Cleanup(func() { llmContextCaller = original })
 
