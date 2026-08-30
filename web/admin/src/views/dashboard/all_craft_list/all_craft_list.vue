@@ -13,13 +13,20 @@
     </template>
 
     <a-table
+      class="all-craft-list-table"
       row-key="row_key"
       :data="allCraftRows"
       :columns="columns"
       :loading="isLoading"
       :bordered="false"
       :pagination="{ pageSize: 10, showTotal: true }"
+      :scroll="{ x: ALL_CRAFT_LIST_SCROLL_X }"
     >
+      <template #name="{ record }">
+        <span class="all-craft-name" :title="record.name">{{
+          record.name
+        }}</span>
+      </template>
       <template #type="{ record }">
         <a-tag :color="getCraftTypeColor(record.type)">
           {{ record.type }}
@@ -44,6 +51,10 @@
   import { Message } from '@arco-design/web-vue';
   import { useI18n } from 'vue-i18n';
   import { CraftItem, listAllCrafts } from '@/api/craft_flow';
+  import {
+    ALL_CRAFT_LIST_SCROLL_X,
+    getAllCraftListColumns,
+  } from './all_craft_list.columns';
 
   const { t } = useI18n();
 
@@ -56,16 +67,7 @@
     }))
   );
 
-  const columns = [
-    { title: t('allCraftList.table.name'), dataIndex: 'name' },
-    { title: t('allCraftList.table.type'), slotName: 'type', width: 160 },
-    {
-      title: t('allCraftList.table.templateOnly'),
-      slotName: 'templateOnly',
-      width: 140,
-    },
-    { title: t('allCraftList.table.description'), dataIndex: 'description' },
-  ];
+  const columns = getAllCraftListColumns(t);
 
   const getCraftTypeColor = (type: string) => {
     if (type?.toLowerCase().includes('flow')) return 'purple';
@@ -90,4 +92,30 @@
   });
 </script>
 
-<style scoped></style>
+<style scoped>
+  /* Arco Table defaults to word-break: break-all, which splits English
+     identifiers mid-token (ignore-advertorial → advert / orial). */
+  .all-craft-list-table :deep(.arco-table-td) {
+    word-break: normal;
+  }
+
+  .all-craft-list-table :deep(.all-craft-id-cell),
+  .all-craft-list-table :deep(.all-craft-id-cell .arco-table-td-content),
+  .all-craft-name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    word-break: keep-all;
+    overflow-wrap: normal;
+  }
+
+  .all-craft-name {
+    display: inline-block;
+    max-width: 100%;
+    vertical-align: bottom;
+  }
+
+  .all-craft-list-table :deep(.all-craft-desc-cell) {
+    overflow-wrap: break-word;
+  }
+</style>
