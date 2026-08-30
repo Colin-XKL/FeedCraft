@@ -101,12 +101,13 @@
 
   .all-craft-list-table :deep(.all-craft-id-cell),
   .all-craft-list-table :deep(.all-craft-id-cell .arco-table-td-content),
+  .all-craft-list-table :deep(.all-craft-id-cell .arco-table-cell),
   .all-craft-name {
     overflow: hidden;
-    white-space: nowrap;
+    white-space: nowrap !important;
     text-overflow: ellipsis;
-    word-break: keep-all;
-    overflow-wrap: normal;
+    word-break: keep-all !important;
+    overflow-wrap: normal !important;
   }
 
   .all-craft-name {
