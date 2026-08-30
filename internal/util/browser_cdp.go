@@ -1,6 +1,7 @@
 package util
 
 import (
+	"FeedCraft/internal/config"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -47,6 +48,7 @@ func getCDPContent(endpoint string, websiteUrl string, options BrowserlessOption
 	} else if strings.EqualFold(options.WaitUntil, "networkidle2") {
 		actions = append(actions, idleMonitor.waitAction(2, 500*time.Millisecond))
 	}
+	actions = append(actions, buildBrowserNavigationActions(options.NavigationActions, options.Timeout)...)
 	if options.WaitTime > 0 {
 		actions = append(actions, chromedp.Sleep(options.WaitTime))
 	}
@@ -56,6 +58,40 @@ func getCDPContent(endpoint string, websiteUrl string, options BrowserlessOption
 		return "", fmt.Errorf("browser cdp render failed: %w", err)
 	}
 	return html, nil
+}
+
+func buildBrowserNavigationActions(actions []config.BrowserNavigationAction, defaultTimeout time.Duration) []chromedp.Action {
+	if len(actions) == 0 {
+		return nil
+	}
+
+	result := make([]chromedp.Action, 0, len(actions)*2)
+	for _, action := range actions {
+		actionTimeout := defaultTimeout
+		if action.TimeoutMs > 0 {
+			actionTimeout = time.Duration(action.TimeoutMs) * time.Millisecond
+		}
+		switch action.Type {
+		case config.BrowserNavigationActionClick:
+			result = append(result,
+				waitVisibleWithTimeout(action.Selector, actionTimeout),
+				chromedp.Click(action.Selector, chromedp.ByQuery),
+			)
+		case config.BrowserNavigationActionWaitForSelector:
+			result = append(result, waitVisibleWithTimeout(action.Selector, actionTimeout))
+		case config.BrowserNavigationActionWait:
+			result = append(result, chromedp.Sleep(time.Duration(action.DurationMs)*time.Millisecond))
+		}
+	}
+	return result
+}
+
+func waitVisibleWithTimeout(selector string, timeout time.Duration) chromedp.ActionFunc {
+	return func(ctx context.Context) error {
+		waitCtx, cancel := context.WithTimeout(ctx, timeout)
+		defer cancel()
+		return chromedp.WaitVisible(selector, chromedp.ByQuery).Do(waitCtx)
+	}
 }
 
 func navigateAndWaitForPageEventAction(websiteURL string, waitUntil string) chromedp.ActionFunc {

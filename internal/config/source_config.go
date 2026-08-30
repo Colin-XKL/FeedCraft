@@ -11,22 +11,36 @@ const (
 )
 
 const (
+	BrowserNavigationActionClick           = "click"
+	BrowserNavigationActionWaitForSelector = "wait_for_selector"
+	BrowserNavigationActionWait            = "wait"
+
 	FeedIconSourceAuto           = "auto"
 	FeedIconSourceFaviconService = "favicon_service"
 )
+
+// BrowserNavigationAction describes a browser interaction to run after the page
+// loads and before rendered HTML is captured.
+type BrowserNavigationAction struct {
+	Type       string `json:"type"`
+	Selector   string `json:"selector,omitempty"`
+	TimeoutMs  int64  `json:"timeout_ms,omitempty"`
+	DurationMs int64  `json:"duration_ms,omitempty"`
+}
 
 // --- Fetcher-specific Configurations ---
 
 // HttpFetcherConfig holds the configuration for an HTTP fetcher.
 // It supports some HTTP methods, headers, and request bodies.
 type HttpFetcherConfig struct {
-	URL               string            `json:"url"`
-	Method            string            `json:"method,omitempty"`
-	Headers           map[string]string `json:"headers,omitempty"`
-	Body              string            `json:"body,omitempty"`
-	UseBrowserless    bool              `json:"use_browserless,omitempty"`
-	Purpose           string            `json:"purpose,omitempty"`
-	HttpClientTimeout time.Duration     `json:"http_client_timeout,omitempty"`
+	URL               string                    `json:"url"`
+	Method            string                    `json:"method,omitempty"`
+	Headers           map[string]string         `json:"headers,omitempty"`
+	Body              string                    `json:"body,omitempty"`
+	UseBrowserless    bool                      `json:"use_browserless,omitempty"`
+	NavigationActions []BrowserNavigationAction `json:"navigation_actions,omitempty"`
+	Purpose           string                    `json:"purpose,omitempty"`
+	HttpClientTimeout time.Duration             `json:"http_client_timeout,omitempty"`
 }
 
 // SearchFetcherConfig holds the configuration for search-based fetching.
