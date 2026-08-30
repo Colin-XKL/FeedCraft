@@ -34,13 +34,31 @@ Since we use the [Starlight](https://starlight.astro.build/components/using-comp
 
 ### 3. File Organization & Sidebar
 
-- **Grouping**: Documents are organized into `guides/start` (Quick Start, Concepts) and `guides/advanced` (specific features, customization).
-- **Sidebar Order**: Use `sidebar.order` in the frontmatter to control the order of pages.
-  - `quick-start.md`: `order: 1`
-  - `concepts.md`: `order: 2`
+Documents follow a four-quadrant layout. Put new pages in the group that matches the writing contract:
+
+| Directory | Sidebar label | Writing contract |
+| --- | --- | --- |
+| `start/` | Getting Started / 上手 | First-time path. The reader should be able to follow it end-to-end. |
+| `guides/` | Guides / 指南 | One concrete task per page. Do not mix background essays into a how-to. |
+| `concepts/` | Concepts / 概念 | Background, philosophy, and design decisions. Explain *why*. |
+| `reference/` | Reference / 参考 | Complete lists and parameters. Map the product; do not narrate a tutorial. |
+
+Current files:
+
+```text
+{en,zh,zh-tw}/
+├── index.mdx                 # splash + four entry cards
+├── start/quick-start.md
+├── guides/                   # html-to-rss, json-to-rss, search-to-rss, inbox, customization
+├── concepts/                 # concepts, comparison
+└── reference/                # system-craft-atoms, tools
+```
+
+- **Sidebar Order**: Use `sidebar.order` in the frontmatter to control the order of pages within a group.
+- **Related docs**: Set `related` to locale-free slugs (e.g. `guides/html-to-rss`). `MarkdownContent.astro` renders them at the bottom of the page.
 - **Sidebar Labels**: If you add a new category or change a folder structure, update the `sidebar` array in `doc-site/astro.config.mjs` to include the correct labels and translations.
 
-### 3. Frontmatter Requirements
+### 4. Frontmatter Requirements
 
 Every Markdown/MDX file must contain valid frontmatter:
 
@@ -51,17 +69,18 @@ description: Brief Content
 ---
 ```
 
-### 4. Linking Conventions
+### 5. Linking Conventions
 
-- **Relative Links**: Prefer relative links (e.g., `../advanced/customization`) when linking between documents within the same language tree.
-- **Absolute Links**: Use absolute links starting with the locale (e.g., `/zh-tw/guides/start/quick-start/`) only when necessary, such as in the index page or cross-locale references. Ensure the locale prefix matches the target file's language.
+- **Relative Links**: Prefer relative links (e.g., `../guides/customization`) when linking between documents within the same language tree.
+- **Absolute Links**: Use absolute links starting with the locale (e.g., `/zh-tw/start/quick-start/`) only when necessary, such as in the index page or cross-locale references. Ensure the locale prefix matches the target file's language.
 
-### 5. Deployment Information
+### 6. Deployment Information
 
 - The documentation refers to a demo/public instance at `https://feed-craft.colinx.one`.
+- Old URLs under `/guides/start/` and `/guides/advanced/` are redirected in `doc-site/vercel.json`.
 
 ## Common Tasks for Agents
 
-- **Adding a Feature**: Document the feature in all three languages. Update `system-craft-atoms.md` if it's a new Atom.
+- **Adding a Feature**: Document the feature in all three languages. Pick the correct quadrant (`guides` vs `reference` vs `concepts`). Update `reference/system-craft-atoms.md` if it's a new Atom, using the map groups: content enhancement, AI processing, filtering, input & output.
 - **Translation**: When translating from `zh` to `zh-tw`, do not just convert characters; adapt the vocabulary to be natural for Traditional Chinese readers.
 - **Verification**: After modifying files, verify that the links between pages are not broken.

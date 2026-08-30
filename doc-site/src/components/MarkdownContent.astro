@@ -1,0 +1,63 @@
+---
+import Default from "@astrojs/starlight/components/MarkdownContent.astro";
+import { getCollection } from "astro:content";
+
+const route = Astro.locals.starlightRoute;
+const relatedSlugs: string[] = route.entry.data.related ?? [];
+const locale = route.id.split("/")[0] ?? "en";
+
+const RELATED_HEADING: Record<string, string> = {
+  en: "Related docs",
+  zh: "相关文档",
+  "zh-tw": "相關文件",
+};
+
+let items: { href: string; title: string }[] = [];
+if (relatedSlugs.length > 0) {
+  const docs = await getCollection("docs");
+  items = relatedSlugs.flatMap((slug) => {
+    const id = `${locale}/${slug}`;
+    const hit =
+      docs.find((doc) => doc.id === id) ??
+      docs.find((doc) => doc.id === slug && "locale" in doc && doc.locale === locale);
+    if (!hit) {
+      return [];
+    }
+    return [{ href: `/${locale}/${slug}/`, title: hit.data.title }];
+  });
+}
+
+const heading = RELATED_HEADING[locale] ?? RELATED_HEADING.en;
+---
+
+<Default><slot /></Default>
+{
+  items.length > 0 && (
+    <aside class="related-docs">
+      <h2>{heading}</h2>
+      <ul>
+        {items.map((item) => (
+          <li>
+            <a href={item.href}>{item.title}</a>
+          </li>
+        ))}
+      </ul>
+    </aside>
+  )
+}
+
+<style>
+  .related-docs {
+    margin-block-start: 2.5rem;
+    padding-block-start: 1.25rem;
+    border-block-start: 1px solid var(--sl-color-hairline);
+  }
+  .related-docs h2 {
+    font-size: var(--sl-text-h4);
+    margin-block: 0 0.75rem;
+  }
+  .related-docs ul {
+    margin: 0;
+    padding-inline-start: 1.25rem;
+  }
+</style>

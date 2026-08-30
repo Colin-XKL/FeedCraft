@@ -8,7 +8,7 @@ hero:
     file: ../../../assets/logo-header.png
   actions:
     - text: 快速开始
-      link: /zh/guides/start/quick-start/
+      link: /zh/start/quick-start/
       icon: right-arrow
       variant: primary
     - text: GitHub
@@ -18,13 +18,19 @@ hero:
 
 import { Card, CardGrid } from "@astrojs/starlight/components";
 
-## 下一步
+## 从这里开始
 
-<CardGrid stagger>
-  <Card title="快速开始" icon="pencil">
-    查看 [快速开始指南](/zh/guides/start/quick-start/).
+<CardGrid>
+  <Card title="上手" icon="rocket">
+    跟着 [快速开始](/zh/start/quick-start/) 做完，几分钟就能处理一条订阅源。
   </Card>
-  <Card title="高级定制" icon="setting">
-    了解如何 [定制](/zh/guides/advanced/customization/) 你的订阅源.
+  <Card title="指南" icon="open-book">
+    一篇一个任务：[HTML / JSON / 搜索转 RSS](/zh/guides/)、收件箱与定制。
+  </Card>
+  <Card title="概念" icon="puzzle">
+    先懂原理：[核心概念](/zh/concepts/) 与设计理念。
+  </Card>
+  <Card title="参考" icon="list-format">
+    查清单：[系统 AtomCraft](/zh/reference/) 与工具，按工艺类型分组。
   </Card>
 </CardGrid>

@@ -54,25 +54,43 @@ export default defineConfig({
           lang: "zh-TW",
         },
       },
+      pagefind: true,
       components: {
         Footer: "./src/components/Footer.astro",
+        MarkdownContent: "./src/components/MarkdownContent.astro",
       },
       sidebar: [
         {
-          label: "Quick Start",
+          label: "Getting Started",
           translations: {
-            "zh-CN": "快速开始",
-            "zh-TW": "快速開始",
+            "zh-CN": "上手",
+            "zh-TW": "上手",
           },
-          autogenerate: { directory: "guides/start" },
+          autogenerate: { directory: "start" },
         },
         {
-          label: "Advanced Customization",
+          label: "Guides",
           translations: {
-            "zh-CN": "进阶自定义",
-            "zh-TW": "進階定制",
+            "zh-CN": "指南",
+            "zh-TW": "指南",
           },
-          autogenerate: { directory: "guides/advanced" },
+          autogenerate: { directory: "guides" },
+        },
+        {
+          label: "Concepts",
+          translations: {
+            "zh-CN": "概念",
+            "zh-TW": "概念",
+          },
+          autogenerate: { directory: "concepts" },
+        },
+        {
+          label: "Reference",
+          translations: {
+            "zh-CN": "参考",
+            "zh-TW": "參考",
+          },
+          autogenerate: { directory: "reference" },
         },
       ],
     }),

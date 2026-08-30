@@ -284,7 +284,7 @@
 
   const { t, locale } = useI18n();
   const atomDocsHref = computed(() =>
-    buildDocsUrl(locale.value, 'guides/advanced/customization')
+    buildDocsUrl(locale.value, 'guides/customization')
   );
 
   const isLoading = ref(false);
