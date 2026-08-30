@@ -1,6 +1,7 @@
 package craft
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"sync"
@@ -110,6 +111,13 @@ func TestOptionAIFilterKeepsArticleOnInvalidLLMResponse(t *testing.T) {
 	require.NoError(t, err)
 	require.Len(t, feed.Items, 1)
 	assert.Equal(t, "Keep on malformed response", feed.Items[0].Title)
+}
+
+func TestAIFilterProcessorRejectsBlankRuleOnEmptyFeed(t *testing.T) {
+	processor := newAIFilterProcessor("", "article_content")
+	_, err := processor.Process(context.Background(), &model.CraftFeed{})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "requires rule param")
 }
 
 func TestAIFilterCraftLoadParamUsesRuleParam(t *testing.T) {
