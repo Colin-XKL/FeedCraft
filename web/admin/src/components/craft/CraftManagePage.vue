@@ -51,6 +51,13 @@
     background: var(--color-fill-1);
   }
 
+  /* Override Arco's default word-break: break-all so English identifiers
+     wrap at word/hyphen boundaries instead of mid-token. */
+  :deep(.arco-table-td) {
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+
   @media (max-width: 768px) {
     .craft-manage-page {
       padding: 20px 16px;
