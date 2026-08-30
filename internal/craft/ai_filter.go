@@ -82,11 +82,11 @@ func newAIFilterProcessor(rule string, extraPayloadRaw string) *AIFilterProcesso
 
 func (p *AIFilterProcessor) Process(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
 	_ = ctx
-	if feed == nil || len(feed.Articles) == 0 {
-		return feed, nil
-	}
 	if p.rule == "" {
 		return nil, fmt.Errorf("ai-filter requires rule param")
+	}
+	if feed == nil || len(feed.Articles) == 0 {
+		return feed, nil
 	}
 
 	cloned := cloneCraftFeed(feed)
