@@ -1,8 +1,10 @@
 ---
 import Default from '@astrojs/starlight/components/Footer.astro';
-import { formatDocSiteFooter } from '../lib/displayVersion.js';
+import { formatFeedCraftVersion } from '../lib/displayVersion.js';
 
-const footerText = formatDocSiteFooter(import.meta.env.PUBLIC_FEEDCRAFT_VERSION);
+const footerText = formatFeedCraftVersion(
+  import.meta.env.PUBLIC_FEEDCRAFT_VERSION
+);
 ---
 
 <Default {...Astro.props} />

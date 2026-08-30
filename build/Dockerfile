@@ -26,7 +26,7 @@ RUN --mount=type=cache,id=gobuild,target="/root/.cache/go-build" GO111MODULE=on 
 
 FROM node:22-slim AS frontend-builder
 ARG VERSION=unknown
-ENV VITE_APP_VERSION=${VERSION}
+ENV APP_VERSION=${VERSION}
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 

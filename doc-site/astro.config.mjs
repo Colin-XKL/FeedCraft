@@ -2,17 +2,16 @@ import { readFileSync } from "node:fs";
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import starlightCatppuccin from "@catppuccin/starlight";
-import { resolveDocSiteDisplayVersion } from "./src/lib/displayVersion.js";
+import { resolveDisplayVersion } from "./src/lib/displayVersion.js";
 
 const pkg = JSON.parse(
   readFileSync(new URL("./package.json", import.meta.url), "utf-8")
 );
-const branch = process.env.VERCEL_GIT_COMMIT_REF || "";
-const sha = (process.env.VERCEL_GIT_COMMIT_SHA || "").slice(0, 7);
-const displayVersion = resolveDocSiteDisplayVersion({
-  pkgVersion: pkg.version,
-  branch,
-  sha,
+const displayVersion = resolveDisplayVersion({
+  explicitVersion: process.env.APP_VERSION,
+  branch: process.env.VERCEL_GIT_COMMIT_REF,
+  commitSha: process.env.VERCEL_GIT_COMMIT_SHA,
+  packageVersion: pkg.version,
 });
 
 // https://astro.build/config

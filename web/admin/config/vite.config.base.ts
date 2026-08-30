@@ -5,10 +5,18 @@ import vue from '@vitejs/plugin-vue';
 import vueJsx from '@vitejs/plugin-vue-jsx';
 import svgLoader from 'vite-svg-loader';
 import configArcoStyleImportPlugin from './plugin/arcoStyleImport';
+import { resolveDisplayVersion } from '../src/utils/appVersion';
 
 const pkg = JSON.parse(
   readFileSync(resolve(__dirname, '../package.json'), 'utf-8')
 ) as { version: string };
+
+const displayVersion = resolveDisplayVersion({
+  explicitVersion: process.env.APP_VERSION,
+  branch: process.env.VERCEL_GIT_COMMIT_REF,
+  commitSha: process.env.VERCEL_GIT_COMMIT_SHA,
+  packageVersion: pkg.version,
+});
 
 export default defineConfig({
   plugins: [
@@ -40,7 +48,7 @@ export default defineConfig({
   },
   define: {
     'process.env': {},
-    '__APP_VERSION__': JSON.stringify(pkg.version),
+    '__APP_VERSION__': JSON.stringify(displayVersion),
   },
   css: {
     preprocessorOptions: {

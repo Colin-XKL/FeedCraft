@@ -1,6 +1,6 @@
 {
   "name": "doc-site",
-  "version": "1.0.0",
+  "version": "3.1.0",
   "description": "FeedCraft doc site",
   "main": "index.js",
   "scripts": {

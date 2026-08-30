@@ -1,23 +1,35 @@
-export function formatFeedCraftVersion(
-  injectedVersion: string | undefined,
-  packageVersion: string
-): string {
-  const injected = injectedVersion?.trim();
-  if (injected) {
-    return `FeedCraft ${injected}`;
+export interface VersionSource {
+  /** Version handed down by the release pipeline (e.g. v3.2.0 or dev-<hash>). */
+  explicitVersion?: string;
+  /** Git branch of the build, when the build platform exposes one. */
+  branch?: string;
+  /** Git commit of the build, when the build platform exposes one. */
+  commitSha?: string;
+  packageVersion: string;
+}
+
+export function resolveDisplayVersion({
+  explicitVersion,
+  branch,
+  commitSha,
+  packageVersion,
+}: VersionSource): string {
+  const explicit = explicitVersion?.trim();
+  if (explicit) {
+    return explicit;
   }
-  return `FeedCraft v${packageVersion}`;
+  const shortSha = commitSha?.trim().slice(0, 7);
+  if (shortSha && branch?.trim() !== 'main') {
+    return `dev-${shortSha}`;
+  }
+  return `v${packageVersion}`;
+}
+
+export function formatFeedCraftVersion(displayVersion: string): string {
+  return `FeedCraft ${displayVersion}`;
 }
 
 export function getAdminFooterVersion(): string {
-  const fromEnv = import.meta.env.VITE_APP_VERSION;
-  // Vite compile-time define; conventional double-underscore name.
   // eslint-disable-next-line no-underscore-dangle
-  const compiledVersion = __APP_VERSION__;
-  const packageVersion =
-    typeof compiledVersion === 'string' ? compiledVersion : '0.0.0';
-  return formatFeedCraftVersion(
-    typeof fromEnv === 'string' ? fromEnv : undefined,
-    packageVersion
-  );
+  return formatFeedCraftVersion(__APP_VERSION__);
 }

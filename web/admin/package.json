@@ -1,7 +1,7 @@
 {
   "name": "feed-craft-admin-panel",
   "description": "FeedCraft admin panel",
-  "version": "1.0.0",
+  "version": "3.1.0",
   "private": true,
   "author": "Colin",
   "license": "MIT",
