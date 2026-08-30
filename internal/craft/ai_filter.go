@@ -1,11 +1,13 @@
 package craft
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"strings"
 
 	"FeedCraft/internal/constant"
+	"FeedCraft/internal/model"
 	"FeedCraft/internal/util"
 
 	"github.com/gorilla/feeds"
@@ -59,49 +61,81 @@ func GetAIFilterCraftOptions(rule string, extraPayloadRaw string) []LegacyCraftO
 }
 
 func OptionAIFilter(rule string, extraPayloadRaw string) LegacyCraftOption {
-	rule = strings.TrimSpace(rule)
-	payloadTypes := parseAIFilterExtraPayload(extraPayloadRaw)
+	processor := newAIFilterProcessor(rule, extraPayloadRaw)
 	return func(feed *feeds.Feed, payload ExtraPayload) error {
-		if rule == "" {
-			return fmt.Errorf("ai-filter requires rule param")
-		}
-		items := feed.Items
-		if len(items) == 0 {
-			return nil
-		}
-
-		drops := parallel.Map(items, func(item *feeds.Item, _ int) bool {
-			decision, err := evaluateAIFilterItem(item, rule, payloadTypes)
-			if err != nil {
-				logrus.Warnf("failed to evaluate ai-filter for article [%s], err: %v", item.Title, err)
-				return false
-			}
-			return decision.Result == aiFilterResultDrop
-		})
-
-		feed.Items = lo.Filter(items, func(_ *feeds.Item, index int) bool {
-			return !drops[index]
-		})
-		return nil
+		_ = payload
+		return applyLocalProcessorToLegacyFeed(context.Background(), processor, feed)
 	}
 }
 
-func evaluateAIFilterItem(item *feeds.Item, rule string, payloadTypes []aiFilterExtraPayloadType) (aiFilterDecision, error) {
+type AIFilterProcessor struct {
+	rule         string
+	payloadTypes []aiFilterExtraPayloadType
+}
+
+func newAIFilterProcessor(rule string, extraPayloadRaw string) *AIFilterProcessor {
+	return &AIFilterProcessor{
+		rule:         strings.TrimSpace(rule),
+		payloadTypes: parseAIFilterExtraPayload(extraPayloadRaw),
+	}
+}
+
+func (p *AIFilterProcessor) Process(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+	_ = ctx
+	if feed == nil || len(feed.Articles) == 0 {
+		return feed, nil
+	}
+	if p.rule == "" {
+		return nil, fmt.Errorf("ai-filter requires rule param")
+	}
+
+	cloned := cloneCraftFeed(feed)
+	drops := parallel.Map(cloned.Articles, func(article *model.CraftArticle, _ int) bool {
+		if article == nil {
+			return true
+		}
+		decision, err := p.evaluateAIFilterArticle(article)
+		if err != nil {
+			logrus.Warnf("failed to evaluate ai-filter for article [%s], err: %v", article.Title, err)
+			return false
+		}
+		return decision.Result == aiFilterResultDrop
+	})
+
+	filtered := make([]*model.CraftArticle, 0, len(cloned.Articles))
+	for idx, article := range cloned.Articles {
+		if article == nil {
+			continue
+		}
+		if !drops[idx] {
+			filtered = append(filtered, article)
+		}
+	}
+	cloned.Articles = filtered
+	return cloned, nil
+}
+
+func (p *AIFilterProcessor) evaluateAIFilterArticle(article *model.CraftArticle) (aiFilterDecision, error) {
 	summary := ""
-	if lo.Contains(payloadTypes, aiFilterExtraPayloadArticleSummary) {
-		generated, err := generateAIFilterArticleSummary(item)
+	if lo.Contains(p.payloadTypes, aiFilterExtraPayloadArticleSummary) {
+		generated, err := generateAIFilterArticleSummary(article)
 		if err != nil {
 			return aiFilterDecision{}, err
 		}
 		summary = generated
 	}
 
-	context, err := buildAIFilterArticlePayload(item, payloadTypes, summary)
+	payload, err := buildAIFilterArticlePayload(article, p.payloadTypes, summary)
 	if err != nil {
 		return aiFilterDecision{}, err
 	}
 
-	return cachedAIFilterDecision(item.Title, buildAIFilterPrompt(rule), context)
+	return cachedAIFilterDecision(article.Title, buildAIFilterPrompt(p.rule), payload)
+}
+
+func evaluateAIFilterItem(item *feeds.Item, rule string, payloadTypes []aiFilterExtraPayloadType) (aiFilterDecision, error) {
+	processor := &AIFilterProcessor{rule: strings.TrimSpace(rule), payloadTypes: payloadTypes}
+	return processor.evaluateAIFilterArticle(articleFromFeedItem(item))
 }
 
 func parseAIFilterExtraPayload(raw string) []aiFilterExtraPayloadType {
@@ -191,13 +225,13 @@ func cachedAIFilterDecision(title string, prompt string, context string) (aiFilt
 	return parseAIFilterDecision(cached)
 }
 
-func buildAIFilterArticlePayload(item *feeds.Item, payloadTypes []aiFilterExtraPayloadType, articleSummary string) (string, error) {
-	if item == nil {
+func buildAIFilterArticlePayload(article *model.CraftArticle, payloadTypes []aiFilterExtraPayloadType, articleSummary string) (string, error) {
+	if article == nil {
 		return "", fmt.Errorf("nil rss item")
 	}
 
 	var builder strings.Builder
-	fmt.Fprintf(&builder, "Article Title:\n```text\n%s\n```", strings.TrimSpace(item.Title))
+	fmt.Fprintf(&builder, "Article Title:\n```text\n%s\n```", strings.TrimSpace(article.Title))
 
 	for _, payloadType := range payloadTypes {
 		switch payloadType {
@@ -206,18 +240,18 @@ func buildAIFilterArticlePayload(item *feeds.Item, payloadTypes []aiFilterExtraP
 				fmt.Fprintf(&builder, "\n\nArticle Summary:\n```markdown\n%s\n```", strings.TrimSpace(articleSummary))
 			}
 		case aiFilterExtraPayloadArticleContent:
-			fmt.Fprintf(&builder, "\n\nArticle Content:\n```markdown\n%s\n```", strings.TrimSpace(getPrimaryFeedItemContent(item)))
+			fmt.Fprintf(&builder, "\n\nArticle Content:\n```markdown\n%s\n```", strings.TrimSpace(getPrimaryArticleContent(article)))
 		case aiFilterExtraPayloadArticleDate:
 			builder.WriteString("\n\nArticle Date:\n```text\n")
-			if !item.Created.IsZero() {
-				fmt.Fprintf(&builder, "Created: %s\n", item.Created.Format("2006-01-02T15:04:05Z07:00"))
+			if !article.Created.IsZero() {
+				fmt.Fprintf(&builder, "Created: %s\n", article.Created.Format("2006-01-02T15:04:05Z07:00"))
 			}
-			if !item.Updated.IsZero() {
-				fmt.Fprintf(&builder, "Updated: %s\n", item.Updated.Format("2006-01-02T15:04:05Z07:00"))
+			if !article.Updated.IsZero() {
+				fmt.Fprintf(&builder, "Updated: %s\n", article.Updated.Format("2006-01-02T15:04:05Z07:00"))
 			}
 			builder.WriteString("```")
 		case aiFilterExtraPayloadRawRSSItem:
-			rawJSON, err := buildRawRSSItemJSON(item)
+			rawJSON, err := buildRawRSSItemJSON(article)
 			if err != nil {
 				return "", err
 			}
@@ -228,8 +262,8 @@ func buildAIFilterArticlePayload(item *feeds.Item, payloadTypes []aiFilterExtraP
 	return builder.String(), nil
 }
 
-func generateAIFilterArticleSummary(item *feeds.Item) (string, error) {
-	content := getPrimaryFeedItemContent(item)
+func generateAIFilterArticleSummary(article *model.CraftArticle) (string, error) {
+	content := getPrimaryArticleContent(article)
 	if strings.TrimSpace(content) == "" {
 		return "", nil
 	}
@@ -237,17 +271,14 @@ func generateAIFilterArticleSummary(item *feeds.Item) (string, error) {
 	summaryPrompt := renderTargetLangPrompt("", constant.DefaultPrompts[constant.ProcessorTypeSummary])
 	hashVal := util.GetTextContentHash(strings.Join([]string{
 		util.GetTextContentHash(summaryPrompt),
-		strings.TrimSpace(item.Title),
+		strings.TrimSpace(article.Title),
 		util.GetTextContentHash(content),
 	}, "|"))
 	cacheKey := getCraftCacheKey("ai-filter-article-summary", hashVal)
 
 	return util.CachedFuncWithPreLog(cacheKey, func() (string, error) {
 		processedContent := content
-		domain := ""
-		if item.Link != nil {
-			domain, _ = util.ParseDomainFromUrl(item.Link.Href)
-		}
+		domain, _ := util.ParseDomainFromUrl(article.Link)
 		// Drop inline base64 images before converting: they carry no useful signal
 		// for LLM processing but can dominate the token budget.
 		cleanedContent := util.HTMLToMarkdown(util.RemoveBase64Images(content), domain)
@@ -258,7 +289,7 @@ func generateAIFilterArticleSummary(item *feeds.Item) (string, error) {
 			Temperature: util.LowestLLMTemperaturePtr(),
 		})
 	}, func(isCached bool) {
-		logrus.Infof("generating ai-filter article summary for article [%s], cached: %v", item.Title, isCached)
+		logrus.Infof("generating ai-filter article summary for article [%s], cached: %v", article.Title, isCached)
 	})
 }
 
@@ -299,39 +330,25 @@ func extractAIFilterJSON(raw string) (string, error) {
 	return strings.TrimSpace(trimmed[start : end+1]), nil
 }
 
-func getPrimaryFeedItemContent(item *feeds.Item) string {
-	if item == nil {
-		return ""
-	}
-	content := item.Content
-	if strings.TrimSpace(content) == "" {
-		content = item.Description
-	}
-	return content
-}
-
-func buildRawRSSItemJSON(item *feeds.Item) (string, error) {
+func buildRawRSSItemJSON(article *model.CraftArticle) (string, error) {
 	raw := map[string]string{
-		"title":       item.Title,
-		"description": item.Description,
-		"content":     item.Content,
-		"id":          item.Id,
+		"title":       article.Title,
+		"description": article.Description,
+		"content":     article.Content,
+		"id":          article.Id,
 	}
-	if item.Link != nil {
-		raw["link"] = item.Link.Href
+	if article.Link != "" {
+		raw["link"] = article.Link
 	}
-	if item.Source != nil {
-		raw["source"] = item.Source.Href
+	if article.AuthorName != "" || article.AuthorEmail != "" {
+		raw["author_name"] = article.AuthorName
+		raw["author_email"] = article.AuthorEmail
 	}
-	if item.Author != nil {
-		raw["author_name"] = item.Author.Name
-		raw["author_email"] = item.Author.Email
+	if !article.Created.IsZero() {
+		raw["created"] = article.Created.Format("2006-01-02T15:04:05Z07:00")
 	}
-	if !item.Created.IsZero() {
-		raw["created"] = item.Created.Format("2006-01-02T15:04:05Z07:00")
-	}
-	if !item.Updated.IsZero() {
-		raw["updated"] = item.Updated.Format("2006-01-02T15:04:05Z07:00")
+	if !article.Updated.IsZero() {
+		raw["updated"] = article.Updated.Format("2006-01-02T15:04:05Z07:00")
 	}
 
 	encoded, err := json.Marshal(raw)

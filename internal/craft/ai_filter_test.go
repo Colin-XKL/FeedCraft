@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"FeedCraft/internal/model"
 	"FeedCraft/internal/util"
 
 	"github.com/gorilla/feeds"
@@ -23,13 +24,13 @@ func TestParseAIFilterDecisionAcceptsFencedJSON(t *testing.T) {
 }
 
 func TestBuildAIFilterArticlePayloadIncludesRequestedContent(t *testing.T) {
-	item := &feeds.Item{
+	article := &model.CraftArticle{
 		Title:       "AI chip news",
 		Description: "short description",
 		Content:     "<p>complete article content</p>",
 	}
 
-	payload, err := buildAIFilterArticlePayload(item, []aiFilterExtraPayloadType{aiFilterExtraPayloadArticleContent}, "")
+	payload, err := buildAIFilterArticlePayload(article, []aiFilterExtraPayloadType{aiFilterExtraPayloadArticleContent}, "")
 
 	require.NoError(t, err)
 	assert.Contains(t, payload, "Article Title:")
@@ -176,7 +177,7 @@ func TestBuildAIFilterArticlePayloadIncludesRawRSSItemAsJSON(t *testing.T) {
 		Created:     time.Date(2026, 5, 16, 10, 0, 0, 0, time.UTC),
 	}
 
-	payload, err := buildAIFilterArticlePayload(item, []aiFilterExtraPayloadType{aiFilterExtraPayloadRawRSSItem}, "")
+	payload, err := buildAIFilterArticlePayload(articleFromFeedItem(item), []aiFilterExtraPayloadType{aiFilterExtraPayloadRawRSSItem}, "")
 
 	require.NoError(t, err)
 	assert.Contains(t, payload, "Raw RSS Item JSON:")

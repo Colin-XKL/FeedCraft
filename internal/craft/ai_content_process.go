@@ -1,9 +1,11 @@
 package craft
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
+	"FeedCraft/internal/model"
 	"FeedCraft/internal/util"
 
 	"github.com/gorilla/feeds"
@@ -47,36 +49,52 @@ func GetAIContentProcessCraftOptions(rule string, extraPayloadRaw string, placem
 }
 
 func OptionAIContentProcess(rule string, extraPayloadRaw string, placementRaw string) LegacyCraftOption {
+	processor := newAIContentProcessProcessor(rule, extraPayloadRaw, placementRaw)
+	return func(feed *feeds.Feed, payload ExtraPayload) error {
+		_ = payload
+		return applyLocalProcessorToLegacyFeed(context.Background(), processor, feed)
+	}
+}
+
+func newAIContentProcessProcessor(rule string, extraPayloadRaw string, placementRaw string) *ArticleTextTransformProcessor {
 	rule = strings.TrimSpace(rule)
 	payloadTypes := parseAIFilterExtraPayloadWithDefault(extraPayloadRaw, []aiFilterExtraPayloadType{aiFilterExtraPayloadArticleContent})
 	placement := parseAIContentProcessPlacement(placementRaw)
 	prompt := buildAIContentProcessPrompt(rule)
 
-	transFunc := func(item *feeds.Item) (string, error) {
-		if rule == "" {
-			return "", fmt.Errorf("ai-content-process requires rule param")
-		}
-		return cachedAIContentProcessItem(item, prompt, payloadTypes, placement)
+	return &ArticleTextTransformProcessor{
+		CraftName: "ai-content-process",
+		Mutate: func(ctx context.Context, article *model.CraftArticle) error {
+			_ = ctx
+			if rule == "" {
+				return fmt.Errorf("ai-content-process requires rule param")
+			}
+			transformed, err := cachedAIContentProcessArticle(article, prompt, payloadTypes, placement)
+			if err != nil {
+				return err
+			}
+			article.Content = transformed
+			article.Description = transformed
+			return nil
+		},
 	}
-
-	return OptionTransformFeedItem(GetArticleContentProcessor(transFunc))
 }
 
-func cachedAIContentProcessItem(item *feeds.Item, prompt string, payloadTypes []aiFilterExtraPayloadType, placement aiContentProcessPlacement) (string, error) {
-	original := getPrimaryFeedItemContent(item)
-	context, err := buildAIContentProcessArticlePayload(item, payloadTypes)
+func cachedAIContentProcessArticle(article *model.CraftArticle, prompt string, payloadTypes []aiFilterExtraPayloadType, placement aiContentProcessPlacement) (string, error) {
+	original := getPrimaryArticleContent(article)
+	contextData, err := buildAIContentProcessArticlePayload(article, payloadTypes)
 	if err != nil {
 		return "", err
 	}
 	cacheKey := getCraftCacheKey("ai-content-process-result", util.GetTextContentHash(strings.Join([]string{
 		util.GetTextContentHash(prompt),
-		util.GetTextContentHash(context),
+		util.GetTextContentHash(contextData),
 		string(placement),
 		util.GetTextContentHash(original),
 	}, "|")))
 
 	return util.CachedFuncWithPreLog(cacheKey, func() (string, error) {
-		result, callErr := llmContextCaller(prompt, context, util.ContentProcessOption{
+		result, callErr := llmContextCaller(prompt, contextData, util.ContentProcessOption{
 			RemoveImage: true,
 			ConvertToMd: true,
 			Temperature: util.LowestLLMTemperaturePtr(),
@@ -88,23 +106,23 @@ func cachedAIContentProcessItem(item *feeds.Item, prompt string, payloadTypes []
 		return applyAIContentProcessPlacement(original, generated, placement), nil
 	}, func(isCached bool) {
 		title := ""
-		if item != nil {
-			title = item.Title
+		if article != nil {
+			title = article.Title
 		}
 		logrus.Infof("applying craft [ai-content-process] to article [%s], cached: %v", title, isCached)
 	})
 }
 
-func buildAIContentProcessArticlePayload(item *feeds.Item, payloadTypes []aiFilterExtraPayloadType) (string, error) {
+func buildAIContentProcessArticlePayload(article *model.CraftArticle, payloadTypes []aiFilterExtraPayloadType) (string, error) {
 	summary := ""
 	if loContainsAIFilterPayload(payloadTypes, aiFilterExtraPayloadArticleSummary) {
-		generated, err := generateAIFilterArticleSummary(item)
+		generated, err := generateAIFilterArticleSummary(article)
 		if err != nil {
 			return "", err
 		}
 		summary = generated
 	}
-	return buildAIFilterArticlePayload(item, payloadTypes, summary)
+	return buildAIFilterArticlePayload(article, payloadTypes, summary)
 }
 
 func buildAIContentProcessPrompt(rule string) string {

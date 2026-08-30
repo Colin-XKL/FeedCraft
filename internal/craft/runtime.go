@@ -66,6 +66,9 @@ var nativeProcessorBuilders = map[string]nativeProcessorBuilder{
 	"beautify-content":            buildWithStringParam("prompt", func(s string) localProcessor { return newBeautifyContentProcessor(s) }),
 	"llm-filter":                  buildWithStringParam("filter_condition", func(s string) localProcessor { return newLLMFilterProcessor(s) }),
 	"ignore-advertorial":          buildWithStringParam("prompt-for-exclude", func(s string) localProcessor { return newIgnoreAdvertorialProcessor(s) }),
+	"embedding-filter":            buildNativeEmbeddingFilterProcessor,
+	"ai-filter":                   buildNativeAIFilterProcessor,
+	"ai-content-process":          buildNativeAIContentProcessProcessor,
 }
 
 func BuildOptionChain(db *gorm.DB, craftName string, feedURL string) (engine.CraftOption, error) {
@@ -368,6 +371,25 @@ func buildNativeFulltextPlusProcessor(atom ResolvedCraftAtom, feedURL string) (e
 	return wrapLocalProcessor(newFulltextPlusProcessor(feedURL, parseFulltextPlusConfig(atom.Params))), nil
 }
 
+func buildNativeEmbeddingFilterProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
+	_ = feedURL
+	cfg, err := parseEmbeddingFilterParams(atom.Params)
+	if err != nil {
+		return nil, err
+	}
+	return wrapLocalProcessor(NewEmbeddingFilterProcessor(cfg.anchors, cfg.threshold, cfg.maxContentLen, cfg.instruction, cfg.mode)), nil
+}
+
+func buildNativeAIFilterProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
+	_ = feedURL
+	return wrapLocalProcessor(newAIFilterProcessor(atom.Params["rule"], atom.Params["extra-payload"])), nil
+}
+
+func buildNativeAIContentProcessProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
+	_ = feedURL
+	return wrapLocalProcessor(newAIContentProcessProcessor(atom.Params["rule"], atom.Params["extra-payload"], atom.Params["placement"])), nil
+}
+
 func buildLegacyOption(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
 	tmplDict := GetSysCraftTemplateDict()
 	tmpl, ok := tmplDict[atom.TemplateName]
@@ -408,6 +430,10 @@ func wrapLocalProcessor(processor localProcessor) engine.CraftOption {
 	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
 		return processor.Process(ctx, feed)
 	}
+}
+
+func WrapLocalProcessor(processor localProcessor) engine.CraftOption {
+	return wrapLocalProcessor(processor)
 }
 
 func composeEngineOptions(options ...engine.CraftOption) engine.CraftOption {
