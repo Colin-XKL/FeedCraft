@@ -38,10 +38,12 @@
     </a-space>
 
     <a-table
+      class="custom-recipe-table"
       :data="recipes"
       :columns="columns"
       :bordered="true"
       :loading="isLoading"
+      :scroll="{ x: 1280 }"
     >
       <template #status="{ record }">
         <a-tooltip
@@ -92,8 +94,13 @@
           </a-tooltip>
         </a-space>
       </template>
+      <template #craft="{ record }">
+        <span class="custom-recipe-table__text" :title="record.craft">{{
+          record.craft
+        }}</span>
+      </template>
       <template #actions="{ record }">
-        <a-space wrap>
+        <a-space>
           <a-button
             type="primary"
             size="small"
@@ -352,17 +359,50 @@
   const saving = ref(false);
 
   const columns = [
-    { title: t('customRecipe.form.name'), dataIndex: 'id' },
-    { title: t('customRecipe.form.description'), dataIndex: 'description' },
-    { title: t('customRecipe.form.craft'), dataIndex: 'craft' },
-    { title: t('customRecipe.status.active'), slotName: 'status' },
-    { title: t('customRecipe.form.sourceType'), dataIndex: 'source_type' },
+    {
+      title: t('customRecipe.form.name'),
+      dataIndex: 'id',
+      minWidth: 200,
+      ellipsis: true,
+      tooltip: true,
+    },
+    {
+      title: t('customRecipe.form.description'),
+      dataIndex: 'description',
+      minWidth: 180,
+      ellipsis: true,
+      tooltip: true,
+    },
+    {
+      title: t('customRecipe.form.craft'),
+      dataIndex: 'craft',
+      slotName: 'craft',
+      minWidth: 200,
+      ellipsis: true,
+      tooltip: true,
+    },
+    {
+      title: t('customRecipe.status.active'),
+      slotName: 'status',
+      width: 100,
+    },
+    {
+      title: t('customRecipe.form.sourceType'),
+      dataIndex: 'source_type',
+      width: 110,
+    },
     {
       title: t('customRecipe.form.sourceConfig'),
       dataIndex: 'source_config',
       slotName: 'source_config',
+      minWidth: 240,
     },
-    { title: t('customRecipe.actions'), slotName: 'actions' },
+    {
+      title: t('customRecipe.actions'),
+      slotName: 'actions',
+      width: 280,
+      fixed: 'right' as const,
+    },
   ];
 
   async function listCustomRecipes() {
@@ -535,4 +575,20 @@
   }
 </script>
 
-<style scoped></style>
+<style scoped>
+  .custom-recipe-table :deep(.arco-table-th),
+  .custom-recipe-table :deep(.arco-table-td) {
+    white-space: nowrap;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+
+  .custom-recipe-table__text {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+  }
+</style>
