@@ -1,5 +1,38 @@
 # Change Log
 
+## [v3.2.0] (since v3.1.0)
+
+### ⚠️ 破坏性变更 (Breaking Changes)
+
+- Embedding 模型必须显式配置 `FC_EMBEDDING_API_MODEL`，不再提供默认值
+
+### ✨ 新特性 (Features)
+
+- **收件箱 (Inbox)**：脚本、自动化工具或第三方平台可以直接把文章 POST 给 FeedCraft，再作为 RSS 订阅。适合给本身没有 RSS 的来源（如 webhook 通知、私有数据）建一个订阅源；配套系统授权令牌、条目上限与过期清理
+- **主题订阅 (Topic Feed)**：正式开放入口，把多个来源合成一个订阅。新增按标题、SimHash（字面近似）、Embedding（语义）三种跨源去重，不同媒体报道同一件事只看到一条；分步向导可为每个输入源加备注并即时预览效果，子源抓取失败时用缓存兜底而不是整个主题变空
+- **新增原子工艺**：
+  - `ai-filter`：用自然语言写筛选规则，让 LLM 决定文章留还是丢
+  - `ai-content-process`：用自己的提示词加工正文，结果可插到文首、文末或替换原文
+  - `re-title`：让 LLM 根据正文重写标题，改善标题党或含义不明的标题
+  - `link-flatten`：把文章里的链接抽出来变成独立条目，适合订阅周报、导航页这类“链接列表”式内容
+- **网页监控**：为没有 RSS 的网页建订阅，只在关注的字段（如价格、版本号）变化时才推送更新
+- **RSS 生成增强**：HTML 转 RSS 支持抓取前先执行点击、翻页等导航动作，能取到需要交互才显示的内容，并可指定条目图标来源；JSON 转 RSS 支持 `$` 模板写法
+- **预览体验**：RSS 预览支持 HTML 渲染模式、卡片展开/收起与详情弹窗，Feed 对比也并入同一页面，调 Craft 时可直接看到处理前后差异；浏览器服务改为可配置 Provider，不再限定 Browserless
+- **输入条目上限**：可限制单次从源读取的条目数，订阅历史很长的大源时不必每次全量处理，明显减少耗时与 LLM 花费
+
+### 🐛 问题修复 (Bug Fixes)
+
+- `fulltext-plus`：个别文章渲染超时不再让整个 Feed 一起失败，浏览器取不到内容时自动回退普通全文提取
+- 上游源抓取失败时返回更准确的状态码（502/504/422）；配方名重复时给出明确提示而非数据库错误
+- 大量文章同时调用 LLM 时排队更平稳，正文里的 base64 图片会先清理以减少 token 消耗，缓存未命中时的重复请求会被合并
+- 修复网页监控若干问题、Markdown/HTML 转换丢失段落换行、含非法 XML 字符的源解析失败、HTML 转 RSS 无法抓取内网源且错误提示不可读
+- AtomCraft 创建后不再允许改名，避免引用它的 FlowCraft 和配方失效
+
+### 📝 文档与杂项 (Documentation & Chores)
+
+- Inbox / Topic / AI 内容处理文档（en / zh-CN / zh-TW）；开发环境指南
+- 前端 TypeScript 工具链升级；CI 升级 Node 24，适配 Go 1.25 与 golangci-lint
+
 ## [v3.1.0] (since v3.0.0)
 
 ### ✨ 新特性 (Features & Refactors)
@@ -22,7 +55,6 @@
 - settings: 修复读取现有 search provider config 时的错误处理
 - 修复 search provider active check 并增加 timeout
 - monitor: 修复并暴露 search provider check 中的 db errors
-- 修复 `fulltext-plus` 调用 browserless 时默认超时过短、并发过高导致全体条目超时 500；浏览器渲染失败时回退到 HTTP 全文提取
 
 ### 📝 文档与杂项 (Documentation & Chores)
 
