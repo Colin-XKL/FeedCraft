@@ -340,6 +340,9 @@ func buildRawRSSItemJSON(article *model.CraftArticle) (string, error) {
 	if article.Link != "" {
 		raw["link"] = article.Link
 	}
+	if article.Source != "" {
+		raw["source"] = article.Source
+	}
 	if article.AuthorName != "" || article.AuthorEmail != "" {
 		raw["author_name"] = article.AuthorName
 		raw["author_email"] = article.AuthorEmail
