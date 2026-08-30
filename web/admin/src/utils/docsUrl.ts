@@ -24,10 +24,15 @@ export function buildDocsUrl(locale: string, path = ''): string {
 }
 
 export function isDocsCenterLink(path: string, routeName?: unknown): boolean {
+  if (routeName === DOCS_CENTER_ROUTE_NAME) {
+    return true;
+  }
+  const normalized = path.replace(/\/+$/, '');
   return (
-    routeName === DOCS_CENTER_ROUTE_NAME ||
-    path === DOCS_ORIGIN ||
-    path.startsWith(`${DOCS_ORIGIN}/`)
+    normalized === DOCS_ORIGIN ||
+    normalized === `${DOCS_ORIGIN}/en` ||
+    normalized === `${DOCS_ORIGIN}/zh` ||
+    normalized === `${DOCS_ORIGIN}/zh-tw`
   );
 }
 

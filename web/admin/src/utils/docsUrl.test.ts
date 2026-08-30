@@ -62,6 +62,15 @@ describe('resolveExternalMenuUrl', () => {
     ).toBe('https://feed-craft-doc.vercel.app/en/');
   });
 
+  it('leaves deep docs paths unchanged unless the route is the docs center menu', () => {
+    expect(
+      resolveExternalMenuUrl(
+        `${DOCS_ORIGIN}/zh/guides/start/quick-start/`,
+        'en-US'
+      )
+    ).toBe(`${DOCS_ORIGIN}/zh/guides/start/quick-start/`);
+  });
+
   it('leaves unrelated external links unchanged', () => {
     expect(
       resolveExternalMenuUrl('https://github.com/Colin-XKL/FeedCraft', 'zh-CN')
