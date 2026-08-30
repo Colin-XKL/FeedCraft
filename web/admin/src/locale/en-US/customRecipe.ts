@@ -1,5 +1,5 @@
 export default {
-  'menu.customRecipe': 'Custom Recipe',
+  'menu.customRecipe': 'Recipes',
   'customRecipe.description':
     'Manage custom recipes to generate RSS feeds from various sources.',
   'customRecipe.viewConfig': 'View Configuration',

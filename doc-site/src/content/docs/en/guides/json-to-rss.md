@@ -24,7 +24,7 @@ The JSON to RSS tool helps you:
 
 ## How to use
 
-Navigate to **Worktable > JSON to RSS** in the admin dashboard.
+Navigate to **Worktable > Generate Feed Sources > API to RSS** in the admin dashboard.
 
 ### Step 1: Request Configuration
 

@@ -20,7 +20,7 @@ FeedCraft includes a **Search to RSS** tool that allows you to turn search queri
 
 ## How to use
 
-1.  Navigate to **Worktable > Search to RSS** in the admin dashboard.
+1.  Navigate to **Worktable > Generate Feed Sources > Search to RSS** in the admin dashboard.
 
 ### Step 1: Search Query
 

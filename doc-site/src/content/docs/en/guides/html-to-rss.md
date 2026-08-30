@@ -28,7 +28,7 @@ The HTML to RSS tool allows you to:
 
 ## How to use
 
-1.  Navigate to **Worktable > HTML to RSS** in the admin dashboard.
+1.  Navigate to **Worktable > Generate Feed Sources > Webpage to RSS** in the admin dashboard.
 
 ### Step 1: Target URL
 

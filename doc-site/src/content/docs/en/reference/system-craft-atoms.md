@@ -206,7 +206,7 @@ If `FC_EMBEDDING_API_TYPE`, `FC_EMBEDDING_API_BASE`, and `FC_EMBEDDING_API_KEY` 
 
 #### Admin UI workflow
 
-1. Open **Worktable → AtomCraft**.
+1. Open **Worktable → Process Feed Sources → AtomCraft**.
 2. Create a new AtomCraft, for example `ai-news-only`.
 3. Select template `embedding-filter`.
 4. Fill `anchors` with one topic per line.
