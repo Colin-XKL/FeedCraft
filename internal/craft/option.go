@@ -25,6 +25,14 @@ type CraftedFeed struct {
 // ExtraPayload extra info for crating feed
 type ExtraPayload struct {
 	originalFeedUrl string
+	ctx             context.Context
+}
+
+func (p ExtraPayload) Context() context.Context {
+	if p.ctx == nil {
+		return context.Background()
+	}
+	return p.ctx
 }
 
 type CraftOption func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error)
@@ -97,6 +105,7 @@ func ComposeOptions(options ...CraftOption) CraftOption {
 
 // TransFunc common transform func, such as translate the article content or title
 type TransFunc func(item *feeds.Item) (string, error)
+type ContextTransFunc func(ctx context.Context, item *feeds.Item) (string, error)
 
 func GetArticleContentProcessor(transFunc TransFunc) FeedItemProcessor {
 	return func(item *feeds.Item, payload ExtraPayload) error {
@@ -113,6 +122,29 @@ func GetArticleContentProcessor(transFunc TransFunc) FeedItemProcessor {
 func GetArticleTitleProcessor(transFunc TransFunc) FeedItemProcessor {
 	return func(item *feeds.Item, payload ExtraPayload) error {
 		transformed, err := transFunc(item)
+		if err != nil {
+			return err
+		}
+		item.Title = transformed
+		return nil
+	}
+}
+
+func GetArticleContentProcessorWithContext(transFunc ContextTransFunc) FeedItemProcessor {
+	return func(item *feeds.Item, payload ExtraPayload) error {
+		transformed, err := transFunc(payload.Context(), item)
+		if err != nil {
+			return err
+		}
+		item.Content = transformed
+		item.Description = transformed
+		return nil
+	}
+}
+
+func GetArticleTitleProcessorWithContext(transFunc ContextTransFunc) FeedItemProcessor {
+	return func(item *feeds.Item, payload ExtraPayload) error {
+		transformed, err := transFunc(payload.Context(), item)
 		if err != nil {
 			return err
 		}

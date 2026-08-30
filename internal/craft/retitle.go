@@ -54,9 +54,9 @@ func getFeedsItemContentForPrompt(item *feeds.Item, original string) string {
 	domain, _ := util.ParseDomainFromUrl(link)
 	cleaned := util.HTMLToMarkdown(original, domain)
 	if strings.TrimSpace(cleaned) != "" {
-		return util.TruncateHeadTail(cleaned, util.LLMPromptMaxChars())
+		return cleaned
 	}
-	return util.TruncateHeadTail(original, util.LLMPromptMaxChars())
+	return original
 }
 
 func GetRetitleCraftOptions(prompt string) []LegacyCraftOption {
@@ -73,7 +73,7 @@ func GetRetitleCraftOptions(prompt string) []LegacyCraftOption {
 		}, "|"))
 		return payloadHash, nil
 	}
-	transFunc := func(item *feeds.Item) (string, error) {
+	transFunc := func(ctx context.Context, item *feeds.Item) (string, error) {
 		if item == nil {
 			return "", nil
 		}
@@ -83,7 +83,7 @@ func GetRetitleCraftOptions(prompt string) []LegacyCraftOption {
 			return originalTitle, nil
 		}
 		contentForPrompt := getFeedsItemContentForPrompt(item, originalContent)
-		generated, err := CallLLMForArticleTransform(context.Background(), finalPrompt, originalTitle, contentForPrompt, util.ContentProcessOption{})
+		generated, err := CallLLMForArticleTransform(ctx, finalPrompt, originalTitle, contentForPrompt, util.ContentProcessOption{})
 		if err != nil {
 			return "", err
 		}
@@ -92,9 +92,9 @@ func GetRetitleCraftOptions(prompt string) []LegacyCraftOption {
 		}
 		return strings.TrimSpace(generated), nil
 	}
-	transformer := GetCommonCachedTransformer(cacheKeyGenerator, transFunc, string(constant.ProcessorTypeRetitle))
+	transformer := GetCommonCachedTransformerWithContext(cacheKeyGenerator, transFunc, string(constant.ProcessorTypeRetitle))
 	return []LegacyCraftOption{
-		OptionTransformFeedItem(GetArticleTitleProcessor(transformer)),
+		OptionTransformFeedItem(GetArticleTitleProcessorWithContext(transformer)),
 	}
 }
 

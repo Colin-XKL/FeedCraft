@@ -26,13 +26,13 @@ func CallLLMUsingRequestContext(ctx context.Context, prompt, articleContext stri
 
 	finalPrompt := fmt.Sprintf("%s \n```\n%s\n```", prompt, processedContext)
 	cacheKey := fmt.Sprintf("llm_call_%s_%s", util.GetTextContentHash(finalPrompt), llmCallTemperatureCachePart(option))
-	valFunc := func() (string, error) {
+	valFunc := func(sharedCtx context.Context) (string, error) {
 		if option.Temperature != nil {
-			return SimpleLLMCallWithOptionsContext(ctx, UseDefaultModel, finalPrompt, llms.WithTemperature(*option.Temperature))
+			return SimpleLLMCallWithOptionsContext(sharedCtx, UseDefaultModel, finalPrompt, llms.WithTemperature(*option.Temperature))
 		}
-		return SimpleLLMCallContext(ctx, UseDefaultModel, finalPrompt)
+		return SimpleLLMCallContext(sharedCtx, UseDefaultModel, finalPrompt)
 	}
-	return util.CachedFunc(cacheKey, valFunc)
+	return util.CachedFuncContext(ctx, cacheKey, valFunc)
 }
 
 func llmCallTemperatureCachePart(option util.ContentProcessOption) string {

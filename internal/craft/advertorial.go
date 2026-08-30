@@ -39,7 +39,11 @@ const promptCheckIfAdvertorial = "请阅读下面的文章, 并判断是不是�
 
 // CheckIfAdvertorial 判断是否为软文, 非常有把握则返回true, 如果不是或者不确定或是发生错误则返回false
 func CheckIfAdvertorial(title string, content string, prompt string) bool {
-	res, _ := CheckConditionWithLLM(context.Background(), title, content, prompt)
+	return CheckIfAdvertorialContext(context.Background(), title, content, prompt)
+}
+
+func CheckIfAdvertorialContext(ctx context.Context, title string, content string, prompt string) bool {
+	res, _ := CheckConditionWithLLM(ctx, title, content, prompt)
 	return res
 }
 
@@ -64,7 +68,7 @@ func OptionIgnoreAdvertorial(prompt string) LegacyCraftOption {
 			if len(content) == 0 {
 				content = itm.Description
 			}
-			return CheckIfAdvertorial(itm.Title, content, prompt)
+			return CheckIfAdvertorialContext(payload.Context(), itm.Title, content, prompt)
 		})
 
 		// 2. 同步过滤
@@ -129,7 +133,7 @@ func DebugCheckIfAdvertorial(c *gin.Context) {
 	}
 	prompt := fmt.Sprintf("%s\n%s\n", judgePrompt, promptCheckIfAdvertorial)
 
-	result := CheckIfAdvertorial("", webContent, prompt)
+	result := CheckIfAdvertorialContext(c.Request.Context(), "", webContent, prompt)
 	ret := CheckIfAdvertorialDebugResp{
 		Url:            reqBody.Url,
 		IsAdvertorial:  result,

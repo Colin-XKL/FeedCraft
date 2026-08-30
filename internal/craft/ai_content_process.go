@@ -53,19 +53,19 @@ func OptionAIContentProcess(rule string, extraPayloadRaw string, placementRaw st
 	placement := parseAIContentProcessPlacement(placementRaw)
 	prompt := buildAIContentProcessPrompt(rule)
 
-	transFunc := func(item *feeds.Item) (string, error) {
+	transFunc := func(ctx context.Context, item *feeds.Item) (string, error) {
 		if rule == "" {
 			return "", fmt.Errorf("ai-content-process requires rule param")
 		}
-		return cachedAIContentProcessItem(item, prompt, payloadTypes, placement)
+		return cachedAIContentProcessItem(ctx, item, prompt, payloadTypes, placement)
 	}
 
-	return OptionTransformFeedItem(GetArticleContentProcessor(transFunc))
+	return OptionTransformFeedItem(GetArticleContentProcessorWithContext(transFunc))
 }
 
-func cachedAIContentProcessItem(item *feeds.Item, prompt string, payloadTypes []aiFilterExtraPayloadType, placement aiContentProcessPlacement) (string, error) {
+func cachedAIContentProcessItem(ctx context.Context, item *feeds.Item, prompt string, payloadTypes []aiFilterExtraPayloadType, placement aiContentProcessPlacement) (string, error) {
 	original := getPrimaryFeedItemContent(item)
-	articleContext, err := buildAIContentProcessArticlePayload(item, payloadTypes)
+	articleContext, err := buildAIContentProcessArticlePayload(ctx, item, payloadTypes)
 	if err != nil {
 		return "", err
 	}
@@ -76,8 +76,8 @@ func cachedAIContentProcessItem(item *feeds.Item, prompt string, payloadTypes []
 		util.GetTextContentHash(original),
 	}, "|")))
 
-	return util.CachedFuncWithPreLog(cacheKey, func() (string, error) {
-		result, callErr := llmContextCaller(context.Background(), prompt, articleContext, util.ContentProcessOption{
+	return util.CachedFuncWithPreLogContext(ctx, cacheKey, func(sharedCtx context.Context) (string, error) {
+		result, callErr := llmContextCaller(sharedCtx, prompt, articleContext, util.ContentProcessOption{
 			RemoveImage: true,
 			ConvertToMd: true,
 			Temperature: util.LowestLLMTemperaturePtr(),
@@ -96,10 +96,10 @@ func cachedAIContentProcessItem(item *feeds.Item, prompt string, payloadTypes []
 	})
 }
 
-func buildAIContentProcessArticlePayload(item *feeds.Item, payloadTypes []aiFilterExtraPayloadType) (string, error) {
+func buildAIContentProcessArticlePayload(ctx context.Context, item *feeds.Item, payloadTypes []aiFilterExtraPayloadType) (string, error) {
 	summary := ""
 	if loContainsAIFilterPayload(payloadTypes, aiFilterExtraPayloadArticleSummary) {
-		generated, err := generateAIFilterArticleSummary(item)
+		generated, err := generateAIFilterArticleSummary(ctx, item)
 		if err != nil {
 			return "", err
 		}

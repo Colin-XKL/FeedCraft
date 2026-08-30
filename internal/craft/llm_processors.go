@@ -346,8 +346,8 @@ func GetCommonCachedArticlePredicate(cacheKeyGenerator ArticleCacheKeyGenerator,
 			return false, err
 		}
 		cacheKey := getCraftCacheKey(craftName, hashVal)
-		value, err := util.CachedFunc(cacheKey, func() (string, error) {
-			matched, callErr := rawPredicate(ctx, article)
+		value, err := util.CachedFuncContext(ctx, cacheKey, func(sharedCtx context.Context) (string, error) {
+			matched, callErr := rawPredicate(sharedCtx, article)
 			if callErr != nil {
 				return "", callErr
 			}
@@ -432,9 +432,9 @@ func getArticleContentForPrompt(article *model.CraftArticle, original string) st
 	domain, _ := util.ParseDomainFromUrl(article.Link)
 	cleaned := util.HTMLToMarkdown(original, domain)
 	if strings.TrimSpace(cleaned) != "" {
-		return util.TruncateHeadTail(cleaned, util.LLMPromptMaxChars())
+		return cleaned
 	}
-	return util.TruncateHeadTail(original, util.LLMPromptMaxChars())
+	return original
 }
 
 func combineArticleHTMLWithGeneratedMarkdown(originalHTML string, generatedMarkdown string) string {

@@ -53,7 +53,7 @@ func TestGetArticleContentForPrompt_KeepsNormalImages(t *testing.T) {
 	)
 }
 
-func TestGetArticleContentForPrompt_TruncatesLongContent(t *testing.T) {
+func TestGetArticleContentForPrompt_DefersTruncationToAdapterBoundary(t *testing.T) {
 	t.Setenv("FC_LLM_PROMPT_MAX_CHARS", "80")
 	article := &model.CraftArticle{
 		Title: "Long",
@@ -63,8 +63,8 @@ func TestGetArticleContentForPrompt_TruncatesLongContent(t *testing.T) {
 
 	result := getArticleContentForPrompt(article, original)
 
-	require.LessOrEqual(t, len([]rune(result)), 80)
-	assert.Contains(t, result, "[...truncated...]")
+	require.Greater(t, len([]rune(result)), 80)
+	assert.NotContains(t, result, "[...truncated...]")
 	assert.Contains(t, result, "Head")
 	assert.Contains(t, result, "Tail")
 }

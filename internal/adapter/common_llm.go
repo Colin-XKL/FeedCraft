@@ -64,10 +64,11 @@ func getLLMDispatcher() *util.PriorityDispatcher[string] {
 			concurrency = 3
 		}
 		llmDispatcher = util.NewPriorityDispatcher[string](concurrency)
+		// This fallback is immutable after publication; the per-call deadline
+		// remains the authoritative timeout for GenerateContent.
+		llmDispatcher.MaxTaskDuration = currentLLMCallTimeout() + time.Minute
 		logrus.Infof("LLM Global Priority Dispatcher initialized with max concurrency: %d", concurrency)
 	})
-	// Keep fallback slightly above the per-call timeout so GenerateContent can fail first.
-	llmDispatcher.MaxTaskDuration = currentLLMCallTimeout() + time.Minute
 	return llmDispatcher
 }
 
@@ -260,6 +261,7 @@ func simpleLLMCallWithOptions(ctx context.Context, model string, promptInput str
 		retry.DelayType(modelRotationBackoffDelay(len(modelClients))),
 		retry.Delay(retryConfig.delay),
 		retry.MaxDelay(retryConfig.maxDelay),
+		retry.Context(requestCtx),
 		retry.RetryIf(func(err error) bool {
 			return !isNonRetryableLLMContextError(err)
 		}),

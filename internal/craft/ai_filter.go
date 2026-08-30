@@ -72,7 +72,7 @@ func OptionAIFilter(rule string, extraPayloadRaw string) LegacyCraftOption {
 		}
 
 		drops := parallel.Map(items, func(item *feeds.Item, _ int) bool {
-			decision, err := evaluateAIFilterItem(item, rule, payloadTypes)
+			decision, err := evaluateAIFilterItem(payload.Context(), item, rule, payloadTypes)
 			if err != nil {
 				logrus.Warnf("failed to evaluate ai-filter for article [%s], err: %v", item.Title, err)
 				return false
@@ -87,10 +87,10 @@ func OptionAIFilter(rule string, extraPayloadRaw string) LegacyCraftOption {
 	}
 }
 
-func evaluateAIFilterItem(item *feeds.Item, rule string, payloadTypes []aiFilterExtraPayloadType) (aiFilterDecision, error) {
+func evaluateAIFilterItem(ctx context.Context, item *feeds.Item, rule string, payloadTypes []aiFilterExtraPayloadType) (aiFilterDecision, error) {
 	summary := ""
 	if lo.Contains(payloadTypes, aiFilterExtraPayloadArticleSummary) {
-		generated, err := generateAIFilterArticleSummary(item)
+		generated, err := generateAIFilterArticleSummary(ctx, item)
 		if err != nil {
 			return aiFilterDecision{}, err
 		}
@@ -102,7 +102,7 @@ func evaluateAIFilterItem(item *feeds.Item, rule string, payloadTypes []aiFilter
 		return aiFilterDecision{}, err
 	}
 
-	return cachedAIFilterDecision(item.Title, buildAIFilterPrompt(rule), context)
+	return cachedAIFilterDecision(ctx, item.Title, buildAIFilterPrompt(rule), context)
 }
 
 func parseAIFilterExtraPayload(raw string) []aiFilterExtraPayloadType {
@@ -158,15 +158,15 @@ Examples:
 {"reason":"The article is unrelated to the requested topic.","result":"drop"}`, rule)
 }
 
-func cachedAIFilterDecision(title string, prompt string, articleContext string) (aiFilterDecision, error) {
+func cachedAIFilterDecision(ctx context.Context, title string, prompt string, articleContext string) (aiFilterDecision, error) {
 	hashVal := util.GetTextContentHash(strings.Join([]string{
 		util.GetTextContentHash(prompt),
 		util.GetTextContentHash(articleContext),
 	}, "|"))
 	cacheKey := getCraftCacheKey("ai-filter", hashVal)
 
-	cached, err := util.CachedFuncWithPreLog(cacheKey, func() (string, error) {
-		result, err := llmContextCaller(context.Background(), prompt, articleContext, util.ContentProcessOption{
+	cached, err := util.CachedFuncWithPreLogContext(ctx, cacheKey, func(sharedCtx context.Context) (string, error) {
+		result, err := llmContextCaller(sharedCtx, prompt, articleContext, util.ContentProcessOption{
 			RemoveImage: true,
 			ConvertToMd: true,
 			Temperature: util.LowestLLMTemperaturePtr(),
@@ -229,7 +229,7 @@ func buildAIFilterArticlePayload(item *feeds.Item, payloadTypes []aiFilterExtraP
 	return builder.String(), nil
 }
 
-func generateAIFilterArticleSummary(item *feeds.Item) (string, error) {
+func generateAIFilterArticleSummary(ctx context.Context, item *feeds.Item) (string, error) {
 	content := getPrimaryFeedItemContent(item)
 	if strings.TrimSpace(content) == "" {
 		return "", nil
@@ -243,7 +243,7 @@ func generateAIFilterArticleSummary(item *feeds.Item) (string, error) {
 	}, "|"))
 	cacheKey := getCraftCacheKey("ai-filter-article-summary", hashVal)
 
-	return util.CachedFuncWithPreLog(cacheKey, func() (string, error) {
+	return util.CachedFuncWithPreLogContext(ctx, cacheKey, func(sharedCtx context.Context) (string, error) {
 		processedContent := content
 		domain := ""
 		if item.Link != nil {
@@ -255,7 +255,7 @@ func generateAIFilterArticleSummary(item *feeds.Item) (string, error) {
 		if strings.TrimSpace(cleanedContent) != "" {
 			processedContent = cleanedContent
 		}
-		return llmContextCaller(context.Background(), summaryPrompt, processedContent, util.ContentProcessOption{
+		return llmContextCaller(sharedCtx, summaryPrompt, processedContent, util.ContentProcessOption{
 			Temperature: util.LowestLLMTemperaturePtr(),
 		})
 	}, func(isCached bool) {

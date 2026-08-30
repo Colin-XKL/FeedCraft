@@ -157,9 +157,9 @@ func TestEvaluateAIFilterItemCachesDecision(t *testing.T) {
 	}
 	payloadTypes := []aiFilterExtraPayloadType{aiFilterExtraPayloadArticleContent}
 
-	first, err := evaluateAIFilterItem(item, "只保留科技有关的文章", payloadTypes)
+	first, err := evaluateAIFilterItem(context.Background(), item, "只保留科技有关的文章", payloadTypes)
 	require.NoError(t, err)
-	second, err := evaluateAIFilterItem(item, "只保留科技有关的文章", payloadTypes)
+	second, err := evaluateAIFilterItem(context.Background(), item, "只保留科技有关的文章", payloadTypes)
 	require.NoError(t, err)
 
 	assert.Equal(t, aiFilterResultKeep, first.Result)

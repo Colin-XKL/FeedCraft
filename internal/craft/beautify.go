@@ -32,7 +32,7 @@ func beautifyArticleContent(ctx context.Context, content string, prompt string) 
 		return "", fmt.Errorf("empty content")
 	}
 
-	finalPrompt := fmt.Sprintf("%s\n\n---\n\n%s", prompt, util.TruncateHeadTail(content, util.LLMPromptMaxChars()))
+	finalPrompt := util.TruncateHeadTail(fmt.Sprintf("%s\n\n---\n\n%s", prompt, content), util.LLMPromptMaxChars())
 
 	// 2. Call LLM to beautify the content and convert to Markdown
 	beautifiedMd, err := llmCaller(ctx, adapter.UseDefaultModel, finalPrompt)
@@ -45,19 +45,19 @@ func beautifyArticleContent(ctx context.Context, content string, prompt string) 
 
 // GetBeautifyContentCraftOptions returns the craft options for beautification
 func GetBeautifyContentCraftOptions(prompt string) []LegacyCraftOption {
-	transFunc := func(item *feeds.Item) (string, error) {
+	transFunc := func(ctx context.Context, item *feeds.Item) (string, error) {
 		content := item.Content
 		if content == "" {
 			content = item.Description
 		}
-		return beautifyArticleContent(context.Background(), content, prompt)
+		return beautifyArticleContent(ctx, content, prompt)
 	}
 
-	cachedTransformer := GetCommonCachedTransformer(
+	cachedTransformer := GetCommonCachedTransformerWithContext(
 		cacheKeyForArticleContent, transFunc, "beautify article content")
 
 	craftOption := []LegacyCraftOption{
-		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransformer)),
+		OptionTransformFeedItem(GetArticleContentProcessorWithContext(cachedTransformer)),
 	}
 	return craftOption
 }

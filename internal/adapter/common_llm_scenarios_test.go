@@ -425,3 +425,40 @@ func TestSimpleLLMCallContextCanceledDoesNotRetry(t *testing.T) {
 	require.Less(t, elapsed, 2*time.Second)
 	require.LessOrEqual(t, atomic.LoadInt32(&calls), int32(1), "请求取消后不应再重试占用并发额度")
 }
+
+func TestSimpleLLMCallContextCanceledDuringBackoffDoesNotRetry(t *testing.T) {
+	resetLLMClients(t)
+
+	firstCall := make(chan struct{})
+	var calls int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if atomic.AddInt32(&calls, 1) == 1 {
+			close(firstCall)
+		}
+		http.Error(w, "retryable", http.StatusServiceUnavailable)
+	}))
+	t.Cleanup(server.Close)
+	setOpenAILLMEnv(t, server.URL)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan error, 1)
+	go func() {
+		_, err := simpleLLMCallWithOptions(ctx, "model-a", "hi", llmRetryConfig{
+			attemptsPerModel: 3,
+			delay:            time.Second,
+			maxDelay:         time.Second,
+		}, nil)
+		done <- err
+	}()
+
+	<-firstCall
+	time.Sleep(20 * time.Millisecond)
+	cancel()
+	select {
+	case err := <-done:
+		require.Error(t, err)
+	case <-time.After(500 * time.Millisecond):
+		t.Fatal("cancellation did not interrupt retry backoff")
+	}
+	require.Equal(t, int32(1), atomic.LoadInt32(&calls))
+}
