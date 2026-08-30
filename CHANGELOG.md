@@ -1,5 +1,32 @@
 # Change Log
 
+## [v3.2.0] (since v3.1.0)
+
+### ⚠️ 破坏性变更 (Breaking Changes)
+
+- Embedding 模型必须显式配置 `FC_EMBEDDING_API_MODEL`，不再提供默认值
+- Craft 处理链路迁移到原生 CraftFeed（v3），原 option 式处理器标记为 legacy
+
+### ✨ 新特性 (Features)
+
+- **Inbox**：收件箱、系统 Token 管理、GC 清理，以及 `GET /inbox/:inbox_id/rss`
+- **Topic Feed**：页面开放；分步向导、输入备注/预览；按标题 / SimHash / Embedding 去重；子源乐观缓存与健康跟踪
+- **原子工艺**：新增 `ai-filter`、`ai-content-process`、`re-title`、`link-flatten`；限制 Feed 输入条目数
+- **RSS 工具**：网页监控源与预览；HTML 转 RSS 支持导航动作与图标来源；JSON 转 RSS 支持 `$` 模板
+- **预览与管理端**：RSS Viewer 增强（HTML 模式、卡片展开、详情弹窗），Feed Compare 并入 Viewer；可配置浏览器 Provider；AtomCraft 创建后禁止改名
+
+### 🐛 问题修复 (Bug Fixes)
+
+- `fulltext-plus`：browserless 超时不再导致整批失败，渲染失败回退 HTTP 全文提取
+- 上游抓取失败改为 502/504/422；重复配方名返回 409
+- LLM 调用前清理 base64 图片；LLM 文章并发并入全局调度器；缓存同 key 未命中用 singleflight 合并
+- 网页监控、Markdown/HTML 换行、非法 XML、HTML 转 RSS 内网源与错误展示等若干问题
+
+### 📝 文档与杂项 (Documentation & Chores)
+
+- Inbox / Topic / AI 内容处理文档（en / zh-CN / zh-TW）；开发环境指南
+- 前端 TypeScript 工具链升级；CI 升级 Node 24，适配 Go 1.25 与 golangci-lint
+
 ## [v3.1.0] (since v3.0.0)
 
 ### ✨ 新特性 (Features & Refactors)
@@ -22,7 +49,6 @@
 - settings: 修复读取现有 search provider config 时的错误处理
 - 修复 search provider active check 并增加 timeout
 - monitor: 修复并暴露 search provider check 中的 db errors
-- 修复 `fulltext-plus` 调用 browserless 时默认超时过短、并发过高导致全体条目超时 500；浏览器渲染失败时回退到 HTTP 全文提取
 
 ### 📝 文档与杂项 (Documentation & Chores)
 
