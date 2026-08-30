@@ -106,7 +106,8 @@ func CommonCraftHandlerUsingCraftOptionList(c *gin.Context, optionList []LegacyC
 
 	rawCraftFeed, err := sourceInstance.Fetch(c.Request.Context())
 	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
+		status, msg := httpStatusForCraftSourceError(err)
+		c.String(status, msg)
 		return
 	}
 
