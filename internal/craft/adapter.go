@@ -2,6 +2,7 @@ package craft
 
 import (
 	"context"
+	"fmt"
 
 	"FeedCraft/internal/model"
 
@@ -39,12 +40,18 @@ func applyLocalProcessorToLegacyFeed(ctx context.Context, processor localProcess
 	if feed == nil {
 		return nil
 	}
+	if processor == nil {
+		return fmt.Errorf("processor is nil")
+	}
 	originalItems := feed.Items
 	out, err := processor.Process(ctx, model.FromFeedsFeed(feed))
 	if err != nil {
 		return err
 	}
 	converted := out.ToFeedsFeed()
+	if converted == nil {
+		return fmt.Errorf("processor returned nil feed")
+	}
 	restoreLegacyItemMetadata(originalItems, converted)
 	*feed = *converted
 	return nil
@@ -54,21 +61,25 @@ func restoreLegacyItemMetadata(originals []*feeds.Item, converted *feeds.Feed) {
 	if converted == nil || len(originals) == 0 {
 		return
 	}
-	index := make(map[string]*feeds.Item, len(originals))
+	index := make(map[string][]*feeds.Item, len(originals))
 	for _, item := range originals {
 		if item == nil {
 			continue
 		}
-		index[legacyItemKey(item)] = item
+		key := legacyItemKey(item)
+		index[key] = append(index[key], item)
 	}
 	for _, item := range converted.Items {
 		if item == nil {
 			continue
 		}
-		orig, ok := index[legacyItemKey(item)]
-		if !ok {
+		key := legacyItemKey(item)
+		matches := index[key]
+		if len(matches) == 0 {
 			continue
 		}
+		orig := matches[0]
+		index[key] = matches[1:]
 		if item.Enclosure == nil {
 			item.Enclosure = orig.Enclosure
 		}

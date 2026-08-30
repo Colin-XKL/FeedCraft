@@ -65,7 +65,9 @@ func newAIContentProcessProcessor(rule string, extraPayloadRaw string, placement
 	return &ArticleTextTransformProcessor{
 		CraftName: "ai-content-process",
 		Mutate: func(ctx context.Context, article *model.CraftArticle) error {
-			_ = ctx
+			if err := ctx.Err(); err != nil {
+				return err
+			}
 			if rule == "" {
 				return fmt.Errorf("ai-content-process requires rule param")
 			}
