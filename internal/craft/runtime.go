@@ -382,12 +382,20 @@ func buildNativeEmbeddingFilterProcessor(atom ResolvedCraftAtom, feedURL string)
 
 func buildNativeAIFilterProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
 	_ = feedURL
-	return wrapLocalProcessor(newAIFilterProcessor(atom.Params["rule"], atom.Params["extra-payload"])), nil
+	rule := strings.TrimSpace(atom.Params["rule"])
+	if rule == "" {
+		return nil, fmt.Errorf("ai-filter requires rule param")
+	}
+	return wrapLocalProcessor(newAIFilterProcessor(rule, atom.Params["extra-payload"])), nil
 }
 
 func buildNativeAIContentProcessProcessor(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {
 	_ = feedURL
-	return wrapLocalProcessor(newAIContentProcessProcessor(atom.Params["rule"], atom.Params["extra-payload"], atom.Params["placement"])), nil
+	rule := strings.TrimSpace(atom.Params["rule"])
+	if rule == "" {
+		return nil, fmt.Errorf("ai-content-process requires rule param")
+	}
+	return wrapLocalProcessor(newAIContentProcessProcessor(rule, atom.Params["extra-payload"], atom.Params["placement"])), nil
 }
 
 func buildLegacyOption(atom ResolvedCraftAtom, feedURL string) (engine.CraftOption, error) {

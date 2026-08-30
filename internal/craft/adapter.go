@@ -2,6 +2,7 @@ package craft
 
 import (
 	"context"
+	"fmt"
 
 	"FeedCraft/internal/model"
 
@@ -39,12 +40,18 @@ func applyLocalProcessorToLegacyFeed(ctx context.Context, processor localProcess
 	if feed == nil {
 		return nil
 	}
+	if processor == nil {
+		return fmt.Errorf("processor is nil")
+	}
 	originalItems := feed.Items
 	out, err := processor.Process(ctx, model.FromFeedsFeed(feed))
 	if err != nil {
 		return err
 	}
 	converted := out.ToFeedsFeed()
+	if converted == nil {
+		return fmt.Errorf("processor returned nil feed")
+	}
 	restoreLegacyItemMetadata(originalItems, converted)
 	*feed = *converted
 	return nil

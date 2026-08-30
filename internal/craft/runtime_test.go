@@ -641,6 +641,32 @@ func TestBuildOptionChain_EmbeddingFilterRejectsEmptyAnchors(t *testing.T) {
 	assert.Contains(t, err.Error(), "anchors")
 }
 
+func TestBuildOptionChain_AIFilterRejectsEmptyRule(t *testing.T) {
+	db := newCraftRuntimeTestDB(t)
+	require.NoError(t, dao.CreateCraftAtom(db, &dao.CraftAtom{
+		Name:         "native-ai-filter-empty",
+		TemplateName: "ai-filter",
+		Params:       map[string]string{"rule": "   "},
+	}))
+
+	_, err := BuildOptionChain(db, "native-ai-filter-empty", "https://example.com/feed.xml")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "requires rule param")
+}
+
+func TestBuildOptionChain_AIContentProcessRejectsEmptyRule(t *testing.T) {
+	db := newCraftRuntimeTestDB(t)
+	require.NoError(t, dao.CreateCraftAtom(db, &dao.CraftAtom{
+		Name:         "native-ai-content-empty",
+		TemplateName: "ai-content-process",
+		Params:       map[string]string{"rule": ""},
+	}))
+
+	_, err := BuildOptionChain(db, "native-ai-content-empty", "https://example.com/feed.xml")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "requires rule param")
+}
+
 func newCraftRuntimeTestDB(t *testing.T) *gorm.DB {
 	t.Helper()
 	dsn := "file:" + t.Name() + "?mode=memory&cache=shared"
