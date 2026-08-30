@@ -77,7 +77,7 @@ func fetchHTML(targetURL string, useBrowserless bool, navigationActions []config
 	}
 	if useBrowserless {
 		return util.GetBrowserlessContent(targetURL, util.BrowserlessOptions{
-			Timeout:           craft.DefaultExtractFulltextTimeout,
+			Timeout:           util.ResolveBrowserRenderTimeout(),
 			NavigationActions: navigationActions,
 		})
 	}

@@ -5,10 +5,28 @@
       :key="`step-${idx}`"
       class="step-card"
     >
-      <div class="editor-row">
+      <div class="card-header">
+        <span class="card-title">{{
+          t('topic.stepIndex', { index: idx + 1 })
+        }}</span>
+        <a-button
+          type="text"
+          status="danger"
+          class="remove-btn"
+          @click="removeStep(idx)"
+        >
+          <template #icon>
+            <icon-delete />
+          </template>
+          {{ t('topic.removeStep') }}
+        </a-button>
+      </div>
+
+      <div class="field">
+        <label class="field-label">{{ t('topic.stepType') }}</label>
         <a-select
           v-model="step.type"
-          style="width: 150px; flex-shrink: 0"
+          class="field-control"
           @change="resetStepValue(idx)"
         >
           <a-option value="deduplicate">
@@ -17,56 +35,36 @@
           <a-option value="sort">{{ t('topic.stepType.sort') }}</a-option>
           <a-option value="limit">{{ t('topic.stepType.limit') }}</a-option>
         </a-select>
+      </div>
 
-        <template v-if="step.type === 'deduplicate'">
-          <a-select
-            v-model="step.value"
-            style="width: 220px; flex-shrink: 0"
-            @change="onDeduplicateStrategyChange(idx)"
-          >
-            <a-option value="by_link">
-              {{ t('topic.stepOption.strategy.by_link') }}
-            </a-option>
-            <a-option value="by_id">
-              {{ t('topic.stepOption.strategy.by_id') }}
-            </a-option>
-            <a-option value="by_title">
-              {{ t('topic.stepOption.strategy.by_title') }}
-            </a-option>
-            <a-option value="by_simhash">
-              {{ t('topic.stepOption.strategy.by_simhash') }}
-            </a-option>
-            <a-option value="by_embedding">
-              {{ t('topic.stepOption.strategy.by_embedding') }}
-            </a-option>
-          </a-select>
-          <a-input-number
-            v-if="step.value === 'by_simhash'"
-            v-model="step.threshold"
-            :min="0"
-            :max="1"
-            :step="0.01"
-            :precision="2"
-            :placeholder="t('topic.stepOption.threshold.simhash')"
-            style="flex: 1; min-width: 120px"
-          />
-          <a-input-number
-            v-else-if="step.value === 'by_embedding'"
-            v-model="step.threshold"
-            :min="0"
-            :max="1"
-            :step="0.01"
-            :precision="2"
-            :placeholder="t('topic.stepOption.threshold.embedding')"
-            style="flex: 1; min-width: 120px"
-          />
-        </template>
-
+      <div v-if="step.type === 'deduplicate'" class="field">
+        <label class="field-label">{{ t('topic.stepOption.strategy') }}</label>
         <a-select
-          v-else-if="step.type === 'sort'"
           v-model="step.value"
-          style="flex: 1; min-width: 150px"
+          class="field-control"
+          @change="onDeduplicateStrategyChange(idx)"
         >
+          <a-option value="by_link">
+            {{ t('topic.stepOption.strategy.by_link') }}
+          </a-option>
+          <a-option value="by_id">
+            {{ t('topic.stepOption.strategy.by_id') }}
+          </a-option>
+          <a-option value="by_title">
+            {{ t('topic.stepOption.strategy.by_title') }}
+          </a-option>
+          <a-option value="by_simhash">
+            {{ t('topic.stepOption.strategy.by_simhash') }}
+          </a-option>
+          <a-option value="by_embedding">
+            {{ t('topic.stepOption.strategy.by_embedding') }}
+          </a-option>
+        </a-select>
+      </div>
+
+      <div v-else-if="step.type === 'sort'" class="field">
+        <label class="field-label">{{ t('topic.stepOption.sort') }}</label>
+        <a-select v-model="step.value" class="field-control">
           <a-option value="date_desc">
             {{ t('topic.stepOption.sort.date_desc') }}
           </a-option>
@@ -80,36 +78,45 @@
             {{ t('topic.stepOption.sort.quality_asc') }}
           </a-option>
         </a-select>
+      </div>
 
+      <div v-else class="field">
+        <label class="field-label">{{ t('topic.stepOption.max') }}</label>
         <a-input-number
-          v-else
           v-model="step.value"
           :min="1"
           mode="button"
-          style="flex: 1; min-width: 150px"
+          class="field-control"
         />
-
-        <a-button
-          type="text"
-          status="danger"
-          class="remove-btn"
-          @click="removeStep(idx)"
-        >
-          <template #icon>
-            <icon-delete />
-          </template>
-          {{ t('topic.removeStep') }}
-        </a-button>
       </div>
-      <p
+
+      <div
         v-if="
           step.type === 'deduplicate' &&
           (step.value === 'by_simhash' || step.value === 'by_embedding')
         "
-        class="step-hint"
+        class="field"
       >
-        {{ t(`topic.stepOption.strategy.${step.value}.hint`) }}
-      </p>
+        <label class="field-label">{{
+          t('topic.stepOption.threshold.label')
+        }}</label>
+        <a-input-number
+          v-model="step.threshold"
+          :min="0"
+          :max="1"
+          :step="0.01"
+          :precision="2"
+          :placeholder="
+            step.value === 'by_simhash'
+              ? t('topic.stepOption.threshold.simhash')
+              : t('topic.stepOption.threshold.embedding')
+          "
+          class="field-control"
+        />
+        <p class="step-hint">
+          {{ t(`topic.stepOption.strategy.${step.value}.hint`) }}
+        </p>
+      </div>
     </div>
 
     <a-button type="dashed" long class="add-btn" @click="addStep">
@@ -189,7 +196,7 @@
   .step-card {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
     background-color: var(--color-fill-1);
     border: 1px solid var(--color-border-1);
     border-radius: 6px;
@@ -202,16 +209,39 @@
     background-color: var(--color-fill-2);
   }
 
-  .editor-row {
+  .card-header {
     display: flex;
-    gap: 12px;
+    justify-content: space-between;
     align-items: center;
+    gap: 12px;
+  }
+
+  .card-title {
+    font-weight: 600;
+    color: var(--color-text-1);
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .field-label {
+    font-size: 13px;
+    color: var(--color-text-2);
+    line-height: 1.4;
+  }
+
+  .field-control,
+  .field-control :deep(.arco-select-view),
+  .field-control :deep(.arco-input-number) {
     width: 100%;
   }
 
   .step-hint {
-    margin: 4px 0 0 0;
-    padding-left: 4px;
+    margin: 0;
     font-size: 12px;
     color: var(--color-text-3);
     line-height: 1.5;

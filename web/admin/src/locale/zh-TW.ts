@@ -10,12 +10,13 @@ import localeFeedViewer from '@/locale/zh-CN/feedViewer';
 import localeLlmDebug from '@/locale/zh-CN/llmDebug';
 import localeUrlGenerator from '@/locale/zh-CN/urlGenerator';
 import localeHtmlToRss from '@/locale/zh-CN/htmlToRss';
-import localeJsonToRss from '@/locale/zh-CN/jsonToRss';
+import localeJsonToRss from '@/locale/zh-TW/jsonToRss';
 import localeSearchToRss from '@/locale/zh-CN/searchToRss';
 import localeDependencyService from '@/locale/zh-CN/dependencyService';
 import localeHealth from '@/locale/zh-TW/health';
 import localeObservability from '@/locale/zh-CN/observability';
 import localeInbox from '@/locale/zh-TW/inbox';
+import localeWelcome from '@/locale/zh-CN/welcome';
 
 export default {
   ...localeSettings,
@@ -36,4 +37,5 @@ export default {
   ...localeHealth,
   ...localeObservability,
   ...localeInbox,
+  ...localeWelcome,
 };

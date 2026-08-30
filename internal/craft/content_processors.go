@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"FeedCraft/internal/model"
 	"FeedCraft/internal/util"
@@ -145,20 +144,11 @@ func newFulltextProcessor(originalFeedURL string) *FulltextProcessor {
 }
 
 func newFulltextPlusProcessor(originalFeedURL string, config FulltextPlusConfig) *FulltextPlusProcessor {
+	budget := &browserFailBudget{}
 	transformer := GetCommonCachedArticleTransformer(
 		cacheKeyForCraftArticleLink,
 		func(ctx context.Context, article *model.CraftArticle) (string, error) {
-			opts := util.BrowserlessOptions{
-				Timeout:   DefaultExtractFulltextTimeout,
-				WaitUntil: config.Mode,
-			}
-			if config.Wait > 0 {
-				opts.WaitTime = time.Duration(config.Wait) * time.Second
-				if opts.WaitTime > opts.Timeout {
-					opts.Timeout = opts.WaitTime + 10*time.Second
-				}
-			}
-			return fulltextPlusExtractFunc(article.Link, opts)
+			return runFulltextPlusExtract(article.Link, buildFulltextPlusBrowserOptions(config), budget)
 		},
 		"extract fulltext plus",
 	)

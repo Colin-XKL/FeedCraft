@@ -153,3 +153,6 @@ start.sh
 start-full.sh
 .claude/
 .dev-data/
+
+# Local agent design notes
+docs/superpowers/

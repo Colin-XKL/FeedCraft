@@ -1,34 +1,70 @@
 <template>
-  <div class="py-8 px-16">
-    <x-header
-      :title="t('menu.craftAtom')"
-      :description="t('craftAtom.description')"
-    ></x-header>
+  <CraftManagePage
+    :title="t('menu.craftAtom')"
+    :description="t('craftAtom.description')"
+  >
+    <template #toolbar>
+      <a-space wrap>
+        <a-button :loading="isLoading" @click="listAllCraftAtoms">
+          <template #icon>
+            <icon-refresh />
+          </template>
+          {{ t('craftAtom.query') }}
+        </a-button>
+        <a-button type="primary" @click="handleAdd">
+          <template #icon>
+            <icon-plus />
+          </template>
+          {{ t('craftAtom.create') }}
+        </a-button>
+      </a-space>
+    </template>
 
-    <a-space direction="horizontal" class="mb-6">
-      <a-button type="primary" :loading="isLoading" @click="listAllCraftAtoms">
-        {{ t('craftAtom.query') }}
-      </a-button>
-      <a-button type="outline" @click="handleAdd"
-        >{{ t('craftAtom.create') }}
-      </a-button>
-    </a-space>
-
-    <a-table :data="craftAtoms" :columns="columns" :loading="isLoading">
+    <a-table
+      v-if="isLoading || craftAtoms.length > 0"
+      row-key="name"
+      :data="craftAtoms"
+      :columns="columns"
+      :loading="isLoading"
+      :bordered="false"
+      :pagination="{ pageSize: 10, showTotal: true }"
+    >
+      <template #params="{ record }">
+        <a-space v-if="Object.keys(record.params || {}).length" wrap>
+          <a-tag v-for="(_, key) in record.params" :key="key" color="gray">
+            {{ key }}
+          </a-tag>
+        </a-space>
+        <span v-else class="text-gray-400">{{
+          t('craftAtom.form.noParams')
+        }}</span>
+      </template>
       <template #actions="{ record }">
-        <a-space>
-          <a-button type="outline" @click="editBtnHandler(record)"
-            >{{ t('craftAtom.edit') }}
+        <a-space wrap>
+          <a-button type="text" size="small" @click="editBtnHandler(record)">
+            {{ t('craftAtom.edit') }}
           </a-button>
           <a-popconfirm
             :content="t('craftAtom.deleteConfirm')"
             @ok="deleteCraftAtomHandler(record.name)"
           >
-            <a-button status="danger">{{ t('craftAtom.delete') }}</a-button>
+            <a-button type="text" status="danger" size="small">
+              {{ t('craftAtom.delete') }}
+            </a-button>
           </a-popconfirm>
         </a-space>
       </template>
     </a-table>
+
+    <ListEmptyGuide
+      v-else-if="!listFailed"
+      :description="t('craftAtom.empty.description')"
+      :hint="t('craftAtom.empty.hint')"
+      :create-label="t('craftAtom.empty.createFirst')"
+      :docs-label="t('craftAtom.empty.docs')"
+      :docs-href="atomDocsHref"
+      @create="handleAdd"
+    />
 
     <a-modal
       v-model:visible="showEditModal"
@@ -167,7 +203,7 @@
                     />
                     <a-textarea
                       v-else
-                      v-model="param.value"
+                      :model-value="String(param.value)"
                       :placeholder="t('craftAtom.form.value')"
                       :auto-size="
                         isEmbeddingFilterAnchorsParam(
@@ -177,6 +213,7 @@
                           ? { minRows: 4, maxRows: 8 }
                           : { minRows: 2, maxRows: 4 }
                       "
+                      @update:model-value="param.value = $event"
                     />
                   </a-col>
                   <a-col :span="2">
@@ -211,12 +248,14 @@
         }}</a-button>
       </template>
     </a-modal>
-  </div>
+  </CraftManagePage>
 </template>
 
 <script setup lang="ts">
-  import XHeader from '@/components/header/x-header.vue';
-  import { onBeforeMount, ref } from 'vue';
+  import CraftManagePage from '@/components/craft/CraftManagePage.vue';
+  import ListEmptyGuide from '@/components/list-empty-guide/index.vue';
+  import { computed, onBeforeMount, ref } from 'vue';
+  import { buildDocsUrl } from '@/utils/docsUrl';
   import {
     CraftAtom,
     createCraftAtom,
@@ -243,9 +282,13 @@
     toCraftParamFormValue,
   } from '@/views/dashboard/craft_atom/paramOptions';
 
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  const atomDocsHref = computed(() =>
+    buildDocsUrl(locale.value, 'guides/advanced/customization')
+  );
 
   const isLoading = ref(false);
+  const listFailed = ref(false);
   const formRef = ref();
   const craftAtoms = ref<CraftAtom[]>([]);
   const editedCraftAtom = ref<CraftAtom>({
@@ -263,8 +306,13 @@
     { title: t('craftAtom.form.name'), dataIndex: 'name' },
     { title: t('craftAtom.form.description'), dataIndex: 'description' },
     { title: t('craftAtom.form.template'), dataIndex: 'template_name' },
-    { title: t('craftAtom.form.params'), dataIndex: 'params' },
-    { title: t('craftAtom.edit'), slotName: 'actions' },
+    { title: t('craftAtom.form.params'), slotName: 'params' },
+    {
+      title: t('craftAtom.edit'),
+      slotName: 'actions',
+      width: 140,
+      align: 'right',
+    },
   ];
   const rules = {
     template_name: [
@@ -351,8 +399,14 @@
 
   async function listAllCraftAtoms() {
     isLoading.value = true;
-    craftAtoms.value = (await listCraftAtoms()).data;
-    isLoading.value = false;
+    try {
+      craftAtoms.value = (await listCraftAtoms()).data ?? [];
+      listFailed.value = false;
+    } catch {
+      listFailed.value = true;
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   const addParam = () => {
@@ -403,6 +457,7 @@
     } else {
       await createCraftAtom(editedCraftAtom.value);
     }
+    Message.success(t('craftAtom.form.saveSuccess'));
     showEditModal.value = false;
     await listAllCraftAtoms();
     isUpdating.value = false;

@@ -3,7 +3,7 @@
     <Breadcrumb :items="['menu.worktable', 'menu.topicFeed']" />
     <x-header
       :title="detail?.topic.title || String(route.params.id || '')"
-      :description="t('topic.description')"
+      :description="detail?.topic.description || t('topic.wizard.description')"
     />
 
     <a-spin :loading="loading" style="width: 100%">
@@ -13,33 +13,37 @@
           class="general-card"
           :title="t('topic.detail.overview')"
         >
-          <a-row :gutter="16">
-            <a-col :span="8">
-              <a-statistic :title="t('topic.detail.currentStatus')">
-                <template #value>
-                  <a-tag :color="statusColor(detail.health.current_status)">
-                    {{ formatStatus(detail.health.current_status) }}
-                  </a-tag>
-                </template>
-              </a-statistic>
-            </a-col>
-            <a-col :span="8">
-              <a-statistic :title="t('topic.inputCount')">
-                <template #value>
-                  {{ enabledInputCount }}
-                  <span v-if="disabledInputCount > 0" class="input-count-muted">
-                    / {{ topicInputs.length }}
-                  </span>
-                </template>
-              </a-statistic>
-            </a-col>
-            <a-col :span="8">
-              <a-statistic
-                :title="t('topic.detail.executionCount')"
-                :value="detail.recent_executions.length"
-              />
-            </a-col>
-          </a-row>
+          <div class="overview-stats">
+            <div class="overview-stat">
+              <div class="overview-stat__label">
+                {{ t('topic.detail.currentStatus') }}
+              </div>
+              <div class="overview-stat__value">
+                <a-tag :color="statusColor(detail.health?.current_status)">
+                  {{ formatStatus(detail.health?.current_status) }}
+                </a-tag>
+              </div>
+            </div>
+            <div class="overview-stat">
+              <div class="overview-stat__label">
+                {{ t('topic.inputCount') }}
+              </div>
+              <div class="overview-stat__value overview-stat__number">
+                {{ enabledInputCount }}
+                <span v-if="disabledInputCount > 0" class="input-count-muted">
+                  / {{ topicInputs.length }}
+                </span>
+              </div>
+            </div>
+            <div class="overview-stat">
+              <div class="overview-stat__label">
+                {{ t('topic.detail.executionCount') }}
+              </div>
+              <div class="overview-stat__value overview-stat__number">
+                {{ detail.recent_executions.length }}
+              </div>
+            </div>
+          </div>
 
           <a-descriptions :column="1" bordered style="margin-top: 16px">
             <a-descriptions-item :label="t('topic.id')">
@@ -130,8 +134,8 @@
                         :model-value="record.disabled"
                         :loading="inputToggleSavingUri === record.uri"
                         @change="
-                          (value: boolean) =>
-                            toggleInputDisabled(record.uri, value)
+                          (value) =>
+                            toggleInputDisabled(record.uri, Boolean(value))
                         "
                       />
                     </template>
@@ -561,6 +565,40 @@
 </script>
 
 <style scoped>
+  .overview-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .overview-stat {
+    min-height: 88px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    background: var(--color-fill-1);
+  }
+
+  .overview-stat__label {
+    margin-bottom: 10px;
+    color: var(--color-text-3);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .overview-stat__value {
+    display: flex;
+    align-items: center;
+    min-height: 32px;
+  }
+
+  .overview-stat__number {
+    gap: 6px;
+    color: var(--color-text-1);
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
   .section-label {
     margin-bottom: 12px;
     font-weight: 600;

@@ -15,3 +15,15 @@ type LiteLLMConfig struct {
 type SearXNGConfig struct {
 	Engines string `json:"engines"`
 }
+
+type FaviconSettings struct {
+	DefaultProviderID string                  `json:"default_provider_id"`
+	CustomProviders   []FaviconProviderConfig `json:"custom_providers,omitempty"`
+}
+
+type FaviconProviderConfig struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	URLTemplate string `json:"url_template"`
+	Enabled     bool   `json:"enabled"`
+}

@@ -503,8 +503,8 @@
       selectedRecipe.value = null;
       quickCreate.value = false;
       rssUrl.value = '';
-    } catch (e) {
-      Message.error(t('customRecipe.form.error.saveFailed'));
+    } catch {
+      // Axios interceptor already displays the API error toast.
     } finally {
       saving.value = false;
     }

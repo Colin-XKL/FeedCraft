@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 	"text/template"
 
@@ -29,6 +30,12 @@ type jsonFieldDefinition struct {
 type jsonTemplateContext struct {
 	Item   interface{}
 	Fields JsonParsedFields
+}
+
+var jsonDollarTemplatePattern = regexp.MustCompile(`\$\{([A-Za-z0-9_.-]+)\}`)
+
+func (ctx jsonTemplateContext) ItemField(path string) string {
+	return stringifyTemplateValue(lookupJSONItemPath(ctx.Item, path))
 }
 
 func ParseJSONItems(rawData interface{}, cfg *config.JsonParserConfig) ([]JsonParsedFields, error) {
@@ -109,11 +116,12 @@ func compileJSONFieldDefinitions(cfg *config.JsonParserConfig) ([]jsonFieldDefin
 		}
 
 		if fields[i].tmpl != "" {
+			templateSource := normalizeJSONTemplateSyntax(fields[i].tmpl)
 			tmpl, err := template.New(fields[i].name).
 				Option("missingkey=zero").
 				Funcs(template.FuncMap{
-					"trim": func(value interface{}, cutset string) string {
-						return strings.Trim(stringifyTemplateValue(value), cutset)
+					"trim": func(cutset interface{}, value interface{}) string {
+						return strings.Trim(stringifyTemplateValue(value), stringifyTemplateValue(cutset))
 					},
 					"trimSpace": func(value interface{}) string {
 						return strings.TrimSpace(stringifyTemplateValue(value))
@@ -126,7 +134,7 @@ func compileJSONFieldDefinitions(cfg *config.JsonParserConfig) ([]jsonFieldDefin
 						return current
 					},
 				}).
-				Parse(fields[i].tmpl)
+				Parse(templateSource)
 			if err != nil {
 				return nil, fmt.Errorf("invalid %s template: %w", fields[i].name, err)
 			}
@@ -135,6 +143,33 @@ func compileJSONFieldDefinitions(cfg *config.JsonParserConfig) ([]jsonFieldDefin
 	}
 
 	return fields, nil
+}
+
+func normalizeJSONTemplateSyntax(src string) string {
+	var normalized strings.Builder
+	for len(src) > 0 {
+		actionStart := strings.Index(src, "{{")
+		if actionStart == -1 {
+			normalized.WriteString(normalizeJSONDollarTemplateSegment(src))
+			break
+		}
+
+		normalized.WriteString(normalizeJSONDollarTemplateSegment(src[:actionStart]))
+		actionEnd := strings.Index(src[actionStart+2:], "}}")
+		if actionEnd == -1 {
+			normalized.WriteString(src[actionStart:])
+			break
+		}
+
+		actionEnd += actionStart + 4
+		normalized.WriteString(src[actionStart:actionEnd])
+		src = src[actionEnd:]
+	}
+	return normalized.String()
+}
+
+func normalizeJSONDollarTemplateSegment(src string) string {
+	return jsonDollarTemplatePattern.ReplaceAllString(src, `{{ .ItemField "$1" }}`)
 }
 
 func parseJSONItemFields(itemNode interface{}, fields []jsonFieldDefinition) (JsonParsedFields, error) {
@@ -217,6 +252,25 @@ func renderJSONFieldTemplate(field jsonFieldDefinition, ctx jsonTemplateContext)
 		return "", fmt.Errorf("failed to render %s template: %w", field.name, err)
 	}
 	return rendered.String(), nil
+}
+
+func lookupJSONItemPath(item interface{}, path string) interface{} {
+	current := item
+	for _, part := range strings.Split(path, ".") {
+		if part == "" {
+			return nil
+		}
+		object, ok := current.(map[string]interface{})
+		if !ok {
+			return nil
+		}
+		value, ok := object[part]
+		if !ok {
+			return nil
+		}
+		current = value
+	}
+	return current
 }
 
 func stringifyTemplateValue(v interface{}) string {

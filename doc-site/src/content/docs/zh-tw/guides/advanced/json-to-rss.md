@@ -39,20 +39,23 @@ JSON RSS 生成器可以幫助你：
 
 獲取到 JSON 後，你將在左側面板看到以樹形視覺化的響應。現在你可以定義選取器來提取訂閱源條目。
 
-該工具使用 **[jq](https://jqlang.github.io/jq/)** 語法來查詢 JSON，並支援對提取結果再做一層 Go template 加工。
+該工具使用 **[jq](https://jqlang.github.io/jq/)** 語法來查詢 JSON，並支援對提取結果再做一層模板加工。常見場景可以直接用 `${欄位名}` 讀取目前條目欄位；需要函數、已提取欄位或更複雜邏輯時，可以使用 Go template。
 
 - **列表選取器 (Items Iterator)**：條目陣列的路徑。
   - 提示：你可以點擊樹視圖中的節點來自動填充選取器。
 - **標題選取器 (Title Selector)**：條目標題的路徑（相對於條目對象）。
 - **標題模板 (Title Template)**：（可選）對提取到的標題做進一步處理，例如 `{{ .Fields.Title | trimSpace }}`。
 - **連結選取器 (Link Selector)**：條目 URL 的路徑。
-- **連結模板 (Link Template)**：（可選）當接口沒有完整連結時，可以拼接，例如 `https://some-website.com/article/{{ .Item.id }}`。
+- **連結模板 (Link Template)**：（可選）當介面沒有完整連結時，可以拼接，例如 `https://some-website.com/article/${article_id}`。
 - **日期選取器 (Date Selector)**：（可選）發布日期的路徑。
 - **內容選取器 (Content Selector)**：（可選）完整內容或摘要的路徑。
 
 #### 使用模板 (可選)
 
-你可以使用 [Go Templates](https://pkg.go.dev/text/template) 語法對提取的值進行進一步處理。
+模板支援兩種寫法：
+
+- **簡寫變數**：`${article_id}` 會讀取目前條目的 `article_id` 欄位；`${author.name}` 會讀取巢狀欄位。
+- **Go template**：使用 [Go Templates](https://pkg.go.dev/text/template) 語法對提取的值進行進一步處理。
 
 **可用變數：**
 
@@ -68,8 +71,9 @@ JSON RSS 生成器可以幫助你：
 **範例：**
 
 - **清理標題空白字元**：`{{ .Fields.Title | trimSpace }}`
-- **拼接完整連結**：`https://example.com/article/{{ .Item.id }}`
-- **移除特定前缀**：`{{ .Fields.Description | trim "Prefix: " }}`
+- **拼接完整連結**：`https://example.com/article/${article_id}`
+- **讀取巢狀欄位**：`作者：${author.name}`
+- **移除特定前置文字**：`{{ .Fields.Description | trim "Prefix: " }}`
 - **預設值兜底**：`{{ default .Fields.Description "暫無摘要" }}`
 
 點擊 **執行預覽 (Run Preview)** 驗證你的選取器，然後點擊 **下一步 (Next Step)**。

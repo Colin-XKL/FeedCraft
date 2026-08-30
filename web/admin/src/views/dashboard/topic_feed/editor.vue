@@ -6,176 +6,186 @@
     <x-header :title="pageTitle" :description="t('topic.wizard.description')" />
 
     <a-card class="wizard-card">
-      <a-steps :current="currentStep" class="mb-8">
-        <a-step
-          :title="t('topic.wizard.step.basic')"
-          :description="t('topic.wizard.step.basic.desc')"
-        />
-        <a-step
-          :title="t('topic.wizard.step.inputs')"
-          :description="t('topic.wizard.step.inputs.desc')"
-        />
-        <a-step
-          :title="t('topic.wizard.step.aggregator')"
-          :description="t('topic.wizard.step.aggregator.desc')"
-        />
-        <a-step
-          :title="t('topic.wizard.step.review')"
-          :description="t('topic.wizard.step.review.desc')"
-        />
-      </a-steps>
+      <div class="wizard-shell">
+        <a-steps :current="currentStep" class="wizard-steps">
+          <a-step
+            :title="t('topic.wizard.step.basic')"
+            :description="t('topic.wizard.step.basic.desc')"
+          />
+          <a-step
+            :title="t('topic.wizard.step.inputs')"
+            :description="t('topic.wizard.step.inputs.desc')"
+          />
+          <a-step
+            :title="t('topic.wizard.step.aggregator')"
+            :description="t('topic.wizard.step.aggregator.desc')"
+          />
+          <a-step
+            :title="t('topic.wizard.step.review')"
+            :description="t('topic.wizard.step.review.desc')"
+          />
+        </a-steps>
 
-      <a-spin :loading="pageLoading" style="width: 100%">
-        <a-form ref="formRef" :model="formData" layout="vertical">
-          <div v-show="currentStep === 1" class="step-content">
-            <a-form-item
-              field="id"
-              :label="t('topic.id')"
-              required
-              :rules="getRecipeIdRules(t('topic.idRequired'))"
-            >
-              <a-input
-                v-model="formData.id"
-                :disabled="isEdit"
-                :placeholder="t('topic.id')"
-              />
-            </a-form-item>
-            <a-form-item field="title" :label="t('topic.title')">
-              <a-input
-                v-model="formData.title"
-                :placeholder="t('topic.title')"
-              />
-            </a-form-item>
-            <a-form-item
-              field="description"
-              :label="t('topic.descriptionLabel')"
-            >
-              <a-textarea
-                v-model="formData.description"
-                :placeholder="t('topic.descriptionLabel')"
-              />
-            </a-form-item>
-          </div>
-
-          <div v-show="currentStep === 2" class="step-content">
-            <a-alert type="info" class="mb-4" show-icon>
-              {{ t('topic.inputsHelp') }}
-            </a-alert>
-            <TopicInputSourcesEditor
-              v-model="formData.inputSources"
-              :available-recipes="availableRecipes"
-              :available-topics="availableTopics"
-              :picker-loading="pickerLoading"
-              :exclude-topic-id="isEdit ? formData.id : undefined"
-            />
-          </div>
-
-          <div v-show="currentStep === 3" class="step-content">
-            <a-alert type="info" class="mb-4" show-icon>
-              {{ t('topic.aggregatorHelp') }}
-            </a-alert>
-            <TopicAggregatorEditor v-model="formData.aggregator_config" />
-          </div>
-
-          <div v-show="currentStep === 4" class="step-content">
-            <a-descriptions :column="1" bordered>
-              <a-descriptions-item :label="t('topic.id')">
-                {{ formData.id || '-' }}
-              </a-descriptions-item>
-              <a-descriptions-item :label="t('topic.title')">
-                {{ formData.title || '-' }}
-              </a-descriptions-item>
-              <a-descriptions-item :label="t('topic.descriptionLabel')">
-                {{ formData.description || '-' }}
-              </a-descriptions-item>
-              <a-descriptions-item :label="t('topic.inputCount')">
-                {{ configuredInputCount }}
-              </a-descriptions-item>
-              <a-descriptions-item :label="t('topic.aggregator')">
-                {{
-                  formatAggregatorSummary(
-                    normalizeTopicPayload(formData).aggregator_config,
-                    t
-                  )
-                }}
-              </a-descriptions-item>
-            </a-descriptions>
-
-            <div class="section-label mt-4">{{ t('topic.inputs') }}</div>
-            <a-list bordered class="mb-4">
-              <a-list-item
-                v-for="(source, idx) in reviewInputs"
-                :key="`review-input-${idx}`"
-              >
-                <a-list-item-meta
-                  :title="source.description || source.uri"
-                  :description="source.description ? source.uri : undefined"
-                />
-                <template #actions>
-                  <a-tag v-if="source.disabled" color="gray">
-                    {{ t('topic.inputDisabled.badge') }}
-                  </a-tag>
-                </template>
-              </a-list-item>
-            </a-list>
-
-            <a-alert v-if="validationErrors.length > 0" type="error">
-              <template #title>{{ t('topic.validationSummary') }}</template>
-              <div
-                v-for="issue in validationErrors"
-                :key="`${issue.field}-${issue.message}`"
-                class="validation-item"
-              >
-                <strong>{{ issue.field }}</strong
-                >: {{ issue.message }}
-              </div>
-            </a-alert>
-            <a-alert
-              v-if="validationWarnings.length > 0"
-              type="warning"
-              style="margin-top: 12px"
-            >
-              <template #title>{{ t('topic.validationWarnings') }}</template>
-              <div
-                v-for="issue in validationWarnings"
-                :key="`${issue.field}-${issue.message}`"
-                class="validation-item"
-              >
-                <strong>{{ issue.field }}</strong
-                >: {{ issue.message }}
-              </div>
-            </a-alert>
-          </div>
-        </a-form>
-      </a-spin>
-
-      <div class="wizard-footer">
-        <a-space>
-          <a-button @click="goBackToList">{{ t('topic.cancel') }}</a-button>
-          <a-button v-if="currentStep > 1" @click="prevStep">
-            {{ t('topic.wizard.prev') }}
-          </a-button>
-          <a-button
-            v-if="currentStep < 4"
-            type="primary"
-            :loading="stepValidating"
-            @click="nextStep"
+        <a-spin :loading="pageLoading" class="wizard-spin">
+          <a-form
+            ref="formRef"
+            :model="formData"
+            layout="vertical"
+            label-align="left"
+            class="wizard-form"
           >
-            {{ t('topic.wizard.next') }}
-          </a-button>
-          <template v-else>
-            <a-button :loading="validating" @click="handleValidate">
-              {{ t('topic.validate') }}
+            <section v-show="currentStep === 1" class="step-panel">
+              <a-form-item
+                field="id"
+                :label="t('topic.id')"
+                required
+                :rules="getRecipeIdRules(t('topic.idRequired'))"
+              >
+                <a-input
+                  v-model="formData.id"
+                  :disabled="isEdit"
+                  :placeholder="t('topic.id')"
+                />
+              </a-form-item>
+              <a-form-item field="title" :label="t('topic.title')">
+                <a-input
+                  v-model="formData.title"
+                  :placeholder="t('topic.title')"
+                />
+              </a-form-item>
+              <a-form-item
+                field="description"
+                :label="t('topic.descriptionLabel')"
+              >
+                <a-textarea
+                  v-model="formData.description"
+                  :placeholder="t('topic.descriptionLabel')"
+                  :auto-size="{ minRows: 3, maxRows: 6 }"
+                />
+              </a-form-item>
+            </section>
+
+            <section v-show="currentStep === 2" class="step-panel">
+              <a-alert type="info" class="mb-4" show-icon>
+                {{ t('topic.inputsHelp') }}
+              </a-alert>
+              <TopicInputSourcesEditor
+                v-model="formData.inputSources"
+                :available-recipes="availableRecipes"
+                :available-topics="availableTopics"
+                :available-inboxes="availableInboxes"
+                :picker-loading="pickerLoading"
+                :exclude-topic-id="isEdit ? formData.id : undefined"
+              />
+            </section>
+
+            <section v-show="currentStep === 3" class="step-panel">
+              <a-alert type="info" class="mb-4" show-icon>
+                {{ t('topic.aggregatorHelp') }}
+              </a-alert>
+              <TopicAggregatorEditor v-model="formData.aggregator_config" />
+            </section>
+
+            <section v-show="currentStep === 4" class="step-panel">
+              <a-descriptions :column="1" bordered>
+                <a-descriptions-item :label="t('topic.id')">
+                  {{ formData.id || '-' }}
+                </a-descriptions-item>
+                <a-descriptions-item :label="t('topic.title')">
+                  {{ formData.title || '-' }}
+                </a-descriptions-item>
+                <a-descriptions-item :label="t('topic.descriptionLabel')">
+                  {{ formData.description || '-' }}
+                </a-descriptions-item>
+                <a-descriptions-item :label="t('topic.inputCount')">
+                  {{ configuredInputCount }}
+                </a-descriptions-item>
+                <a-descriptions-item :label="t('topic.aggregator')">
+                  {{
+                    formatAggregatorSummary(
+                      normalizeTopicPayload(formData).aggregator_config,
+                      t
+                    )
+                  }}
+                </a-descriptions-item>
+              </a-descriptions>
+
+              <div class="section-label mt-4">{{ t('topic.inputs') }}</div>
+              <a-list bordered class="mb-4">
+                <a-list-item
+                  v-for="(source, idx) in reviewInputs"
+                  :key="`review-input-${idx}`"
+                >
+                  <a-list-item-meta
+                    :title="source.description || source.uri"
+                    :description="source.description ? source.uri : undefined"
+                  />
+                  <template #actions>
+                    <a-tag v-if="source.disabled" color="gray">
+                      {{ t('topic.inputDisabled.badge') }}
+                    </a-tag>
+                  </template>
+                </a-list-item>
+              </a-list>
+
+              <a-alert v-if="validationErrors.length > 0" type="error">
+                <template #title>{{ t('topic.validationSummary') }}</template>
+                <div
+                  v-for="issue in validationErrors"
+                  :key="`${issue.field}-${issue.message}`"
+                  class="validation-item"
+                >
+                  <strong>{{ issue.field }}</strong
+                  >: {{ issue.message }}
+                </div>
+              </a-alert>
+              <a-alert
+                v-if="validationWarnings.length > 0"
+                type="warning"
+                style="margin-top: 12px"
+              >
+                <template #title>{{ t('topic.validationWarnings') }}</template>
+                <div
+                  v-for="issue in validationWarnings"
+                  :key="`${issue.field}-${issue.message}`"
+                  class="validation-item"
+                >
+                  <strong>{{ issue.field }}</strong
+                  >: {{ issue.message }}
+                </div>
+              </a-alert>
+            </section>
+          </a-form>
+        </a-spin>
+
+        <div class="wizard-footer">
+          <a-space>
+            <a-button @click="goBackToList">{{ t('topic.cancel') }}</a-button>
+            <a-button v-if="currentStep > 1" @click="prevStep">
+              {{ t('topic.wizard.prev') }}
             </a-button>
             <a-button
+              v-if="currentStep < 4"
               type="primary"
-              :loading="submitting"
-              @click="handleSubmit"
+              :loading="stepValidating"
+              @click="nextStep"
             >
-              {{ t('topic.save') }}
+              {{ t('topic.wizard.next') }}
             </a-button>
-          </template>
-        </a-space>
+            <template v-else>
+              <a-button :loading="validating" @click="handleValidate">
+                {{ t('topic.validate') }}
+              </a-button>
+              <a-button
+                type="primary"
+                :loading="submitting"
+                @click="handleSubmit"
+              >
+                {{ t('topic.save') }}
+              </a-button>
+            </template>
+          </a-space>
+        </div>
       </div>
     </a-card>
   </div>
@@ -187,6 +197,7 @@
   import { useI18n } from 'vue-i18n';
   import { useRoute, useRouter } from 'vue-router';
   import { CustomRecipe, getCustomRecipes } from '@/api/custom_recipe';
+  import { Inbox, listInboxes } from '@/api/inbox';
   import {
     TopicFeed,
     TopicValidationIssue,
@@ -232,6 +243,7 @@
   const validationWarnings = ref<TopicValidationIssue[]>([]);
   const availableRecipes = ref<CustomRecipe[]>([]);
   const availableTopics = ref<TopicFeed[]>([]);
+  const availableInboxes = ref<Inbox[]>([]);
   const pickerLoading = ref(false);
 
   const configuredInputCount = computed(() =>
@@ -245,12 +257,14 @@
   const loadPickerData = async () => {
     pickerLoading.value = true;
     try {
-      const [recipesRes, topicsRes] = await Promise.all([
+      const [recipesRes, topicsRes, inboxesRes] = await Promise.all([
         getCustomRecipes(),
         listTopicFeeds(),
+        listInboxes(),
       ]);
       availableRecipes.value = recipesRes.data ?? [];
       availableTopics.value = topicsRes.data ?? [];
+      availableInboxes.value = inboxesRes.data ?? [];
     } finally {
       pickerLoading.value = false;
     }
@@ -383,13 +397,67 @@
     margin-top: 8px;
   }
 
-  .step-content {
-    max-width: 920px;
+  .wizard-card :deep(.arco-card-body) {
+    display: flex;
+    flex-direction: column;
+    min-height: 560px;
+  }
+
+  .wizard-shell {
+    width: 100%;
+    max-width: 760px;
     margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .wizard-steps {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--color-border-2);
+  }
+
+  .wizard-spin {
+    display: block;
+    width: 100%;
+    flex: 1;
+  }
+
+  .wizard-form {
+    width: 100%;
+  }
+
+  .wizard-form :deep(.arco-form-item) {
+    display: block;
+    width: 100%;
+  }
+
+  .wizard-form :deep(.arco-form-item-label-col),
+  .wizard-form :deep(.arco-form-item-wrapper-col) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    flex: none;
+    justify-content: flex-start;
+    align-items: stretch;
+    padding-right: 0;
+  }
+
+  .wizard-form :deep(.arco-form-item-content-wrapper),
+  .wizard-form :deep(.arco-form-item-content),
+  .wizard-form :deep(.arco-input-wrapper),
+  .wizard-form :deep(.arco-textarea-wrapper) {
+    width: 100%;
+  }
+
+  .step-panel {
+    width: 100%;
   }
 
   .wizard-footer {
-    margin-top: 24px;
+    margin-top: auto;
     padding-top: 16px;
     border-top: 1px solid var(--color-border-2);
     display: flex;

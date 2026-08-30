@@ -56,6 +56,19 @@ func PushInboxItems(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: fmt.Sprintf("Item at index %d is missing required 'title'", i)})
 			return
 		}
+		if field, invalidChar, characterPosition, byteOffset, ok := inboxPushInvalidXMLChar(item); ok {
+			c.JSON(http.StatusBadRequest, util.APIResponse[any]{
+				Msg: fmt.Sprintf(
+					"Item at index %d contains invalid XML 1.0 character U+%04X in field %q at character %d (UTF-8 byte offset %d)",
+					i,
+					invalidChar,
+					field,
+					characterPosition,
+					byteOffset,
+				),
+			})
+			return
+		}
 	}
 
 	db := util.GetDatabase()
@@ -162,4 +175,35 @@ func PushInboxItems(c *gin.Context) {
 		Created: len(reqItems) - updatedCount,
 		Updated: updatedCount,
 	})
+}
+
+func inboxPushInvalidXMLChar(item InboxPushItem) (string, rune, int, int, bool) {
+	fields := []struct {
+		name  string
+		value string
+	}{
+		{name: "title", value: item.Title},
+		{name: "url", value: item.URL},
+		{name: "content", value: item.Content},
+		{name: "summary", value: item.Summary},
+		{name: "id", value: item.ID},
+		{name: "author", value: item.Author},
+	}
+	for _, field := range fields {
+		characterPosition := 1
+		for byteOffset, char := range field.value {
+			if !isXML10Char(char) {
+				return field.name, char, characterPosition, byteOffset, true
+			}
+			characterPosition++
+		}
+	}
+	return "", 0, 0, 0, false
+}
+
+func isXML10Char(char rune) bool {
+	return char == '\t' || char == '\n' || char == '\r' ||
+		(char >= 0x20 && char <= 0xD7FF) ||
+		(char >= 0xE000 && char <= 0xFFFD) ||
+		(char >= 0x10000 && char <= 0x10FFFF)
 }

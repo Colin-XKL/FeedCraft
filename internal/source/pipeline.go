@@ -2,12 +2,14 @@ package source
 
 import (
 	"FeedCraft/internal/config"
+	"FeedCraft/internal/favicon"
 	"FeedCraft/internal/model"
 	"FeedCraft/internal/source/fetcher"
 	"FeedCraft/internal/source/parser"
 	"FeedCraft/internal/util"
 	"context"
 	"fmt"
+	"strings"
 )
 
 // PipelineSource is the generic implementation for most scenarios.
@@ -33,6 +35,7 @@ func (p *PipelineSource) Fetch(ctx context.Context) (*model.CraftFeed, error) {
 	}
 
 	p.normalizeCraftFeed(feed)
+	applyInputFeedItemLimit(feed)
 
 	return feed, nil
 }
@@ -64,6 +67,7 @@ func (p *PipelineSource) normalizeCraftFeed(feed *model.CraftFeed) {
 
 	feed.Link = getAbsFeedLink(baseURL, feed.Link)
 	p.applyFeedMetaOverrides(feed)
+	p.applyFeedIconSource(feed, baseURL)
 }
 
 // applyFeedMetaOverrides checks for a FeedMetaConfig and uses its values
@@ -90,4 +94,77 @@ func (p *PipelineSource) applyFeedMetaOverrides(feed *model.CraftFeed) {
 		feed.AuthorName = meta.AuthorName
 		feed.AuthorEmail = meta.AuthorEmail
 	}
+}
+
+func (p *PipelineSource) applyFeedIconSource(feed *model.CraftFeed, baseURL string) {
+	if feed == nil {
+		return
+	}
+
+	iconSource := config.FeedIconSourceAuto
+	hasExplicitIconSource := p.Config != nil && p.Config.FeedMeta != nil && p.Config.FeedMeta.IconSource != ""
+	if hasExplicitIconSource {
+		iconSource = p.Config.FeedMeta.IconSource
+	}
+
+	if iconSource == config.FeedIconSourceFaviconService {
+		providerID := ""
+		if p.Config != nil && p.Config.FeedMeta != nil {
+			providerID = p.Config.FeedMeta.FaviconProvider
+		}
+		if serviceURL := buildFaviconServiceURL(providerID, feed.Link, baseURL); serviceURL != "" {
+			feed.ImageURL = serviceURL
+			feed.ImageTitle = feed.Title
+		}
+		return
+	}
+
+	if feed.ImageURL != "" {
+		if absURL, err := util.BuildAbsoluteURL(baseURL, feed.ImageURL); err == nil {
+			if favicon.OriginFromURL(absURL) != "" {
+				feed.ImageURL = absURL
+				if feed.ImageTitle == "" {
+					feed.ImageTitle = feed.Title
+				}
+				return
+			}
+		}
+		feed.ImageURL = ""
+		feed.ImageTitle = ""
+	}
+
+	if hasExplicitIconSource {
+		if origin := firstNonEmptyOrigin(feed.Link, baseURL); origin != "" {
+			feed.ImageURL = origin + "/favicon.ico"
+			feed.ImageTitle = feed.Title
+		}
+	}
+}
+
+func buildFaviconServiceURL(providerID string, feedLink string, baseURL string) string {
+	pageURL := firstValidPageURL(feedLink, baseURL)
+	if pageURL == "" {
+		return ""
+	}
+	serviceURL, _ := favicon.BuildURL(providerID, pageURL, 64)
+	return serviceURL
+}
+
+func firstNonEmptyOrigin(rawURLs ...string) string {
+	for _, rawURL := range rawURLs {
+		if origin := favicon.OriginFromURL(rawURL); origin != "" {
+			return origin
+		}
+	}
+	return ""
+}
+
+func firstValidPageURL(rawURLs ...string) string {
+	for _, rawURL := range rawURLs {
+		rawURL = strings.TrimSpace(rawURL)
+		if favicon.OriginFromURL(rawURL) != "" {
+			return rawURL
+		}
+	}
+	return ""
 }

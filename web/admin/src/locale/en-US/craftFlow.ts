@@ -13,6 +13,8 @@ export default {
   'craftFlow.form.save': 'Save',
   'craftFlow.form.saveSuccess': 'Saved successfully',
   'craftFlow.form.rule.nameRequired': 'Name is required',
+  'craftFlow.flow.start': 'Start',
+  'craftFlow.flow.end': 'End',
   'craftFlow.editModalTitle.create': 'Create FlowCraft',
   'craftFlow.editModalTitle.edit': 'Edit FlowCraft',
   'craftFlow.editor.empty': 'No AtomCrafts in this FlowCraft yet',
@@ -21,4 +23,9 @@ export default {
   'craftFlow.editor.moveUp': 'Move Up',
   'craftFlow.editor.moveDown': 'Move Down',
   'craftFlow.editor.remove': 'Remove',
+  'craftFlow.empty.description': 'No FlowCrafts yet',
+  'craftFlow.empty.hint':
+    'A FlowCraft chains multiple AtomCrafts into a processing pipeline. Create your first one to run extraction, filtering, and summarization in sequence.',
+  'craftFlow.empty.createFirst': 'Create your first FlowCraft',
+  'craftFlow.empty.docs': 'Read the customization guide',
 };

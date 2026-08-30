@@ -162,6 +162,7 @@
   import { useI18n } from 'vue-i18n';
   import { Message } from '@arco-design/web-vue';
   import { useClipboard } from '@vueuse/core';
+  import { buildCraftFeedUrl } from '@/utils/publicFeedUrl';
 
   const { t } = useI18n();
 
@@ -193,10 +194,7 @@
 
   const generateUrl = () => {
     const currentSelectedCraft = currentCraft.value;
-    const baseUrl = import.meta.env.VITE_API_BASE_URL ?? window.location.origin;
-    resultUrl.value = `${baseUrl}/craft/${currentSelectedCraft}?input_url=${encodeURIComponent(
-      inputUrl.value
-    )}`;
+    resultUrl.value = buildCraftFeedUrl(currentSelectedCraft, inputUrl.value);
     generatedInputUrl.value = inputUrl.value;
     generatedCraft.value = currentSelectedCraft;
     copyButtonText.value = t('urlGenerator.copyUrl');

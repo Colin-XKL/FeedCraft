@@ -254,7 +254,7 @@ func TestFulltextPlusProcessor_UsesConfiguredOptions(t *testing.T) {
 	assert.Equal(t, "https://example.com/article", capturedURL)
 	assert.Equal(t, "networkidle0", capturedOptions.WaitUntil)
 	assert.Equal(t, 42*time.Second, capturedOptions.WaitTime)
-	assert.Equal(t, 52*time.Second, capturedOptions.Timeout)
+	assert.Equal(t, util.DefaultBrowserRenderTimeout, capturedOptions.Timeout)
 	assert.Equal(t, "rendered", result.Articles[0].Content)
 }
 

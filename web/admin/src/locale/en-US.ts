@@ -22,6 +22,7 @@ import localeDependencyService from '@/locale/en-US/dependencyService';
 import localeHealth from '@/locale/en-US/health';
 import localeObservability from '@/locale/en-US/observability';
 import localeInbox from '@/locale/en-US/inbox';
+import localeWelcome from '@/locale/en-US/welcome';
 
 export default {
   ...localeSettings,
@@ -47,4 +48,5 @@ export default {
   ...localeHealth,
   ...localeObservability,
   ...localeInbox,
+  ...localeWelcome,
 };

@@ -6,18 +6,10 @@
       class="input-source-card"
       :class="{ 'input-source-card--disabled': source.disabled }"
     >
-      <div class="source-header">
-        <a-radio-group
-          :model-value="source.sourceType"
-          type="button"
-          @change="(value: SourceType) => onSourceTypeChange(idx, value)"
-        >
-          <a-radio value="external">{{
-            t('topic.sourceType.external')
-          }}</a-radio>
-          <a-radio value="recipe">Recipe</a-radio>
-          <a-radio value="topic">Topic</a-radio>
-        </a-radio-group>
+      <div class="card-header">
+        <span class="card-title">{{
+          t('topic.inputIndex', { index: idx + 1 })
+        }}</span>
         <a-space wrap>
           <div v-if="showDisabledToggle" class="disable-toggle">
             <span class="disable-toggle-label">{{
@@ -26,7 +18,7 @@
             <a-switch
               :model-value="source.disabled"
               size="small"
-              @change="(value: boolean) => setDisabled(idx, value)"
+              @change="(value) => setDisabled(idx, Boolean(value))"
             />
           </div>
           <a-button
@@ -51,56 +43,103 @@
         </a-space>
       </div>
 
-      <a-input
-        v-if="source.sourceType === 'external'"
-        v-model="source.externalUrl"
-        :placeholder="t('topic.sourceUrl.placeholder')"
-        allow-clear
-      />
-      <a-select
-        v-else-if="source.sourceType === 'recipe'"
-        v-model="source.resourceId"
-        :loading="pickerLoading"
-        allow-search
-        allow-clear
-        :placeholder="t('topic.sourceSelect.placeholder.recipe')"
-      >
-        <a-option
-          v-for="r in availableRecipes"
-          :key="r.id"
-          :value="r.id"
-          :label="r.description ? `${r.id} — ${r.description}` : r.id"
+      <div class="field">
+        <label class="field-label">{{ t('topic.sourceType.label') }}</label>
+        <a-radio-group
+          :model-value="source.sourceType"
+          type="button"
+          class="source-type-group"
+          @change="(value: SourceType) => onSourceTypeChange(idx, value)"
         >
-          <span class="option-id">{{ r.id }}</span>
-          <span v-if="r.description" class="option-desc">
-            — {{ r.description }}
-          </span>
-        </a-option>
-      </a-select>
-      <a-select
-        v-else
-        v-model="source.resourceId"
-        :loading="pickerLoading"
-        allow-search
-        allow-clear
-        :placeholder="t('topic.sourceSelect.placeholder.topic')"
-      >
-        <a-option
-          v-for="tp in pickerTopics"
-          :key="tp.id"
-          :value="tp.id"
-          :label="tp.title ? `${tp.id} — ${tp.title}` : tp.id"
-        >
-          <span class="option-id">{{ tp.id }}</span>
-          <span v-if="tp.title" class="option-desc"> — {{ tp.title }}</span>
-        </a-option>
-      </a-select>
+          <a-radio value="external">{{
+            t('topic.sourceType.external')
+          }}</a-radio>
+          <a-radio value="recipe">{{ t('topic.sourceType.recipe') }}</a-radio>
+          <a-radio value="topic">{{ t('topic.sourceType.topic') }}</a-radio>
+          <a-radio value="inbox">{{ t('topic.sourceType.inbox') }}</a-radio>
+        </a-radio-group>
+      </div>
 
-      <a-input
-        v-model="source.description"
-        :placeholder="t('topic.inputDescription.placeholder')"
-        allow-clear
-      />
+      <div class="field">
+        <label class="field-label">{{
+          t(`topic.sourceValue.${source.sourceType}`)
+        }}</label>
+        <a-input
+          v-if="source.sourceType === 'external'"
+          v-model="source.externalUrl"
+          :placeholder="t('topic.sourceUrl.placeholder')"
+          allow-clear
+        />
+        <a-select
+          v-else-if="source.sourceType === 'recipe'"
+          v-model="source.resourceId"
+          :loading="pickerLoading"
+          allow-search
+          allow-clear
+          :placeholder="t('topic.sourceSelect.placeholder.recipe')"
+        >
+          <a-option
+            v-for="r in availableRecipes"
+            :key="r.id"
+            :value="r.id"
+            :label="r.description ? `${r.id} — ${r.description}` : r.id"
+          >
+            <span class="option-id">{{ r.id }}</span>
+            <span v-if="r.description" class="option-desc">
+              — {{ r.description }}
+            </span>
+          </a-option>
+        </a-select>
+        <a-select
+          v-else-if="source.sourceType === 'topic'"
+          v-model="source.resourceId"
+          :loading="pickerLoading"
+          allow-search
+          allow-clear
+          :placeholder="t('topic.sourceSelect.placeholder.topic')"
+        >
+          <a-option
+            v-for="tp in pickerTopics"
+            :key="tp.id"
+            :value="tp.id"
+            :label="tp.title ? `${tp.id} — ${tp.title}` : tp.id"
+          >
+            <span class="option-id">{{ tp.id }}</span>
+            <span v-if="tp.title" class="option-desc"> — {{ tp.title }}</span>
+          </a-option>
+        </a-select>
+        <a-select
+          v-else-if="source.sourceType === 'inbox'"
+          v-model="source.resourceId"
+          :loading="pickerLoading"
+          allow-search
+          allow-clear
+          :placeholder="t('topic.sourceSelect.placeholder.inbox')"
+        >
+          <a-option
+            v-for="inbox in availableInboxes"
+            :key="inbox.id"
+            :value="inbox.id"
+            :label="inbox.title ? `${inbox.id} — ${inbox.title}` : inbox.id"
+          >
+            <span class="option-id">{{ inbox.id }}</span>
+            <span v-if="inbox.title" class="option-desc">
+              — {{ inbox.title }}
+            </span>
+          </a-option>
+        </a-select>
+      </div>
+
+      <div class="field">
+        <label class="field-label">{{
+          t('topic.inputDescription.label')
+        }}</label>
+        <a-input
+          v-model="source.description"
+          :placeholder="t('topic.inputDescription.placeholder')"
+          allow-clear
+        />
+      </div>
     </div>
 
     <a-button type="dashed" long class="add-btn" @click="addSource">
@@ -137,6 +176,7 @@
   import { computed, nextTick, ref } from 'vue';
   import { useI18n } from 'vue-i18n';
   import type { CustomRecipe } from '@/api/custom_recipe';
+  import type { Inbox } from '@/api/inbox';
   import type { TopicFeed } from '@/api/topic';
   import FeedPreviewPanel from '@/components/feed-preview/FeedPreviewPanel.vue';
   import {
@@ -150,12 +190,14 @@
       modelValue: InputSourceItem[];
       availableRecipes: CustomRecipe[];
       availableTopics: TopicFeed[];
+      availableInboxes?: Inbox[];
       pickerLoading?: boolean;
       excludeTopicId?: string;
       showDisabledToggle?: boolean;
     }>(),
     {
       showDisabledToggle: true,
+      availableInboxes: () => [],
     }
   );
 
@@ -287,6 +329,19 @@
     opacity: 0.72;
   }
 
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .card-title {
+    font-weight: 600;
+    color: var(--color-text-1);
+  }
+
   .disable-toggle {
     display: inline-flex;
     align-items: center;
@@ -298,12 +353,29 @@
     color: var(--color-text-3);
   }
 
-  .source-header {
+  .field {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .field-label {
+    font-size: 13px;
+    color: var(--color-text-2);
+    line-height: 1.4;
+  }
+
+  .source-type-group {
+    display: flex;
     flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .source-type-group :deep(.arco-radio-group) {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
   }
 
   .remove-btn {
