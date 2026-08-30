@@ -1,5 +1,5 @@
 import { appRoutes, appExternalRoutes } from '@/router/routes';
-import { applyMenuGrouping } from '@/router/menu-groups';
+import { applyMenuGrouping, type MenuRouteLike } from '@/router/menu-groups';
 
 const mixinRoutes = [...appRoutes, ...appExternalRoutes];
 
@@ -12,7 +12,7 @@ const appClientMenus = applyMenuGrouping(
       meta,
       redirect,
       children,
-    };
+    } as MenuRouteLike;
   })
 );
 

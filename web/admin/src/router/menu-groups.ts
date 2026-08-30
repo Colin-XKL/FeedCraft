@@ -79,7 +79,7 @@ export interface MenuRouteLike {
   path: string;
   meta?: Record<string, any>;
   children?: MenuRouteLike[];
-  [key: string]: unknown;
+  redirect?: unknown;
 }
 
 function routeName(route: MenuRouteLike): string {
