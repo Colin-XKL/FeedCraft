@@ -148,10 +148,10 @@ PR → dev
 
 Two changelog files:
 
-| File | Owner | Purpose |
-| --- | --- | --- |
+| File           | Owner          | Purpose                               |
+| -------------- | -------------- | ------------------------------------- |
 | `CHANGELOG.md` | release-please | Full technical changelog from commits |
-| `RELEASES.md` | humans only | Reader-facing notes per version |
+| `RELEASES.md`  | humans only    | Reader-facing notes per version       |
 
 `release-please-config.json` keeps `changelog-path: "CHANGELOG.md"` and must not point at `RELEASES.md`. Do not let any automation rewrite `RELEASES.md`.
 
