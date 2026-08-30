@@ -1,16 +1,38 @@
+import { readFileSync } from "node:fs";
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
 import starlightCatppuccin from "@catppuccin/starlight";
+import { resolveDisplayVersion } from "./src/lib/displayVersion.js";
+
+const pkg = JSON.parse(
+  readFileSync(new URL("./package.json", import.meta.url), "utf-8")
+);
+const displayVersion = resolveDisplayVersion({
+  explicitVersion: process.env.APP_VERSION,
+  branch: process.env.VERCEL_GIT_COMMIT_REF,
+  commitSha: process.env.VERCEL_GIT_COMMIT_SHA,
+  packageVersion: pkg.version,
+});
 
 // https://astro.build/config
 export default defineConfig({
   site: "https://feed-craft-doc.vercel.app/",
+  vite: {
+    define: {
+      "import.meta.env.PUBLIC_FEEDCRAFT_VERSION":
+        JSON.stringify(displayVersion),
+    },
+  },
   integrations: [
     starlight({
       title: "FeedCraft",
       defaultLocale: "en",
       social: [
-        { icon: "github", label: "GitHub", href: "https://github.com/Colin-XKL/FeedCraft" }
+        {
+          icon: "github",
+          label: "GitHub",
+          href: "https://github.com/Colin-XKL/FeedCraft",
+        },
       ],
       plugins: [
         starlightCatppuccin({
@@ -31,6 +53,9 @@ export default defineConfig({
           label: "繁體中文",
           lang: "zh-TW",
         },
+      },
+      components: {
+        Footer: "./src/components/Footer.astro",
       },
       sidebar: [
         {
