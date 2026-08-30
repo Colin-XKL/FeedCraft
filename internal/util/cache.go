@@ -4,13 +4,16 @@ import (
 	"FeedCraft/internal/constant"
 	"context"
 	"errors"
+	"log"
 	"strings"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 	"github.com/sirupsen/logrus"
-	"log"
-	"time"
+	"golang.org/x/sync/singleflight"
 )
+
+var cachedFuncFlight singleflight.Group
 
 // GetRedisClient 返回一个非空的redis client
 func GetRedisClient() *redis.Client {
@@ -83,32 +86,35 @@ func CacheGetString(key string) (string, error) {
 	return rdb.Get(context.Background(), key).Result()
 }
 
-// CachedFuncWithPreLog tries to get from cache, invokes preLog if provided, and if absent, calls valFunc and saves to cache
+// CachedFuncWithPreLog tries to get from cache, invokes preLog if provided, and if absent, calls valFunc and saves to cache.
+// Concurrent misses for the same key share one in-flight valFunc (singleflight) to avoid cache stampede.
 func CachedFuncWithPreLog(cacheKey string, valFunc func() (string, error), preLog func(isCached bool)) (string, error) {
-	final := ""
-	cached, err := CacheGetString(cacheKey)
-	isCached := err == nil && cached != ""
+	result, err, _ := cachedFuncFlight.Do(cacheKey, func() (interface{}, error) {
+		cached, getErr := CacheGetString(cacheKey)
+		isCached := getErr == nil && cached != ""
 
-	if preLog != nil {
-		preLog(isCached)
-	}
+		if preLog != nil {
+			preLog(isCached)
+		}
 
-	if !isCached {
+		if isCached {
+			return cached, nil
+		}
+
 		processedContent, getValErr := valFunc()
 		if getValErr != nil {
 			return "", getValErr
-		} else {
-			final = processedContent
-			cacheErr := CacheSetString(cacheKey, processedContent, constant.WebContentExpire)
-			if cacheErr != nil {
-				logrus.Warn("failed to cache result")
-			}
 		}
-	} else {
-		final = cached
+		if cacheErr := CacheSetString(cacheKey, processedContent, constant.WebContentExpire); cacheErr != nil {
+			logrus.Warn("failed to cache result")
+		}
+		return processedContent, nil
+	})
+	if err != nil {
+		return "", err
 	}
-
-	return final, nil
+	value, _ := result.(string)
+	return value, nil
 }
 
 // CachedFunc 先尝试取缓存, 如不存在, 则调用valFunc 获取值并写入缓存
