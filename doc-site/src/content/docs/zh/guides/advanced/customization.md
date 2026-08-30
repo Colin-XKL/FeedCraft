@@ -45,7 +45,7 @@ sidebar:
 
 - **SQLite**: 数据库连接。
 - **Redis**: 缓存服务连接及延迟。
-- **Browserless**: 无头浏览器服务可用性（全文提取功能必须）。
+- **Browser Provider**: 无头浏览器提供方可用性（浏览器全文提取功能必须）。
 - **LLM Service**: 与配置的 AI 提供商的连接。
 - **Search Provider**: 与配置的搜索引擎的连接。
 
@@ -63,7 +63,11 @@ sidebar:
 
 你可以在 `docker-compose.yml` 中使用环境变量配置 FeedCraft。
 
-- **FC_PUPPETEER_HTTP_ENDPOINT**: Browserless/Chrome 实例的地址。`fulltext-plus` 功能必须。
+- **FC_BROWSER_PROVIDER**: 浏览器渲染提供方。支持 `browserless-restful`（Browserless REST `/content`）和 `cdp`（Chrome DevTools Protocol，例如 CloakBrowser `cloakserve`）。
+- **FC_BROWSER_ENDPOINT**: 所选浏览器提供方的地址。`fulltext-plus` 和 HTML 转 RSS 增强模式必须。
+- **FC_PUPPETEER_HTTP_ENDPOINT**: 旧版 Browserless 地址别名。仅在 `FC_BROWSER_ENDPOINT` 为空时继续生效。
+- **FC_BROWSER_TIMEOUT**: （可选）单次浏览器渲染超时。支持 Go duration（`60s`）或毫秒（`60000`），默认 `60s`。建议不超过 browserless 的 `CONNECTION_TIMEOUT`。
+- **FC_BROWSER_MAX_CONCURRENCY**: （可选）全局浏览器渲染最大并发数（默认：`2`）。避免 `fulltext-plus` 一次打开过多 Chrome 会话。
 - **FC_REDIS_URI**: Redis 连接地址。用于缓存，加快处理速度并减少 AI Token 消耗。
 - **FC_HTTP_USER_AGENT_FEED**: （可选）feed 类外部请求的默认 `User-Agent`，例如抓取 RSS/XML 资源时使用。搜索提供方请求目前也临时归入这一规则。
 - **FC_HTTP_USER_AGENT_HTML**: （可选）HTML 页面抓取的默认 `User-Agent`，例如全文提取和 HTML 转 RSS 工具使用。**注意：** 如果该值包含空格或括号，必须使用引号括起来。
@@ -71,13 +75,16 @@ sidebar:
 - **FC_LLM_API_MODEL**: 默认使用的模型（如 `gemini-pro`, `gpt-3.5-turbo`）。**支持多个模型：** 你可以提供一个逗号分隔的模型列表（例如 `gpt-3.5-turbo,gpt-4`）。FeedCraft 会为每个请求随机选择一个模型，如果调用失败，会自动重试列表中的其他模型。
 - **FC_LLM_API_BASE**: API 接口地址。如果是兼容 OpenAI 的 API，通常以 `/v1` 结尾。
 - **FC_LLM_API_TYPE**: (可选) `openai` (默认) 或 `ollama`.
-- **FC_LLM_MAX_CONCURRENCY**: (可选) 全局最大 LLM 并发请求数（默认: `3`）。用于限制并发请求数量以防止触发 API 速率限制。
+- **FC_LLM_MAX_CONCURRENCY**: （可选）整个 FeedCraft 进程同时执行的 LLM API 请求上限（默认：`3`）。所有 feed、Recipe、AtomCraft 及其他 LLM 功能共享这一全局限制。文章任务可以并发进入队列，但实际同时执行的上游请求不会超过该值；缓存命中不占用并发额度。
 - **FC_DOMAIN_MAX_CONCURRENCY**: (可选) 网页抓取（如全文提取）时每个目标域名的最大并发数（默认: `3`）。防止抓取目标服务器负载过高。
+- **FC_PREHEATING_MAX_CONCURRENCY**: （可选）后台预热任务的最大并发数（默认：`2`）。
+- **FC_PREHEATING_QUEUE_SIZE**: （可选）预热等待队列的最大任务数；默认与预热并发数相同。
+- **FC_PREHEATING_TASK_TIMEOUT**: （可选）单个预热任务的超时时间，使用 `5m` 等 Go duration 格式（默认：`10m`）。
 - **LOG_LEVEL**: (可选) 后端应用的日志级别 (例如 `info`, `debug`, `trace`)。覆盖 `ENV` 设置的默认级别。
 
 ### 外部服务
 
-为了发挥 FeedCraft 的全部功能，建议搭配 Redis 和 Browserless 部署。
+为了发挥 FeedCraft 的全部功能，建议搭配 Redis 和浏览器渲染提供方部署。
 
 ```yaml
 version: "3"
@@ -85,7 +92,8 @@ services:
   app.feed-craft:
     # ... (参考快速开始)
     environment:
-      FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000
+      FC_BROWSER_PROVIDER: browserless-restful
+      FC_BROWSER_ENDPOINT: http://service.browserless:3000
       FC_REDIS_URI: redis://service.redis:6379/
       # ...
 
@@ -99,6 +107,21 @@ services:
     container_name: feedcraft_browserless
     environment:
       USE_CHROME_STABLE: true
+    restart: unless-stopped
+```
+
+如果要使用 CloakBrowser 替代 Browserless，可以直接连接官方 `cloakserve` 容器：
+
+```yaml
+services:
+  app.feed-craft:
+    environment:
+      FC_BROWSER_PROVIDER: cdp
+      FC_BROWSER_ENDPOINT: http://service.cloakbrowser:9222?fingerprint=feedcraft
+
+  service.cloakbrowser:
+    image: cloakhq/cloakbrowser
+    command: cloakserve --port=9222
     restart: unless-stopped
 ```
 

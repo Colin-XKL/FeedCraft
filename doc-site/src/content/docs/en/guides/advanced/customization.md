@@ -45,7 +45,7 @@ It monitors the status of:
 
 - **SQLite**: Database connectivity.
 - **Redis**: Cache service connectivity and latency.
-- **Browserless**: Headless browser service availability (required for fulltext extraction).
+- **Browser Provider**: Headless browser provider availability (required for browser-based fulltext extraction).
 - **LLM Service**: Connectivity to the configured AI provider.
 - **Search Provider**: Connectivity to the configured search engine.
 
@@ -63,7 +63,11 @@ For monitoring internal Craft dependencies (Recipes, Flows, Atoms), use the [Cra
 
 You can configure FeedCraft using environment variables in `docker-compose.yml`.
 
-- **FC_PUPPETEER_HTTP_ENDPOINT**: Address of the Browserless/Chrome instance. Required for `fulltext-plus`.
+- **FC_BROWSER_PROVIDER**: Browser rendering provider. Supported values: `browserless-restful` (Browserless REST `/content`) and `cdp` (Chrome DevTools Protocol, such as CloakBrowser `cloakserve`).
+- **FC_BROWSER_ENDPOINT**: Endpoint of the selected browser provider. Required for `fulltext-plus` and HTML-to-RSS Enhanced Mode.
+- **FC_PUPPETEER_HTTP_ENDPOINT**: Legacy Browserless endpoint alias. Still supported when `FC_BROWSER_ENDPOINT` is empty.
+- **FC_BROWSER_TIMEOUT**: (Optional) Timeout for a single browser render. Accepts Go duration (`60s`) or milliseconds (`60000`). Default: `60s`. Keep this at or below the browserless `CONNECTION_TIMEOUT`.
+- **FC_BROWSER_MAX_CONCURRENCY**: (Optional) Global max concurrent browser render jobs (default: `2`). Prevents `fulltext-plus` from opening too many Chrome sessions at once.
 - **FC_REDIS_URI**: Redis connection address. Used for caching to speed up processing and reduce AI token consumption.
 - **FC_HTTP_USER_AGENT_FEED**: (Optional) Default `User-Agent` for feed-style outbound requests, such as fetching RSS/XML resources. Search provider requests are temporarily grouped into this same rule.
 - **FC_HTTP_USER_AGENT_HTML**: (Optional) Default `User-Agent` for HTML page fetches, such as fulltext extraction and the HTML-to-RSS tooling. **Note:** If the value contains spaces or parentheses, it must be enclosed in quotes.
@@ -71,13 +75,16 @@ You can configure FeedCraft using environment variables in `docker-compose.yml`.
 - **FC_LLM_API_MODEL**: Default model to use (e.g., `gemini-pro`, `gpt-3.5-turbo`). **Multiple Models Support:** You can provide a comma-separated list of models (e.g., `gpt-3.5-turbo,gpt-4`). FeedCraft will randomly select a model for each request and automatically retry with others if a call fails.
 - **FC_LLM_API_BASE**: API endpoint address. For OpenAI-compatible APIs, usually ends with `/v1`.
 - **FC_LLM_API_TYPE**: (Optional) `openai` (default) or `ollama`.
-- **FC_LLM_MAX_CONCURRENCY**: (Optional) Global maximum concurrency for LLM requests (default: `3`). Limits concurrent API calls to prevent rate limits.
+- **FC_LLM_MAX_CONCURRENCY**: (Optional) Maximum number of LLM API requests executing across the entire FeedCraft process (default: `3`). All feeds, Recipes, AtomCrafts, and other LLM features share this global limit. Article tasks may enter the queue concurrently, but no more than this number of upstream requests execute at once; cache hits do not consume capacity.
 - **FC_DOMAIN_MAX_CONCURRENCY**: (Optional) Maximum concurrent requests per target domain during web scraping like fulltext extraction (default: `3`). Prevents overwhelming target servers.
+- **FC_PREHEATING_MAX_CONCURRENCY**: (Optional) Maximum concurrent background preheating tasks (default: `2`).
+- **FC_PREHEATING_QUEUE_SIZE**: (Optional) Maximum pending preheating tasks; defaults to the preheating concurrency.
+- **FC_PREHEATING_TASK_TIMEOUT**: (Optional) Timeout for each preheating task as a Go duration such as `5m` (default: `10m`).
 - **LOG_LEVEL**: (Optional) Log level for the backend application (e.g., `info`, `debug`, `trace`). Overrides the default level set by `ENV`.
 
 ### External Services
 
-To leverage the full power of FeedCraft, it is recommended to deploy with Redis and Browserless.
+To leverage the full power of FeedCraft, it is recommended to deploy with Redis and a browser provider.
 
 ```yaml
 version: "3"
@@ -85,7 +92,8 @@ services:
   app.feed-craft:
     # ... (Refer to Quick Start)
     environment:
-      FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000
+      FC_BROWSER_PROVIDER: browserless-restful
+      FC_BROWSER_ENDPOINT: http://service.browserless:3000
       FC_REDIS_URI: redis://service.redis:6379/
       # ...
 
@@ -99,6 +107,21 @@ services:
     container_name: feedcraft_browserless
     environment:
       USE_CHROME_STABLE: true
+    restart: unless-stopped
+```
+
+To use CloakBrowser instead of Browserless, point FeedCraft to the official `cloakserve` container:
+
+```yaml
+services:
+  app.feed-craft:
+    environment:
+      FC_BROWSER_PROVIDER: cdp
+      FC_BROWSER_ENDPOINT: http://service.cloakbrowser:9222?fingerprint=feedcraft
+
+  service.cloakbrowser:
+    image: cloakhq/cloakbrowser
+    command: cloakserve --port=9222
     restart: unless-stopped
 ```
 

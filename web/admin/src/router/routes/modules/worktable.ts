@@ -12,26 +12,45 @@ const WORKTABLE: AppRouteRecordRaw = {
     order: 1,
   },
   children: [
-    // TopicFeed 功能当前仍在开发完善中，先隐藏入口；待功能 ready 后再重新开放。
-    // {
-    //   path: 'topic_feed',
-    //   name: 'TopicFeed',
-    //   component: () => import('@/views/dashboard/topic_feed/topic_feed.vue'),
-    //   meta: {
-    //     requiresAuth: true,
-    //     locale: 'menu.topicFeed',
-    //   },
-    // },
-    // {
-    //   path: 'topic_feed/:id',
-    //   name: 'TopicFeedDetail',
-    //   component: () => import('@/views/dashboard/topic_feed/detail.vue'),
-    //   meta: {
-    //     requiresAuth: true,
-    //     locale: 'menu.topicFeed',
-    //     hideInMenu: true,
-    //   },
-    // },
+    {
+      path: 'topic_feed',
+      name: 'TopicFeed',
+      component: () => import('@/views/dashboard/topic_feed/topic_feed.vue'),
+      meta: {
+        requiresAuth: true,
+        locale: 'menu.topicFeed',
+      },
+    },
+    {
+      path: 'topic_feed/create',
+      name: 'TopicFeedCreate',
+      component: () => import('@/views/dashboard/topic_feed/editor.vue'),
+      meta: {
+        requiresAuth: true,
+        locale: 'menu.topicFeed',
+        hideInMenu: true,
+      },
+    },
+    {
+      path: 'topic_feed/:id/edit',
+      name: 'TopicFeedEdit',
+      component: () => import('@/views/dashboard/topic_feed/editor.vue'),
+      meta: {
+        requiresAuth: true,
+        locale: 'menu.topicFeed',
+        hideInMenu: true,
+      },
+    },
+    {
+      path: 'topic_feed/:id',
+      name: 'TopicFeedDetail',
+      component: () => import('@/views/dashboard/topic_feed/detail.vue'),
+      meta: {
+        requiresAuth: true,
+        locale: 'menu.topicFeed',
+        hideInMenu: true,
+      },
+    },
     {
       path: 'custom_recipe',
       name: 'CustomRecipe',
@@ -71,6 +90,15 @@ const WORKTABLE: AppRouteRecordRaw = {
       },
     },
     {
+      path: 'web-monitor',
+      name: 'WebMonitor',
+      component: () => import('@/views/dashboard/web_monitor/web_monitor.vue'),
+      meta: {
+        locale: 'menu.webMonitor',
+        requiresAuth: true,
+      },
+    },
+    {
       path: 'json-to-rss',
       name: 'JsonToRss',
       component: () => import('@/views/dashboard/curl_to_rss/curl_to_rss.vue'),
@@ -85,6 +113,15 @@ const WORKTABLE: AppRouteRecordRaw = {
       component: () => import('@/views/dashboard/search_to_rss/index.vue'),
       meta: {
         locale: 'menu.searchToRss',
+        requiresAuth: true,
+      },
+    },
+    {
+      path: 'inbox',
+      name: 'InboxManager',
+      component: () => import('@/views/dashboard/inbox/index.vue'),
+      meta: {
+        locale: 'menu.inbox',
         requiresAuth: true,
       },
     },

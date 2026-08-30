@@ -29,7 +29,7 @@ func (p *LLMTextProcessor) Process(original string) (string, error) {
 	return adapter.CallLLMUsingContext(p.prompt, original, util.ContentProcessOption{})
 }
 func (p *LLMTextProcessor) Combine(original, processed string) string {
-	processedHTML := util.Markdown2HTML(processed)
+	processedHTML := util.MarkdownToHTML(processed)
 	return fmt.Sprintf(`<div><div>%s</div><hr/><br/><div>%s</div></div>`, processedHTML, original)
 }
 func (p *LLMTextProcessor) GetName() string {
@@ -49,7 +49,9 @@ func processItemContent(item *feeds.Item, processor TextProcessor) string {
 	}
 
 	domain, _ := util.ParseDomainFromUrl(item.Link.Href)
-	cleanedContent := util.Html2Markdown(originalContent, &domain)
+	// Drop inline base64 images before converting: they carry no useful signal
+	// for LLM processing but can dominate the token budget.
+	cleanedContent := util.HTMLToMarkdown(util.RemoveBase64Images(originalContent), domain)
 
 	var processedContent string
 	var err error
@@ -100,7 +102,7 @@ func NewLLMTextProcessor(processorType constant.ProcessorType, customPrompt stri
 	return &LLMTextProcessor{prompt: prompt, name: string(processorType)}
 }
 
-func GetAddIntroductionCraftOptions(prompt string) []CraftOption {
+func GetAddIntroductionCraftOptions(prompt string) []LegacyCraftOption {
 	transFunc := func(item *feeds.Item) (string, error) {
 		processorType := constant.ProcessorTypeIntroduction
 		processor := NewLLMTextProcessor(processorType, prompt)
@@ -108,13 +110,13 @@ func GetAddIntroductionCraftOptions(prompt string) []CraftOption {
 		return ret, nil
 	}
 	cachedTransformer := GetCommonCachedTransformer(cacheKeyForArticleTitle, transFunc, string(constant.ProcessorTypeIntroduction))
-	craftOption := []CraftOption{
+	craftOption := []LegacyCraftOption{
 		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransformer)),
 	}
 	return craftOption
 }
 
-func introCraftLoadParam(m map[string]string) []CraftOption {
+func introCraftLoadParam(m map[string]string) []LegacyCraftOption {
 	prompt, exist := m["prompt"]
 	if !exist || len(prompt) == 0 {
 		prompt = constant.DefaultPrompts[constant.ProcessorTypeIntroduction]

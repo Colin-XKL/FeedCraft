@@ -1,31 +1,47 @@
 package craft
 
 import (
+	"sort"
+	"strconv"
+	"time"
+
 	"github.com/gorilla/feeds"
 	"github.com/samber/lo"
 	"github.com/sirupsen/logrus"
-	"strconv"
 )
 
 const defaultLimit = 10
 
-func OptionLimit(n int) CraftOption {
+func OptionLimit(n int) LegacyCraftOption {
 	return func(feed *feeds.Feed, payload ExtraPayload) error {
 		items := feed.Items
+		sort.SliceStable(items, func(i, j int) bool {
+			return feedItemTime(items[i]).After(feedItemTime(items[j]))
+		})
 		filtered := lo.Slice(items, 0, n)
 		feed.Items = filtered
 		return nil
 	}
 }
 
-func GetLimitCraftOption(num int) []CraftOption {
-	craftOptions := []CraftOption{
+func feedItemTime(item *feeds.Item) time.Time {
+	if item == nil {
+		return time.Time{}
+	}
+	if !item.Created.IsZero() {
+		return item.Created
+	}
+	return item.Updated
+}
+
+func GetLimitCraftOption(num int) []LegacyCraftOption {
+	craftOptions := []LegacyCraftOption{
 		OptionLimit(num),
 	}
 	return craftOptions
 }
 
-func limitCraftLoadParams(m map[string]string) []CraftOption {
+func limitCraftLoadParams(m map[string]string) []LegacyCraftOption {
 	numStr, exist := m["num"]
 	if !exist {
 		numStr = "10"

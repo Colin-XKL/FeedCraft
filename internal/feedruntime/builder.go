@@ -5,11 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math"
 	"net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
+	"FeedCraft/internal/adapter"
 	"FeedCraft/internal/config"
 	"FeedCraft/internal/constant"
 	"FeedCraft/internal/craft"
@@ -34,6 +37,7 @@ const (
 	internalScheme             = "feedcraft"
 	internalResourceTypeRecipe = "recipe"
 	internalResourceTypeTopic  = "topic"
+	internalResourceTypeInbox  = "inbox"
 )
 
 // InputSpec is the unified runtime input model for RecipeFeed and TopicFeed.
@@ -60,6 +64,10 @@ func BuildProviderFromInput(ctx context.Context, spec InputSpec, stack []string)
 	return NewBuilder(nil).BuildProviderFromInput(ctx, spec, stack)
 }
 
+func BuildProviderFromInputWithRecipeTrigger(ctx context.Context, spec InputSpec, stack []string, recipeTrigger string) (engine.FeedProvider, error) {
+	return NewBuilder(nil).BuildProviderFromInputWithRecipeTrigger(ctx, spec, stack, recipeTrigger)
+}
+
 func BuildTopicProvider(ctx context.Context, topicID string) (engine.FeedProvider, error) {
 	return NewBuilder(nil).BuildTopicProvider(ctx, topicID)
 }
@@ -76,14 +84,21 @@ func BuildRecipe(ctx context.Context, recipeData *dao.CustomRecipeV2) (*engine.R
 	return NewBuilder(nil).BuildRecipe(ctx, recipeData)
 }
 
-func BuildAggregator(steps []dao.AggregatorStep) (engine.FeedProcessor, error) {
+func BuildAggregator(steps []dao.AggregatorStep) (engine.CraftOption, error) {
 	return buildAggregator(steps)
 }
 
 func (b *Builder) BuildProviderFromInput(ctx context.Context, spec InputSpec, stack []string) (engine.FeedProvider, error) {
+	return b.BuildProviderFromInputWithRecipeTrigger(ctx, spec, stack, observability.TriggerTopicAggregation)
+}
+
+func (b *Builder) BuildProviderFromInputWithRecipeTrigger(ctx context.Context, spec InputSpec, stack []string, recipeTrigger string) (engine.FeedProvider, error) {
+	if strings.TrimSpace(recipeTrigger) == "" {
+		recipeTrigger = observability.TriggerTopicAggregation
+	}
 	switch spec.Kind {
 	case InputKindURI:
-		return b.buildProviderFromURI(ctx, spec.URI, stack)
+		return b.buildProviderFromURI(ctx, spec.URI, stack, recipeTrigger)
 	case InputKindSource:
 		if spec.SourceConfig == nil {
 			return nil, errors.New("source input requires source_config")
@@ -137,8 +152,9 @@ func (b *Builder) BuildTopic(ctx context.Context, topic *dao.TopicFeed, stack []
 		return nil, err
 	}
 
-	inputs := make([]engine.FeedProvider, 0, len(topic.InputURIs))
-	for _, inputURI := range topic.InputURIs {
+	enabledInputURIs := topic.EnabledInputURIs()
+	inputs := make([]engine.FeedProvider, 0, len(enabledInputURIs))
+	for _, inputURI := range enabledInputURIs {
 		spec := InputSpec{
 			Kind: InputKindURI,
 			URI:  inputURI,
@@ -147,7 +163,9 @@ func (b *Builder) BuildTopic(ctx context.Context, topic *dao.TopicFeed, stack []
 		if buildErr != nil {
 			return nil, fmt.Errorf("build topic input %q: %w", inputURI, buildErr)
 		}
-		inputs = append(inputs, provider)
+		// Wrap every input with optimistic caching so that a failing sub-feed
+		// falls back to its last known good snapshot (up to SubFeedCacheTTL).
+		inputs = append(inputs, &CachedFeedProvider{URI: inputURI, Inner: provider})
 	}
 
 	aggregator, err := buildAggregator(topic.AggregatorConfig)
@@ -183,7 +201,7 @@ func (b *Builder) BuildRecipe(ctx context.Context, recipeData *dao.CustomRecipeV
 		return nil, fmt.Errorf("recipe input provider does not expose base url: %T", provider)
 	}
 
-	processor, err := craft.BuildProcessor(b.db(), recipeData.Craft, inputProvider.BaseURL())
+	craftChain, err := craft.BuildOptionChain(b.db(), recipeData.Craft, inputProvider.BaseURL())
 	if err != nil {
 		return nil, err
 	}
@@ -195,7 +213,7 @@ func (b *Builder) BuildRecipe(ctx context.Context, recipeData *dao.CustomRecipeV
 		BaseURL:     inputProvider.BaseURL(),
 		CraftName:   recipeData.Craft,
 		Input:       inputProvider,
-		Processor:   processor,
+		Craft:       craftChain,
 	}, nil
 }
 
@@ -211,7 +229,7 @@ func buildRecipeInputSpec(recipeData *dao.CustomRecipeV2) (InputSpec, error) {
 	}, nil
 }
 
-func (b *Builder) buildProviderFromURI(ctx context.Context, rawURI string, stack []string) (engine.FeedProvider, error) {
+func (b *Builder) buildProviderFromURI(ctx context.Context, rawURI string, stack []string, recipeTrigger string) (engine.FeedProvider, error) {
 	if rawURI == "" {
 		return nil, errors.New("uri input requires a non-empty uri")
 	}
@@ -231,9 +249,11 @@ func (b *Builder) buildProviderFromURI(ctx context.Context, rawURI string, stack
 		}
 		switch resourceType {
 		case internalResourceTypeRecipe:
-			return b.buildRecipeProvider(ctx, resourceID, observability.TriggerTopicAggregation)
+			return b.buildRecipeProvider(ctx, resourceID, recipeTrigger)
 		case internalResourceTypeTopic:
 			return b.buildTopicProvider(ctx, resourceID, stack)
+		case internalResourceTypeInbox:
+			return &InboxProvider{DB: b.db(), InboxID: resourceID}, nil
 		default:
 			return nil, fmt.Errorf("unsupported internal resource type %q", resourceType)
 		}
@@ -265,24 +285,25 @@ func (b *Builder) db() *gorm.DB {
 	return util.GetDatabase()
 }
 
-func buildAggregator(steps []dao.AggregatorStep) (engine.FeedProcessor, error) {
+func buildAggregator(steps []dao.AggregatorStep) (engine.CraftOption, error) {
 	if len(steps) == 0 {
 		return nil, nil
 	}
 
-	processors := make([]engine.FeedProcessor, 0, len(steps))
+	options := make([]engine.CraftOption, 0, len(steps))
 	for idx, step := range steps {
-		processor, err := buildAggregatorStep(idx, step)
+		option, err := buildAggregatorStep(idx, step)
 		if err != nil {
 			return nil, err
 		}
-		processors = append(processors, processor)
+		if option != nil {
+			options = append(options, option)
+		}
 	}
-
-	return &engine.FlowCraftProcessor{Processors: processors}, nil
+	return composeAggregatorOptions(options...), nil
 }
 
-func buildAggregatorStep(index int, step dao.AggregatorStep) (engine.FeedProcessor, error) {
+func buildAggregatorStep(index int, step dao.AggregatorStep) (engine.CraftOption, error) {
 	stepType := strings.ToLower(strings.TrimSpace(step.Type))
 	switch stepType {
 	case "deduplicate":
@@ -290,10 +311,39 @@ func buildAggregatorStep(index int, step dao.AggregatorStep) (engine.FeedProcess
 		if strategy == "" {
 			strategy = "by_link"
 		}
-		if strategy != "by_link" && strategy != "by_id" {
+		switch strategy {
+		case "by_link", "by_id":
+			return buildKeyDeduplicateOption(strategy), nil
+		case "by_title":
+			return buildTitleDeduplicateOption(), nil
+		case "by_simhash":
+			// threshold is a user-facing normalized value in [0.0, 1.0].
+			// 0.0 = only exact duplicates; 1.0 = treat everything as duplicate.
+			// Internally converted to Hamming distance: hamming = round(threshold * 64).
+			threshold, err := parseFloatOption(step.Option, "threshold", 0.05)
+			if err != nil {
+				return nil, fmt.Errorf("aggregator step %d (deduplicate/by_simhash): %w", index, err)
+			}
+			if threshold < 0 || threshold > 1 {
+				return nil, fmt.Errorf("aggregator step %d (deduplicate/by_simhash): threshold must be in [0, 1], got %f", index, threshold)
+			}
+			hammingThreshold := int(math.Round(threshold * 64.0))
+			return buildSimhashDeduplicateOption(hammingThreshold), nil
+		case "by_embedding":
+			// threshold is a difference-tolerance value in [0.0, 1.0], same direction as by_simhash:
+			// 0.0 = only near-identical (strictest); 1.0 = everything is duplicate (most aggressive).
+			// Internally converted to cosine similarity floor: floor = 1 - threshold.
+			threshold, err := parseFloatOption(step.Option, "threshold", 0.1)
+			if err != nil {
+				return nil, fmt.Errorf("aggregator step %d (deduplicate/by_embedding): %w", index, err)
+			}
+			if threshold < 0 || threshold > 1 {
+				return nil, fmt.Errorf("aggregator step %d (deduplicate/by_embedding): threshold must be in [0, 1], got %f", index, threshold)
+			}
+			return buildEmbeddingDeduplicateOption(threshold), nil
+		default:
 			return nil, fmt.Errorf("aggregator step %d (%s): invalid strategy %q", index, step.Type, strategy)
 		}
-		return &engine.DeduplicateProcessor{Strategy: strategy}, nil
 	case "sort":
 		sortBy := strings.ToLower(strings.TrimSpace(step.Option["by"]))
 		if sortBy == "" {
@@ -301,7 +351,27 @@ func buildAggregatorStep(index int, step dao.AggregatorStep) (engine.FeedProcess
 		}
 		switch sortBy {
 		case "date_desc", "date_asc", "quality_desc", "quality_asc":
-			return &engine.SortProcessor{SortBy: sortBy}, nil
+			return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+				_ = ctx
+				if feed == nil || len(feed.Articles) <= 1 {
+					return feed, nil
+				}
+				cloned := cloneFeedArticles(feed)
+				sort.SliceStable(cloned.Articles, func(i, j int) bool {
+					a, b := cloned.Articles[i], cloned.Articles[j]
+					switch sortBy {
+					case "date_asc":
+						return a.Updated.Before(b.Updated)
+					case "quality_desc":
+						return a.QualityScore > b.QualityScore
+					case "quality_asc":
+						return a.QualityScore < b.QualityScore
+					default:
+						return a.Updated.After(b.Updated)
+					}
+				})
+				return cloned, nil
+			}, nil
 		default:
 			return nil, fmt.Errorf("aggregator step %d (%s): invalid sort mode %q", index, step.Type, sortBy)
 		}
@@ -314,10 +384,226 @@ func buildAggregatorStep(index int, step dao.AggregatorStep) (engine.FeedProcess
 		if err != nil || maxItems <= 0 {
 			return nil, fmt.Errorf("aggregator step %d (%s): invalid max %q", index, step.Type, rawMax)
 		}
-		return &engine.LimitProcessor{MaxItems: maxItems}, nil
+		return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+			_ = ctx
+			if feed == nil || len(feed.Articles) == 0 || len(feed.Articles) <= maxItems {
+				return feed, nil
+			}
+			cloned := cloneFeedArticles(feed)
+			cloned.Articles = cloned.Articles[:maxItems]
+			return cloned, nil
+		}, nil
 	default:
 		return nil, fmt.Errorf("aggregator step %d: unsupported type %q", index, step.Type)
 	}
+}
+
+func composeAggregatorOptions(options ...engine.CraftOption) engine.CraftOption {
+	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		currentFeed := feed
+		var err error
+		for _, option := range options {
+			if option == nil {
+				continue
+			}
+			currentFeed, err = option(ctx, currentFeed)
+			if err != nil {
+				return nil, err
+			}
+		}
+		return currentFeed, nil
+	}
+}
+
+// buildKeyDeduplicateOption deduplicates by article.Link or article.Id exact match.
+func buildKeyDeduplicateOption(strategy string) engine.CraftOption {
+	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		_ = ctx
+		if feed == nil || len(feed.Articles) == 0 {
+			return feed, nil
+		}
+		cloned := cloneFeedArticles(feed)
+		seen := make(map[string]bool)
+		unique := make([]*model.CraftArticle, 0, len(cloned.Articles))
+		for _, article := range cloned.Articles {
+			if article == nil {
+				continue
+			}
+			key := article.Link
+			if strategy == "by_id" {
+				key = article.Id
+			}
+			if key == "" {
+				unique = append(unique, article)
+				continue
+			}
+			if !seen[key] {
+				seen[key] = true
+				unique = append(unique, article)
+			}
+		}
+		cloned.Articles = unique
+		return cloned, nil
+	}
+}
+
+// buildTitleDeduplicateOption deduplicates by exact title match.
+func buildTitleDeduplicateOption() engine.CraftOption {
+	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		_ = ctx
+		if feed == nil || len(feed.Articles) == 0 {
+			return feed, nil
+		}
+		cloned := cloneFeedArticles(feed)
+		seen := make(map[string]bool)
+		unique := make([]*model.CraftArticle, 0, len(cloned.Articles))
+		for _, article := range cloned.Articles {
+			if article == nil {
+				continue
+			}
+			if article.Title == "" {
+				unique = append(unique, article)
+				continue
+			}
+			if !seen[article.Title] {
+				seen[article.Title] = true
+				unique = append(unique, article)
+			}
+		}
+		cloned.Articles = unique
+		return cloned, nil
+	}
+}
+
+// buildSimhashDeduplicateOption deduplicates using 64-bit SimHash on title+content.
+// Two articles are considered duplicates when their Hamming distance <= threshold.
+// Retention strategy: keep the earliest encountered article (first in the slice).
+func buildSimhashDeduplicateOption(threshold int) engine.CraftOption {
+	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		_ = ctx
+		if feed == nil || len(feed.Articles) == 0 {
+			return feed, nil
+		}
+		cloned := cloneFeedArticles(feed)
+		unique := make([]*model.CraftArticle, 0, len(cloned.Articles))
+		keptHashes := make([]uint64, 0, len(cloned.Articles))
+
+		for _, article := range cloned.Articles {
+			if article == nil {
+				continue
+			}
+			text := normalizeSimhashText(article.Title + " " + article.Content + " " + article.Description)
+			h := computeSimhash(text)
+
+			isDuplicate := false
+			for _, keptHash := range keptHashes {
+				if hammingDistance(h, keptHash) <= threshold {
+					isDuplicate = true
+					break
+				}
+			}
+			if !isDuplicate {
+				unique = append(unique, article)
+				keptHashes = append(keptHashes, h)
+			}
+		}
+		cloned.Articles = unique
+		return cloned, nil
+	}
+}
+
+// buildEmbeddingDeduplicateOption deduplicates using LLM Embedding cosine similarity.
+// threshold is a difference-tolerance value in [0.0, 1.0] (lower = stricter, same direction as SimHash).
+// Internally, two articles are considered duplicates when cosine similarity >= (1 - threshold).
+// Default threshold 0.1 → cosine floor 0.9 (only very similar articles removed).
+// Retention strategy: keep the earliest encountered article (first in the slice).
+// Falls back to keeping all articles if the embedding call fails.
+func buildEmbeddingDeduplicateOption(threshold float64) engine.CraftOption {
+	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		if feed == nil || len(feed.Articles) == 0 {
+			return feed, nil
+		}
+		cloned := cloneFeedArticles(feed)
+
+		texts := make([]string, len(cloned.Articles))
+		for i, article := range cloned.Articles {
+			if article == nil {
+				continue
+			}
+			texts[i] = article.Title + " " + article.Description
+		}
+
+		vectors, err := adapter.EmbedTexts(ctx, texts, "")
+		if err != nil {
+			// Fail open: if embedding is unavailable, return all articles without dedup.
+			return cloned, nil
+		}
+		// Guard against a shorter-than-expected slice from EmbedTexts.
+		if len(vectors) != len(cloned.Articles) {
+			return cloned, nil
+		}
+
+		unique := make([]*model.CraftArticle, 0, len(cloned.Articles))
+		keptVectors := make([][]float64, 0, len(cloned.Articles))
+
+		for i, article := range cloned.Articles {
+			if article == nil {
+				continue
+			}
+			// Defense-in-depth: guard against out-of-bounds and empty vectors.
+			if i >= len(vectors) || len(vectors[i]) == 0 {
+				// No usable vector for this article; keep it unconditionally.
+				unique = append(unique, article)
+				continue
+			}
+			vec := vectors[i]
+			// Convert difference-tolerance threshold to cosine similarity floor.
+			isDuplicate := false
+			for _, keptVec := range keptVectors {
+				if util.CosineSimilarity(vec, keptVec) >= (1.0 - threshold) {
+					isDuplicate = true
+					break
+				}
+			}
+			if !isDuplicate {
+				unique = append(unique, article)
+				keptVectors = append(keptVectors, vec)
+			}
+		}
+		cloned.Articles = unique
+		return cloned, nil
+	}
+}
+
+// parseFloatOption parses a float64 option from the step options map.
+// Falls back to defaultVal if the key is absent.
+func parseFloatOption(opts map[string]string, key string, defaultVal float64) (float64, error) {
+	raw := strings.TrimSpace(opts[key])
+	if raw == "" {
+		return defaultVal, nil
+	}
+	v, err := strconv.ParseFloat(raw, 64)
+	if err != nil {
+		return 0, fmt.Errorf("invalid %s %q: must be a number", key, raw)
+	}
+	return v, nil
+}
+
+func cloneFeedArticles(feed *model.CraftFeed) *model.CraftFeed {
+	if feed == nil {
+		return nil
+	}
+	cloned := *feed
+	cloned.Articles = make([]*model.CraftArticle, 0, len(feed.Articles))
+	for _, article := range feed.Articles {
+		if article == nil {
+			cloned.Articles = append(cloned.Articles, nil)
+			continue
+		}
+		articleCopy := *article
+		cloned.Articles = append(cloned.Articles, &articleCopy)
+	}
+	return &cloned
 }
 
 func pushTopicStack(stack []string, topicID string) ([]string, error) {
@@ -345,6 +631,57 @@ func parseInternalResourceURI(parsed *url.URL) (string, string, error) {
 		return "", "", errors.New("resource id must be a single path segment")
 	}
 	return resourceType, resourceID, nil
+}
+
+// InboxProvider adapts inbox items into a feed without requiring an intermediate recipe.
+type InboxProvider struct {
+	DB      *gorm.DB
+	InboxID string
+}
+
+func (p *InboxProvider) Fetch(ctx context.Context) (*model.CraftFeed, error) {
+	_ = ctx
+	db := p.DB
+	if db == nil {
+		db = util.GetDatabase()
+	}
+
+	inbox, err := dao.GetInboxByID(db, p.InboxID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get inbox %s: %w", p.InboxID, err)
+	}
+
+	items, err := dao.ListInboxItems(db, p.InboxID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list inbox items: %w", err)
+	}
+
+	feed := &model.CraftFeed{
+		Title:       inbox.Title,
+		Description: inbox.Description,
+		Id:          fmt.Sprintf("inbox:%s", p.InboxID),
+		Link:        p.BaseURL(),
+		Articles:    make([]*model.CraftArticle, 0, len(items)),
+	}
+	for _, item := range items {
+		feed.Articles = append(feed.Articles, &model.CraftArticle{
+			Title:       item.Title,
+			Link:        item.URL,
+			Content:     item.Content,
+			Description: item.Summary,
+			Id:          item.ItemID,
+			AuthorName:  item.Author,
+			Created:     item.PublishedAt,
+			Updated:     item.PublishedAt,
+		})
+	}
+
+	source.ApplyInputFeedItemLimit(feed)
+	return feed, nil
+}
+
+func (p *InboxProvider) BaseURL() string {
+	return fmt.Sprintf("feedcraft://inbox/%s", p.InboxID)
 }
 
 // RecipeProvider adapts a runtime RecipeFeed and adds execution metadata.

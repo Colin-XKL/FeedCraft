@@ -22,13 +22,22 @@ const TOOLS: AppRouteRecordRaw = {
       },
     },
     {
-      path: 'feed_compare',
-      name: 'FeedCompare',
-      component: () =>
-        import('@/views/dashboard/feed_compare/feed_compare.vue'),
+      path: 'example_rss_feeds',
+      name: 'ExampleRssFeeds',
+      component: () => import('@/views/dashboard/example_rss_feeds/index.vue'),
       meta: {
+        locale: 'menu.exampleRssFeeds',
         requiresAuth: false,
-        locale: 'menu.feedCompare',
+      },
+    },
+    {
+      path: 'embedding-filter',
+      name: 'EmbeddingFilterDebug',
+      component: () =>
+        import('@/views/dashboard/embedding_filter_debug/index.vue'),
+      meta: {
+        requiresAuth: true,
+        locale: 'menu.embeddingFilterDebug',
       },
     },
     {

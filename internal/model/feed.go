@@ -16,6 +16,7 @@ type CraftFeed struct {
 	Updated     time.Time
 	Created     time.Time
 	Id          string // The URL of the feed itself
+	FeedType    string
 	Copyright   string
 	AuthorName  string
 	AuthorEmail string
@@ -38,6 +39,7 @@ type CraftArticle struct {
 	Content     string
 	AuthorName  string
 	AuthorEmail string
+	Source      string // RSS <source> / Atom source href, if present
 
 	// Internal metadata for future expansion (Topic aggregation, fission, etc.)
 	OriginalFeedID string // The ID of the raw source it came from
@@ -68,6 +70,7 @@ func FromGofeed(parsedFeed *gofeed.Feed) *CraftFeed {
 		Updated:     updatedTime,
 		Created:     publishedTime,
 		Id:          parsedFeed.FeedLink,
+		FeedType:    parsedFeed.FeedType,
 		Copyright:   parsedFeed.Copyright,
 	}
 
@@ -196,12 +199,14 @@ func (ca *CraftArticle) ToFeedsItem() *feeds.Item {
 			Email: ca.AuthorEmail,
 		}
 	}
+	if ca.Source != "" {
+		item.Source = &feeds.Link{Href: ca.Source}
+	}
 
 	return item
 }
 
 // FromFeedsFeed converts a Gorilla feeds.Feed back to a CraftFeed.
-// This is primarily used by the LegacyOptionAdapter to capture state after legacy CraftOptions run.
 func FromFeedsFeed(ff *feeds.Feed) *CraftFeed {
 	if ff == nil {
 		return nil
@@ -228,7 +233,10 @@ func FromFeedsFeed(ff *feeds.Feed) *CraftFeed {
 		cf.ImageTitle = ff.Image.Title
 	}
 
-	cf.Articles = lo.Map(ff.Items, func(item *feeds.Item, _ int) *CraftArticle {
+	cf.Articles = lo.FilterMap(ff.Items, func(item *feeds.Item, _ int) (*CraftArticle, bool) {
+		if item == nil {
+			return nil, false
+		}
 		ca := &CraftArticle{
 			Title:       item.Title,
 			Description: item.Description,
@@ -244,7 +252,10 @@ func FromFeedsFeed(ff *feeds.Feed) *CraftFeed {
 			ca.AuthorName = item.Author.Name
 			ca.AuthorEmail = item.Author.Email
 		}
-		return ca
+		if item.Source != nil {
+			ca.Source = item.Source.Href
+		}
+		return ca, true
 	})
 
 	return cf

@@ -18,6 +18,25 @@ FeedCraft 提供了一些内置工具来帮助您调试 RSS 源并监控系统�
 - **目的**: 在设置配方 (Recipe) 之前，验证 FeedCraft 是否能够成功抓取和解析某个 Feed。
 - **注意**: 预览器默认使用 `proxy` 工艺，它只是简单地抓取 Feed 而不进行修改。
 
+## RSS 示例订阅 (Example RSS Feeds)
+
+**RSS 示例订阅** 页面提供内置订阅地址，用来测试 RSS 阅读器对 HTML、CSS 和媒体内容的渲染支持情况，以及对 RSS 1.0、RSS 2.0、Atom、JSON Feed 文档的格式支持。
+
+- **使用方法**:
+  1. 导航至 **工具 > RSS 示例订阅**。
+  2. 复制其中一个订阅地址，例如 `/example-rss-feeds/html-elements.xml`。
+  3. 在您的 RSS 阅读器中订阅它。
+- **可用 Feed**:
+  - `html-elements.xml`: 标题、列表、表格、引用、代码块、details/summary、figure 以及其他常见 HTML5 元素。
+  - `html-styling.xml`: 内联颜色、背景、边框、间距、排版、flex 和 grid 样式。
+  - `media-picture.xml`: `picture`、`source`、`srcset`、`sizes`、兜底图片、alt 文本和说明文字。
+  - `all-in-one.xml`: 将 HTML、样式和媒体示例合并到一个 Feed 中。
+  - `rss-2-0.xml`: 简单的 RSS 2.0 文档。
+  - `rss-1-0.rdf`: 简单的 RSS 1.0/RDF 文档。
+  - `atom.xml`: 简单的 Atom 文档。
+  - `json-feed.json`: 简单的 JSON Feed 1.1 文档。
+- **刷新行为**: 订阅地址保持稳定，条目 GUID 每 4 小时轮换一次，方便阅读器拉取新的示例内容。
+
 ## Feed 对比 (Feed Compare)
 
 **Feed 对比** 工具让您可以直观地看到某个 Craft（Atom 或 Flow）对 Feed 的处理效果。
@@ -42,6 +61,7 @@ FeedCraft 提供了一些内置工具来帮助您调试 RSS 源并监控系统�
 - **功能**:
   - 生成所有依赖关系的树状视图。
   - **健康检查**: 自动检测丢失的依赖项（例如，指向已删除 FlowCraft 的 Recipe）。
+  - **缺失 Crafts 面板**: 在视图顶部明确高亮显示哪些 Crafts 丢失。
   - **视觉指示**: Recipes、Flows、Atoms 和丢失组件使用不同颜色标识。
 
 :::tip

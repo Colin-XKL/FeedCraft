@@ -7,14 +7,13 @@ import (
 
 func CleanupContent(htmlContent string, domain string) (string, error) {
 	// First convert HTML to Markdown to strip unnecessary elements
-	markdown := util.Html2Markdown(htmlContent, &domain)
+	markdown := util.HTMLToMarkdown(htmlContent, domain)
 
-	// Then convert back to HTML for clean, semantic markup
-	cleanHtml := util.Markdown2HTML(markdown)
+	cleanHtml := util.MarkdownToHTML(markdown)
 	return cleanHtml, nil
 }
 
-func GetCleanupCraftOptions() []CraftOption {
+func GetCleanupCraftOptions() []LegacyCraftOption {
 	transFunc := func(item *feeds.Item) (string, error) {
 		domain, _ := util.ParseDomainFromUrl(item.Link.Href)
 		return CleanupContent(item.Content, domain)
@@ -24,7 +23,7 @@ func GetCleanupCraftOptions() []CraftOption {
 		transFunc,
 		"cleanup article content",
 	)
-	craftOptions := []CraftOption{
+	craftOptions := []LegacyCraftOption{
 		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransFunc)),
 	}
 	return craftOptions

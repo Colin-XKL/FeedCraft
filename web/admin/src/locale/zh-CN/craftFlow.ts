@@ -13,6 +13,8 @@ export default {
   'craftFlow.form.save': '保存',
   'craftFlow.form.saveSuccess': '保存成功',
   'craftFlow.form.rule.nameRequired': '名称为必填项',
+  'craftFlow.flow.start': '开始',
+  'craftFlow.flow.end': '结束',
   'craftFlow.editModalTitle.create': '创建组合工艺 (FlowCraft)',
   'craftFlow.editModalTitle.edit': '编辑组合工艺 (FlowCraft)',
   'craftFlow.editor.empty': '暂无步骤',
@@ -21,4 +23,9 @@ export default {
   'craftFlow.editor.moveUp': '上移',
   'craftFlow.editor.moveDown': '下移',
   'craftFlow.editor.remove': '移除',
+  'craftFlow.empty.description': '暂无组合工艺',
+  'craftFlow.empty.hint':
+    '组合工艺把多个原子工艺串成处理流水线。创建第一个 FlowCraft，即可对订阅源按顺序执行提取、筛选和摘要。',
+  'craftFlow.empty.createFirst': '创建第一个组合工艺',
+  'craftFlow.empty.docs': '查看定制指南',
 };

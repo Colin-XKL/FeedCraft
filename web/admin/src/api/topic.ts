@@ -11,11 +11,17 @@ export interface AggregatorStep {
   option: Record<string, string>;
 }
 
+export interface TopicInput {
+  uri: string;
+  description?: string;
+  disabled?: boolean;
+}
+
 export interface TopicFeed {
   id: string;
   title?: string;
   description?: string;
-  input_uris: string[];
+  inputs: TopicInput[];
   aggregator_config: AggregatorStep[];
 }
 
@@ -30,12 +36,21 @@ export interface TopicValidationResult {
   warnings: TopicValidationIssue[];
 }
 
+export interface SubFeedHealth {
+  uri: string;
+  last_success_at?: string;
+  last_failure_at?: string;
+  last_error?: string;
+  cached_at?: string;
+}
+
 export interface TopicDetail {
   topic: TopicFeed;
   public_url: string;
   health: ObservableResource;
   recent_executions: ExecutionLog[];
   related_notifications: SystemNotification[];
+  sub_feed_health: SubFeedHealth[];
 }
 
 const adminApiBase = '/api/admin';

@@ -9,7 +9,7 @@ export default {
   'customRecipe.quickCreateRSS': '快速创建 (RSS)',
   'customRecipe.edit': '编辑',
   'customRecipe.delete': '删除',
-  'customRecipe.link': '链接',
+  'customRecipe.actions': '操作',
   'customRecipe.status.active': '活跃',
   'customRecipe.status.inactive': '不活跃',
   'customRecipe.status.activeTooltip': '活跃 (上次访问: {time})',

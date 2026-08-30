@@ -54,6 +54,81 @@
               </a-tooltip>
             </div>
 
+            <a-card
+              :title="$t('htmlToRss.step1.navigation.title')"
+              size="small"
+              class="mb-6"
+            >
+              <a-alert type="info" class="mb-4">
+                {{ $t('htmlToRss.step1.navigation.help') }}
+              </a-alert>
+              <a-space direction="vertical" fill>
+                <div
+                  v-for="(action, index) in navigationActions"
+                  :key="index"
+                  class="navigation-action-row"
+                >
+                  <a-select
+                    v-model="action.type"
+                    class="navigation-action-type"
+                    size="small"
+                  >
+                    <a-option value="click">{{
+                      $t('htmlToRss.step1.navigation.type.click')
+                    }}</a-option>
+                    <a-option value="wait_for_selector">{{
+                      $t('htmlToRss.step1.navigation.type.waitForSelector')
+                    }}</a-option>
+                    <a-option value="wait">{{
+                      $t('htmlToRss.step1.navigation.type.wait')
+                    }}</a-option>
+                  </a-select>
+                  <a-input
+                    v-if="action.type !== 'wait'"
+                    v-model="action.selector"
+                    size="small"
+                    class="navigation-action-input"
+                    :placeholder="
+                      $t('htmlToRss.step1.navigation.selector.placeholder')
+                    "
+                    allow-clear
+                  />
+                  <a-input-number
+                    v-else
+                    v-model="action.duration_ms"
+                    size="small"
+                    class="navigation-action-number"
+                    :min="100"
+                    :step="100"
+                    :placeholder="
+                      $t('htmlToRss.step1.navigation.wait.placeholder')
+                    "
+                  />
+                  <a-button
+                    size="mini"
+                    :disabled="index === 0"
+                    @click="moveNavigationAction(index, -1)"
+                    >{{ $t('htmlToRss.step1.navigation.up') }}</a-button
+                  >
+                  <a-button
+                    size="mini"
+                    :disabled="index === navigationActions.length - 1"
+                    @click="moveNavigationAction(index, 1)"
+                    >{{ $t('htmlToRss.step1.navigation.down') }}</a-button
+                  >
+                  <a-button
+                    size="mini"
+                    status="danger"
+                    @click="removeNavigationAction(index)"
+                    >{{ $t('htmlToRss.step1.navigation.remove') }}</a-button
+                  >
+                </div>
+              </a-space>
+              <a-button class="mt-3" size="small" @click="addNavigationAction">
+                {{ $t('htmlToRss.step1.navigation.add') }}
+              </a-button>
+            </a-card>
+
             <a-alert v-if="fetchError" type="error" class="mb-4" show-icon>
               {{ fetchError }}
             </a-alert>
@@ -385,6 +460,38 @@
                   allow-clear
                 />
               </a-form-item>
+              <a-form-item
+                :label="$t('htmlToRss.step3.iconSource')"
+                :help="$t('htmlToRss.step3.iconSource.help')"
+              >
+                <a-radio-group v-model="feedMeta.icon_source" type="button">
+                  <a-radio value="auto">{{
+                    $t('htmlToRss.step3.iconSource.auto')
+                  }}</a-radio>
+                  <a-radio value="favicon_service">{{
+                    $t('htmlToRss.step3.iconSource.faviconService')
+                  }}</a-radio>
+                </a-radio-group>
+              </a-form-item>
+              <a-form-item
+                v-if="feedMeta.icon_source === 'favicon_service'"
+                :label="$t('htmlToRss.step3.faviconProvider')"
+                :help="$t('htmlToRss.step3.faviconProvider.help')"
+              >
+                <a-select
+                  v-model="feedMeta.favicon_provider"
+                  allow-clear
+                  :placeholder="$t('htmlToRss.step3.faviconProvider.system')"
+                >
+                  <a-option
+                    v-for="provider in availableFaviconProviders"
+                    :key="provider.id"
+                    :value="provider.id"
+                  >
+                    {{ provider.name }} ({{ provider.id }})
+                  </a-option>
+                </a-select>
+              </a-form-item>
               <a-row :gutter="16">
                 <a-col :span="12">
                   <a-form-item :label="$t('htmlToRss.step3.authorName')">
@@ -433,6 +540,9 @@
                     count: parsedItems.length,
                   })
                 }}</a-descriptions-item>
+                <a-descriptions-item :label="$t('htmlToRss.step4.iconSource')">
+                  {{ iconSourceSummary }}
+                </a-descriptions-item>
               </a-descriptions>
 
               <a-divider />
@@ -502,7 +612,7 @@
 </template>
 
 <script lang="ts" setup>
-  import { ref, reactive, nextTick, watch } from 'vue';
+  import { computed, nextTick, onMounted, reactive, ref, watch } from 'vue';
   import axios from 'axios';
   import DOMPurify from 'dompurify';
   import { Message } from '@arco-design/web-vue';
@@ -514,6 +624,10 @@
   } from '@arco-design/web-vue/es/icon';
   import XHeader from '@/components/header/x-header.vue';
   import { createCustomRecipe } from '@/api/custom_recipe';
+  import {
+    FaviconProviderDescriptor,
+    getFaviconProviderConfig,
+  } from '@/api/settings';
   import { useRouter } from 'vue-router';
   import { useI18n } from 'vue-i18n';
   import generateRecipeId, { getRecipeIdRules } from '@/utils/slug';
@@ -538,6 +652,43 @@
   const saving = ref(false);
   const htmlContent = ref('');
   const parsedItems = ref<any[]>([]);
+  const availableFaviconProviders = ref<FaviconProviderDescriptor[]>([]);
+
+  type NavigationActionType = 'click' | 'wait_for_selector' | 'wait';
+
+  interface NavigationAction {
+    type: NavigationActionType;
+    selector?: string;
+    timeout_ms?: number;
+    duration_ms?: number;
+  }
+
+  const navigationActions = ref<NavigationAction[]>([]);
+  const normalizedNavigationActions = computed(() =>
+    navigationActions.value
+      .map((action) => {
+        if (action.type === 'wait') {
+          return {
+            type: action.type,
+            duration_ms: action.duration_ms || 1000,
+          };
+        }
+        return {
+          type: action.type,
+          selector: (action.selector || '').trim(),
+          timeout_ms: action.timeout_ms || undefined,
+        };
+      })
+      .filter(
+        (action) =>
+          (action.type === 'wait' && action.duration_ms > 0) ||
+          (action.type !== 'wait' && !!action.selector)
+      )
+  );
+
+  const hasNavigationActions = computed(
+    () => normalizedNavigationActions.value.length > 0
+  );
 
   // Selection State
   const isSelectionMode = ref(true);
@@ -561,12 +712,28 @@
     description: '',
     author_name: '',
     author_email: '',
+    icon_source: 'auto',
+    favicon_provider: '',
   });
 
   // Step 4 State
   const recipeMeta = reactive({
     id: '',
     description: '',
+  });
+
+  const iconSourceSummary = computed(() => {
+    if (feedMeta.icon_source === 'auto') {
+      return t('htmlToRss.step3.iconSource.auto');
+    }
+    const provider = availableFaviconProviders.value.find(
+      (item) => item.id === feedMeta.favicon_provider
+    );
+    return provider
+      ? `${t('htmlToRss.step3.iconSource.faviconService')} · ${provider.name}`
+      : `${t('htmlToRss.step3.iconSource.faviconService')} · ${t(
+          'htmlToRss.step3.faviconProvider.system'
+        )}`;
   });
 
   // --- Actions ---
@@ -585,6 +752,40 @@
     }
   };
 
+  const addNavigationAction = () => {
+    navigationActions.value.push({
+      type: 'click',
+      selector: '',
+    });
+    enhancedMode.value = true;
+  };
+
+  const removeNavigationAction = (index: number) => {
+    navigationActions.value.splice(index, 1);
+  };
+
+  const moveNavigationAction = (index: number, direction: number) => {
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= navigationActions.value.length) {
+      return;
+    }
+    const [action] = navigationActions.value.splice(index, 1);
+    navigationActions.value.splice(targetIndex, 0, action);
+  };
+
+  const loadFaviconProviders = async () => {
+    try {
+      const response = await getFaviconProviderConfig();
+      availableFaviconProviders.value = (
+        response.data.data.providers || []
+      ).filter((provider) => provider.enabled);
+    } catch {
+      availableFaviconProviders.value = [];
+    }
+  };
+
+  onMounted(loadFaviconProviders);
+
   watch(
     () => currentStep.value,
     (val) => {
@@ -592,6 +793,14 @@
         recipeMeta.id = generateRecipeId(feedMeta.title);
       }
     }
+  );
+
+  watch(
+    hasNavigationActions,
+    (enabled) => {
+      if (enabled) enhancedMode.value = true;
+    },
+    { immediate: true }
   );
 
   const setTargetField = (field: string) => {
@@ -607,7 +816,8 @@
     try {
       const { data: res } = (await axios.post('/api/admin/tools/fetch', {
         url: url.value,
-        use_browserless: enhancedMode.value,
+        use_browserless: enhancedMode.value || hasNavigationActions.value,
+        navigation_actions: normalizedNavigationActions.value,
       })) as any;
       if (res.code === 0) {
         let raw = res.data;
@@ -663,8 +873,10 @@
         fetchError.value = errorMsg;
       }
     } catch (err: any) {
-      // Axios interceptor throws an error with the backend message
-      const errorMsg = err.message || t('htmlToRss.msg.errorFetching');
+      const errorMsg =
+        err?.response?.data?.msg ||
+        err.message ||
+        t('htmlToRss.msg.errorFetching');
       fetchError.value = errorMsg;
     } finally {
       fetching.value = false;
@@ -731,7 +943,8 @@
       type: 'html',
       http_fetcher: {
         url: url.value,
-        use_browserless: enhancedMode.value,
+        use_browserless: enhancedMode.value || hasNavigationActions.value,
+        navigation_actions: normalizedNavigationActions.value,
       },
       html_parser: {
         item_selector: config.item_selector,
@@ -746,6 +959,11 @@
         description: feedMeta.description,
         author_name: feedMeta.author_name,
         author_email: feedMeta.author_email,
+        icon_source: feedMeta.icon_source,
+        favicon_provider:
+          feedMeta.icon_source === 'favicon_service'
+            ? feedMeta.favicon_provider || undefined
+            : undefined,
       },
     };
 
@@ -867,5 +1085,25 @@
   .step-content {
     margin-top: 24px;
     height: 600px;
+  }
+
+  .navigation-action-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .navigation-action-type {
+    width: 150px;
+  }
+
+  .navigation-action-input {
+    flex: 1;
+    min-width: 220px;
+  }
+
+  .navigation-action-number {
+    width: 180px;
   }
 </style>

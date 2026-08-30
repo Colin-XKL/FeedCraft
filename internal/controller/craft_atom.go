@@ -24,6 +24,12 @@ func CreateCraftAtom(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
+
+	if !util.IsValidID(craftAtom.Name) {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: "Name must only contain lowercase letters, numbers, hyphens, and underscores"})
+		return
+	}
+
 	db := util.GetDatabase()
 
 	if err := dao.CreateCraftAtom(db, &craftAtom); err != nil {
@@ -73,6 +79,12 @@ func UpdateCraftAtom(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
+
+	if craftAtom.Name != "" && craftAtom.Name != name {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: "Changing AtomCraft name is not allowed"})
+		return
+	}
+
 	db := util.GetDatabase()
 
 	existingCraftAtom, err := dao.GetCraftAtomByName(db, name)

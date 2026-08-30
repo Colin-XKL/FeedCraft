@@ -21,6 +21,7 @@ export interface FeedViewerPreview {
   description: string;
   link: string;
   feedUrl: string;
+  feedType: string;
   copyright: string;
   image?: FeedViewerPreviewImage;
   items: FeedViewerPreviewItem[];

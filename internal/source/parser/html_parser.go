@@ -29,7 +29,8 @@ func (p *HtmlParser) Parse(data []byte) (*model.CraftFeed, error) {
 
 	// Basic feed metadata (can be overridden by FeedMetaConfig later)
 	// For now, we might try to extract title from <title> if not provided via overrides
-	feed.Title = doc.Find("title").Text()
+	feed.Title = strings.TrimSpace(doc.Find("title").Text())
+	feed.ImageURL = extractFeedIconURL(doc)
 
 	doc.Find(p.Config.ItemSelector).Each(func(i int, s *goquery.Selection) {
 		item := &model.CraftArticle{}
@@ -95,4 +96,28 @@ func (p *HtmlParser) Parse(data []byte) (*model.CraftFeed, error) {
 	})
 
 	return feed, nil
+}
+
+func extractFeedIconURL(doc *goquery.Document) string {
+	iconHref := ""
+	doc.Find("link[rel]").EachWithBreak(func(_ int, s *goquery.Selection) bool {
+		rel, _ := s.Attr("rel")
+		if isIconRel(rel) {
+			iconHref, _ = s.Attr("href")
+			iconHref = strings.TrimSpace(iconHref)
+			return iconHref == ""
+		}
+		return true
+	})
+	return iconHref
+}
+
+func isIconRel(rel string) bool {
+	for _, token := range strings.Fields(strings.ToLower(rel)) {
+		switch token {
+		case "icon", "apple-touch-icon", "apple-touch-icon-precomposed", "mask-icon":
+			return true
+		}
+	}
+	return false
 }

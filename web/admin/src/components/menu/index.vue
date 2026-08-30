@@ -6,12 +6,13 @@
   import { useAppStore } from '@/store';
   import { listenerRouteChange } from '@/utils/route-listener';
   import { openWindow, regexUrl } from '@/utils';
+  import { resolveExternalMenuUrl } from '@/utils/docsUrl';
   import useMenuTree from '@/components/menu/use-menu-tree';
 
   export default defineComponent({
     emit: ['collapse'],
     setup() {
-      const { t } = useI18n();
+      const { t, locale } = useI18n();
       const appStore = useAppStore();
       const router = useRouter();
       const route = useRoute();
@@ -33,7 +34,9 @@
       const goto = (item: RouteRecordRaw) => {
         // Open external link
         if (regexUrl.test(item.path)) {
-          openWindow(item.path);
+          openWindow(
+            resolveExternalMenuUrl(item.path, locale.value, item.name)
+          );
           selectedKey.value = [item.name as string];
           return;
         }

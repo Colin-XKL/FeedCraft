@@ -1,4 +1,4 @@
-FROM golang:1.24-alpine AS backend-builder
+FROM golang:1.25.13-alpine AS backend-builder
 ENV GOCACHE=/root/.cache/go-build
 ENV GOMODCACHE=/root/.cache/go-mod-cache
 
@@ -25,6 +25,8 @@ RUN --mount=type=cache,id=gobuild,target="/root/.cache/go-build" GO111MODULE=on 
     -o /feed-craft /app/cmd/main.go
 
 FROM node:22-slim AS frontend-builder
+ARG VERSION=unknown
+ENV APP_VERSION=${VERSION}
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 

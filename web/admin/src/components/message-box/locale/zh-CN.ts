@@ -10,4 +10,5 @@ export default {
   'messageBox.userCenter': '用户中心',
   'messageBox.userSettings': '用户设置',
   'messageBox.logout': '退出登录',
+  'messageBox.logoutSuccess': '登出成功',
 };

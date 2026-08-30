@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -22,28 +23,29 @@ import (
  */
 
 const (
-	defaultEmbeddingModel     = "text-embedding-3-small"
-	embeddingCallTimeout      = 2 * time.Minute
-	embeddingTotalTimeout     = 5 * time.Minute // 全局超时预算，所有重试在此预算内执行
-	defaultEmbeddingBatchSize = 5               // 每批发送给 Embedding 服务的默认最大文本数
+	embeddingCallTimeout          = 2 * time.Minute
+	embeddingTotalTimeout         = 5 * time.Minute // 全局超时预算，所有重试在此预算内执行
+	defaultEmbeddingBatchSize     = 5               // 每批发送给 Embedding 服务的默认最大文本数
+	defaultEmbeddingMaxInputChars = 8000            // 每条文本发送给 Embedding 服务前的默认字符上限（包含 instruction 前缀）
 )
 
 var (
 	// embeddingClients 缓存已创建的 Embedding 客户端实例（惰性单例）
 	embeddingClients sync.Map
 
-	// anchorVectorCache 锚点向量内存缓存，key = MD5(锚点文本) + "|" + 模型名称
+	// anchorVectorCache 锚点向量内存缓存，key 包含 provider/base/model/instruction/锚点文本
 	anchorVectorCache sync.Map
 )
 
 // embeddingConfig 从环境变量读取的 Embedding 配置
 type embeddingConfig struct {
-	apiType     string
-	apiBase     string
-	apiKey      string
-	apiModel    string
-	instruction string // 全局默认 instruction
-	batchSize   int    // 每批发送给 Embedding 服务的最大文本数，用户可根据模型和硬件自行调整
+	apiType       string
+	apiBase       string
+	apiKey        string
+	apiModel      string
+	instruction   string // 全局默认 instruction
+	batchSize     int    // 每批发送给 Embedding 服务的最大文本数，用户可根据模型和硬件自行调整
+	maxInputChars int    // 每条 Embedding 输入的最大字符数，避免超过模型上下文限制
 }
 
 // loadEmbeddingConfig 读取 Embedding 环境变量，未配置时回退使用 LLM 配置
@@ -61,6 +63,7 @@ func loadEmbeddingConfig() (embeddingConfig, error) {
 	cfg.apiKey = envClient.GetString("EMBEDDING_API_KEY")
 	cfg.apiModel = envClient.GetString("EMBEDDING_API_MODEL")
 	cfg.instruction = envClient.GetString("EMBEDDING_INSTRUCTION")
+	hasEmbeddingEndpointConfig := cfg.apiType != "" || cfg.apiBase != "" || cfg.apiKey != ""
 
 	// 读取批次大小配置，未配置或无效时使用默认值
 	cfg.batchSize = defaultEmbeddingBatchSize
@@ -72,37 +75,55 @@ func loadEmbeddingConfig() (embeddingConfig, error) {
 			logrus.Debugf("Embedding batch size set to %d from FC_EMBEDDING_BATCH_SIZE", parsed)
 		}
 	}
-
-	// 2. 回退逻辑：未配置时使用 LLM 配置
-	if cfg.apiType == "" {
-		cfg.apiType = "openai"
+	cfg.maxInputChars = defaultEmbeddingMaxInputChars
+	if maxInputCharsStr := envClient.GetString("EMBEDDING_MAX_INPUT_CHARS"); maxInputCharsStr != "" {
+		if parsed, parseErr := strconv.Atoi(maxInputCharsStr); parseErr != nil || parsed <= 0 {
+			logrus.Warnf("FC_EMBEDDING_MAX_INPUT_CHARS value [%s] is invalid, using default %d", maxInputCharsStr, defaultEmbeddingMaxInputChars)
+		} else {
+			cfg.maxInputChars = parsed
+			logrus.Debugf("Embedding max input chars set to %d from FC_EMBEDDING_MAX_INPUT_CHARS", parsed)
+		}
 	}
 
-	if cfg.apiBase == "" {
+	// 2. 端点回退逻辑：仅当 Embedding 端点完全未配置时整体使用 LLM 端点配置。
+	// FC_EMBEDDING_API_MODEL 只控制模型名，不会阻止端点继承。
+	if !hasEmbeddingEndpointConfig {
+		cfg.apiType = envClient.GetString("LLM_API_TYPE")
+		if cfg.apiType != "" {
+			logrus.Debug("FC_EMBEDDING_API_TYPE not set, falling back to FC_LLM_API_TYPE")
+		}
+
 		cfg.apiBase = envClient.GetString("LLM_API_BASE")
 		if cfg.apiBase != "" {
 			logrus.Debug("FC_EMBEDDING_API_BASE not set, falling back to FC_LLM_API_BASE")
 		}
-	}
 
-	if cfg.apiKey == "" {
 		cfg.apiKey = envClient.GetString("LLM_API_KEY")
 		if cfg.apiKey != "" {
 			logrus.Debug("FC_EMBEDDING_API_KEY not set, falling back to FC_LLM_API_KEY")
 		}
 	}
 
-	if cfg.apiModel == "" {
-		switch cfg.apiType {
-		case "ollama", "gemini":
-			return embeddingConfig{}, fmt.Errorf("FC_EMBEDDING_API_MODEL must be set when using FC_EMBEDDING_API_TYPE='%s'", cfg.apiType)
-		default: // "openai" 及其他 OpenAI 兼容服务
-			cfg.apiModel = defaultEmbeddingModel
-			logrus.Debugf("FC_EMBEDDING_API_MODEL not set, using default: %s", defaultEmbeddingModel)
-		}
+	if cfg.apiType == "" {
+		cfg.apiType = "openai"
+	}
+
+	if cfg.apiModel == "" || strings.Contains(cfg.apiModel, ",") {
+		return embeddingConfig{}, fmt.Errorf("FC_EMBEDDING_API_MODEL must be set to a single embedding model")
 	}
 
 	return cfg, nil
+}
+
+func buildAnchorVectorCacheKey(anchor string, cfg embeddingConfig, effectiveInstruction string) string {
+	return fmt.Sprintf(
+		"anchor|%s|%s|%s|%s|%s",
+		cfg.apiType,
+		cfg.apiBase,
+		cfg.apiModel,
+		util.GetTextContentHash(effectiveInstruction),
+		util.GetTextContentHash(anchor),
+	)
 }
 
 // getOrCreateEmbedder 获取或创建 Embedding 客户端（带缓存）
@@ -191,6 +212,29 @@ func resolveInstruction(instruction string, cfg embeddingConfig) string {
 	return cfg.instruction
 }
 
+func truncateTextByRunes(text string, maxRunes int) string {
+	if maxRunes <= 0 || len(text) == 0 {
+		return text
+	}
+	runes := []rune(text)
+	if len(runes) <= maxRunes {
+		return text
+	}
+	return string(runes[:maxRunes])
+}
+
+func prepareEmbeddingTexts(texts []string, effectiveInstruction string, cfg embeddingConfig) []string {
+	processedTexts := make([]string, len(texts))
+	prefix := ""
+	if effectiveInstruction != "" {
+		prefix = effectiveInstruction + ": "
+	}
+	for i, text := range texts {
+		processedTexts[i] = truncateTextByRunes(prefix+text, cfg.maxInputChars)
+	}
+	return processedTexts
+}
+
 // EmbedTexts 统一的 Embedding 接口，将文本列表编码为向量
 // instruction 参数：对于支持 instruction 的模型会拼接到文本前面，不支持的静默忽略
 // 返回 [][]float64 以便后续余弦相似度计算
@@ -202,14 +246,7 @@ func EmbedTexts(ctx context.Context, texts []string, instruction string) ([][]fl
 
 	// 解析最终生效的 instruction（调用方传入优先，为空时 fallback 到全局配置）
 	effectiveInstruction := resolveInstruction(instruction, cfg)
-
-	processedTexts := texts
-	if effectiveInstruction != "" {
-		processedTexts = make([]string, len(texts))
-		for i, t := range texts {
-			processedTexts[i] = effectiveInstruction + ": " + t
-		}
-	}
+	processedTexts := prepareEmbeddingTexts(texts, effectiveInstruction, cfg)
 
 	embedder, embedErr := getOrCreateEmbedder(cfg)
 	if embedErr != nil {
@@ -281,10 +318,8 @@ func GetOrComputeAnchorVectors(ctx context.Context, anchors []string, instructio
 	if err != nil {
 		return nil, fmt.Errorf("failed to load embedding config: %w", err)
 	}
-	modelName := cfg.apiModel
 	// 使用 resolveInstruction 解析最终生效的 instruction，确保缓存 key 与 EmbedTexts 实际使用的一致
 	effectiveInstruction := resolveInstruction(instruction, cfg)
-	instructionHash := util.GetMD5Hash(effectiveInstruction)
 
 	// 检查哪些锚点已缓存，哪些需要计算
 	result := make([][]float64, len(anchors))
@@ -292,7 +327,7 @@ func GetOrComputeAnchorVectors(ctx context.Context, anchors []string, instructio
 	var uncachedTexts []string
 
 	for i, anchor := range anchors {
-		cacheKey := fmt.Sprintf("anchor|%s|%s|%s", util.GetMD5Hash(anchor), modelName, instructionHash)
+		cacheKey := buildAnchorVectorCacheKey(anchor, cfg, effectiveInstruction)
 		if cached, ok := anchorVectorCache.Load(cacheKey); ok {
 			result[i] = cached.([]float64)
 		} else {
@@ -322,7 +357,7 @@ func GetOrComputeAnchorVectors(ctx context.Context, anchors []string, instructio
 
 	// 将新计算的向量写入缓存和结果
 	for j, idx := range uncachedIndices {
-		cacheKey := fmt.Sprintf("anchor|%s|%s|%s", util.GetMD5Hash(anchors[idx]), modelName, instructionHash)
+		cacheKey := buildAnchorVectorCacheKey(anchors[idx], cfg, effectiveInstruction)
 		anchorVectorCache.Store(cacheKey, newVectors[j])
 		result[idx] = newVectors[j]
 	}

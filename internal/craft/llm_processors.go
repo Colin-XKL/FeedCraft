@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"text/template"
 
 	"FeedCraft/internal/constant"
@@ -28,23 +29,27 @@ func (p *ArticleTextTransformProcessor) Process(ctx context.Context, feed *model
 	}
 
 	cloned := cloneCraftFeed(feed)
+	errs := make([]error, len(cloned.Articles))
+	forEachArticleConcurrently(cloned.Articles, func(index int, article *model.CraftArticle) {
+		errs[index] = p.Mutate(ctx, article)
+	})
+
 	var (
 		lastErr   error
 		successes int
 		attempted int
 	)
-
-	for _, article := range cloned.Articles {
+	for index, article := range cloned.Articles {
 		if article == nil {
 			continue
 		}
-		attempted += 1
-		if err := p.Mutate(ctx, article); err != nil {
+		attempted++
+		if err := errs[index]; err != nil {
 			lastErr = err
 			logrus.Warnf("failed to apply craft [%s] for article [%s], err: %v", p.CraftName, article.Title, err)
 			continue
 		}
-		successes += 1
+		successes++
 	}
 
 	if attempted > 0 && successes == 0 {
@@ -64,23 +69,41 @@ func (p *ArticlePredicateProcessor) Process(ctx context.Context, feed *model.Cra
 	}
 
 	cloned := cloneCraftFeed(feed)
+	matches := make([]bool, len(cloned.Articles))
+	errs := make([]error, len(cloned.Articles))
+	forEachArticleConcurrently(cloned.Articles, func(index int, article *model.CraftArticle) {
+		matches[index], errs[index] = p.Match(ctx, article)
+	})
+
 	filtered := make([]*model.CraftArticle, 0, len(cloned.Articles))
-	for _, article := range cloned.Articles {
+	for index, article := range cloned.Articles {
 		if article == nil {
 			continue
 		}
-		matched, err := p.Match(ctx, article)
-		if err != nil {
+		if err := errs[index]; err != nil {
 			logrus.Warnf("failed to evaluate craft [%s] for article [%s], err: %v", p.CraftName, article.Title, err)
 			filtered = append(filtered, article)
 			continue
 		}
-		if !matched {
+		if !matches[index] {
 			filtered = append(filtered, article)
 		}
 	}
 	cloned.Articles = filtered
 	return cloned, nil
+}
+
+func forEachArticleConcurrently(articles []*model.CraftArticle, process func(index int, article *model.CraftArticle)) {
+	var workers sync.WaitGroup
+	for index, article := range articles {
+		if article == nil {
+			continue
+		}
+		workers.Go(func() {
+			process(index, article)
+		})
+	}
+	workers.Wait()
 }
 
 func CallLLMForArticleTransform(prompt, title, content string, option util.ContentProcessOption) (string, error) {
@@ -194,6 +217,42 @@ func newTranslateTitleProcessor(prompt string) *ArticleTextTransformProcessor {
 	}
 }
 
+func newRetitleProcessor(prompt string) *ArticleTextTransformProcessor {
+	finalPrompt := renderRetitlePrompt(prompt)
+	transformer := GetCommonCachedArticleTransformer(
+		newArticleTitleContentCacheKeyGenerator(finalPrompt),
+		func(ctx context.Context, article *model.CraftArticle) (string, error) {
+			originalTitle := article.Title
+			originalContent := getPrimaryArticleContent(article)
+			if strings.TrimSpace(originalContent) == "" {
+				return originalTitle, nil
+			}
+			contentForPrompt := getArticleContentForPrompt(article, originalContent)
+			generated, err := CallLLMForArticleTransform(finalPrompt, originalTitle, contentForPrompt, util.ContentProcessOption{})
+			if err != nil {
+				return "", err
+			}
+			if shouldKeepOriginalTitle(generated) {
+				return originalTitle, nil
+			}
+			return strings.TrimSpace(generated), nil
+		},
+		string(constant.ProcessorTypeRetitle),
+	)
+
+	return &ArticleTextTransformProcessor{
+		CraftName: string(constant.ProcessorTypeRetitle),
+		Mutate: func(ctx context.Context, article *model.CraftArticle) error {
+			transformed, err := transformer(ctx, article)
+			if err != nil {
+				return err
+			}
+			article.Title = transformed
+			return nil
+		},
+	}
+}
+
 func newTranslateContentProcessor(prompt string) *ArticleTextTransformProcessor {
 	return newArticleContentLLMProcessor("translate article content", prompt, translateArticleContentPrompt)
 }
@@ -267,11 +326,14 @@ func newLLMFilterProcessor(condition string) *ArticlePredicateProcessor {
 	if condition == "" {
 		condition = "Is this content spam or low quality?"
 	}
+	fullPrompt := buildGenericConditionPrompt(condition)
 	matcher := GetCommonCachedArticlePredicate(
-		newArticleTitleContentCacheKeyGenerator(condition),
+		newArticleLLMPayloadCacheKeyGenerator(fullPrompt, func(article *model.CraftArticle) string {
+			return BuildLLMArticlePayload(article.Title, getPrimaryArticleContent(article))
+		}),
 		func(ctx context.Context, article *model.CraftArticle) (bool, error) {
 			content := getPrimaryArticleContent(article)
-			return CheckConditionWithGenericPrompt(article.Title, content, condition)
+			return CheckConditionWithLLM(article.Title, content, fullPrompt)
 		},
 		"llm filter",
 	)
@@ -336,6 +398,20 @@ func newArticleTitleContentCacheKeyGenerator(prompt string) ArticleCacheKeyGener
 	}
 }
 
+func newArticleLLMPayloadCacheKeyGenerator(prompt string, payloadBuilder func(article *model.CraftArticle) string) ArticleCacheKeyGenerator {
+	promptHash := util.GetTextContentHash(prompt)
+	return func(article *model.CraftArticle) (string, error) {
+		payload := ""
+		if payloadBuilder != nil {
+			payload = payloadBuilder(article)
+		}
+		return util.GetTextContentHash(strings.Join([]string{
+			promptHash,
+			util.GetTextContentHash(payload),
+		}, "|")), nil
+	}
+}
+
 func renderTargetLangPrompt(prompt string, defaultPrompt string) string {
 	finalPrompt := strings.TrimSpace(prompt)
 	if finalPrompt == "" {
@@ -373,8 +449,11 @@ func getPrimaryArticleContent(article *model.CraftArticle) string {
 }
 
 func getArticleContentForPrompt(article *model.CraftArticle, original string) string {
+	// Drop inline base64 images before converting: they carry no useful signal
+	// for LLM processing but can dominate the token budget.
+	original = util.RemoveBase64Images(original)
 	domain, _ := util.ParseDomainFromUrl(article.Link)
-	cleaned := util.Html2Markdown(original, &domain)
+	cleaned := util.HTMLToMarkdown(original, domain)
 	if strings.TrimSpace(cleaned) != "" {
 		return cleaned
 	}
@@ -382,6 +461,18 @@ func getArticleContentForPrompt(article *model.CraftArticle, original string) st
 }
 
 func combineArticleHTMLWithGeneratedMarkdown(originalHTML string, generatedMarkdown string) string {
-	processedHTML := util.Markdown2HTML(generatedMarkdown)
-	return fmt.Sprintf(`<div><div>%s</div><hr/><br/><div>%s</div></div>`, processedHTML, originalHTML)
+	processedHTML := util.MarkdownToHTML(generatedMarkdown)
+	return combineArticleHTMLFragments(processedHTML, originalHTML)
+}
+
+func combineArticleHTMLFragments(firstHTML string, secondHTML string) string {
+	firstHTML = strings.TrimSpace(firstHTML)
+	secondHTML = strings.TrimSpace(secondHTML)
+	if firstHTML == "" {
+		return secondHTML
+	}
+	if secondHTML == "" {
+		return firstHTML
+	}
+	return fmt.Sprintf(`<div><div>%s</div><hr/><br/><div>%s</div></div>`, firstHTML, secondHTML)
 }

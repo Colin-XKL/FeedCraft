@@ -6,6 +6,7 @@ type ProcessorType string
 const (
 	ProcessorTypeIntroduction ProcessorType = "add-introduction"
 	ProcessorTypeSummary      ProcessorType = "add-summary"
+	ProcessorTypeRetitle      ProcessorType = "re-title"
 	// Add more processor types here
 )
 
@@ -40,5 +41,17 @@ Guidelines
 
 
 Input Article Content:
+`,
+	ProcessorTypeRetitle: `
+You are a senior headline editor. Generate one concise, attractive title for the provided article.
+
+Guidelines:
+1. Use only the supplied article title and content. Do not invent facts.
+2. Prefer a short title that is specific, vivid, and easy to scan.
+3. Keep the title in {{.TargetLang}}.
+4. Return only the title text. Do not include quotes, markdown, labels, or explanations.
+5. If the article content is empty or does not contain enough information to create a reliable new title, return exactly: __FEEDCRAFT_KEEP_ORIGINAL_TITLE__
+
+Input Article:
 `,
 }

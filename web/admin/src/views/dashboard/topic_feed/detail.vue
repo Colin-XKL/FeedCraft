@@ -3,7 +3,7 @@
     <Breadcrumb :items="['menu.worktable', 'menu.topicFeed']" />
     <x-header
       :title="detail?.topic.title || String(route.params.id || '')"
-      :description="t('topic.description')"
+      :description="detail?.topic.description || t('topic.wizard.description')"
     />
 
     <a-spin :loading="loading" style="width: 100%">
@@ -13,29 +13,37 @@
           class="general-card"
           :title="t('topic.detail.overview')"
         >
-          <a-row :gutter="16">
-            <a-col :span="8">
-              <a-statistic :title="t('topic.detail.currentStatus')">
-                <template #value>
-                  <a-tag :color="statusColor(detail.health.current_status)">
-                    {{ formatStatus(detail.health.current_status) }}
-                  </a-tag>
-                </template>
-              </a-statistic>
-            </a-col>
-            <a-col :span="8">
-              <a-statistic
-                :title="t('topic.inputCount')"
-                :value="detail.topic.input_uris.length"
-              />
-            </a-col>
-            <a-col :span="8">
-              <a-statistic
-                :title="t('topic.detail.executionCount')"
-                :value="detail.recent_executions.length"
-              />
-            </a-col>
-          </a-row>
+          <div class="overview-stats">
+            <div class="overview-stat">
+              <div class="overview-stat__label">
+                {{ t('topic.detail.currentStatus') }}
+              </div>
+              <div class="overview-stat__value">
+                <a-tag :color="statusColor(detail.health?.current_status)">
+                  {{ formatStatus(detail.health?.current_status) }}
+                </a-tag>
+              </div>
+            </div>
+            <div class="overview-stat">
+              <div class="overview-stat__label">
+                {{ t('topic.inputCount') }}
+              </div>
+              <div class="overview-stat__value overview-stat__number">
+                {{ enabledInputCount }}
+                <span v-if="disabledInputCount > 0" class="input-count-muted">
+                  / {{ topicInputs.length }}
+                </span>
+              </div>
+            </div>
+            <div class="overview-stat">
+              <div class="overview-stat__label">
+                {{ t('topic.detail.executionCount') }}
+              </div>
+              <div class="overview-stat__value overview-stat__number">
+                {{ detail.recent_executions.length }}
+              </div>
+            </div>
+          </div>
 
           <a-descriptions :column="1" bordered style="margin-top: 16px">
             <a-descriptions-item :label="t('topic.id')">
@@ -54,6 +62,9 @@
                 </a-link>
                 <a-button size="mini" @click="copyPublicUrl">
                   {{ t('topic.copyLink') }}
+                </a-button>
+                <a-button size="mini" type="primary" @click="previewTopic">
+                  {{ t('topic.preview') }}
                 </a-button>
               </a-space>
             </a-descriptions-item>
@@ -77,14 +88,60 @@
           <a-row :gutter="16">
             <a-col :span="12">
               <div class="section-label">{{ t('topic.inputs') }}</div>
-              <a-list bordered>
-                <a-list-item
-                  v-for="(uri, idx) in detail.topic.input_uris"
-                  :key="`${uri}-${idx}`"
-                >
-                  {{ uri }}
-                </a-list-item>
-              </a-list>
+              <a-alert
+                type="info"
+                class="mb-3"
+                :title="t('topic.inputDisabled.hint')"
+              />
+              <a-table
+                :data="topicInputs"
+                :pagination="false"
+                row-key="uri"
+                size="small"
+              >
+                <template #columns>
+                  <a-table-column
+                    :title="t('topic.inputDescription.placeholder')"
+                    :ellipsis="true"
+                  >
+                    <template #cell="{ record }">
+                      <span :class="{ 'input-disabled': record.disabled }">
+                        {{ record.description || record.uri }}
+                      </span>
+                    </template>
+                  </a-table-column>
+                  <a-table-column
+                    :title="t('topic.detail.subFeedHealth.uri')"
+                    :ellipsis="true"
+                  >
+                    <template #cell="{ record }">
+                      <span
+                        class="sub-feed-uri"
+                        :class="{ 'input-disabled': record.disabled }"
+                        :title="record.uri"
+                      >
+                        {{ record.uri }}
+                      </span>
+                    </template>
+                  </a-table-column>
+                  <a-table-column
+                    :title="t('topic.inputDisabled.label')"
+                    :width="100"
+                    align="center"
+                  >
+                    <template #cell="{ record }">
+                      <a-switch
+                        :model-value="record.disabled"
+                        :loading="inputToggleSavingUri === record.uri"
+                        @change="
+                          (value) =>
+                            toggleInputDisabled(record.uri, Boolean(value))
+                        "
+                      />
+                    </template>
+                  </a-table-column>
+                </template>
+              </a-table>
             </a-col>
             <a-col :span="12">
               <div class="section-label">{{ t('topic.aggregatorConfig') }}</div>
@@ -101,6 +158,91 @@
               </a-list>
             </a-col>
           </a-row>
+        </a-card>
+
+        <!-- Sub-Feed Health Card -->
+        <a-card
+          v-if="detail"
+          class="general-card"
+          :title="t('topic.detail.subFeedHealth')"
+        >
+          <a-alert
+            type="info"
+            :title="t('topic.detail.subFeedHealth.hint')"
+            style="margin-bottom: 16px"
+          />
+          <a-empty
+            v-if="
+              !detail.sub_feed_health || detail.sub_feed_health.length === 0
+            "
+            :description="t('topic.detail.subFeedHealth.noData')"
+          />
+          <a-table
+            v-else
+            :data="detail.sub_feed_health"
+            :pagination="false"
+            row-key="uri"
+          >
+            <template #columns>
+              <a-table-column
+                :title="t('topic.detail.subFeedHealth.status')"
+                :width="110"
+              >
+                <template #cell="{ record }">
+                  <a-tag :color="subFeedStatusColor(record)">
+                    {{ subFeedStatusLabel(record) }}
+                  </a-tag>
+                </template>
+              </a-table-column>
+              <a-table-column
+                :title="t('topic.detail.subFeedHealth.uri')"
+                :ellipsis="true"
+              >
+                <template #cell="{ record }">
+                  <span class="sub-feed-uri" :title="record.uri">{{
+                    record.uri
+                  }}</span>
+                </template>
+              </a-table-column>
+              <a-table-column
+                :title="t('topic.detail.subFeedHealth.lastSuccess')"
+                :width="160"
+              >
+                <template #cell="{ record }">
+                  {{ formatTime(record.last_success_at) }}
+                </template>
+              </a-table-column>
+              <a-table-column
+                :title="t('topic.detail.subFeedHealth.lastFailure')"
+                :width="160"
+              >
+                <template #cell="{ record }">
+                  {{ formatTime(record.last_failure_at) }}
+                </template>
+              </a-table-column>
+              <a-table-column
+                :title="t('topic.detail.subFeedHealth.lastError')"
+                :ellipsis="true"
+              >
+                <template #cell="{ record }">
+                  <span
+                    :class="{ 'error-text': record.last_error }"
+                    :title="record.last_error"
+                  >
+                    {{ record.last_error || '-' }}
+                  </span>
+                </template>
+              </a-table-column>
+              <a-table-column
+                :title="t('topic.detail.subFeedHealth.cachedAt')"
+                :width="160"
+              >
+                <template #cell="{ record }">
+                  {{ formatTime(record.cached_at) }}
+                </template>
+              </a-table-column>
+            </template>
+          </a-table>
         </a-card>
 
         <a-card
@@ -205,7 +347,7 @@
   import { computed, onMounted, ref } from 'vue';
   import { Message } from '@arco-design/web-vue';
   import { useI18n } from 'vue-i18n';
-  import { useRoute } from 'vue-router';
+  import { useRoute, useRouter } from 'vue-router';
   import XHeader from '@/components/header/x-header.vue';
   import {
     formatObservabilityErrorKind,
@@ -213,17 +355,74 @@
     formatObservabilityTrigger,
   } from '@/utils/observability';
   import buildPublicFeedUrl from '@/utils/publicFeedUrl';
-  import { AggregatorStep, TopicDetail, getTopicFeedDetail } from '@/api/topic';
+  import {
+    AggregatorStep,
+    SubFeedHealth,
+    TopicDetail,
+    TopicInput,
+    getTopicFeedDetail,
+    updateTopicFeed,
+  } from '@/api/topic';
 
   const { t } = useI18n();
   const route = useRoute();
+  const router = useRouter();
   const loading = ref(false);
   const detail = ref<TopicDetail | null>(null);
   const detailsModalVisible = ref(false);
   const selectedExecutionDetails = ref('');
+  const inputToggleSavingUri = ref('');
   const publicUrl = computed(() =>
     detail.value ? buildPublicFeedUrl(detail.value.public_url) : ''
   );
+
+  const topicInputs = computed((): TopicInput[] => {
+    if (!detail.value) return [];
+    const { topic } = detail.value;
+    return topic.inputs || [];
+  });
+
+  const enabledInputCount = computed(
+    () => topicInputs.value.filter((input) => !input.disabled).length
+  );
+
+  const disabledInputCount = computed(
+    () => topicInputs.value.filter((input) => input.disabled).length
+  );
+
+  const toggleInputDisabled = async (uri: string, disabled: boolean) => {
+    if (!detail.value) return;
+
+    const nextInputs = topicInputs.value.map((input) =>
+      input.uri === uri ? { ...input, disabled } : input
+    );
+    const enabledCount = nextInputs.filter((input) => !input.disabled).length;
+    if (enabledCount === 0) {
+      Message.warning(t('topic.inputDisabled.lastEnabled'));
+      return;
+    }
+
+    const { topic } = detail.value;
+    const payload = {
+      ...topic,
+      inputs: nextInputs,
+    };
+
+    inputToggleSavingUri.value = uri;
+    try {
+      await updateTopicFeed(topic.id, payload);
+      Message.success(
+        disabled
+          ? t('topic.inputDisabled.disabledSuccess')
+          : t('topic.inputDisabled.enabledSuccess')
+      );
+      await fetchDetail();
+    } catch (err: any) {
+      Message.error(err.message || t('topic.saveFailed'));
+    } finally {
+      inputToggleSavingUri.value = '';
+    }
+  };
 
   const formatTime = (value?: string) => {
     if (!value) return '-';
@@ -251,9 +450,17 @@
 
   const formatAggregatorStep = (step: AggregatorStep) => {
     if (step.type === 'deduplicate') {
-      return `${t('topic.stepType.deduplicate')} · ${t(
-        `topic.stepOption.strategy.${step.option?.strategy || 'by_link'}`
-      )}`;
+      const strategy = step.option?.strategy || 'by_link';
+      const label = t(`topic.stepOption.strategy.${strategy}`);
+      if (
+        (strategy === 'by_simhash' || strategy === 'by_embedding') &&
+        step.option?.threshold
+      ) {
+        return `${t('topic.stepType.deduplicate')} · ${label} (${t(
+          'topic.stepOption.threshold.label'
+        )}: ${step.option.threshold})`;
+      }
+      return `${t('topic.stepType.deduplicate')} · ${label}`;
     }
     if (step.type === 'sort') {
       return `${t('topic.stepType.sort')} · ${t(
@@ -266,15 +473,49 @@
     return step.type;
   };
 
+  // Returns a colour for the sub-feed status tag.
+  // "stale" (using cache) = orange; "ok" (last_failure is absent or last_success is more recent) = green; unknown = gray.
+  const subFeedStatusColor = (record: SubFeedHealth) => {
+    if (!record.last_success_at && !record.last_failure_at) return 'gray';
+    if (record.last_failure_at && !record.last_success_at) return 'red';
+    if (record.last_failure_at && record.last_success_at) {
+      const failedAt = new Date(record.last_failure_at).getTime();
+      const succeededAt = new Date(record.last_success_at).getTime();
+      if (failedAt > succeededAt) return 'orange';
+    }
+    return 'green';
+  };
+
+  const subFeedStatusLabel = (record: SubFeedHealth) => {
+    if (!record.last_success_at && !record.last_failure_at)
+      return t('topic.detail.subFeedHealth.status.unknown');
+    if (record.last_failure_at && !record.last_success_at)
+      return t('topic.detail.subFeedHealth.status.stale');
+    if (record.last_failure_at && record.last_success_at) {
+      const failedAt = new Date(record.last_failure_at).getTime();
+      const succeededAt = new Date(record.last_success_at).getTime();
+      if (failedAt > succeededAt)
+        return t('topic.detail.subFeedHealth.status.stale');
+    }
+    return t('topic.detail.subFeedHealth.status.ok');
+  };
+
   const copyPublicUrl = async () => {
     if (!detail.value) return;
     try {
       await navigator.clipboard.writeText(publicUrl.value);
       Message.success(t('topic.copyLink'));
-    } catch (err) {
-      console.error(err);
+    } catch {
       Message.error(t('topic.copyLinkFailed'));
     }
+  };
+
+  const previewTopic = () => {
+    if (!detail.value) return;
+    router.push({
+      name: 'FeedViewer',
+      query: { target: 'topic', id: detail.value.topic.id },
+    });
   };
 
   const buildExecutionDetails = (
@@ -324,6 +565,40 @@
 </script>
 
 <style scoped>
+  .overview-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .overview-stat {
+    min-height: 88px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    background: var(--color-fill-1);
+  }
+
+  .overview-stat__label {
+    margin-bottom: 10px;
+    color: var(--color-text-3);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .overview-stat__value {
+    display: flex;
+    align-items: center;
+    min-height: 32px;
+  }
+
+  .overview-stat__number {
+    gap: 6px;
+    color: var(--color-text-1);
+    font-size: 28px;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
   .section-label {
     margin-bottom: 12px;
     font-weight: 600;
@@ -337,5 +612,27 @@
     background: var(--color-fill-2);
     white-space: pre-wrap;
     word-break: break-word;
+  }
+
+  .sub-feed-uri {
+    font-family: monospace;
+    font-size: 12px;
+    word-break: break-all;
+  }
+
+  .error-text {
+    color: var(--color-danger-6, #f53f3f);
+    font-size: 12px;
+  }
+
+  .input-count-muted {
+    font-size: 14px;
+    color: var(--color-text-3);
+    font-weight: normal;
+  }
+
+  .input-disabled {
+    color: var(--color-text-3);
+    text-decoration: line-through;
   }
 </style>

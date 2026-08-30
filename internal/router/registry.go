@@ -4,6 +4,7 @@ import (
 	"FeedCraft/internal/admin"
 	"FeedCraft/internal/controller"
 	"FeedCraft/internal/craft"
+	"FeedCraft/internal/examplefeed"
 	"FeedCraft/internal/middleware"
 	"FeedCraft/internal/recipe"
 	"FeedCraft/internal/util"
@@ -61,7 +62,14 @@ func RegisterRouters(router *gin.Engine) {
 	{
 		public.POST("/login", controller.LoginAuth)
 		public.GET("/list-all-craft", controller.ListAllCraft)
+
+		// Third-party pushing endpoint (Inward data flow with SystemAuthToken Validation)
+		public.POST("/inbox/:inbox_id/items", middleware.SystemAuthTokenMiddleware(), controller.PushInboxItems)
 	}
+
+	// Inbox public routes — isolated from /api and SPA fallback
+	router.GET("/inbox/:inbox_id/rss", controller.PublicInboxRSSFeed)
+	router.GET("/inbox/:inbox_id/items/:article_id/content", controller.PublicInboxItemContent)
 
 	craftRouters := router.Group("/craft")
 	{
@@ -76,6 +84,7 @@ func RegisterRouters(router *gin.Engine) {
 		topicRoutes.GET("/:id", controller.PublicTopicFeed)
 	}
 	router.GET("/system/notifications/rss", controller.SystemNotificationsRSS)
+	examplefeed.RegisterRoutes(router)
 
 	// admin api
 	adminApi := router.Group("/api/admin")
@@ -86,6 +95,20 @@ func RegisterRouters(router *gin.Engine) {
 
 		adminApi.POST("/craft-debug/advertorial", craft.DebugCheckIfAdvertorial)
 		adminApi.POST("/craft-debug/common-llm-call-test", admin.LLMDebug)
+
+		// Inbox admin CRUD
+		adminApi.POST("/inboxes", controller.CreateInbox)
+		adminApi.GET("/inboxes", controller.ListInboxes)
+		adminApi.GET("/inboxes/:id", controller.GetInbox)
+		adminApi.PUT("/inboxes/:id", controller.UpdateInbox)
+		adminApi.DELETE("/inboxes/:id", controller.DeleteInbox)
+		adminApi.GET("/inboxes/gc/stats", controller.GetInboxGCStats)
+		adminApi.POST("/inboxes/gc/cleanup", controller.TriggerInboxGCCleanup)
+
+		// SystemAuthToken admin CRUD
+		adminApi.POST("/system-auth-tokens", controller.CreateSystemAuthToken)
+		adminApi.GET("/system-auth-tokens", controller.ListSystemAuthTokens)
+		adminApi.DELETE("/system-auth-tokens/:id", controller.DeleteSystemAuthToken)
 
 		adminApi.POST("/topics", controller.CreateTopicFeed)
 		adminApi.POST("/topics/validate", controller.ValidateTopicFeed)
@@ -124,7 +147,9 @@ func RegisterRouters(router *gin.Engine) {
 
 		adminApi.POST("/tools/fetch", controller.HtmlFetch)
 		adminApi.POST("/tools/parse", controller.HtmlParse)
+		adminApi.POST("/tools/web-monitor/preview", controller.WebMonitorPreview)
 		adminApi.GET("/tools/feed/preview", controller.PreviewFeedViewer)
+		adminApi.POST("/tools/embedding-filter/preview", controller.PreviewEmbeddingFilter)
 
 		adminApi.POST("/tools/json/fetch", controller.CurlFetch)
 		adminApi.POST("/tools/json/parse", controller.CurlParse)
@@ -136,6 +161,9 @@ func RegisterRouters(router *gin.Engine) {
 		adminApi.GET("/settings/search-provider", controller.GetSearchProviderConfig)
 		adminApi.POST("/settings/search-provider", controller.SaveSearchProviderConfig)
 		adminApi.POST("/settings/search-provider/check", controller.CheckSearchProviderConfig)
+		adminApi.GET("/settings/favicon-provider", controller.GetFaviconProviderConfig)
+		adminApi.POST("/settings/favicon-provider", controller.SaveFaviconProviderConfig)
+		adminApi.POST("/settings/favicon-provider/preview", controller.PreviewFaviconProviderConfig)
 
 		adminApi.GET("/dependencies", controller.GetDependencyStatus)
 		adminApi.POST("/dependencies/check", controller.CheckDependencyStatus)

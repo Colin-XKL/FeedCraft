@@ -4,7 +4,7 @@
 
 ## 1. 背景
 
-`TopicFeed` 当前已经有运行时引擎 `internal/engine/topic.go`，但这个引擎需要的是已经构造好的 `Inputs []FeedProvider` 和 `Aggregator FeedProcessor`。
+`TopicFeed` 当前已经有运行时引擎 `internal/engine/topic.go`，但这个引擎需要的是已经构造好的 `Inputs []FeedProvider` 和 `Aggregator CraftOption`。
 
 数据库里保存的是配置态信息：
 
@@ -67,8 +67,8 @@
 ## 3. 当前进展
 
 - `engine.TopicFeed` 已定义统一的运行时结构，见 `internal/engine/topic.go`
-- `FeedProvider` / `FeedProcessor` 接口已存在，见 `internal/engine/interfaces.go`
-- 去重、排序、截断处理器已存在，见 `internal/engine/aggregator.go`
+- `FeedProvider` / `CraftOption` 抽象已存在，见 `internal/engine/interfaces.go`
+- 聚合步骤已通过 runtime builder 直接编译为 `CraftOption` 链
 - 适配旧 Source 的 `LegacySourceAdapter` 已存在，说明架构上允许先通过适配器接入外部源，见 `internal/source/adapter.go`
 - `RecipeFeed` 现有执行入口已经存在，见 `internal/recipe/custom_recipe.go`
 
@@ -76,7 +76,7 @@
 
 - 没有统一的 `InputSpec -> FeedProvider` builder
 - 没有 `RecipeFeed` 和 `TopicFeed` 共用的输入解析层
-- 没有把 `dao.TopicFeed.AggregatorConfig` 转换为 processor pipeline 的 builder
+- 没有把 `dao.TopicFeed.AggregatorConfig` 转换为 `CraftOption` pipeline 的 builder
 - 没有嵌套 Topic 的递归装配逻辑
 - 没有循环依赖保护
 
@@ -129,7 +129,7 @@
 
 ### 4.4 实现聚合配置 builder
 
-- 将 `AggregatorConfig` 编译为 processor pipeline
+- 将 `AggregatorConfig` 编译为 `CraftOption` pipeline
 - 支持：
   - `deduplicate`
   - `sort`

@@ -12,15 +12,27 @@ import (
 	"time"
 )
 
+const msgRecipeNameExists = "A recipe with this name already exists. Please choose a different name."
+
 func CreateCustomRecipe(c *gin.Context) {
 	var recipeData dao.CustomRecipeV2
 	if err := c.ShouldBindJSON(&recipeData); err != nil {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: util.FriendlyBindError(err)})
 		return
 	}
+
+	if !util.IsValidID(recipeData.ID) {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: "ID must only contain lowercase letters, numbers, hyphens, and underscores"})
+		return
+	}
+
 	db := util.GetDatabase()
 
 	if err := dao.CreateCustomRecipeV2(db, &recipeData); err != nil {
+		if errors.Is(err, dao.ErrRecipeAlreadyExists) {
+			c.JSON(http.StatusConflict, util.APIResponse[any]{Msg: msgRecipeNameExists})
+			return
+		}
 		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: err.Error()})
 		return
 	}
@@ -83,7 +95,7 @@ func UpdateCustomRecipe(c *gin.Context) {
 	id := c.Param("id")
 	var recipeData dao.CustomRecipeV2
 	if err := c.ShouldBindJSON(&recipeData); err != nil {
-		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: util.FriendlyBindError(err)})
 		return
 	}
 	db := util.GetDatabase()

@@ -28,9 +28,11 @@ export default {
   'menu.quickStart': '快速开始',
   'menu.dashboard.welcome': '欢迎页',
   // 调试菜单
-  'menu.feedCompare': 'Feed 对比',
+  'menu.embeddingFilterDebug': 'Embedding 过滤器',
   'menu.feedViewer': 'RSS 预览',
+  'menu.exampleRssFeeds': 'RSS 示例订阅',
   'menu.rssGenerator': 'HTML 转 RSS',
+  'menu.webMonitor': '网页监控',
   'menu.jsonToRss': 'JSON 转 RSS',
   'menu.searchToRss': '搜索 转 RSS',
   'menu.llmDebug': 'LLM 调试',
@@ -42,5 +44,8 @@ export default {
   'menu.changePassword': '修改密码',
   'menu.settings': '设置',
   'menu.settings.searchProvider': '搜索服务提供商',
+  'menu.settings.faviconProvider': 'Favicon 服务提供商',
   'menu.systemHealth': 'Craft 依赖检查',
+  'menu.inbox': '收件箱管理',
+  'menu.settings.systemAuthToken': '系统授权令牌',
 };

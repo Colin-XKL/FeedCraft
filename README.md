@@ -98,7 +98,8 @@ services:
     volumes:
       - ./feed-craft-db:/usr/local/feed-craft/db # db file
     environment:
-      FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000 # 替换为你自己的 browserless 或其他浏览器实例地址
+      FC_BROWSER_PROVIDER: browserless-restful # browserless-restful 或 cdp
+      FC_BROWSER_ENDPOINT: http://service.browserless:3000 # 替换为你的浏览器渲染服务地址
       FC_REDIS_URI: redis://service.redis:6379/ # 替换为你自己的redis 实例地址
       FC_LLM_API_BASE: https://xxxxxx # LLM API 接口路径，需要以 “/v1” 结尾
       FC_LLM_API_KEY: skxxxxxx # 鉴权的key
@@ -121,7 +122,8 @@ services:
     volumes:
       - ./feed-craft-db:/usr/local/feed-craft/db # db file
     environment:
-      FC_PUPPETEER_HTTP_ENDPOINT: http://service.browserless:3000 # 替换为你自己的 browserless 或其他浏览器实例地址
+      FC_BROWSER_PROVIDER: browserless-restful # browserless-restful 或 cdp
+      FC_BROWSER_ENDPOINT: http://service.browserless:3000 # 替换为你的浏览器渲染服务地址
       FC_REDIS_URI: redis://service.redis:6379/ # 替换为你自己的redis 实例地址
       FC_LLM_API_BASE: https://xxxxxx # LLM API 接口路径，需要以 “/v1” 结尾
       FC_LLM_API_KEY: skxxxxxx # 鉴权的key
@@ -141,6 +143,8 @@ services:
     restart: unless-stopped
 ```
 
+如果你希望使用 CloakBrowser，可以将 `FC_BROWSER_PROVIDER` 改为通用 CDP provider：`cdp`，并把 `FC_BROWSER_ENDPOINT` 指向官方 `cloakserve` 容器，例如 `http://service.cloakbrowser:9222?fingerprint=feedcraft`。
+
 ## 关于 FeedCraft
 
 FeedCraft 的名称和 Logo 参考并致敬两款游戏: MineCraft 和塞尔达, 初衷和愿景是做一个简单易用、同时足够灵活, 能够有更多可能性的 RSS 工具.
@@ -150,12 +154,10 @@ FeedCraft 的名称和 Logo 参考并致敬两款游戏: MineCraft 和塞尔达,
 
 感谢以下项目对 FeedCraft 的赞助
 
-
-| 赞助商                                                                                                                               | 介绍                                                                                                                                                              |
-| --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <img src="https://dn-mars-assets.qbox.me/qiniulogo/img-horizontal-blue-cn.png" alt="qiniu-cloud-logo" width="300">    | **感谢 七牛云 提供 AI Token 支持**<br><br>FeedCraft 公共实例的 AI 服务由七牛云赞助.<br>新用户注册可获得 300 万免费 Token 资源包, 更有 GLM、Qwen 多款免费模型可直接使用.<br>[立即领取](https://s.qiniu.com/7nuaie) |
-| <img src="https://cloudcache.tencent-cloud.cn/qcloud/ui/cloud-community/build/base/images/cloud-logo_f8d.svg" alt="tencent-cloud-logo" width="300" > | **感谢 腾讯云 提供服务器资源支持** <br><br>腾讯云大模型 Token Plan, 面向龙虾和 AI 编码场景设计，覆盖多种主流模型、灵活套餐、极速调用。<br>[立即购买](https://curl.qcloud.com/qJIRe25F)                                      |
-
+| 赞助商                                                                                                                                               | 介绍                                                                                                                                                                                                              |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <img src="https://dn-mars-assets.qbox.me/qiniulogo/img-horizontal-blue-cn.png" alt="qiniu-cloud-logo" width="300">                                   | **感谢 七牛云 提供 AI Token 支持**<br><br>FeedCraft 公共实例的 AI 服务由七牛云赞助.<br>新用户注册可获得 300 万免费 Token 资源包, 更有 GLM、Qwen 多款免费模型可直接使用.<br>[立即领取](https://s.qiniu.com/7nuaie) |
+| <img src="https://cloudcache.tencent-cloud.cn/qcloud/ui/cloud-community/build/base/images/cloud-logo_f8d.svg" alt="tencent-cloud-logo" width="300" > | **感谢 腾讯云 提供服务器资源支持** <br><br>腾讯云大模型 Token Plan, 面向龙虾和 AI 编码场景设计，覆盖多种主流模型、灵活套餐、极速调用。<br>[立即购买](https://curl.qcloud.com/qJIRe25F)                            |
 
 ## 许可
 

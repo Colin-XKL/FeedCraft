@@ -28,9 +28,11 @@ export default {
   'menu.quickStart': 'Quick Start',
   'menu.dashboard.welcome': 'Welcome',
   // tools menus
-  'menu.feedCompare': 'Feed Compare',
+  'menu.embeddingFilterDebug': 'Embedding Filter',
   'menu.feedViewer': 'RSS Viewer',
+  'menu.exampleRssFeeds': 'Example RSS Feeds',
   'menu.rssGenerator': 'HTML to RSS',
+  'menu.webMonitor': 'Web Monitor',
   'menu.jsonToRss': 'JSON to RSS',
   'menu.searchToRss': 'Search to RSS',
   'menu.llmDebug': 'LLM Debug',
@@ -42,5 +44,8 @@ export default {
   // other menu
   'menu.settings': 'Settings',
   'menu.settings.searchProvider': 'Search Provider',
+  'menu.settings.faviconProvider': 'Favicon Provider',
   'menu.systemHealth': 'Craft Dependencies',
+  'menu.inbox': 'Inbox Management',
+  'menu.settings.systemAuthToken': 'System Auth Token',
 };

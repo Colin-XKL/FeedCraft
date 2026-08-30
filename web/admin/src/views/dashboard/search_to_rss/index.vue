@@ -46,7 +46,10 @@
                 allow-clear
                 @press-enter="handlePreview"
               />
-              <div class="mt-2">
+            </a-form-item>
+
+            <a-form-item>
+              <div class="flex flex-col">
                 <a-checkbox v-model="fetchReq.enhanced_mode">
                   {{
                     $t('searchToRss.step1.enhancedMode') ||
@@ -55,7 +58,7 @@
                 </a-checkbox>
                 <div
                   v-if="fetchReq.enhanced_mode"
-                  class="text-xs text-gray-400 ml-6"
+                  class="text-xs text-gray-400 ml-6 mt-1"
                 >
                   {{
                     $t('searchToRss.step1.enhancedMode.desc') ||
@@ -64,20 +67,22 @@
                 </div>
               </div>
             </a-form-item>
-            <div class="text-center mt-8">
+
+            <div class="text-center mt-12">
               <a-button
                 type="primary"
                 size="large"
                 :loading="fetching"
                 :disabled="!fetchReq.query"
+                class="w-full sm:w-64"
                 @click="handlePreview"
               >
                 {{ $t('searchToRss.step1.button') }} <icon-arrow-right />
               </a-button>
-              <div class="mt-4 text-gray-500 text-sm">
+              <div class="mt-6">
                 <router-link
                   :to="{ name: 'SearchProvider' }"
-                  class="text-blue-500 hover:underline"
+                  class="text-blue-500 hover:underline text-sm"
                 >
                   {{ $t('settings.searchProvider.configure') }}
                 </router-link>
@@ -408,6 +413,6 @@
   }
   .step-content {
     margin-top: 24px;
-    height: 500px; /* fixed height for consistent layout */
+    min-height: 450px;
   }
 </style>

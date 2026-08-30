@@ -8,11 +8,11 @@ import (
 	"time"
 
 	"FeedCraft/internal/dao"
-	"FeedCraft/internal/engine"
 	"FeedCraft/internal/model"
 	"FeedCraft/internal/util"
 
 	"github.com/glebarez/sqlite"
+	"github.com/gorilla/feeds"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
@@ -41,24 +41,19 @@ func TestResolveCraftAtoms_FlowAndCustomAtom(t *testing.T) {
 	assert.Equal(t, "5", atoms[0].Params["num"])
 }
 
-func TestBuildProcessor_ProxyUsesNativeNoopProcessor(t *testing.T) {
+func TestBuildOptionChain_ProxyReturnsIdentityClosure(t *testing.T) {
 	db := newCraftRuntimeTestDB(t)
-	processor, err := BuildProcessor(db, "proxy", "https://example.com/feed.xml")
+	processor, err := BuildOptionChain(db, "proxy", "https://example.com/feed.xml")
 	require.NoError(t, err)
 	require.NotNil(t, processor)
 
-	flow, ok := processor.(*engine.FlowCraftProcessor)
-	require.True(t, ok)
-	require.Len(t, flow.Processors, 1)
-	assert.IsType(t, &NoopProcessor{}, flow.Processors[0])
-
 	feed := &model.CraftFeed{Title: "proxy"}
-	result, err := flow.Process(context.Background(), feed)
+	result, err := processor(context.Background(), feed)
 	require.NoError(t, err)
 	assert.Same(t, feed, result)
 }
 
-func TestBuildProcessor_KeywordContentScopeUsesContentOnly(t *testing.T) {
+func TestBuildOptionChain_KeywordContentScopeUsesContentOnly(t *testing.T) {
 	db := newCraftRuntimeTestDB(t)
 	require.NoError(t, dao.CreateCraftAtom(db, &dao.CraftAtom{
 		Name:         "keyword-content",
@@ -70,11 +65,11 @@ func TestBuildProcessor_KeywordContentScopeUsesContentOnly(t *testing.T) {
 		},
 	}))
 
-	processor, err := BuildProcessor(db, "keyword-content", "https://example.com/feed.xml")
+	processor, err := BuildOptionChain(db, "keyword-content", "https://example.com/feed.xml")
 	require.NoError(t, err)
 	require.NotNil(t, processor)
 
-	result, err := processor.Process(context.Background(), &model.CraftFeed{
+	result, err := processor(context.Background(), &model.CraftFeed{
 		Articles: []*model.CraftArticle{
 			{Title: "needle in title only", Content: "body without match"},
 			{Title: "other", Content: "body with needle"},
@@ -85,51 +80,13 @@ func TestBuildProcessor_KeywordContentScopeUsesContentOnly(t *testing.T) {
 	assert.Equal(t, "other", result.Articles[0].Title)
 }
 
-func TestBuildProcessor_UsesNativeProcessors(t *testing.T) {
+func TestBuildOptionChain_MultiAtomChainRunsEndToEnd(t *testing.T) {
 	db := newCraftRuntimeTestDB(t)
-	processor, err := BuildProcessor(db, "limit,time-limit,guid-fix,relative-link-fix,cleanup,fulltext,fulltext-plus,summary,introduction,translate-title,translate-content,translate-content-immersive,beautify-content,llm-filter,ignore-advertorial", "https://example.com/feed.xml")
+	processor, err := BuildOptionChain(db, "limit,time-limit,guid-fix,relative-link-fix", "https://example.com/feed.xml")
 	require.NoError(t, err)
 	require.NotNil(t, processor)
 
-	flow, ok := processor.(*engine.FlowCraftProcessor)
-	require.True(t, ok)
-	require.Len(t, flow.Processors, 15)
-	assert.IsType(t, &LimitProcessor{}, flow.Processors[0])
-	assert.IsType(t, &TimeLimitProcessor{}, flow.Processors[1])
-	assert.IsType(t, &GUIDFixProcessor{}, flow.Processors[2])
-	assert.IsType(t, &RelativeLinkFixProcessor{}, flow.Processors[3])
-	assert.IsType(t, &CleanupProcessor{}, flow.Processors[4])
-	assert.IsType(t, &FulltextProcessor{}, flow.Processors[5])
-	assert.IsType(t, &FulltextPlusProcessor{}, flow.Processors[6])
-	assert.IsType(t, &ArticleTextTransformProcessor{}, flow.Processors[7])
-	assert.IsType(t, &ArticleTextTransformProcessor{}, flow.Processors[8])
-	assert.IsType(t, &ArticleTextTransformProcessor{}, flow.Processors[9])
-	assert.IsType(t, &ArticleTextTransformProcessor{}, flow.Processors[10])
-	assert.IsType(t, &ArticleTextTransformProcessor{}, flow.Processors[11])
-	assert.IsType(t, &ArticleTextTransformProcessor{}, flow.Processors[12])
-	assert.IsType(t, &ArticlePredicateProcessor{}, flow.Processors[13])
-	assert.IsType(t, &ArticlePredicateProcessor{}, flow.Processors[14])
-}
-
-func TestNativeProcessors_EndToEnd(t *testing.T) {
 	now := time.Now()
-	processor := &engine.FlowCraftProcessor{
-		Processors: []engine.FeedProcessor{
-			&KeywordProcessor{
-				Mode:       KeywordIncludeMode,
-				MatchScope: KeywordMatchAll,
-				Keywords:   []string{"keep"},
-			},
-			&GUIDFixProcessor{},
-			&RelativeLinkFixProcessor{OriginalFeedURL: "https://example.com/feed.xml"},
-			&LimitProcessor{MaxItems: 1},
-			&TimeLimitProcessor{
-				Days: 7,
-				Now:  func() time.Time { return now },
-			},
-		},
-	}
-
 	feed := &model.CraftFeed{
 		Link: "https://example.com",
 		Articles: []*model.CraftArticle{
@@ -145,16 +102,45 @@ func TestNativeProcessors_EndToEnd(t *testing.T) {
 				Content:     "drop this",
 				Description: "drop this",
 				Link:        "/article-2",
-				Created:     now,
+				Created:     now.AddDate(0, 0, -8),
 			},
 		},
 	}
 
-	result, err := processor.Process(context.Background(), feed)
+	result, err := processor(context.Background(), feed)
 	require.NoError(t, err)
 	require.Len(t, result.Articles, 1)
 	assert.Equal(t, "https://example.com/article-1", result.Articles[0].Link)
 	assert.NotEmpty(t, result.Articles[0].Id)
+}
+
+func TestBuildOptionChain_LimitSortsByCreatedTimeBeforeTruncating(t *testing.T) {
+	db := newCraftRuntimeTestDB(t)
+	require.NoError(t, dao.CreateCraftAtom(db, &dao.CraftAtom{
+		Name:         "limit-2-sort-test",
+		TemplateName: "limit",
+		Params:       map[string]string{"num": "2"},
+	}))
+
+	processor, err := BuildOptionChain(db, "limit-2-sort-test", "https://example.com/feed.xml")
+	require.NoError(t, err)
+	require.NotNil(t, processor)
+
+	now := time.Now()
+	feed := &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Id: "oldest", Created: now.Add(-3 * time.Hour)},
+			{Id: "newest", Created: now},
+			{Id: "middle", Created: now.Add(-1 * time.Hour)},
+		},
+	}
+
+	result, err := processor(context.Background(), feed)
+
+	require.NoError(t, err)
+	require.Len(t, result.Articles, 2)
+	assert.Equal(t, "newest", result.Articles[0].Id)
+	assert.Equal(t, "middle", result.Articles[1].Id)
 }
 
 func TestCleanupProcessor_UsesDescriptionFallback(t *testing.T) {
@@ -268,7 +254,7 @@ func TestFulltextPlusProcessor_UsesConfiguredOptions(t *testing.T) {
 	assert.Equal(t, "https://example.com/article", capturedURL)
 	assert.Equal(t, "networkidle0", capturedOptions.WaitUntil)
 	assert.Equal(t, 42*time.Second, capturedOptions.WaitTime)
-	assert.Equal(t, 52*time.Second, capturedOptions.Timeout)
+	assert.Equal(t, util.DefaultBrowserRenderTimeout, capturedOptions.Timeout)
 	assert.Equal(t, "rendered", result.Articles[0].Content)
 }
 
@@ -322,15 +308,143 @@ func TestTranslateTitleProcessor_UsesNativeLLMFlow(t *testing.T) {
 
 	processor := newTranslateTitleProcessor("translate prompt " + t.Name())
 	feed := &model.CraftFeed{
-		Articles: []*model.CraftArticle{
-			{Title: "Original Title " + t.Name()},
-		},
+		Articles: []*model.CraftArticle{{Title: "Original Title " + t.Name()}},
 	}
 
 	result, err := processor.Process(context.Background(), feed)
 	require.NoError(t, err)
 	assert.Equal(t, "Translated Title", result.Articles[0].Title)
 	assert.Equal(t, "Original Title "+t.Name(), feed.Articles[0].Title)
+}
+
+func TestRetitleProcessor_UsesArticleContentAndUpdatesTitle(t *testing.T) {
+	setupTestRedis(t)
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		assert.Contains(t, prompt, "custom retitle prompt")
+		assert.Contains(t, prompt, retitleNoChangeSentinel)
+		assert.Contains(t, context, "Original Title")
+		assert.Contains(t, context, "article body worth retitling")
+		return "Sharper Generated Title", nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	processor := newRetitleProcessor("custom retitle prompt " + t.Name())
+	feed := &model.CraftFeed{
+		Articles: []*model.CraftArticle{{
+			Title:   "Original Title " + t.Name(),
+			Content: "<p>article body worth retitling " + t.Name() + "</p>",
+		}},
+	}
+
+	result, err := processor.Process(context.Background(), feed)
+	require.NoError(t, err)
+	assert.Equal(t, "Sharper Generated Title", result.Articles[0].Title)
+	assert.Equal(t, "Original Title "+t.Name(), feed.Articles[0].Title)
+}
+
+func TestRetitleProcessor_KeepsOriginalTitleForNoChangeSentinel(t *testing.T) {
+	setupTestRedis(t)
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		return retitleNoChangeSentinel, nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	processor := newRetitleProcessor("retitle prompt " + t.Name())
+	feed := &model.CraftFeed{
+		Articles: []*model.CraftArticle{{
+			Title:   "Original Title " + t.Name(),
+			Content: "<p>too little signal</p>",
+		}},
+	}
+
+	result, err := processor.Process(context.Background(), feed)
+	require.NoError(t, err)
+	assert.Equal(t, "Original Title "+t.Name(), result.Articles[0].Title)
+}
+
+func TestRetitleProcessor_SkipsEmptyContent(t *testing.T) {
+	setupTestRedis(t)
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		t.Fatalf("llm should not be called for empty article content")
+		return "", nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	processor := newRetitleProcessor("retitle prompt " + t.Name())
+	feed := &model.CraftFeed{
+		Articles: []*model.CraftArticle{{
+			Title: "Original Title " + t.Name(),
+		}},
+	}
+
+	result, err := processor.Process(context.Background(), feed)
+	require.NoError(t, err)
+	assert.Equal(t, "Original Title "+t.Name(), result.Articles[0].Title)
+}
+
+func TestRetitleTemplate_BuildsNativeProcessorWithCustomPrompt(t *testing.T) {
+	setupTestRedis(t)
+	db := newCraftRuntimeTestDB(t)
+	require.NoError(t, dao.CreateCraftAtom(db, &dao.CraftAtom{
+		Name:         "custom-retitle",
+		TemplateName: "re-title",
+		Params:       map[string]string{"prompt": "custom retitle prompt " + t.Name()},
+	}))
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		assert.Contains(t, prompt, "custom retitle prompt "+t.Name())
+		assert.Contains(t, prompt, retitleNoChangeSentinel)
+		return "Custom Prompt Title", nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	processor, err := BuildOptionChain(db, "custom-retitle", "https://example.com/feed.xml")
+	require.NoError(t, err)
+	require.NotNil(t, processor)
+
+	result, err := processor(context.Background(), &model.CraftFeed{
+		Articles: []*model.CraftArticle{{
+			Title:   "Original Title " + t.Name(),
+			Content: "<p>article body worth retitling " + t.Name() + "</p>",
+		}},
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "Custom Prompt Title", result.Articles[0].Title)
+}
+
+func TestRetitleLegacyOption_KeepsOriginalTitleForNoChangeSentinel(t *testing.T) {
+	setupTestRedis(t)
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		assert.Contains(t, context, "legacy body")
+		return retitleNoChangeSentinel, nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	option := GetRetitleCraftOptions("legacy retitle prompt " + t.Name())[0]
+	feed := &feeds.Feed{
+		Items: []*feeds.Item{
+			nil,
+			{
+				Title:       "Legacy Title " + t.Name(),
+				Link:        &feeds.Link{Href: "https://example.com/post"},
+				Description: "<p>legacy body " + t.Name() + "</p>",
+			},
+		},
+	}
+
+	err := option(feed, ExtraPayload{originalFeedUrl: "https://example.com/feed.xml"})
+	require.NoError(t, err)
+	require.Nil(t, feed.Items[0])
+	assert.Equal(t, "Legacy Title "+t.Name(), feed.Items[1].Title)
 }
 
 func TestBeautifyContentProcessor_WritesHTML(t *testing.T) {
@@ -345,9 +459,7 @@ func TestBeautifyContentProcessor_WritesHTML(t *testing.T) {
 
 	processor := newBeautifyContentProcessor("beautify prompt " + t.Name())
 	feed := &model.CraftFeed{
-		Articles: []*model.CraftArticle{
-			{Title: "beautify-" + t.Name(), Content: "<p>Body</p>"},
-		},
+		Articles: []*model.CraftArticle{{Title: "beautify-" + t.Name(), Content: "<p>Body</p>"}},
 	}
 
 	result, err := processor.Process(context.Background(), feed)
@@ -362,6 +474,8 @@ func TestLLMFilterProcessor_RemovesMatchedArticleAndUsesTitleContentPayload(t *t
 	original := llmContextCaller
 	var seen []string
 	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		require.NotNil(t, option.Temperature)
+		assert.Equal(t, 0.0, *option.Temperature)
 		seen = append(seen, context)
 		if strings.Contains(context, "Drop Me "+t.Name()) {
 			return "true", nil
@@ -387,7 +501,48 @@ func TestLLMFilterProcessor_RemovesMatchedArticleAndUsesTitleContentPayload(t *t
 	assert.Contains(t, seen[0], "Article Content:")
 }
 
+func TestLLMFilterProcessor_CacheKeyUsesFullPromptAndLLMPayload(t *testing.T) {
+	redis := setupTestRedis(t)
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		t.Fatalf("expected llm-filter to hit cache, got LLM call with prompt %q and context %q", prompt, context)
+		return "false", nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	condition := "filter cached article " + t.Name()
+	title := "Cached Drop " + t.Name()
+	content := "<p>cached body with enough content length for llm filter cache key</p>"
+	fullPrompt := fmt.Sprintf(`
+Evaluate the following content based on this criterion:
+"%s"
+
+If the content matches the criterion, return 'true'.
+Otherwise return 'false'.
+Do not include any other text.
+`, condition)
+	llmPayload := BuildLLMArticlePayload(title, content)
+	hashVal := util.GetTextContentHash(strings.Join([]string{
+		util.GetTextContentHash(fullPrompt),
+		util.GetTextContentHash(llmPayload),
+	}, "|"))
+	redis.SetString(t, getCraftCacheKey("llm filter", hashVal), "true", time.Minute)
+
+	processor := newLLMFilterProcessor(condition)
+	result, err := processor.Process(context.Background(), &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Title: title, Content: content},
+		},
+	})
+
+	require.NoError(t, err)
+	require.Empty(t, result.Articles)
+}
+
 func TestIgnoreAdvertorialProcessor_KeepsArticleOnLLMError(t *testing.T) {
+	setupTestRedis(t)
+
 	original := llmContextCaller
 	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
 		return "", fmt.Errorf("temporary llm error")
@@ -396,15 +551,120 @@ func TestIgnoreAdvertorialProcessor_KeepsArticleOnLLMError(t *testing.T) {
 
 	processor := newIgnoreAdvertorialProcessor("advertorial prompt " + t.Name())
 	feed := &model.CraftFeed{
-		Articles: []*model.CraftArticle{
-			{Title: "Maybe Ad", Content: "<p>body</p>"},
-		},
+		Articles: []*model.CraftArticle{{Title: "Maybe Ad", Content: "<p>body</p>"}},
 	}
 
 	result, err := processor.Process(context.Background(), feed)
 	require.NoError(t, err)
 	require.Len(t, result.Articles, 1)
 	assert.Equal(t, "Maybe Ad", result.Articles[0].Title)
+}
+
+func TestBuildOptionChain_AIFilterUsesNativeProcessor(t *testing.T) {
+	setupTestRedis(t)
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		if strings.Contains(context, "drop me") {
+			return `{"reason":"excluded","result":"drop"}`, nil
+		}
+		return `{"reason":"kept","result":"keep"}`, nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	db := newCraftRuntimeTestDB(t)
+	require.NoError(t, dao.CreateCraftAtom(db, &dao.CraftAtom{
+		Name:         "native-ai-filter",
+		TemplateName: "ai-filter",
+		Params:       map[string]string{"rule": "只保留科技文章", "extra-payload": "article_content"},
+	}))
+
+	processor, err := BuildOptionChain(db, "native-ai-filter", "https://example.com/feed.xml")
+	require.NoError(t, err)
+	require.NotNil(t, processor)
+
+	result, err := processor(context.Background(), &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Title: "Drop", Content: "<p>drop me</p>"},
+			{Title: "Keep", Content: "<p>keep me</p>"},
+		},
+	})
+	require.NoError(t, err)
+	require.Len(t, result.Articles, 1)
+	assert.Equal(t, "Keep", result.Articles[0].Title)
+}
+
+func TestBuildOptionChain_AIContentProcessUsesNativeProcessor(t *testing.T) {
+	setupTestRedis(t)
+
+	original := llmContextCaller
+	llmContextCaller = func(prompt, context string, option util.ContentProcessOption) (string, error) {
+		return "## Note\n\nprocessed", nil
+	}
+	t.Cleanup(func() { llmContextCaller = original })
+
+	db := newCraftRuntimeTestDB(t)
+	require.NoError(t, dao.CreateCraftAtom(db, &dao.CraftAtom{
+		Name:         "native-ai-content",
+		TemplateName: "ai-content-process",
+		Params: map[string]string{
+			"rule":          "提取要点",
+			"extra-payload": "article_content",
+			"placement":     "replace",
+		},
+	}))
+
+	processor, err := BuildOptionChain(db, "native-ai-content", "https://example.com/feed.xml")
+	require.NoError(t, err)
+
+	result, err := processor(context.Background(), &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Title: "Original", Content: "<p>original body</p>"},
+		},
+	})
+	require.NoError(t, err)
+	require.Len(t, result.Articles, 1)
+	assert.Contains(t, result.Articles[0].Content, "processed")
+	assert.NotContains(t, result.Articles[0].Content, "original body")
+}
+
+func TestBuildOptionChain_EmbeddingFilterRejectsEmptyAnchors(t *testing.T) {
+	db := newCraftRuntimeTestDB(t)
+	require.NoError(t, dao.CreateCraftAtom(db, &dao.CraftAtom{
+		Name:         "native-embedding-empty",
+		TemplateName: "embedding-filter",
+		Params:       map[string]string{"anchors": ""},
+	}))
+
+	_, err := BuildOptionChain(db, "native-embedding-empty", "https://example.com/feed.xml")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "anchors")
+}
+
+func TestBuildOptionChain_AIFilterRejectsEmptyRule(t *testing.T) {
+	db := newCraftRuntimeTestDB(t)
+	require.NoError(t, dao.CreateCraftAtom(db, &dao.CraftAtom{
+		Name:         "native-ai-filter-empty",
+		TemplateName: "ai-filter",
+		Params:       map[string]string{"rule": "   "},
+	}))
+
+	_, err := BuildOptionChain(db, "native-ai-filter-empty", "https://example.com/feed.xml")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "requires rule param")
+}
+
+func TestBuildOptionChain_AIContentProcessRejectsEmptyRule(t *testing.T) {
+	db := newCraftRuntimeTestDB(t)
+	require.NoError(t, dao.CreateCraftAtom(db, &dao.CraftAtom{
+		Name:         "native-ai-content-empty",
+		TemplateName: "ai-content-process",
+		Params:       map[string]string{"rule": ""},
+	}))
+
+	_, err := BuildOptionChain(db, "native-ai-content-empty", "https://example.com/feed.xml")
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "requires rule param")
 }
 
 func newCraftRuntimeTestDB(t *testing.T) *gorm.DB {

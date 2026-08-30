@@ -9,15 +9,20 @@ import localeCustomRecipe from '@/locale/zh-CN/customRecipe';
 import localeTopic from '@/locale/zh-CN/topic';
 import localeAllCraftList from '@/locale/zh-CN/allCraftList';
 import localeFeedCompare from '@/locale/zh-CN/feedCompare';
+import localeEmbeddingFilterDebug from '@/locale/zh-CN/embeddingFilterDebug';
 import localeFeedViewer from '@/locale/zh-CN/feedViewer';
+import localeExampleRssFeeds from '@/locale/zh-CN/exampleRssFeeds';
 import localeLlmDebug from '@/locale/zh-CN/llmDebug';
 import localeUrlGenerator from '@/locale/zh-CN/urlGenerator';
 import localeHtmlToRss from '@/locale/zh-CN/htmlToRss';
+import localeWebMonitor from '@/locale/zh-CN/webMonitor';
 import localeJsonToRss from '@/locale/zh-CN/jsonToRss';
 import localeSearchToRss from '@/locale/zh-CN/searchToRss';
 import localeDependencyService from '@/locale/zh-CN/dependencyService';
 import localeHealth from '@/locale/zh-CN/health';
 import localeObservability from '@/locale/zh-CN/observability';
+import localeInbox from '@/locale/zh-CN/inbox';
+import localeWelcome from '@/locale/zh-CN/welcome';
 
 export default {
   ...localeSettings,
@@ -30,13 +35,18 @@ export default {
   ...localeTopic,
   ...localeAllCraftList,
   ...localeFeedCompare,
+  ...localeEmbeddingFilterDebug,
   ...localeFeedViewer,
+  ...localeExampleRssFeeds,
   ...localeLlmDebug,
   ...localeUrlGenerator,
   ...localeHtmlToRss,
+  ...localeWebMonitor,
   ...localeJsonToRss,
   ...localeSearchToRss,
   ...localeDependencyService,
   ...localeHealth,
   ...localeObservability,
+  ...localeInbox,
+  ...localeWelcome,
 };

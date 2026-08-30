@@ -15,7 +15,12 @@ func TestEmbeddingFilterLoadParam_EmptyAnchors(t *testing.T) {
 		"anchors": "",
 	}
 	options := embeddingFilterLoadParam(params)
-	assert.Empty(t, options, "empty anchors should return no options")
+	assert.Len(t, options, 1, "empty anchors should return a failing option instead of silently no-op")
+
+	feed := &feeds.Feed{Items: []*feeds.Item{{Title: "Article 1", Content: "Content 1"}}}
+	err := options[0](feed, ExtraPayload{})
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "anchors")
 }
 
 func TestEmbeddingFilterLoadParam_ValidAnchors(t *testing.T) {
@@ -200,9 +205,8 @@ func TestOptionEmbeddingFilter_EmptyAnchors(t *testing.T) {
 		},
 	}
 	err := option(feed, ExtraPayload{})
-	assert.NoError(t, err)
-	// 锚点为空时不过滤，保留所有文章
-	assert.Len(t, feed.Items, 2)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "anchors")
 }
 
 // --- 阈值 clamp 测试（需求 9）---
@@ -338,7 +342,6 @@ func TestOptionEmbeddingFilter_ExcludeMode_EmptyAnchors(t *testing.T) {
 		},
 	}
 	err := option(feed, ExtraPayload{})
-	assert.NoError(t, err)
-	// 锚点为空时不过滤，保留所有文章
-	assert.Len(t, feed.Items, 2)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "anchors")
 }

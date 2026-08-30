@@ -5,7 +5,7 @@ import (
 )
 
 // GetRelativeLinkFixCraftOptions 将feed项中的相对链接转换为绝对路径
-func GetRelativeLinkFixCraftOptions() []CraftOption {
+func GetRelativeLinkFixCraftOptions() []LegacyCraftOption {
 	wrapper := func(feed *feeds.Feed, payload ExtraPayload) error {
 		feedLinkAttr := feed.Link.Href
 		processor := func(feedItem *feeds.Item, payload ExtraPayload) error {
@@ -19,7 +19,7 @@ func GetRelativeLinkFixCraftOptions() []CraftOption {
 		transformer := OptionTransformFeedItem(processor)
 		return transformer(feed, payload)
 	}
-	craftOptions := []CraftOption{
+	craftOptions := []LegacyCraftOption{
 		wrapper,
 	}
 	return craftOptions

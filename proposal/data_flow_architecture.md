@@ -39,26 +39,24 @@ type FeedProvider interface {
 }
 ```
 
-- **RawSource**: 基础爬虫节点 (如 `HtmlSource`, `SearchSource`, 第三方 `RssSource`)。
-- **Recipe**: 复合节点（包装器）。其本质是“一个 RawSource + 一组 Processor”，对外暴露的依然是 `FeedProvider` 接口。
-- **Topic**: 高级复合节点。其内部并发调用多个 `FeedProvider`，也是一个 `FeedProvider`。由于实现了统一接口，Topic 内部不仅可以嵌套 Recipe，甚至可以嵌套另一个 Topic。
+- `RawSource`: 基础爬虫节点 (如 `HtmlSource`, `SearchSource`, 第三方 `RssSource`)。
+- `Recipe`: 复合节点（包装器）。其本质是“一个 RawSource + 一组 CraftOption”，对外暴露的依然是 `FeedProvider` 接口。
+- `Topic`: 高级复合节点。其内部并发调用多个 `FeedProvider`，也是一个 `FeedProvider`。由于实现了统一接口，Topic 内部不仅可以嵌套 Recipe，甚至可以嵌套另一个 Topic。
 
-#### 抽象二：`FeedProcessor` (数据加工器)
+#### 抽象二：`CraftOption` (数据加工器)
 
 **定义**：接收一个 `CraftFeed`，对其进行修改/过滤/丰富，并输出处理后 `CraftFeed` 的节点。
 
 ```go
-type FeedProcessor interface {
-    Process(ctx context.Context, feed *CraftFeed) (*CraftFeed, error)
-}
+type CraftOption func(ctx context.Context, feed *CraftFeed) (*CraftFeed, error)
 ```
 
 - **AtomCraft (原子加工)**：如翻译、摘要、去广告。
-- **FlowCraft (加工流)**：多个 Processor 组成的链条。
-- **Aggregator / Deduplicator**: 即将在 Topic 中实现的“合并、去重、截断”逻辑，本质上也是一个特殊的 Processor。
+- **FlowCraft (加工流)**：多个 `CraftOption` 顺序组成的链条。
+- **Aggregator / Deduplicator**: 即将在 Topic 中实现的“合并、去重、截断”逻辑，本质上也是一种 `CraftOption`。
 - **Expander (资讯裂变)**：未来将实现的内容延展节点。
 
-因为接口统一，**Processor 可以被随意插拔**。例如：AI 摘要 (Summary Craft) 既可以挂载在单源 Recipe 的抓取之后，也可以挂载在 Topic 聚合去重之后的最后一步执行。
+因为抽象统一，`CraftOption` 可以被随意插拔。例如：AI 摘要 (Summary Craft) 既可以挂载在单源 Recipe 的抓取之后，也可以挂载在 Topic 聚合去重之后的最后一步执行。
 
 ---
 
@@ -108,18 +106,18 @@ graph LR
 - **现状**: 系统各个层级（Source, Craft）直接传递和修改 `*gofeed.Feed`。
 - **改造**: 在 `internal/model` (或类似的领域定义目录) 中定义 `CraftFeed` 和 `CraftArticle` 结构体。提供 `FromGoFeed()` 和 `ToGoFeed()` 的转换方法以保持向后兼容。
 
-### Step 2: 接口规范化 (标准化 Provider 与 Processor)
+### Step 2: 接口规范化 (标准化 Provider 与 CraftOption)
 
 - **现状**: Source 层返回的是 `gofeed.Feed`，Craft 层的接口签名依赖 `gofeed.Feed` 且往往只考虑 Recipe 级别的调用。
 - **改造**:
   - 将所有 `Source` 的返回值修改为 `*CraftFeed`（使其符合 `FeedProvider` 的语义）。
-  - 将 `Craft` 层的 `Process` 方法签名更新为接收和返回 `*CraftFeed`（使其符合 `FeedProcessor` 的语义）。消除 Craft 内部对特定业务实体（如 Recipe 数据库模型）的强耦合。
+  - 将 `Craft` 层的处理逻辑统一为接收和返回 `*CraftFeed` 的 `CraftOption` 闭包，消除 Craft 内部对特定业务实体（如 Recipe 数据库模型）的强耦合。
 
 ### Step 3: 业务编排层的重构 (Recipe 与 Topic)
 
 - **现状**: `Recipe` 的执行逻辑硬编码了 "获取 -> 遍历 Craft" 的过程。
 - **改造**:
-  - 将 `Recipe` 的执行过程视为一次简单的 Pipeline 构建：将对应的 `Source` 视为入口节点，将配置的 `Crafts` 包装为一条 `Processor` 链条。
-  - 在开发新的 `Topic` 特性时，直接拥抱这套新抽象：让 `Topic` 作为一个包裹了多个 `Recipe (FeedProvider)` 并串联了 `Aggregator (FeedProcessor)` 的复合节点执行。
+  - 将 `Recipe` 的执行过程视为一次简单的 Pipeline 构建：将对应的 `Source` 视为入口节点，将配置的 `Crafts` 编译为一条 `CraftOption` 链。
+  - 在开发新的 `Topic` 特性时，直接拥抱这套新抽象：让 `Topic` 作为一个包裹了多个 `Recipe (FeedProvider)` 并串联了 `Aggregator (CraftOption)` 的复合节点执行。
 
 通过以上三个步骤的改造，我们能在开发 Topic 功能（MVP）的同时，顺便打通底层的数据流管线，为未来彻底的“节点编排化”奠定坚实的基础。

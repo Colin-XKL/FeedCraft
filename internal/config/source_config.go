@@ -2,6 +2,7 @@ package config
 
 import (
 	"FeedCraft/internal/constant"
+	"time"
 )
 
 const (
@@ -9,17 +10,37 @@ const (
 	HttpFetcherPurposeHTML = "html"
 )
 
+const (
+	BrowserNavigationActionClick           = "click"
+	BrowserNavigationActionWaitForSelector = "wait_for_selector"
+	BrowserNavigationActionWait            = "wait"
+
+	FeedIconSourceAuto           = "auto"
+	FeedIconSourceFaviconService = "favicon_service"
+)
+
+// BrowserNavigationAction describes a browser interaction to run after the page
+// loads and before rendered HTML is captured.
+type BrowserNavigationAction struct {
+	Type       string `json:"type"`
+	Selector   string `json:"selector,omitempty"`
+	TimeoutMs  int64  `json:"timeout_ms,omitempty"`
+	DurationMs int64  `json:"duration_ms,omitempty"`
+}
+
 // --- Fetcher-specific Configurations ---
 
 // HttpFetcherConfig holds the configuration for an HTTP fetcher.
 // It supports some HTTP methods, headers, and request bodies.
 type HttpFetcherConfig struct {
-	URL            string            `json:"url"`
-	Method         string            `json:"method,omitempty"`
-	Headers        map[string]string `json:"headers,omitempty"`
-	Body           string            `json:"body,omitempty"`
-	UseBrowserless bool              `json:"use_browserless,omitempty"`
-	Purpose        string            `json:"purpose,omitempty"`
+	URL               string                    `json:"url"`
+	Method            string                    `json:"method,omitempty"`
+	Headers           map[string]string         `json:"headers,omitempty"`
+	Body              string                    `json:"body,omitempty"`
+	UseBrowserless    bool                      `json:"use_browserless,omitempty"`
+	NavigationActions []BrowserNavigationAction `json:"navigation_actions,omitempty"`
+	Purpose           string                    `json:"purpose,omitempty"`
+	HttpClientTimeout time.Duration             `json:"http_client_timeout,omitempty"`
 }
 
 // SearchFetcherConfig holds the configuration for search-based fetching.
@@ -55,17 +76,33 @@ type JsonParserConfig struct {
 	// ... other fields
 }
 
+// WebMonitorParserConfig holds the configuration for monitoring changes in HTML content.
+type WebMonitorParserConfig struct {
+	Extractors          map[string]string `json:"extractors"`
+	KeyFields           []string          `json:"key_fields"`
+	TitleTemplate       string            `json:"title_template,omitempty"`
+	DescriptionTemplate string            `json:"description_template,omitempty"`
+	ContentTemplate     string            `json:"content_template,omitempty"`
+}
+
+// InboxSourceConfig holds the configuration for an inbox source.
+type InboxSourceConfig struct {
+	InboxID string `json:"inbox_id"`
+}
+
 // --- Feed-level Metadata Configuration ---
 
 // FeedMetaConfig holds overrides for the final feed's metadata.
 // These values will be used to replace any metadata parsed from the source.
 type FeedMetaConfig struct {
-	Title       string `json:"title,omitempty"`       // Force-override the feed title
-	Link        string `json:"link,omitempty"`        // Force-override the feed's website link
-	Description string `json:"description,omitempty"` // Force-override the feed description
-	AuthorName  string `json:"author_name,omitempty"`
-	AuthorEmail string `json:"author_email,omitempty"`
-	Copyright   string `json:"copyright,omitempty"`
+	Title           string `json:"title,omitempty"`       // Force-override the feed title
+	Link            string `json:"link,omitempty"`        // Force-override the feed's website link
+	Description     string `json:"description,omitempty"` // Force-override the feed description
+	AuthorName      string `json:"author_name,omitempty"`
+	AuthorEmail     string `json:"author_email,omitempty"`
+	Copyright       string `json:"copyright,omitempty"`
+	IconSource      string `json:"icon_source,omitempty"`
+	FaviconProvider string `json:"favicon_provider,omitempty"`
 }
 
 // --- Top-level Source Configuration ---
@@ -85,6 +122,9 @@ type SourceConfig struct {
 
 	// Parser configurations - only one should be non-nil for a given recipe.
 	// Note: RSS parsing doesn't require a specific config struct.
-	HtmlParser *HtmlParserConfig `json:"html_parser,omitempty"`
-	JsonParser *JsonParserConfig `json:"json_parser,omitempty"`
+	HtmlParser       *HtmlParserConfig       `json:"html_parser,omitempty"`
+	JsonParser       *JsonParserConfig       `json:"json_parser,omitempty"`
+	WebMonitorParser *WebMonitorParserConfig `json:"web_monitor_parser,omitempty"`
+
+	InboxSource *InboxSourceConfig `json:"inbox_source,omitempty"`
 }

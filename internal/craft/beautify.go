@@ -2,12 +2,10 @@ package craft
 
 import (
 	"FeedCraft/internal/adapter"
+	"FeedCraft/internal/util"
 	"fmt"
 	"strings"
 
-	"github.com/gomarkdown/markdown"
-	"github.com/gomarkdown/markdown/html"
-	"github.com/gomarkdown/markdown/parser"
 	"github.com/gorilla/feeds"
 )
 
@@ -41,22 +39,11 @@ func beautifyArticleContent(content string, prompt string) (string, error) {
 		return "", err
 	}
 
-	// 3. Convert Beautified Markdown back to HTML
-	extensions := parser.CommonExtensions | parser.AutoHeadingIDs | parser.NoEmptyLineBeforeBlock
-	p := parser.NewWithExtensions(extensions)
-	doc := p.Parse([]byte(beautifiedMd))
-
-	htmlFlags := html.CommonFlags | html.HrefTargetBlank
-	opts := html.RendererOptions{Flags: htmlFlags}
-	renderer := html.NewRenderer(opts)
-
-	beautifiedHtml := markdown.Render(doc, renderer)
-
-	return string(beautifiedHtml), nil
+	return util.MarkdownToHTML(beautifiedMd), nil
 }
 
 // GetBeautifyContentCraftOptions returns the craft options for beautification
-func GetBeautifyContentCraftOptions(prompt string) []CraftOption {
+func GetBeautifyContentCraftOptions(prompt string) []LegacyCraftOption {
 	transFunc := func(item *feeds.Item) (string, error) {
 		content := item.Content
 		if content == "" {
@@ -68,13 +55,13 @@ func GetBeautifyContentCraftOptions(prompt string) []CraftOption {
 	cachedTransformer := GetCommonCachedTransformer(
 		cacheKeyForArticleContent, transFunc, "beautify article content")
 
-	craftOption := []CraftOption{
+	craftOption := []LegacyCraftOption{
 		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransformer)),
 	}
 	return craftOption
 }
 
-func beautifyContentCraftLoadParam(m map[string]string) []CraftOption {
+func beautifyContentCraftLoadParam(m map[string]string) []LegacyCraftOption {
 	prompt, exist := m["prompt"]
 	if !exist || len(prompt) == 0 {
 		prompt = beautifyArticleContentPrompt

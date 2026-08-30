@@ -1,8 +1,10 @@
 package controller
 
 import (
+	"FeedCraft/internal/config"
 	"FeedCraft/internal/craft"
 	fetcherpkg "FeedCraft/internal/source/fetcher"
+	"FeedCraft/internal/source/parser"
 	"FeedCraft/internal/util"
 	"fmt"
 	"net"
@@ -17,8 +19,9 @@ import (
 )
 
 type FetchReq struct {
-	URL            string `json:"url" binding:"required"`
-	UseBrowserless bool   `json:"use_browserless"`
+	URL               string                           `json:"url" binding:"required"`
+	UseBrowserless    bool                             `json:"use_browserless"`
+	NavigationActions []config.BrowserNavigationAction `json:"navigation_actions,omitempty"`
 }
 
 type ParseReq struct {
@@ -38,33 +41,55 @@ type ParsedItem struct {
 	Content string `json:"content"`
 }
 
+type WebMonitorPreviewReq struct {
+	HTML             string                        `json:"html"`
+	URL              string                        `json:"url" binding:"required"`
+	UseBrowserless   bool                          `json:"use_browserless"`
+	WebMonitorParser config.WebMonitorParserConfig `json:"web_monitor_parser"`
+}
+
 func validateURL(rawUrl string) error {
 	u, err := url.Parse(rawUrl)
 	if err != nil {
-		return err
+		return fmt.Errorf("please enter a valid http(s) URL")
 	}
 	if u.Scheme != "http" && u.Scheme != "https" {
-		return fmt.Errorf("invalid scheme: %s", u.Scheme)
+		return fmt.Errorf("please use an http or https URL")
+	}
+	host := u.Hostname()
+	if host == "" {
+		return fmt.Errorf("please enter a valid http(s) URL")
 	}
 
-	ips, err := net.LookupIP(u.Hostname())
+	ips, err := net.LookupIP(host)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to resolve host %s. Please check the address and try again", host)
 	}
 
 	for _, ip := range ips {
-		if ip.IsLoopback() || ip.IsPrivate() {
-			return fmt.Errorf("access to private IP %s is forbidden", ip.String())
+		if isBlockedHTMLFetchIP(ip) {
+			return fmt.Errorf("access to address %s is forbidden. Link-local and cloud metadata addresses cannot be fetched", ip.String())
 		}
 	}
 	return nil
 }
 
+// isBlockedHTMLFetchIP blocks link-local/metadata/multicast targets while
+// allowing loopback and RFC1918 addresses so admin HTML-to-RSS can fetch
+// local mock sources (localhost, host.docker.internal, LAN).
+func isBlockedHTMLFetchIP(ip net.IP) bool {
+	return ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() || ip.IsMulticast() || ip.IsUnspecified()
+}
+
 // fetchHTML extracts common fetching logic with browser emulation and error handling
-func fetchHTML(targetURL string, useBrowserless bool) (string, error) {
+func fetchHTML(targetURL string, useBrowserless bool, navigationActions []config.BrowserNavigationAction) (string, error) {
+	if len(navigationActions) > 0 && !useBrowserless {
+		return "", fmt.Errorf("navigation actions require Enhance Mode")
+	}
 	if useBrowserless {
 		return util.GetBrowserlessContent(targetURL, util.BrowserlessOptions{
-			Timeout: craft.DefaultExtractFulltextTimeout,
+			Timeout:           util.ResolveBrowserRenderTimeout(),
+			NavigationActions: navigationActions,
 		})
 	}
 
@@ -85,7 +110,6 @@ func fetchHTML(targetURL string, useBrowserless bool) (string, error) {
 	}
 
 	content := resp.String()
-	// Check if body is empty even with 200 OK
 	if strings.TrimSpace(content) == "" {
 		return "", fmt.Errorf("upstream returned 200 OK but the content is empty. Try enabling 'Enhance Mode'")
 	}
@@ -105,9 +129,8 @@ func HtmlFetch(c *gin.Context) {
 		return
 	}
 
-	htmlContent, err := fetchHTML(req.URL, req.UseBrowserless)
+	htmlContent, err := fetchHTML(req.URL, req.UseBrowserless, req.NavigationActions)
 	if err != nil {
-		// Use StatusCode: -1 to indicate logic/upstream error rather than system error
 		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
 		return
 	}
@@ -136,8 +159,7 @@ func HtmlParse(c *gin.Context) {
 			return
 		}
 
-		// Fallback fetch if HTML not provided. Default to standard fetch (no browserless) as ParseReq doesn't support it yet.
-		htmlContent, err = fetchHTML(req.URL, false)
+		htmlContent, err = fetchHTML(req.URL, false, nil)
 		if err != nil {
 			c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
 			return
@@ -154,7 +176,6 @@ func HtmlParse(c *gin.Context) {
 	}
 
 	var items []ParsedItem
-	// If no item selector, return empty
 	if req.ItemSelector == "" {
 		c.JSON(http.StatusOK, util.APIResponse[[]ParsedItem]{StatusCode: 0, Data: items})
 		return
@@ -163,9 +184,6 @@ func HtmlParse(c *gin.Context) {
 	doc.Find(req.ItemSelector).Each(func(i int, s *goquery.Selection) {
 		item := ParsedItem{}
 
-		// Helper to extract selection based on selector
-		// If selector is "." or empty (though frontend sends . now), use current 's'
-		// Otherwise find descendant
 		getSelection := func(selector string) *goquery.Selection {
 			if selector == "" || selector == "." {
 				return s
@@ -180,14 +198,12 @@ func HtmlParse(c *gin.Context) {
 			sel := getSelection(req.LinkSelector)
 			item.Link = util.ExtractLinkFromSelection(sel)
 
-			// Try to resolve relative URL to absolute URL
 			if req.URL != "" && item.Link != "" {
 				if absURL, err := util.BuildAbsoluteURL(req.URL, item.Link); err == nil {
 					item.Link = absURL
 				}
 			}
 
-			// Final validation: Ensure it is a valid HTTP/HTTPS URL
 			if item.Link != "" {
 				if u, err := url.Parse(item.Link); err != nil || (u.Scheme != "http" && u.Scheme != "https") {
 					item.Link = ""
@@ -197,7 +213,6 @@ func HtmlParse(c *gin.Context) {
 		if req.DateSelector != "" {
 			sel := getSelection(req.DateSelector)
 			item.Date = strings.TrimSpace(sel.Text())
-			// Check datetime attr if text is empty
 			if item.Date == "" {
 				val, exists := sel.Attr("datetime")
 				if exists {
@@ -223,5 +238,39 @@ func HtmlParse(c *gin.Context) {
 	c.JSON(http.StatusOK, util.APIResponse[[]ParsedItem]{
 		StatusCode: 0,
 		Data:       items,
+	})
+}
+
+func WebMonitorPreview(c *gin.Context) {
+	var req WebMonitorPreviewReq
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
+		return
+	}
+
+	if err := validateURL(req.URL); err != nil {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
+		return
+	}
+
+	htmlContent := req.HTML
+	if strings.TrimSpace(htmlContent) == "" {
+		var err error
+		htmlContent, err = fetchHTML(req.URL, req.UseBrowserless, nil)
+		if err != nil {
+			c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
+			return
+		}
+	}
+
+	preview, err := parser.PreviewWebMonitor([]byte(htmlContent), &req.WebMonitorParser, req.URL)
+	if err != nil {
+		c.JSON(http.StatusOK, util.APIResponse[any]{StatusCode: -1, Msg: err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, util.APIResponse[*parser.WebMonitorPreviewResult]{
+		StatusCode: 0,
+		Data:       preview,
 	})
 }

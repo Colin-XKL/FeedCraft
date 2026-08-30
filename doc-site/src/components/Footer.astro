@@ -1,0 +1,21 @@
+---
+import Default from '@astrojs/starlight/components/Footer.astro';
+import { formatFeedCraftVersion } from '../lib/displayVersion.js';
+
+const footerText = formatFeedCraftVersion(
+  import.meta.env.PUBLIC_FEEDCRAFT_VERSION
+);
+---
+
+<Default {...Astro.props} />
+<p class="feedcraft-version">{footerText}</p>
+
+<style>
+  .feedcraft-version {
+    margin: 0;
+    padding: 0.5rem 1rem 1.5rem;
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+    text-align: center;
+  }
+</style>

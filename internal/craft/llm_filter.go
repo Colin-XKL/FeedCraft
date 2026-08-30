@@ -16,7 +16,7 @@ var llmFilterGenericParamTmpl = []ParamTemplate{
 	},
 }
 
-func llmFilterGenericLoadParam(m map[string]string) []CraftOption {
+func llmFilterGenericLoadParam(m map[string]string) []LegacyCraftOption {
 	condition, exist := m["filter_condition"]
 	if !exist || len(condition) == 0 {
 		condition = "Is this content spam or low quality?"
@@ -24,13 +24,13 @@ func llmFilterGenericLoadParam(m map[string]string) []CraftOption {
 	return GetLLMFilterGenericOptions(condition)
 }
 
-func GetLLMFilterGenericOptions(condition string) []CraftOption {
-	return []CraftOption{
+func GetLLMFilterGenericOptions(condition string) []LegacyCraftOption {
+	return []LegacyCraftOption{
 		OptionLLMFilterGeneric(condition),
 	}
 }
 
-func OptionLLMFilterGeneric(condition string) CraftOption {
+func OptionLLMFilterGeneric(condition string) LegacyCraftOption {
 	return func(feed *feeds.Feed, payload ExtraPayload) error {
 		items := feed.Items
 		if len(items) == 0 {

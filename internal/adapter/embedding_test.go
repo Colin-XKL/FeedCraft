@@ -1,7 +1,9 @@
 package adapter
 
 import (
+	"strings"
 	"testing"
+	"unicode/utf8"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -9,15 +11,16 @@ import (
 // --- loadEmbeddingConfig 测试 ---
 
 func TestLoadEmbeddingConfig_Defaults(t *testing.T) {
+	t.Setenv("FC_EMBEDDING_API_MODEL", "text-embedding-3-small")
 	cfg, err := loadEmbeddingConfig()
 	assert.NoError(t, err)
 	// 默认 apiType 应为 "openai"
 	assert.Equal(t, "openai", cfg.apiType)
-	// 默认模型应为 defaultEmbeddingModel
-	assert.Equal(t, defaultEmbeddingModel, cfg.apiModel)
+	assert.Equal(t, "text-embedding-3-small", cfg.apiModel)
 }
 
 func TestLoadEmbeddingConfig_ApiTypeDefault(t *testing.T) {
+	t.Setenv("FC_EMBEDDING_API_MODEL", "text-embedding-3-small")
 	cfg, err := loadEmbeddingConfig()
 	assert.NoError(t, err)
 	// 未设置 FC_EMBEDDING_API_TYPE 时应默认为 "openai"
@@ -25,10 +28,28 @@ func TestLoadEmbeddingConfig_ApiTypeDefault(t *testing.T) {
 }
 
 func TestLoadEmbeddingConfig_ReturnsNoFatal(t *testing.T) {
+	t.Setenv("FC_EMBEDDING_API_MODEL", "text-embedding-3-small")
 	// 确保 loadEmbeddingConfig 不会 panic 或 fatal
 	cfg, err := loadEmbeddingConfig()
 	assert.NoError(t, err)
 	assert.NotEmpty(t, cfg.apiType)
+}
+
+func TestLoadEmbeddingConfig_DefaultMaxInputChars(t *testing.T) {
+	t.Setenv("FC_EMBEDDING_API_MODEL", "text-embedding-3-small")
+	cfg, err := loadEmbeddingConfig()
+	assert.NoError(t, err)
+	assert.Equal(t, defaultEmbeddingMaxInputChars, cfg.maxInputChars)
+}
+
+func TestLoadEmbeddingConfig_CustomMaxInputChars(t *testing.T) {
+	t.Setenv("FC_EMBEDDING_API_MODEL", "text-embedding-3-small")
+	t.Setenv("FC_EMBEDDING_MAX_INPUT_CHARS", "4096")
+
+	cfg, err := loadEmbeddingConfig()
+
+	assert.NoError(t, err)
+	assert.Equal(t, 4096, cfg.maxInputChars)
 }
 
 // --- getOrCreateEmbedder 测试 ---
@@ -166,9 +187,104 @@ func TestLoadEmbeddingConfig_GeminiEmptyModel(t *testing.T) {
 func TestLoadEmbeddingConfig_OpenAIDefaultModel(t *testing.T) {
 	t.Setenv("FC_EMBEDDING_API_TYPE", "openai")
 	t.Setenv("FC_EMBEDDING_API_MODEL", "")
+	_, err := loadEmbeddingConfig()
+	assert.Error(t, err, "openai with empty model should return error")
+	assert.Contains(t, err.Error(), "FC_EMBEDDING_API_MODEL")
+}
+
+func TestLoadEmbeddingConfig_FallsBackToLLMEndpointWithDedicatedEmbeddingModel(t *testing.T) {
+	t.Setenv("FC_LLM_API_TYPE", "ollama")
+	t.Setenv("FC_LLM_API_BASE", "http://localhost:11434")
+	t.Setenv("FC_LLM_API_KEY", "llm-key")
+	t.Setenv("FC_LLM_API_MODEL", "chat-model")
+	t.Setenv("FC_EMBEDDING_API_TYPE", "")
+	t.Setenv("FC_EMBEDDING_API_BASE", "")
+	t.Setenv("FC_EMBEDDING_API_KEY", "")
+	t.Setenv("FC_EMBEDDING_API_MODEL", "nomic-embed-text")
+
 	cfg, err := loadEmbeddingConfig()
+
 	assert.NoError(t, err)
-	assert.Equal(t, defaultEmbeddingModel, cfg.apiModel, "openai should use default model when not set")
+	assert.Equal(t, "ollama", cfg.apiType)
+	assert.Equal(t, "http://localhost:11434", cfg.apiBase)
+	assert.Equal(t, "llm-key", cfg.apiKey)
+	assert.Equal(t, "nomic-embed-text", cfg.apiModel)
+}
+
+func TestLoadEmbeddingConfig_DoesNotUseLLMChatModelAsEmbeddingModel(t *testing.T) {
+	t.Setenv("FC_LLM_API_TYPE", "openai")
+	t.Setenv("FC_LLM_API_BASE", "https://api.openai.com/v1")
+	t.Setenv("FC_LLM_API_KEY", "test-key")
+	t.Setenv("FC_LLM_API_MODEL", "gpt-4o")
+	t.Setenv("FC_EMBEDDING_API_TYPE", "")
+	t.Setenv("FC_EMBEDDING_API_BASE", "")
+	t.Setenv("FC_EMBEDDING_API_KEY", "")
+	t.Setenv("FC_EMBEDDING_API_MODEL", "")
+
+	_, err := loadEmbeddingConfig()
+
+	assert.Error(t, err, "should return error when embedding model is not set, even if LLM model is set")
+	assert.Contains(t, err.Error(), "FC_EMBEDDING_API_MODEL")
+}
+
+func TestLoadEmbeddingConfig_DoesNotFallbackLLMKeyWhenEmbeddingEndpointIsSet(t *testing.T) {
+	t.Setenv("FC_LLM_API_KEY", "llm-secret")
+	t.Setenv("FC_EMBEDDING_API_TYPE", "openai")
+	t.Setenv("FC_EMBEDDING_API_BASE", "https://embedding.example/v1")
+	t.Setenv("FC_EMBEDDING_API_MODEL", "text-embedding-3-small")
+	t.Setenv("FC_EMBEDDING_API_KEY", "")
+
+	cfg, err := loadEmbeddingConfig()
+
+	assert.NoError(t, err)
+	assert.Empty(t, cfg.apiKey, "LLM key must not be sent to an explicitly configured embedding endpoint")
+}
+
+func TestLoadEmbeddingConfig_IgnoresCommaSeparatedLLMModelWhenEmbeddingModelUsesDefault(t *testing.T) {
+	t.Setenv("FC_LLM_API_TYPE", "openai")
+	t.Setenv("FC_LLM_API_BASE", "https://api.openai.com/v1")
+	t.Setenv("FC_LLM_API_KEY", "test-key")
+	t.Setenv("FC_LLM_API_MODEL", "gpt-4o,gpt-4o-mini")
+	t.Setenv("FC_EMBEDDING_API_TYPE", "")
+	t.Setenv("FC_EMBEDDING_API_MODEL", "")
+
+	_, err := loadEmbeddingConfig()
+
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "FC_EMBEDDING_API_MODEL")
+}
+
+func TestBuildAnchorVectorCacheKeyIncludesProviderAndBase(t *testing.T) {
+	cfgA := embeddingConfig{apiType: "openai", apiBase: "https://provider-a.example/v1", apiModel: "embed-model"}
+	cfgB := embeddingConfig{apiType: "openai", apiBase: "https://provider-b.example/v1", apiModel: "embed-model"}
+	cfgC := embeddingConfig{apiType: "ollama", apiBase: "https://provider-a.example/v1", apiModel: "embed-model"}
+
+	keyA := buildAnchorVectorCacheKey("anchor text", cfgA, "instruction")
+	keyB := buildAnchorVectorCacheKey("anchor text", cfgB, "instruction")
+	keyC := buildAnchorVectorCacheKey("anchor text", cfgC, "instruction")
+
+	assert.NotEqual(t, keyA, keyB, "different API bases must not share cached anchor vectors")
+	assert.NotEqual(t, keyA, keyC, "different API types must not share cached anchor vectors")
+}
+
+func TestPrepareEmbeddingTextsTruncatesProcessedText(t *testing.T) {
+	cfg := embeddingConfig{maxInputChars: 10}
+
+	texts := prepareEmbeddingTexts([]string{strings.Repeat("你", 20)}, "", cfg)
+
+	assert.Len(t, texts, 1)
+	assert.Equal(t, 10, utf8.RuneCountInString(texts[0]))
+	assert.True(t, utf8.ValidString(texts[0]))
+}
+
+func TestPrepareEmbeddingTextsTruncatesInstructionAndTextTogether(t *testing.T) {
+	cfg := embeddingConfig{maxInputChars: 12}
+
+	texts := prepareEmbeddingTexts([]string{"abcdefghijklmnopqrstuvwxyz"}, "topic", cfg)
+
+	assert.Len(t, texts, 1)
+	assert.Equal(t, 12, utf8.RuneCountInString(texts[0]))
+	assert.True(t, strings.HasPrefix(texts[0], "topic: "))
 }
 
 // --- resolveInstruction 测试（需求 1）---

@@ -39,20 +39,23 @@ JSON RSS 生成器可以帮助你：
 
 获取到 JSON 后，你将在左侧面板看到以树形可视化的响应。现在你可以定义选择器来提取订阅源条目。
 
-该工具使用 **[jq](https://jqlang.github.io/jq/)** 语法来查询 JSON，并支持对提取结果再做一层 Go template 加工。
+该工具使用 **[jq](https://jqlang.github.io/jq/)** 语法来查询 JSON，并支持对提取结果再做一层模板加工。常见场景可以直接用 `${字段名}` 读取当前条目字段；需要函数、已提取字段或更复杂逻辑时，可以使用 Go template。
 
 - **列表选择器 (Items Iterator)**：条目数组的路径。
   - 提示：你可以点击树视图中的节点来自动填充选择器。
 - **标题选择器 (Title Selector)**：条目标题的路径（相对于条目对象）。
 - **标题模板 (Title Template)**：（可选）对提取到的标题做进一步处理，例如 `{{ .Fields.Title | trimSpace }}`。
 - **链接选择器 (Link Selector)**：条目 URL 的路径。
-- **链接模板 (Link Template)**：（可选）当接口没有完整链接时，可以拼接，例如 `https://some-website.com/article/{{ .Item.id }}`。
+- **链接模板 (Link Template)**：（可选）当接口没有完整链接时，可以拼接，例如 `https://some-website.com/article/${article_id}`。
 - **日期选择器 (Date Selector)**：（可选）发布日期的路径。
 - **内容选择器 (Content Selector)**：（可选）完整内容或摘要的路径。
 
 #### 使用模板 (可选)
 
-你可以使用 [Go Templates](https://pkg.go.dev/text/template) 语法对提取的值进行进一步处理。
+模板支持两种写法：
+
+- **简写变量**：`${article_id}` 会读取当前条目的 `article_id` 字段；`${author.name}` 会读取嵌套字段。
+- **Go template**：使用 [Go Templates](https://pkg.go.dev/text/template) 语法对提取的值进行进一步处理。
 
 **可用变量：**
 
@@ -68,7 +71,8 @@ JSON RSS 生成器可以帮助你：
 **示例：**
 
 - **清理标题空白字符**：`{{ .Fields.Title | trimSpace }}`
-- **拼接完整链接**：`https://example.com/article/{{ .Item.id }}`
+- **拼接完整链接**：`https://example.com/article/${article_id}`
+- **读取嵌套字段**：`作者：${author.name}`
 - **移除特定前缀**：`{{ .Fields.Description | trim "Prefix: " }}`
 - **默认值兜底**：`{{ default .Fields.Description "暂无摘要" }}`
 

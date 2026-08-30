@@ -2,6 +2,7 @@ package craft
 
 import (
 	"FeedCraft/internal/config"
+	"FeedCraft/internal/model"
 	"FeedCraft/internal/source/fetcher"
 	"bytes"
 	"context"
@@ -25,9 +26,11 @@ type CraftedFeed struct {
 type ExtraPayload struct {
 	originalFeedUrl string
 }
-type CraftOption func(*feeds.Feed, ExtraPayload) error
 
-func NewCraftedFeedFromUrl(feedUrl string, options ...CraftOption) (CraftedFeed, error) {
+type CraftOption func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error)
+type LegacyCraftOption func(*feeds.Feed, ExtraPayload) error
+
+func NewCraftedFeedFromUrl(feedUrl string, options ...LegacyCraftOption) (CraftedFeed, error) {
 	ingredient := CraftedFeed{originalFeedUrl: feedUrl}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -51,7 +54,7 @@ func NewCraftedFeedFromUrl(feedUrl string, options ...CraftOption) (CraftedFeed,
 	return NewCraftedFeedFromGofeed(parsedFeed, feedUrl, options...)
 }
 
-func NewCraftedFeedFromGofeed(parsedFeed *gofeed.Feed, feedUrl string, options ...CraftOption) (CraftedFeed, error) {
+func NewCraftedFeedFromGofeed(parsedFeed *gofeed.Feed, feedUrl string, options ...LegacyCraftOption) (CraftedFeed, error) {
 	ingredient := CraftedFeed{originalFeedUrl: feedUrl, parsedFeed: parsedFeed}
 
 	byPass := func(item *gofeed.Item) string {
@@ -73,6 +76,23 @@ func NewCraftedFeedFromGofeed(parsedFeed *gofeed.Feed, feedUrl string, options .
 
 	ingredient.OutputFeed = &outputFeed
 	return ingredient, nil
+}
+
+func ComposeOptions(options ...CraftOption) CraftOption {
+	return func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error) {
+		currentFeed := feed
+		var err error
+		for _, option := range options {
+			if option == nil {
+				continue
+			}
+			currentFeed, err = option(ctx, currentFeed)
+			if err != nil {
+				return nil, err
+			}
+		}
+		return currentFeed, nil
+	}
 }
 
 // TransFunc common transform func, such as translate the article content or title
@@ -104,7 +124,7 @@ func GetArticleTitleProcessor(transFunc TransFunc) FeedItemProcessor {
 type FeedItemProcessor func(feedItem *feeds.Item, payload ExtraPayload) error // 对每个feed item要执行的操作
 
 // OptionTransformFeedItem 通用的feed item 处理
-func OptionTransformFeedItem(processor FeedItemProcessor) CraftOption {
+func OptionTransformFeedItem(processor FeedItemProcessor) LegacyCraftOption {
 	return func(feed *feeds.Feed, payload ExtraPayload) error {
 		if len(feed.Items) == 0 {
 			return nil
@@ -112,6 +132,9 @@ func OptionTransformFeedItem(processor FeedItemProcessor) CraftOption {
 
 		// 1. 并发执行并将结果映射为错误切片
 		errs := parallel.Map(feed.Items, func(item *feeds.Item, _ int) error {
+			if item == nil {
+				return nil
+			}
 			err := processor(item, payload)
 			if err != nil {
 				logrus.Warnf("failed to process item [%s], err: %v", item.Title, err)

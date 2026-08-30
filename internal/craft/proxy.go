@@ -5,7 +5,7 @@ import (
 )
 
 func GetProxyFeedHandler() func(c *gin.Context) {
-	var craftOptions []CraftOption
+	var craftOptions []LegacyCraftOption
 	return func(c *gin.Context) {
 		CommonCraftHandlerUsingCraftOptionList(c, craftOptions)
 	}

@@ -1,135 +1,86 @@
-# 领域五：架构深化与原生迁移
+# FeedCraft 架构深化与原生迁移规划 (Architecture Refactor & Native Migration)
 
-> 状态：进行中
+> 状态：进行中 (WIP)
 
-## 1. 背景
+## 1. 重构总目标
 
-TopicFeed 的长期目标不是只在现有 legacy 执行流外面再包一层，而是推动整个 FeedCraft 真正落到统一的 `FeedProvider` / `FeedProcessor` 架构上。
+将现有的割裂的 `Source - Craft - Recipe` 架构，全面升级为以**“数据产出物 (CraftFeed)”**为核心的流式图谱架构 (Feed Graph)。
+实现概念上的极致统一：底层任意节点都能被复用和嵌套，同时维持顶层产品对用户的心智清晰。
 
-当前系统已经有：
+## 2. 核心数据模型 (The Water)
 
-- `CraftFeed` 作为统一数据载体
-- `FeedProvider` / `FeedProcessor` 作为统一接口
-- `TopicFeed` 作为多源聚合节点
+彻底消除内部流水线对第三方 `gofeed.Feed` 的强依赖，系统流转的唯一“血液”是自研模型：
 
-但 Recipe 仍然大量走旧执行流，底层 Source 和 Craft 也还没有完全原生化。这会让 Topic 的实现长期停留在“混合架构”状态，增加装配复杂度和维护成本。
+- **`CraftFeed`**: 包含全局元数据及 Article 列表。
+- **`CraftArticle`**: 对应原来的 Item/Entry，包含标题、正文，以及用于系统加工的追踪字段（如 `Depth`, `QualityScore`, `OriginalFeedID`）。
 
-除了执行流本身，当前系统在“输入模型”这一层也还没有真正统一：
+内部提供与 `gofeed.Feed`、`feeds.Feed` 的互相转换函数，仅在与第三方库交互或最终输出 RSS XML 时进行转换。
 
-- Recipe 主要使用 `SourceConfig`
-- Topic 主要使用 `input_uris`
+## 3. 核心抽象与运行时模型 (The Graph)
 
-这两个结构各自合理，但都不适合作为整个系统统一的顶层输入抽象：
+### 3.1 统一数据源接口 (FeedProvider)
 
-- `SourceConfig` 太偏底层抓取和解析细节
-- `InputURI` 又不足以表达复杂 HTML、JSON、search 配置
+任何能产出 `CraftFeed` 的节点（无论是底层 Source，还是顶层 Recipe/Topic），在运行时都只暴露统一接口：
 
-因此，长期架构收敛的关键之一，是统一顶层输入模型，而不是简单在 `InputURI` 和 `SourceConfig` 之间二选一。
+```go
+type FeedProvider interface {
+    Fetch(ctx context.Context) (*model.CraftFeed, error)
+}
+```
 
-## 2. 需求场景
+### 3.2 加工流水线：V3 架构 (Functional Options)
 
-从长期演进看，用户并不关心数据来自 Recipe 还是 Topic，他们期待的是：
+在 Craft 层的数据加工流水线设计上，我们放弃了笨重的 `FeedProcessor` 接口模式（V2），直接采用 **V3 架构 (Functional Options + 原生模型)**，回归 Go 语言最地道的中间件风格：
 
-- 任意节点都能被复用
-- 任意节点都能嵌套
-- 整个系统围绕统一的 feed graph 执行
+```go
+// 接收原生 feed，返回处理后的新 feed（在内部执行 clone 以防止并发图数据污染）
+type CraftOption func(ctx context.Context, feed *model.CraftFeed) (*model.CraftFeed, error)
+```
 
-要支撑这种能力，系统内部必须让：
+原生的 `Limit`, `Translate`, `Summary` 等所有加工逻辑，不再定义空结构体，而是直接返回上述闭包函数。流水线通过函数遍历嵌套执行，实现极致的轻量化。
 
-- Recipe 成为真正的一等 `FeedProvider`
-- 底层 Source 原生输出 `CraftFeed`
-- 底层 Craft 原生处理 `CraftFeed`
-- Recipe 和 Topic 使用统一的输入引用模型
+### 3.3 运行时图谱，存储/产品隔离 (Runtime Graph, Separate DB)
 
-## 3. 当前进展
+关于 Recipe（单线配方）和 Topic（多线聚合）的边界：
 
-- `CraftFeed` 及其转换函数已经存在，见 `internal/model/feed.go`
-- `FeedProvider` / `FeedProcessor` 接口已经存在，见 `internal/engine/interfaces.go`
-- `LegacySourceAdapter` 已存在，说明当前已采用过渡式迁移方案，见 `internal/source/adapter.go`
-- Topic 聚合核心已经基于新接口工作
+- **产品与存储层**：继续保持 `Recipe` 和 `Topic` 的表结构与概念隔离。这符合普通用户的心智模型。
+- **引擎运行时层**：在 Go 引擎运行时，Topic 和 Recipe 将被统一的 Builder 编译成一模一样的 `FeedProvider` 节点。它们在执行时完全是一张可以任意嵌套组合的 Feed Graph。
 
-当前缺口：
+## 4. 统一顶层输入模型与解析 (InputSpec & Router)
 
-- `ProcessRecipeByID` 仍在使用旧的 `source.Get()` + `craft.ProcessFeed()` 编排，见 `internal/recipe/custom_recipe.go`
-- Recipe 还没有成为标准 runtime provider
-- Source 层大多仍返回 `gofeed.Feed`
-- Craft 层大多仍围绕旧数据结构工作
-- 顶层输入模型尚未统一，Recipe 与 Topic 仍然分裂
+为了消解 `SourceConfig` 和 `InputURI` 之间的割裂，统一采用多态路由架构：
 
-## 4. 未来待办
+### 4.1 统一多态 JSON (`InputSpec`)
 
-### 4.1 统一顶层输入模型
+顶层数据输入统一使用 `InputSpec` 结构，避免将 `SourceConfig` 做成包含排斥字段的“胖模型”：
 
-推荐统一方向：
+```go
+type InputSpec struct {
+    Type   string          // 例如 "uri", "html", "json", "search"
+    Config json.RawMessage // 对应的独立配置结构体序列化数据
+}
+```
 
-- 顶层统一使用 `InputSpec`
-- `InputSpec(kind=uri)` 用于轻量引用
-- `InputSpec(kind=source)` 用于承载复杂 `SourceConfig`
+### 4.2 统一 URI 路由器 (URI Router)
 
-这样：
+当 `InputSpec.Type == "uri"` 时，系统在解析层采用**统一 URI 路由器模式**。
+引擎注册不同的 Resolver，通过 URI 的 Scheme 进行动态分发：
 
-- `RecipeFeed = InputSpec + Craft`
-- `TopicFeed = []InputSpec + Aggregator`
+- `feedcraft://recipe/:id` -> 路由到内部 Recipe 解析器
+- `feedcraft://topic/:id` -> 路由到内部 Topic 解析器
+- `http(s)://...` -> **作为语法糖 (Syntactic Sugar)**，为了方便用户快速使用，它被路由到第三方网站解析器，在引擎内部会自动展开（Desugar）为一个标准的、带预设策略的 `InputSpec` 结构。
 
-语义分层明确为：
+## 5. 重构实施步骤 (Implementation Steps)
 
-- `InputSpec` 是顶层输入抽象
-- `InputURI` 是轻量引用形式
-- `SourceConfig` 是底层原始源配置
-
-### 4.2 统一输入解析与 provider builder
-
-- 构建统一的 `InputSpec -> FeedProvider` builder
-- 让 Topic 和 Recipe 共用同一套输入解析逻辑
-- 让 `feedcraft://recipe/:id`、`feedcraft://topic/:id`、`http(s)://...` 都成为统一语义的一部分
-
-其中：
-
-- `http(s)` 默认解释为第三方网站 RawFeed
-- 语义参考“最小 source + proxy craft”
-- 不是 Topic 专属特例，而是系统统一输入规则
-
-### 4.3 重构 RecipeFeed 执行流
-
-- 让 Recipe 在运行时成为标准 `FeedProvider`
-- 将 Recipe 的 source + craft 组合收敛为统一执行对象
-- 让 Topic 在解析 `feedcraft://recipe/:id` 时不需要再走特殊分支
-
-### 4.4 推进 Source 原生迁移
-
-- 逐步让底层 Source 直接返回 `*model.CraftFeed`
-- 减少对 `gofeed.Feed` 的中间转换依赖
-- 最终移除 `LegacySourceAdapter`
-
-### 4.5 推进 Craft 原生迁移
-
-- 逐步让 AtomCraft / FlowCraft 直接处理 `*model.CraftFeed`
-- 消除旧 `feeds/gofeed` 双模型往返转换
-- 最终移除旧适配层
-
-### 4.6 统一 Topic / Recipe 的运行时模型
-
-- 让 Topic 和 Recipe 都能以统一方式被装配、执行、缓存、观测
-- 让后续内置 Feed、系统通知 Feed 等能力都复用同一套运行时抽象
-
-### 4.7 采用两阶段迁移策略
-
-第一阶段：
-
-- 统一运行时
-- 旧 Recipe 的 `SourceConfig` 在读取时映射为 `InputSpec(kind=source)`
-- 旧 Topic 的 `input_uris` 在读取时映射为 `[]InputSpec(kind=uri)`
-
-第二阶段：
-
-- 再考虑统一持久化结构
-- 逐步减少 Recipe / Topic 在存储层的模型差异
-
-## 5. 追踪建议
-
-这个领域完成的标准是：
-
-- 顶层输入模型完成统一，不再分裂成 Recipe 专属和 Topic 专属两套语义
-- Topic 和 Recipe 在引擎层面真正平级
-- 新能力接入时不再区分“旧链路”与“新链路”
-- 适配器层从临时迁移手段，逐步收缩到可以删除的状态
+1.  **Phase 1: 模型基建 (已部分完成)**
+    - 创建 `CraftFeed` 和 `CraftArticle`，并提供适配函数。
+2.  **Phase 2: 顶层输入模型与 Router 改造 (Next)**
+    - 引入 `InputSpec` 和 `URI Router`。
+    - 构建统一的 `InputSpec -> FeedProvider` builder，让 Topic 和 Recipe 共用同一套输入解析逻辑。
+3.  **Phase 3: 引擎与 Craft 原生化 (V3)**
+    - 把 `ProcessRecipeByID` 从旧的零散编排迁到新的 Builder runtime。
+    - 将 `internal/craft` 逐步重构为 V3 的 `CraftOption` 闭包架构，移除旧的 V2 适配层。
+    - 让底层 Source 直接返回 `*model.CraftFeed`。
+4.  **Phase 4: 图谱收官**
+    - 全面支撑 Topic 嵌套 Recipe、Topic 嵌套 Topic 的运行时逻辑。
+    - 清理旧的遗留代码，完成整体平滑迁移。

@@ -38,10 +38,12 @@
     </a-space>
 
     <a-table
+      class="custom-recipe-table"
       :data="recipes"
       :columns="columns"
       :bordered="true"
       :loading="isLoading"
+      :scroll="{ x: 1280 }"
     >
       <template #status="{ record }">
         <a-tooltip
@@ -92,10 +94,16 @@
           </a-tooltip>
         </a-space>
       </template>
+      <template #craft="{ record }">
+        <span class="custom-recipe-table__text" :title="record.craft">{{
+          record.craft
+        }}</span>
+      </template>
       <template #actions="{ record }">
-        <a-space direction="horizontal">
+        <a-space>
           <a-button
-            type="outline"
+            type="primary"
+            size="small"
             @click="
               () => {
                 isUpdating = true;
@@ -105,27 +113,20 @@
           >
             {{ t('customRecipe.edit') }}
           </a-button>
+          <a-button type="text" size="small" @click="previewRecipe(record)">
+            {{ t('customRecipe.preview') }}
+          </a-button>
+          <a-button type="text" size="small" @click="handleCopyLink(record.id)">
+            {{ t('customRecipe.copyLink') }}
+          </a-button>
           <a-popconfirm
             :content="t('customRecipe.deleteConfirm')"
             @ok="deleteRecipe(record.id)"
           >
-            <a-button status="danger">{{ t('customRecipe.delete') }}</a-button>
-          </a-popconfirm>
-          <a-button type="outline" @click="previewRecipe(record)">{{
-            t('customRecipe.preview')
-          }}</a-button>
-          <a-link :href="buildRecipeFeedUrl(record?.id)" target="_blank">{{
-            t('customRecipe.link')
-          }}</a-link>
-          <a-tooltip :content="t('customRecipe.copyLink')">
-            <a-button
-              type="text"
-              size="small"
-              @click="handleCopyLink(record.id)"
-            >
-              <template #icon><icon-copy /></template>
+            <a-button type="text" status="danger" size="small">
+              {{ t('customRecipe.delete') }}
             </a-button>
-          </a-tooltip>
+          </a-popconfirm>
         </a-space>
       </template>
     </a-table>
@@ -142,6 +143,7 @@
       "
     >
       <a-form
+        ref="formRef"
         :model="form"
         :label-col="{ span: 6 }"
         :rules="rules"
@@ -166,18 +168,9 @@
 
         <!-- Quick Create Fields -->
         <template v-if="quickCreate">
-          <a-form-item
-            :label="t('customRecipe.form.feedURL')"
-            field="feed_url"
-            :rules="[
-              {
-                required: true,
-                message: t('customRecipe.form.rule.rssUrlRequired'),
-              },
-            ]"
-          >
+          <a-form-item :label="t('customRecipe.form.feedURL')" field="feed_url">
             <a-input
-              v-model="rssUrl"
+              v-model="form.feed_url"
               :placeholder="t('customRecipe.form.placeholder.rssUrl')"
             />
           </a-form-item>
@@ -193,6 +186,9 @@
               <a-option value="rss">RSS</a-option>
               <a-option value="html">HTML</a-option>
               <a-option value="json">JSON</a-option>
+              <a-option value="web_monitor">{{
+                t('menu.webMonitor')
+              }}</a-option>
             </a-select>
           </a-form-item>
           <a-form-item
@@ -257,7 +253,14 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, onMounted, computed } from 'vue';
+  import {
+    ref,
+    onMounted,
+    computed,
+    nextTick,
+    watch,
+    type ComputedRef,
+  } from 'vue';
   import {
     createCustomRecipe,
     CustomRecipe,
@@ -267,7 +270,7 @@
   } from '@/api/custom_recipe';
   import XHeader from '@/components/header/x-header.vue';
   import { namingValidator } from '@/utils/validator';
-  import { IconEye, IconPlus, IconCopy } from '@arco-design/web-vue/es/icon';
+  import { IconEye, IconPlus } from '@arco-design/web-vue/es/icon';
   import { Message } from '@arco-design/web-vue';
   import dayjs from 'dayjs';
   import { useI18n } from 'vue-i18n';
@@ -284,16 +287,29 @@
   const showConfigModal = ref(false);
   const currentConfig = ref('');
   const currentLink = ref('');
-  const quickCreate = ref(false);
-  const rssUrl = ref('');
+  type RecipeForm = CustomRecipe & { feed_url: string };
 
-  const form = ref<CustomRecipe>({
+  const emptyRecipeForm = (): RecipeForm => ({
     id: '',
     description: '',
     craft: '',
     source_type: 'rss',
     source_config: '',
+    feed_url: '',
   });
+
+  const toRecipePayload = (value: RecipeForm): CustomRecipe => ({
+    id: value.id,
+    description: value.description,
+    craft: value.craft,
+    source_type: value.source_type,
+    source_config: value.source_config,
+  });
+
+  const quickCreate = ref(false);
+
+  const form = ref<RecipeForm>(emptyRecipeForm());
+  const formRef = ref();
 
   const craftList = computed({
     get: () =>
@@ -355,17 +371,50 @@
   const saving = ref(false);
 
   const columns = [
-    { title: t('customRecipe.form.name'), dataIndex: 'id' },
-    { title: t('customRecipe.form.description'), dataIndex: 'description' },
-    { title: t('customRecipe.form.craft'), dataIndex: 'craft' },
-    { title: t('customRecipe.status.active'), slotName: 'status' },
-    { title: t('customRecipe.form.sourceType'), dataIndex: 'source_type' },
+    {
+      title: t('customRecipe.form.name'),
+      dataIndex: 'id',
+      minWidth: 200,
+      ellipsis: true,
+      tooltip: true,
+    },
+    {
+      title: t('customRecipe.form.description'),
+      dataIndex: 'description',
+      minWidth: 180,
+      ellipsis: true,
+      tooltip: true,
+    },
+    {
+      title: t('customRecipe.form.craft'),
+      dataIndex: 'craft',
+      slotName: 'craft',
+      minWidth: 200,
+      ellipsis: true,
+      tooltip: true,
+    },
+    {
+      title: t('customRecipe.status.active'),
+      slotName: 'status',
+      width: 100,
+    },
+    {
+      title: t('customRecipe.form.sourceType'),
+      dataIndex: 'source_type',
+      width: 110,
+    },
     {
       title: t('customRecipe.form.sourceConfig'),
       dataIndex: 'source_config',
       slotName: 'source_config',
+      minWidth: 240,
     },
-    { title: t('customRecipe.edit'), slotName: 'actions' },
+    {
+      title: t('customRecipe.actions'),
+      slotName: 'actions',
+      width: 280,
+      fixed: 'right' as const,
+    },
   ];
 
   async function listCustomRecipes() {
@@ -377,37 +426,64 @@
   onMounted(() => {
     listCustomRecipes();
   });
-  const rules = {
-    id: [
-      {
-        required: true,
-        message: t('customRecipe.form.rule.nameRequired'),
-        trigger: 'blur',
-      },
-      namingValidator,
-    ],
-    craft: [
-      {
-        required: true,
-        message: t('customRecipe.form.rule.craftRequired'),
-        trigger: 'blur',
-      },
-    ],
-    source_type: [
-      {
-        required: true,
-        message: t('customRecipe.form.rule.sourceTypeRequired'),
-        trigger: 'change',
-      },
-    ],
-    source_config: [
-      {
-        required: true,
-        message: t('customRecipe.form.rule.sourceConfigRequired'),
-        trigger: 'blur',
-      },
-    ],
-  };
+
+  watch(showModal, (visible) => {
+    if (visible) {
+      nextTick(() => {
+        formRef.value?.clearValidate();
+      });
+    }
+  });
+  const rules: ComputedRef<Record<string, unknown[]>> = computed(() => {
+    const requiredNameAndCraft = {
+      id: [
+        {
+          required: true,
+          message: t('customRecipe.form.rule.nameRequired'),
+          trigger: 'blur',
+        },
+        namingValidator,
+      ],
+      craft: [
+        {
+          required: true,
+          message: t('customRecipe.form.rule.craftRequired'),
+          trigger: 'change',
+        },
+      ],
+    };
+
+    if (quickCreate.value) {
+      return {
+        ...requiredNameAndCraft,
+        feed_url: [
+          {
+            required: true,
+            message: t('customRecipe.form.rule.rssUrlRequired'),
+            trigger: 'blur',
+          },
+        ],
+      };
+    }
+
+    return {
+      ...requiredNameAndCraft,
+      source_type: [
+        {
+          required: true,
+          message: t('customRecipe.form.rule.sourceTypeRequired'),
+          trigger: 'change',
+        },
+      ],
+      source_config: [
+        {
+          required: true,
+          message: t('customRecipe.form.rule.sourceConfigRequired'),
+          trigger: 'blur',
+        },
+      ],
+    };
+  });
 
   const humanReadableConfig = (configStr: string) => {
     try {
@@ -455,22 +531,29 @@
       craft: recipe.craft,
       source_type: recipe.source_type,
       source_config: prettyConfig,
+      feed_url: '',
     };
     showModal.value = true;
   };
 
   const saveRecipe = async () => {
     if (quickCreate.value && !editing.value) {
-      // Construct JSON for Quick Create
-      const config = {
+      form.value.feed_url = form.value.feed_url.trim();
+    }
+
+    const invalid = await formRef.value?.validate();
+    if (invalid) {
+      return;
+    }
+
+    if (quickCreate.value && !editing.value) {
+      form.value.source_config = JSON.stringify({
         http_fetcher: {
-          url: rssUrl.value,
+          url: form.value.feed_url,
         },
-      };
-      form.value.source_config = JSON.stringify(config);
+      });
       form.value.source_type = 'rss';
     } else {
-      // Validate JSON before saving in Advanced mode
       try {
         JSON.parse(form.value.source_config);
       } catch (e) {
@@ -481,33 +564,27 @@
 
     saving.value = true;
     try {
+      const payload = toRecipePayload(form.value);
       if (editing.value) {
         if (selectedRecipe.value) {
-          await updateCustomRecipe(form.value);
-          selectedRecipe.value.description = form.value.description;
-          selectedRecipe.value.craft = form.value.craft;
-          selectedRecipe.value.source_type = form.value.source_type;
-          selectedRecipe.value.source_config = form.value.source_config;
+          await updateCustomRecipe(payload);
+          selectedRecipe.value.description = payload.description;
+          selectedRecipe.value.craft = payload.craft;
+          selectedRecipe.value.source_type = payload.source_type;
+          selectedRecipe.value.source_config = payload.source_config;
         }
       } else {
-        await createCustomRecipe(form.value as CustomRecipe);
+        await createCustomRecipe(payload);
         await listCustomRecipes();
       }
       showModal.value = false;
-      form.value = {
-        id: '',
-        description: '',
-        craft: '',
-        source_type: 'rss',
-        source_config: '',
-      };
+      form.value = emptyRecipeForm();
       editing.value = false;
       isUpdating.value = false;
       selectedRecipe.value = null;
       quickCreate.value = false;
-      rssUrl.value = '';
-    } catch (e) {
-      Message.error(t('customRecipe.form.error.saveFailed'));
+    } catch {
+      // Axios interceptor already displays the API error toast.
     } finally {
       saving.value = false;
     }
@@ -519,21 +596,35 @@
   };
 
   const previewRecipe = (record: CustomRecipe) => {
-    const feedUrl = buildRecipeFeedUrl(record.id);
-    router.push({ name: 'FeedViewer', query: { url: feedUrl } });
+    router.push({
+      name: 'FeedViewer',
+      query: { target: 'recipe', id: record.id },
+    });
   };
 
   function resetForm() {
-    form.value = {
-      id: '',
-      description: '',
-      craft: '',
-      source_type: 'rss',
-      source_config: '',
-    };
+    form.value = emptyRecipeForm();
     quickCreate.value = false;
-    rssUrl.value = '';
+    editing.value = false;
+    isUpdating.value = false;
+    selectedRecipe.value = null;
   }
 </script>
 
-<style scoped></style>
+<style scoped>
+  .custom-recipe-table :deep(.arco-table-th),
+  .custom-recipe-table :deep(.arco-table-td) {
+    white-space: nowrap;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+
+  .custom-recipe-table__text {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+  }
+</style>

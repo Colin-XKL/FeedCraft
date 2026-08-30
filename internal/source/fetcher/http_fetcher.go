@@ -30,10 +30,14 @@ func (f *HttpFetcher) Fetch(ctx context.Context) ([]byte, error) {
 	if f.Config == nil || f.Config.URL == "" {
 		return nil, fmt.Errorf("http fetcher is not configured with a URL")
 	}
+	if len(f.Config.NavigationActions) > 0 && !f.Config.UseBrowserless {
+		return nil, fmt.Errorf("browser navigation actions require use_browserless")
+	}
 
 	if f.Config.UseBrowserless {
 		content, err := util.GetBrowserlessContent(f.Config.URL, util.BrowserlessOptions{
-			Timeout: 30 * time.Second,
+			Timeout:           30 * time.Second,
+			NavigationActions: f.Config.NavigationActions,
 		}) // TODO: Make timeout configurable?
 		if err != nil {
 			return nil, fmt.Errorf("browserless fetch failed: %w", err)
@@ -89,7 +93,13 @@ func (f *HttpFetcher) doRequest(ctx context.Context, profile requestProfile) ([]
 		req.Header.Set(key, value)
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	timeout := 30 * time.Second
+	if f.Config.HttpClientTimeout > 0 {
+		timeout = f.Config.HttpClientTimeout
+	}
+	client := &http.Client{Timeout: timeout}
+
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, &fetchError{err: fmt.Errorf("http get failed: %w", err), retryable: true}
 	}

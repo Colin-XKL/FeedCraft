@@ -22,8 +22,8 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		Name:                "proxy",
 		Description:         "代理订阅源",
 		ParamTemplateDefine: []ParamTemplate{},
-		OptionFunc: func(m map[string]string) []CraftOption {
-			return []CraftOption{}
+		OptionFunc: func(m map[string]string) []LegacyCraftOption {
+			return []LegacyCraftOption{}
 		},
 	}
 	sysCraftTempList["limit"] = CraftTemplate{
@@ -48,7 +48,7 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		Name:                "guid-fix",
 		Description:         "修复 RSS GUID。使用文章内容 MD5 作为唯一 ID。",
 		ParamTemplateDefine: []ParamTemplate{},
-		OptionFunc: func(m map[string]string) []CraftOption {
+		OptionFunc: func(m map[string]string) []LegacyCraftOption {
 			return GetGuidCraftOptions()
 		},
 	}
@@ -56,15 +56,21 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		Name:                "relative-link-fix",
 		Description:         "修复文章链接,确保是绝对url. 这样可以保证在获取全文等场景时可以跳转到正确的网页",
 		ParamTemplateDefine: []ParamTemplate{},
-		OptionFunc: func(m map[string]string) []CraftOption {
+		OptionFunc: func(m map[string]string) []LegacyCraftOption {
 			return GetRelativeLinkFixCraftOptions()
 		},
+	}
+	sysCraftTempList["link-flatten"] = CraftTemplate{
+		Name:                "link-flatten",
+		Description:         "提取 RSS 文章中的链接并打平成新的 RSS 条目",
+		ParamTemplateDefine: linkFlattenParamTmpl,
+		OptionFunc:          linkFlattenCraftLoadParam,
 	}
 	sysCraftTempList["fulltext"] = CraftTemplate{
 		Name:                "fulltext",
 		Description:         "提取 RSS 订阅源的全文",
 		ParamTemplateDefine: []ParamTemplate{},
-		OptionFunc: func(m map[string]string) []CraftOption {
+		OptionFunc: func(m map[string]string) []LegacyCraftOption {
 			return GetFulltextCraftOptions()
 		},
 	}
@@ -78,7 +84,7 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		Name:                "cleanup",
 		Description:         "清理文章HTML内容，保留核心内容",
 		ParamTemplateDefine: []ParamTemplate{},
-		OptionFunc: func(m map[string]string) []CraftOption {
+		OptionFunc: func(m map[string]string) []LegacyCraftOption {
 			return GetCleanupCraftOptions()
 		},
 	}
@@ -94,6 +100,12 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		ParamTemplateDefine: summaryCraftParamTmpl,
 		OptionFunc:          summaryCraftLoadParam,
 	}
+	sysCraftTempList["re-title"] = CraftTemplate{
+		Name:                "re-title",
+		Description:         "使用 LLM 根据文章内容重新生成简洁、有吸引力的标题",
+		ParamTemplateDefine: retitleCraftParamTmpl,
+		OptionFunc:          retitleCraftLoadParam,
+	}
 	sysCraftTempList["ignore-advertorial"] = CraftTemplate{
 		Name:                "ignore-advertorial",
 		Description:         "使用 LLM 排除广告文章",
@@ -105,6 +117,20 @@ func GetSysCraftTemplateDict() map[string]CraftTemplate {
 		Description:         "使用 LLM 根据自定义条件过滤文章 (如果满足条件则排除)",
 		ParamTemplateDefine: llmFilterGenericParamTmpl,
 		OptionFunc:          llmFilterGenericLoadParam,
+	}
+	sysCraftTempList["ai-filter"] = CraftTemplate{
+		Name:                "ai-filter",
+		Description:         "使用 LLM 根据自定义规则判断文章应保留还是排除，要求返回 JSON",
+		ParamTemplateDefine: aiFilterCraftParamTmpl,
+		TemplateOnly:        true,
+		OptionFunc:          aiFilterCraftLoadParam,
+	}
+	sysCraftTempList["ai-content-process"] = CraftTemplate{
+		Name:                "ai-content-process",
+		Description:         "使用 LLM 根据自定义规则处理文章内容，可追加到开头、替换原文或追加到末尾",
+		ParamTemplateDefine: aiContentProcessCraftParamTmpl,
+		TemplateOnly:        true,
+		OptionFunc:          aiContentProcessCraftLoadParam,
 	}
 	sysCraftTempList["translate-title"] = CraftTemplate{
 		Name:                "translate-title",
@@ -195,12 +221,12 @@ func ProcessFeed(feed *gofeed.Feed, feedURL string, craftName string) (*feeds.Fe
 	return craftedFeed.OutputFeed, nil
 }
 
-func getCraftOptions(db *gorm.DB, craftName string) ([]CraftOption, error) {
+func getCraftOptions(db *gorm.DB, craftName string) ([]LegacyCraftOption, error) {
 	craftAtomDict := GetCraftAtomDict()
 	craftTmplDict := GetSysCraftTemplateDict()
 
 	if strings.Contains(craftName, ",") {
-		var allOptions []CraftOption
+		var allOptions []LegacyCraftOption
 		parts := strings.Split(craftName, ",")
 		for _, part := range parts {
 			part = strings.TrimSpace(part)
@@ -222,9 +248,9 @@ func getCraftOptions(db *gorm.DB, craftName string) ([]CraftOption, error) {
 const MaxCallDepth = 5
 
 // 递归地解出 craft option list
-func inner(db *gorm.DB, craftAtomDict *map[string]dao.CraftAtom, craftTmplDict *map[string]CraftTemplate, craftName string, depthId int) ([]CraftOption, error) {
+func inner(db *gorm.DB, craftAtomDict *map[string]dao.CraftAtom, craftTmplDict *map[string]CraftTemplate, craftName string, depthId int) ([]LegacyCraftOption, error) {
 	if depthId+1 > MaxCallDepth {
-		return []CraftOption{}, fmt.Errorf("max call depth hit")
+		return []LegacyCraftOption{}, fmt.Errorf("max call depth hit")
 	}
 	logrus.Infof("checking %s", craftName)
 
@@ -240,20 +266,20 @@ func inner(db *gorm.DB, craftAtomDict *map[string]dao.CraftAtom, craftTmplDict *
 		logrus.Infof("[%s] is known craft atom", craftName)
 		tmplContent, tmplValid := (*craftTmplDict)[craftAtom.TemplateName]
 		if !tmplValid {
-			return []CraftOption{}, fmt.Errorf("invalid tmpl name [%s] for craft atom [%s]", craftAtom.TemplateName, craftAtom.Name)
+			return []LegacyCraftOption{}, fmt.Errorf("invalid tmpl name [%s] for craft atom [%s]", craftAtom.TemplateName, craftAtom.Name)
 		}
 		return tmplContent.GetOptions(craftAtom.Params), nil
 	} else {
 		craftArr, checkErr := extractCraftArrFromFlow(db, craftName)
 		if checkErr != nil {
 			// then not a valid  craft name
-			return []CraftOption{}, fmt.Errorf("not a valid craft name")
+			return []LegacyCraftOption{}, fmt.Errorf("not a valid craft name")
 		}
-		var retArr []CraftOption
+		var retArr []LegacyCraftOption
 		for _, extractedSubCraftName := range craftArr {
 			sub, recurErr := inner(db, craftAtomDict, craftTmplDict, extractedSubCraftName, depthId+1)
 			if recurErr != nil {
-				return []CraftOption{}, recurErr
+				return []LegacyCraftOption{}, recurErr
 			}
 			retArr = append(retArr, sub...)
 		}

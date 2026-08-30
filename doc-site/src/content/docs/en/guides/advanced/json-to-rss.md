@@ -39,20 +39,23 @@ Click **Fetch and Next** to retrieve the data.
 
 Once the JSON is fetched, you will see the raw response in the left panel (visualized as a tree). You can now define selectors to extract feed items.
 
-The tool uses **[jq](https://jqlang.github.io/jq/)** syntax for querying JSON, and it can optionally apply Go templates to the extracted values.
+The tool uses **[jq](https://jqlang.github.io/jq/)** syntax for querying JSON, and it can optionally apply templates to the extracted values. For common cases, use `${field_name}` to read fields from the current item; for functions, extracted fields, or more complex logic, use Go templates.
 
 - **List Selector** (Items Iterator): The path to the array of items.
   - Tip: You can click on a node in the tree view to auto-fill selectors.
 - **Title Selector**: The path to the item's title _relative to the item object_.
 - **Title Template**: Optional. Post-process the extracted title, for example `{{ .Fields.Title | trimSpace }}`.
 - **Link Selector**: The path to the item's URL.
-- **Link Template**: Optional. Useful when the API only returns an ID, for example `https://some-website.com/article/{{ .Item.id }}`.
+- **Link Template**: Optional. Useful when the API only returns an ID, for example `https://some-website.com/article/${article_id}`.
 - **Date Selector**: (Optional) Path to the publication date.
 - **Content Selector**: (Optional) Path to the full content or summary.
 
 #### Using Templates (Optional)
 
-You can use [Go Templates](https://pkg.go.dev/text/template) to further process extracted values.
+Templates support two forms:
+
+- **Short variables**: `${article_id}` reads the `article_id` field from the current item; `${author.name}` reads a nested field.
+- **Go templates**: Use [Go Templates](https://pkg.go.dev/text/template) to further process extracted values.
 
 **Available Variables:**
 
@@ -68,7 +71,8 @@ You can use [Go Templates](https://pkg.go.dev/text/template) to further process 
 **Examples:**
 
 - **Clean up whitespace in title**: `{{ .Fields.Title | trimSpace }}`
-- **Build absolute URLs**: `https://example.com/article/{{ .Item.id }}`
+- **Build absolute URLs**: `https://example.com/article/${article_id}`
+- **Read nested fields**: `by ${author.name}`
 - **Remove specific prefixes**: `{{ .Fields.Description | trim "Prefix: " }}`
 - **Fallback values**: `{{ default .Fields.Description "No summary available" }}`
 

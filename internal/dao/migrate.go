@@ -24,6 +24,9 @@ func MigrateDatabases() {
 		&ExecutionLog{},
 		&ResourceHealth{},
 		&SystemNotification{},
+		&Inbox{},
+		&InboxItem{},
+		&SystemAuthToken{},
 	)
 	if err != nil {
 		logrus.Fatalf("migrate database error: %v", err)
@@ -32,6 +35,7 @@ func MigrateDatabases() {
 
 	// Perform data migration from custom_recipes to custom_recipes_v2
 	migrateRecipesToV2(db)
+	migrateTopicFeedInputs(db)
 
 	logrus.Info("migrate database done.")
 
@@ -93,6 +97,61 @@ func migrateRecipesToV2(db *gorm.DB) {
 	}
 
 	logrus.Info("recipe migration to v2 completed.")
+}
+
+func migrateTopicFeedInputs(db *gorm.DB) {
+	if !db.Migrator().HasTable(&TopicFeed{}) {
+		return
+	}
+	if !db.Migrator().HasColumn("topic_feeds", "input_uris") {
+		return
+	}
+
+	type legacyTopicInputRow struct {
+		ID        string
+		Inputs    string
+		InputURIs string
+	}
+
+	var rows []legacyTopicInputRow
+	if err := db.Table("topic_feeds").Select("id, inputs, input_uris").Scan(&rows).Error; err != nil {
+		logrus.Errorf("failed to scan topic feed input_uris migration rows: %v", err)
+		return
+	}
+
+	for _, row := range rows {
+		if row.InputURIs == "" || row.InputURIs == "null" || row.InputURIs == "[]" {
+			continue
+		}
+		if row.Inputs != "" && row.Inputs != "null" && row.Inputs != "[]" {
+			continue
+		}
+
+		var uris []string
+		if err := json.Unmarshal([]byte(row.InputURIs), &uris); err != nil {
+			logrus.Errorf("failed to unmarshal legacy input_uris for topic %s: %v", row.ID, err)
+			continue
+		}
+
+		inputs := make([]TopicInput, 0, len(uris))
+		for _, uri := range uris {
+			inputs = append(inputs, TopicInput{URI: uri})
+		}
+		inputsJSON, err := json.Marshal(inputs)
+		if err != nil {
+			logrus.Errorf("failed to marshal migrated inputs for topic %s: %v", row.ID, err)
+			continue
+		}
+		if err := db.Table("topic_feeds").Where("id = ?", row.ID).Update("inputs", string(inputsJSON)).Error; err != nil {
+			logrus.Errorf("failed to migrate topic inputs for topic %s: %v", row.ID, err)
+		}
+	}
+
+	if err := db.Exec("ALTER TABLE topic_feeds DROP COLUMN input_uris").Error; err != nil {
+		logrus.Errorf("failed to drop legacy topic input_uris column: %v", err)
+		return
+	}
+	logrus.Info("topic feed input_uris migration completed.")
 }
 
 var defaultAdminUsername = "admin"

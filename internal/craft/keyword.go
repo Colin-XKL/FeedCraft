@@ -22,7 +22,7 @@ var (
 	KeywordMatchAll     KeywordMatchScope = "all"
 )
 
-func optionKeyword(mode KeywordFilterMode, matchScope KeywordMatchScope, keywordList []string) CraftOption {
+func optionKeyword(mode KeywordFilterMode, matchScope KeywordMatchScope, keywordList []string) LegacyCraftOption {
 	searchTitle := matchScope == KeywordMatchAll || matchScope == KeywordMatchTitle
 	searchContent := matchScope == KeywordMatchAll || matchScope == KeywordMatchContent
 
@@ -68,8 +68,8 @@ func optionKeyword(mode KeywordFilterMode, matchScope KeywordMatchScope, keyword
 	}
 }
 
-func GetKeywordOption(mode KeywordFilterMode, matchScope KeywordMatchScope, keywordList []string) []CraftOption {
-	craftOptions := []CraftOption{
+func GetKeywordOption(mode KeywordFilterMode, matchScope KeywordMatchScope, keywordList []string) []LegacyCraftOption {
+	craftOptions := []LegacyCraftOption{
 		optionKeyword(mode, matchScope, keywordList),
 	}
 	return craftOptions
@@ -81,7 +81,7 @@ var keywordCraftParamTmpl = []ParamTemplate{
 	{Key: "scope", Description: "match scope, `title` or `content` or `all`"},
 }
 
-func keywordCraftLoadParams(m map[string]string) []CraftOption {
+func keywordCraftLoadParams(m map[string]string) []LegacyCraftOption {
 	modeStr := m["mode"]
 	mode := KeywordIncludeMode
 	if modeStr == string(KeywordIncludeMode) {

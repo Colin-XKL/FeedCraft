@@ -24,9 +24,7 @@ export function login(data: LoginData): Promise<APIResponse<LoginRes>> {
 }
 
 export function logout(): Promise<APIResponse<LoginRes>> {
-  return axios
-    .post<APIResponse<LoginRes>>('/api/user/logout')
-    .then((res) => res.data);
+  return Promise.resolve({ data: { token: '' } } as any);
 }
 
 export function getUserInfo(): Promise<APIResponse<UserState>> {

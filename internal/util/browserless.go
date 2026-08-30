@@ -1,13 +1,25 @@
 package util
 
 import (
+	"FeedCraft/internal/config"
+	"context"
 	"fmt"
-	"net/http"
 	"net/url"
+	"strconv"
+	"strings"
+	"sync"
 	"time"
 
-	"github.com/go-resty/resty/v2"
 	"github.com/sirupsen/logrus"
+)
+
+const (
+	BrowserProviderBrowserlessRESTful = "browserless-restful"
+	BrowserProviderCDP                = "cdp"
+
+	DefaultBrowserRenderTimeout  = 60 * time.Second
+	DefaultBrowserMaxConcurrency = 2
+	defaultBrowserQueueWait      = 20 * time.Second
 )
 
 type BrowserRenderReq struct {
@@ -25,27 +37,29 @@ type WaitForSelector struct {
 
 type GotoOptions struct {
 	WaitUntil string `json:"waitUntil,omitempty"`
+	Timeout   int64  `json:"timeout,omitempty"`
 }
 
 type BrowserlessOptions struct {
-	Timeout   time.Duration
-	WaitTime  time.Duration
-	WaitUntil string
+	Timeout           time.Duration
+	WaitTime          time.Duration
+	WaitUntil         string
+	NavigationActions []config.BrowserNavigationAction
 }
 
-// GetBrowserlessContent fetches the rendered HTML content of a URL using the browserless service.
-// It relies on the PUPPETEER_HTTP_ENDPOINT environment variable.
+type BrowserProviderConfig struct {
+	Provider string
+	Endpoint string
+}
+
+// GetBrowserlessContent fetches rendered HTML using the configured browser provider.
 func GetBrowserlessContent(websiteUrl string, options BrowserlessOptions) (string, error) {
 	envClient := GetEnvClient()
-	browserURI := envClient.GetString("PUPPETEER_HTTP_ENDPOINT")
-	if browserURI == "" {
-		// Log warning instead of fatal, as this might be called in contexts where we want to handle the error
-		logrus.Errorf("puppeteer websocket endpoint PUPPETEER_HTTP_ENDPOINT not found in env")
-		return "", fmt.Errorf("browserless service not configured (PUPPETEER_HTTP_ENDPOINT missing)")
+	cfg := ResolveBrowserProviderConfig(envClient)
+	if cfg.Endpoint == "" {
+		logrus.Errorf("browser provider endpoint not found in env")
+		return "", fmt.Errorf("browser provider not configured (FC_BROWSER_ENDPOINT or FC_PUPPETEER_HTTP_ENDPOINT missing)")
 	}
-	// Since we are moving to a utility, returning an error is better.
-	// But if the env is missing, it's a configuration error.
-	// I'll stick to error return.
 
 	_, err := url.Parse(websiteUrl)
 	if err != nil {
@@ -53,40 +67,96 @@ func GetBrowserlessContent(websiteUrl string, options BrowserlessOptions) (strin
 		return "", err
 	}
 
-	client := resty.New().SetBaseURL(browserURI)
-	client.SetTimeout(options.Timeout)
-
-	headers := map[string]string{
-		"Cache-Control": "no-cache",
-		"Content-Type":  "application/json",
+	if options.Timeout <= 0 {
+		options.Timeout = ResolveBrowserRenderTimeout()
 	}
-	reqBody := BrowserRenderReq{
-		URL:                 websiteUrl,
-		RejectResourceTypes: []string{"image"},
-		WaitFor:             int(options.WaitTime.Milliseconds()),
-	}
-
-	if options.WaitUntil != "" {
-		reqBody.GotoOptions = &GotoOptions{
-			WaitUntil: options.WaitUntil,
-		}
-	}
-
-	response, err := client.R().SetHeaders(headers).SetBody(reqBody).Post("/content")
-	if err != nil {
+	if err := ValidateBrowserNavigationActions(options.NavigationActions); err != nil {
 		return "", err
 	}
 
-	if response.StatusCode() != http.StatusOK {
-		respStr := response.String()
-		logrus.Errorf("browserless service returned status %d. URL: %s, response body: %s", response.StatusCode(), websiteUrl, respStr)
+	queueWait := defaultBrowserQueueWait
+	if options.Timeout > 0 && options.Timeout < queueWait {
+		queueWait = options.Timeout
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), queueWait)
+	defer cancel()
+	release, err := globalBrowserRenderGate.Acquire(ctx, ResolveBrowserMaxConcurrency())
+	if err != nil {
+		return "", err
+	}
+	defer release()
 
-		truncLen := 200
-		if len(respStr) > truncLen {
-			respStr = respStr[:truncLen] + "..."
-		}
-		return "", fmt.Errorf("browserless service returned status %d: %s", response.StatusCode(), respStr)
+	switch cfg.Provider {
+	case BrowserProviderBrowserlessRESTful, "browserless", "":
+		return getBrowserlessRESTContent(cfg.Endpoint, websiteUrl, options)
+	case BrowserProviderCDP:
+		return getCDPContent(cfg.Endpoint, websiteUrl, options)
+	default:
+		return "", fmt.Errorf("unsupported browser provider %q", cfg.Provider)
+	}
+}
+
+func ResolveBrowserRenderTimeout() time.Duration {
+	raw := strings.TrimSpace(GetEnvClient().GetString("BROWSER_TIMEOUT"))
+	if raw == "" {
+		return DefaultBrowserRenderTimeout
+	}
+	if parsed, err := time.ParseDuration(raw); err == nil && parsed > 0 {
+		return parsed
+	}
+	if millis, err := strconv.ParseInt(raw, 10, 64); err == nil && millis > 0 {
+		return time.Duration(millis) * time.Millisecond
+	}
+	logrus.Warnf("Invalid FC_BROWSER_TIMEOUT %q; using default %s", raw, DefaultBrowserRenderTimeout)
+	return DefaultBrowserRenderTimeout
+}
+
+func ResolveBrowserMaxConcurrency() int {
+	limit := GetEnvClient().GetInt("BROWSER_MAX_CONCURRENCY")
+	if limit <= 0 {
+		return DefaultBrowserMaxConcurrency
+	}
+	return limit
+}
+
+type browserRenderGate struct {
+	mu       sync.Mutex
+	inflight int
+}
+
+func (g *browserRenderGate) Acquire(ctx context.Context, limit int) (func(), error) {
+	if g == nil {
+		return func() {}, nil
+	}
+	if limit <= 0 {
+		limit = DefaultBrowserMaxConcurrency
 	}
 
-	return response.String(), nil
+	ticker := time.NewTicker(5 * time.Millisecond)
+	defer ticker.Stop()
+	for {
+		g.mu.Lock()
+		if g.inflight < limit {
+			g.inflight++
+			g.mu.Unlock()
+			return func() {
+				g.mu.Lock()
+				g.inflight--
+				g.mu.Unlock()
+			}, nil
+		}
+		g.mu.Unlock()
+
+		select {
+		case <-ctx.Done():
+			return nil, fmt.Errorf("browser render queue is full: %w", ctx.Err())
+		case <-ticker.C:
+		}
+	}
+}
+
+var globalBrowserRenderGate = &browserRenderGate{}
+
+func resetBrowserRenderGateForTest() {
+	globalBrowserRenderGate = &browserRenderGate{}
 }

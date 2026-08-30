@@ -1,83 +1,84 @@
 <template>
   <div>
-    <h2>{{ props.feedData.title }}</h2>
+    <!-- Feed metadata -->
+    <h2 class="text-lg font-semibold mb-1">{{ feedData.title }}</h2>
     <a-descriptions
-      style="margin-top: 20px"
+      class="mt-3 mb-4"
       :data="feedMetaList"
-      title="Feed 信息"
+      :title="t('feedViewer.feedInfo')"
       :column="1"
+      size="small"
     />
-    <div>总数: {{ feedData.items?.length }}</div>
-    <div class="my-4">
-      <a-radio-group v-model="viewMode" type="button">
+
+    <!-- Toolbar: global view mode + item count -->
+    <div class="flex items-center justify-between flex-wrap gap-2 mb-4">
+      <a-radio-group v-model="viewMode" type="button" size="small">
         <a-radio value="normal">{{ t('feedViewer.viewModeNormal') }}</a-radio>
         <a-radio value="rich">{{ t('feedViewer.viewModeRich') }}</a-radio>
+        <a-radio value="html">{{ t('feedViewer.viewModeHtml') }}</a-radio>
       </a-radio-group>
+      <div class="text-sm text-gray-400">
+        <span v-if="visibleItems.length < feedData.items?.length">
+          {{ t('feedViewer.showingItems', { count: visibleItems.length }) }}
+          &nbsp;/&nbsp;
+          {{ t('feedViewer.totalItems', { count: feedData.items?.length }) }}
+        </span>
+        <span v-else>
+          {{ t('feedViewer.totalItems', { count: feedData.items?.length }) }}
+        </span>
+      </div>
     </div>
-    <ul>
-      <li
-        v-for="item in feedData.items?.slice(0, 10)"
-        :key="item.guid || item.link"
-      >
-        <a-card class="my-2">
-          <a-space>
-            <a
-              :href="item.link"
-              target="_blank"
-              class="hover:text-blue-600 no-underline"
-            >
-              <h3 class="font-bold cursor-pointer">{{ item.title }}</h3>
-            </a>
-            <p v-if="item.isoDate || item.pubDate">{{ formatDate(item) }}</p>
-          </a-space>
 
-          <!-- eslint-disable vue/no-v-html -->
-          <div v-if="viewMode === 'rich'" class="rich-text-content">
-            <div
-              v-html="
-                sanitizeContent(item.content || item.contentSnippet || '')
-              "
-            ></div>
-          </div>
-          <!-- eslint-enable vue/no-v-html -->
-          <a-typography-paragraph
-            v-else
-            :ellipsis="{
-              rows: 3,
-              showTooltip: false,
-              expandable: true,
-            }"
-          >
-            {{ item.contentSnippet }}
-          </a-typography-paragraph>
-        </a-card>
-      </li>
-    </ul>
-    <div v-if="feedData.items?.length > 10"
-      >Feed 内容项过多, 只显示前10项。
+    <!-- Article list -->
+    <div class="flex flex-col gap-3">
+      <FeedItemCard
+        v-for="item in visibleItems"
+        :key="item.guid || item.link"
+        :item="item"
+        :view-mode="viewMode"
+      />
+    </div>
+
+    <div
+      v-if="feedData.items?.length > MAX_VISIBLE_ITEMS"
+      class="mt-4 text-sm text-gray-400 text-center"
+    >
+      {{ t('feedViewer.showingItems', { count: MAX_VISIBLE_ITEMS }) }}
+      &nbsp;/&nbsp;
+      {{ t('feedViewer.totalItems', { count: feedData.items?.length }) }}
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
   import { computed, ref } from 'vue';
-  import dayjs from 'dayjs';
-  import DOMPurify from 'dompurify';
   import { useI18n } from 'vue-i18n';
   import type { FeedViewerPreview } from '@/api/feed_viewer';
+  import FeedItemCard from '@/views/dashboard/feed_viewer/FeedItemCard.vue';
+  import type { ViewMode } from '@/views/dashboard/feed_viewer/FeedItemCard.vue';
 
-  const { t } = useI18n();
+  const MAX_VISIBLE_ITEMS = 20;
 
-  interface FeedViewerProp {
+  interface Props {
     feedData: FeedViewerPreview;
   }
 
-  const props = defineProps<FeedViewerProp>();
-  const viewMode = ref('normal');
+  const props = defineProps<Props>();
+  const { t } = useI18n();
+  const viewMode = ref<ViewMode>('normal');
+
+  const feedTypeLabel = computed(() => {
+    const feedType = props.feedData.feedType?.toLowerCase();
+    if (feedType === 'rss') return 'RSS';
+    if (feedType === 'atom') return 'Atom';
+    if (feedType === 'json') return 'JSON Feed';
+    return props.feedData.feedType;
+  });
 
   const feedMetaList = computed(() => {
     const data = props.feedData;
     return [
+      { label: 'type', value: feedTypeLabel.value },
       { label: 'description', value: data.description },
       { label: 'link', value: data.link },
       { label: 'feedUrl', value: data.feedUrl },
@@ -92,17 +93,9 @@
     ].filter((item) => item.value);
   });
 
-  const sanitizeContent = (content: string) => {
-    return DOMPurify.sanitize(content);
-  };
-
-  const formatDate = (item: FeedViewerPreview['items'][number]) => {
-    const dateValue = item.isoDate || item.pubDate;
-    if (!dateValue) return '';
-
-    const parsed = dayjs(dateValue);
-    return parsed.isValid() ? parsed.format('YYYY-MM-DD HH:mm:ss') : dateValue;
-  };
+  const visibleItems = computed(
+    () => props.feedData.items?.slice(0, MAX_VISIBLE_ITEMS) ?? []
+  );
 </script>
 
 <script lang="ts">
@@ -110,14 +103,3 @@
     name: 'FeedViewContainer',
   };
 </script>
-
-<style scoped>
-  .rich-text-content :deep(img) {
-    max-width: 100%;
-    height: auto;
-  }
-  .rich-text-content :deep(pre) {
-    white-space: pre-wrap;
-    word-wrap: break-word;
-  }
-</style>

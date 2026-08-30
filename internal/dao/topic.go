@@ -1,8 +1,18 @@
 package dao
 
 import (
+	"strings"
+
 	"gorm.io/gorm"
 )
+
+// TopicInput is a single upstream source with optional admin metadata.
+type TopicInput struct {
+	URI         string `json:"uri"`
+	Description string `json:"description,omitempty"`
+	// Disabled excludes this input from topic aggregation when true.
+	Disabled bool `json:"disabled,omitempty"`
+}
 
 // TopicFeed represents the persistence model for a multi-source aggregation node.
 type TopicFeed struct {
@@ -11,16 +21,48 @@ type TopicFeed struct {
 	Title       string `json:"title,omitempty"`
 	Description string `json:"description,omitempty"`
 
-	// List of URIs representing inputs.
-	// Uses a custom protocol for internal resources to make routing elegant and standard.
-	// Examples:
-	//   - "feedcraft://recipe/my-tech-recipe" (Internal RecipeFeed)
-	//   - "feedcraft://topic/sub-topic-id"    (Nested internal TopicFeed)
-	//   - "https://external.com/rss.xml"      (External raw feed)
-	InputURIs []string `json:"input_uris" binding:"required" gorm:"serializer:json"`
+	// Inputs carries URI plus optional description for admin display.
+	Inputs []TopicInput `json:"inputs,omitempty" gorm:"serializer:json"`
 
 	// Configuration for the aggregator pipeline
 	AggregatorConfig []AggregatorStep `json:"aggregator_config" gorm:"serializer:json"`
+}
+
+// NormalizeInputs trims input metadata and removes blank URIs.
+func (t *TopicFeed) NormalizeInputs() {
+	if t == nil {
+		return
+	}
+
+	normalized := make([]TopicInput, 0, len(t.Inputs))
+	for _, item := range t.Inputs {
+		uri := strings.TrimSpace(item.URI)
+		if uri == "" {
+			continue
+		}
+		normalized = append(normalized, TopicInput{
+			URI:         uri,
+			Description: strings.TrimSpace(item.Description),
+			Disabled:    item.Disabled,
+		})
+	}
+	t.Inputs = normalized
+}
+
+// EnabledInputURIs returns input URIs that participate in topic aggregation.
+func (t *TopicFeed) EnabledInputURIs() []string {
+	if t == nil {
+		return nil
+	}
+	uris := make([]string, 0, len(t.Inputs))
+	for _, item := range t.Inputs {
+		uri := strings.TrimSpace(item.URI)
+		if uri == "" || item.Disabled {
+			continue
+		}
+		uris = append(uris, uri)
+	}
+	return uris
 }
 
 // AggregatorStep defines a single processing step in an Aggregator pipeline.

@@ -67,6 +67,41 @@ func TestBuildProviderFromInput_HTTPURL(t *testing.T) {
 	assert.Equal(t, "https://example.com/feed.xml", rawProvider.URL)
 }
 
+func TestBuildProviderFromInput_InboxURIUsesBuilderDB(t *testing.T) {
+	db := newTestDB(t)
+	require.NoError(t, db.AutoMigrate(&dao.Inbox{}, &dao.InboxItem{}))
+	require.NoError(t, dao.CreateInbox(db, &dao.Inbox{
+		ID:          "inbox-1",
+		Title:       "Inbox Feed",
+		Description: "Inbox description",
+		MaxItems:    100,
+	}))
+	require.NoError(t, db.Create(&dao.InboxItem{
+		InboxID:     "inbox-1",
+		ItemID:      "item-1",
+		Title:       "Inbox Item",
+		URL:         "https://example.com/inbox-item",
+		Content:     "<p>Inbox content</p>",
+		Summary:     "Inbox summary",
+		PublishedAt: time.Unix(1700000000, 0),
+		CreatedAt:   time.Unix(1700000000, 0),
+	}).Error)
+
+	provider, err := NewBuilder(db).BuildProviderFromInput(context.Background(), InputSpec{
+		Kind: InputKindURI,
+		URI:  "feedcraft://inbox/inbox-1",
+	}, nil)
+	require.NoError(t, err)
+	assert.IsType(t, &InboxProvider{}, provider)
+
+	feed, err := provider.Fetch(context.Background())
+	require.NoError(t, err)
+	require.NotNil(t, feed)
+	assert.Equal(t, "Inbox Feed", feed.Title)
+	require.Len(t, feed.Articles, 1)
+	assert.Equal(t, "Inbox Item", feed.Articles[0].Title)
+}
+
 func TestBuildProviderFromInput_SourceConfig(t *testing.T) {
 	const testSourceType = constant.SourceType("unit_test_source")
 	registerTestSource(t, testSourceType, func(cfg *config.SourceConfig) (source.Source, error) {
@@ -189,16 +224,27 @@ func TestProxyRecipeFetch_UsesDefaultUserAgent(t *testing.T) {
 }
 
 func TestBuildAggregator(t *testing.T) {
-	processor, err := BuildAggregator([]dao.AggregatorStep{
+	aggregator, err := BuildAggregator([]dao.AggregatorStep{
 		{Type: "sort", Option: map[string]string{"by": "date_desc"}},
 		{Type: "deduplicate", Option: map[string]string{"strategy": "by_link"}},
-		{Type: "limit", Option: map[string]string{"max": "10"}},
+		{Type: "limit", Option: map[string]string{"max": "2"}},
 	})
 	require.NoError(t, err)
+	require.NotNil(t, aggregator)
 
-	flow, ok := processor.(*engine.FlowCraftProcessor)
-	require.True(t, ok)
-	assert.Len(t, flow.Processors, 3)
+	now := time.Now()
+	result, err := aggregator(context.Background(), &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Id: "1", Link: "http://a.com", Updated: now.Add(-1 * time.Hour)},
+			{Id: "2", Link: "http://b.com", Updated: now},
+			{Id: "3", Link: "http://a.com", Updated: now.Add(1 * time.Hour)},
+			{Id: "4", Link: "http://c.com", Updated: now.Add(-2 * time.Hour)},
+		},
+	})
+	require.NoError(t, err)
+	require.Len(t, result.Articles, 2)
+	assert.Equal(t, "3", result.Articles[0].Id)
+	assert.Equal(t, "2", result.Articles[1].Id)
 }
 
 func TestBuildAggregator_InvalidLimit(t *testing.T) {
@@ -209,17 +255,122 @@ func TestBuildAggregator_InvalidLimit(t *testing.T) {
 	assert.Contains(t, err.Error(), "invalid max")
 }
 
+func TestDeduplicate_ByTitle(t *testing.T) {
+	aggregator, err := BuildAggregator([]dao.AggregatorStep{
+		{Type: "deduplicate", Option: map[string]string{"strategy": "by_title"}},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, aggregator)
+
+	result, err := aggregator(context.Background(), &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Id: "1", Title: "Hello World", Link: "http://a.com/1"},
+			{Id: "2", Title: "Hello World", Link: "http://b.com/2"},  // duplicate title
+			{Id: "3", Title: "Hello World!", Link: "http://c.com/3"}, // different (extra !)
+			{Id: "4", Title: "", Link: "http://d.com/4"},             // empty title: kept unconditionally
+			{Id: "5", Title: "", Link: "http://e.com/5"},             // another empty title: also kept
+		},
+	})
+	require.NoError(t, err)
+	// "Hello World" kept once, "Hello World!" kept, both empty-title articles kept
+	require.Len(t, result.Articles, 4)
+	assert.Equal(t, "1", result.Articles[0].Id)
+	assert.Equal(t, "3", result.Articles[1].Id)
+	assert.Equal(t, "4", result.Articles[2].Id)
+	assert.Equal(t, "5", result.Articles[3].Id)
+}
+
+func TestDeduplicate_BySimhash_IdenticalContent(t *testing.T) {
+	aggregator, err := BuildAggregator([]dao.AggregatorStep{
+		// threshold=0.05 (normalized 0-1.0) → hamming = round(0.05*64) = 3
+		{Type: "deduplicate", Option: map[string]string{"strategy": "by_simhash", "threshold": "0.05"}},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, aggregator)
+
+	text := "这是一篇关于人工智能的深度报道，探讨了大模型技术的最新进展。"
+	result, err := aggregator(context.Background(), &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Id: "1", Title: text, Content: text},
+			{Id: "2", Title: text, Content: text}, // exact duplicate
+			{Id: "3", Title: "完全不同的文章：量子计算突破！", Content: "全新内容"},
+		},
+	})
+	require.NoError(t, err)
+	require.Len(t, result.Articles, 2)
+	assert.Equal(t, "1", result.Articles[0].Id)
+	assert.Equal(t, "3", result.Articles[1].Id)
+}
+
+func TestDeduplicate_BySimhash_InvalidThreshold(t *testing.T) {
+	for _, bad := range []string{"1.5", "-0.1", "2", "abc"} {
+		_, err := BuildAggregator([]dao.AggregatorStep{
+			{Type: "deduplicate", Option: map[string]string{"strategy": "by_simhash", "threshold": bad}},
+		})
+		require.Error(t, err, "expected error for threshold=%q", bad)
+		assert.Contains(t, err.Error(), "threshold", "expected 'threshold' in error for threshold=%q", bad)
+	}
+}
+
+func TestDeduplicate_BySimhash_DefaultThreshold(t *testing.T) {
+	// Omitting threshold should use default (0.05, normalized 0-1.0) without error
+	aggregator, err := BuildAggregator([]dao.AggregatorStep{
+		{Type: "deduplicate", Option: map[string]string{"strategy": "by_simhash"}},
+	})
+	require.NoError(t, err)
+	require.NotNil(t, aggregator)
+
+	result, err := aggregator(context.Background(), &model.CraftFeed{
+		Articles: []*model.CraftArticle{
+			{Id: "1", Title: "test"},
+			{Id: "2", Title: "unique content here"},
+		},
+	})
+	require.NoError(t, err)
+	require.NotEmpty(t, result.Articles)
+}
+
+func TestDeduplicate_BySimhash_BoundaryThresholds(t *testing.T) {
+	// threshold=0 and threshold=1.0 are both valid
+	for _, v := range []string{"0", "1.0"} {
+		agg, err := BuildAggregator([]dao.AggregatorStep{
+			{Type: "deduplicate", Option: map[string]string{"strategy": "by_simhash", "threshold": v}},
+		})
+		require.NoError(t, err, "threshold=%s should be valid", v)
+		require.NotNil(t, agg)
+	}
+}
+
+func TestDeduplicate_ByEmbedding_InvalidStrategy(t *testing.T) {
+	_, err := BuildAggregator([]dao.AggregatorStep{
+		{Type: "deduplicate", Option: map[string]string{"strategy": "by_unknown"}},
+	})
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid strategy")
+}
+
+func TestDeduplicate_ByEmbedding_ThresholdOutOfRange(t *testing.T) {
+	// threshold is now a difference-tolerance in [0,1], same direction as SimHash
+	for _, bad := range []string{"1.5", "-0.1", "2"} {
+		_, err := BuildAggregator([]dao.AggregatorStep{
+			{Type: "deduplicate", Option: map[string]string{"strategy": "by_embedding", "threshold": bad}},
+		})
+		require.Error(t, err, "expected error for threshold=%q", bad)
+		assert.Contains(t, err.Error(), "threshold", "expected 'threshold' in error for threshold=%q", bad)
+	}
+}
+
 func TestBuildTopicProvider_NestedTopics(t *testing.T) {
 	db := newTestDB(t)
 	require.NoError(t, db.Create(&dao.TopicFeed{
-		ID:        "child",
-		Title:     "Child Topic",
-		InputURIs: []string{"https://example.com/feed.xml"},
+		ID:     "child",
+		Title:  "Child Topic",
+		Inputs: []dao.TopicInput{{URI: "https://example.com/feed.xml"}},
 	}).Error)
 	require.NoError(t, db.Create(&dao.TopicFeed{
-		ID:        "parent",
-		Title:     "Parent Topic",
-		InputURIs: []string{"feedcraft://topic/child"},
+		ID:     "parent",
+		Title:  "Parent Topic",
+		Inputs: []dao.TopicInput{{URI: "feedcraft://topic/child"}},
 		AggregatorConfig: []dao.AggregatorStep{
 			{Type: "limit", Option: map[string]string{"max": "5"}},
 		},
@@ -233,20 +384,29 @@ func TestBuildTopicProvider_NestedTopics(t *testing.T) {
 	require.True(t, ok)
 	assert.Equal(t, "parent", topicProvider.ID)
 	assert.Len(t, topicProvider.Inputs, 1)
-	_, ok = topicProvider.Inputs[0].(*engine.TopicFeed)
+	// Each input is wrapped in a CachedFeedProvider; the inner provider is a nested TopicFeed.
+	cached, ok := topicProvider.Inputs[0].(*CachedFeedProvider)
+	require.True(t, ok)
+	_, ok = cached.Inner.(*engine.TopicFeed)
 	assert.True(t, ok)
-	assert.IsType(t, &engine.FlowCraftProcessor{}, topicProvider.Aggregator)
+	require.NotNil(t, topicProvider.Aggregator)
+
+	result, err := topicProvider.Aggregator(context.Background(), &model.CraftFeed{
+		Articles: []*model.CraftArticle{{Id: "1"}, {Id: "2"}, {Id: "3"}, {Id: "4"}, {Id: "5"}, {Id: "6"}},
+	})
+	require.NoError(t, err)
+	require.Len(t, result.Articles, 5)
 }
 
 func TestBuildTopicProvider_CycleDetection(t *testing.T) {
 	db := newTestDB(t)
 	require.NoError(t, db.Create(&dao.TopicFeed{
-		ID:        "A",
-		InputURIs: []string{"feedcraft://topic/B"},
+		ID:     "A",
+		Inputs: []dao.TopicInput{{URI: "feedcraft://topic/B"}},
 	}).Error)
 	require.NoError(t, db.Create(&dao.TopicFeed{
-		ID:        "B",
-		InputURIs: []string{"feedcraft://topic/A"},
+		ID:     "B",
+		Inputs: []dao.TopicInput{{URI: "feedcraft://topic/A"}},
 	}).Error)
 
 	builder := NewBuilder(db)

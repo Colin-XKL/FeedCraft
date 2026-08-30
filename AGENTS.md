@@ -2,6 +2,9 @@
 
 FeedCraft is a Go-based RSS feed processing middleware that allows users to transform RSS feeds using various processing "crafts". The application supports AI-powered feed manipulation, including translation, fulltext extraction, summarization, and content filtering.
 
+For development environment setup, dependency installation, local startup, and manual testing notes, see `DEVELOPMENT.md` in the repository root.
+When working on environment-related issues, consult `DEVELOPMENT.md` before changing scripts, dependencies, or runtime configuration.
+
 ## Architecture
 
 ### Core Components
@@ -133,6 +136,17 @@ The system includes numerous built-in craft templates in `internal/craft/entry.g
 - Unit tests are located alongside source files (e.g., `internal/util/language_test.go`)
 - Use `go test ./...` to run all tests
 - The frontend project currently does not have test scripts configured. If tests are added, they would be located in `web/admin/`.
+
+## Utility Guidelines
+
+### Hash Functions
+
+Use the existing helpers in `internal/util/hash.go` — do not import `crypto/md5`, `crypto/sha256`, or `hash/fnv` directly.
+
+| Function                        | Algorithm | Use case                                                                |
+| ------------------------------- | --------- | ----------------------------------------------------------------------- |
+| `util.GetTextContentHash(text)` | FNV-64a   | General-purpose cache keys, content fingerprinting (efficiency-focused) |
+| `util.GetPasswordMD5Hash(text)` | MD5       | Password hashing flows only (security-semantic alias)                   |
 
 ## Common Development Tasks
 
