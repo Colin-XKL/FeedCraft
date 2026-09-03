@@ -43,7 +43,7 @@
       :columns="columns"
       :bordered="true"
       :loading="isLoading"
-      :scroll="{ x: 1280 }"
+      :scroll="{ x: CUSTOM_RECIPE_SCROLL_X }"
     >
       <template #status="{ record }">
         <a-tooltip
@@ -100,7 +100,7 @@
         }}</span>
       </template>
       <template #actions="{ record }">
-        <a-space>
+        <a-space :size="8" :wrap="false">
           <a-button
             type="primary"
             size="small"
@@ -278,6 +278,10 @@
   import { useClipboard } from '@vueuse/core';
   import buildPublicFeedUrl from '@/utils/publicFeedUrl';
   import CraftSelector from '@/views/dashboard/craft_flow/CraftSelector.vue';
+  import {
+    CUSTOM_RECIPE_SCROLL_X,
+    getCustomRecipeColumns,
+  } from './custom_recipe.columns';
 
   const { t } = useI18n();
   const router = useRouter();
@@ -370,52 +374,7 @@
   const isUpdating = ref(false);
   const saving = ref(false);
 
-  const columns = [
-    {
-      title: t('customRecipe.form.name'),
-      dataIndex: 'id',
-      minWidth: 200,
-      ellipsis: true,
-      tooltip: true,
-    },
-    {
-      title: t('customRecipe.form.description'),
-      dataIndex: 'description',
-      minWidth: 180,
-      ellipsis: true,
-      tooltip: true,
-    },
-    {
-      title: t('customRecipe.form.craft'),
-      dataIndex: 'craft',
-      slotName: 'craft',
-      minWidth: 200,
-      ellipsis: true,
-      tooltip: true,
-    },
-    {
-      title: t('customRecipe.status.active'),
-      slotName: 'status',
-      width: 100,
-    },
-    {
-      title: t('customRecipe.form.sourceType'),
-      dataIndex: 'source_type',
-      width: 110,
-    },
-    {
-      title: t('customRecipe.form.sourceConfig'),
-      dataIndex: 'source_config',
-      slotName: 'source_config',
-      minWidth: 240,
-    },
-    {
-      title: t('customRecipe.actions'),
-      slotName: 'actions',
-      width: 280,
-      fixed: 'right' as const,
-    },
-  ];
+  const columns = getCustomRecipeColumns(t);
 
   async function listCustomRecipes() {
     isLoading.value = true;
@@ -617,6 +576,13 @@
     white-space: nowrap;
     word-break: normal;
     overflow-wrap: normal;
+  }
+
+  /* Keep four action buttons on one line inside the sticky column instead of
+     letting nowrap content overflow the table's right edge. */
+  .custom-recipe-table :deep(.custom-recipe-actions-cell),
+  .custom-recipe-table :deep(.custom-recipe-actions-cell .arco-table-cell) {
+    overflow: visible;
   }
 
   .custom-recipe-table__text {
