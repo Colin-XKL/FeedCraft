@@ -20,7 +20,7 @@ jobs:
       #
       # changelog-path is CHANGELOG.md only. RELEASES.md is human-maintained
       # and must not be touched by this workflow.
-      - uses: googleapis/release-please-action@v4
+      - uses: googleapis/release-please-action@v5
         with:
           target-branch: main
           config-file: release-please-config.json
