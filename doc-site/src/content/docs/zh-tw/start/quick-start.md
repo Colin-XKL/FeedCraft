@@ -75,7 +75,7 @@ URL 生成器現在支援「解析模式」。你可以貼上一個現有的 Fee
 version: "3"
 services:
   app.feed-craft:
-    image: ghcr.io/colin-xkl/feed-craft:v3.2.0   # 指定穩定版本,避免自動拉取引入不相容更新
+    image: ghcr.io/colin-xkl/feed-craft:v3.2.0 # 指定穩定版本,避免自動拉取引入不相容更新
     # image: ghcr.io/colin-xkl/feed-craft:latest  # 或使用 latest,自動拉取最新版本
     # image: colinxkl/feed-craft:v3.2.0            # 你也可以使用 docker hub 的鏡像
     container_name: feed-craft
