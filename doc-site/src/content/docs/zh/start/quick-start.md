@@ -67,11 +67,17 @@ URL 生成器现在支持“解析模式”。你可以粘贴一个现有的 Fee
 
 ### 最小化 `docker-compose.yml`
 
+:::tip
+建议生产部署时指定具体版本（如 `v3.2.0`），避免 `latest` 自动更新引入不兼容变更。如需始终使用最新功能，可以使用 `latest`。
+:::
+
 ```yaml
 version: "3"
 services:
   app.feed-craft:
-    image: ghcr.io/colin-xkl/feed-craft
+    image: ghcr.io/colin-xkl/feed-craft:v3.2.0   # 指定稳定版本,避免自动拉取引入不兼容更新
+    # image: ghcr.io/colin-xkl/feed-craft:latest  # 或使用 latest,自动拉取最新版本
+    # image: colinxkl/feed-craft:v3.2.0            # 你也可以使用 docker hub 的镜像
     container_name: feed-craft
     restart: always
     ports:

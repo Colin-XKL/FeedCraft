@@ -81,15 +81,16 @@ https://feed-craft.colinx.one
 ## 部署
 
 你可以通过 docker 快速自行部署一个 FeedCraft 实例,以获得更好的使用体验.
-下面为一个最小 docker compose 示例:
+下面为一个最小 docker compose 示例。建议生产部署时指定具体版本（如 `v3.2.0`），避免 `latest` 自动更新引入不兼容变更：
 
 控制台默认账号`admin`, 密码 `adminadmin`, 登陆后请尽快修改默认密码
 
 ```yaml
 services:
   app.feed-craft:
-    image: ghcr.io/colin-xkl/feed-craft
-    # image: colinxkl/feed-craft  # 你也可以使用docker hub的镜像
+    image: ghcr.io/colin-xkl/feed-craft:v3.2.0   # 指定稳定版本,避免自动拉取引入不兼容更新
+    # image: ghcr.io/colin-xkl/feed-craft:latest  # 或使用 latest,自动拉取最新版本
+    # image: colinxkl/feed-craft:v3.2.0            # 你也可以使用 docker hub 的镜像
     container_name: feed-craft
     restart: always
     ports:
@@ -113,7 +114,9 @@ services:
 version: "3"
 services:
   app.feed-craft:
-    image: ghcr.io/colin-xkl/feed-craft
+    image: ghcr.io/colin-xkl/feed-craft:v3.2.0   # 指定稳定版本,避免自动拉取引入不兼容更新
+    # image: ghcr.io/colin-xkl/feed-craft:latest  # 或使用 latest,自动拉取最新版本
+    # image: colinxkl/feed-craft:v3.2.0            # 你也可以使用 docker hub 的镜像
     container_name: feed-craft
     restart: always
     ports:

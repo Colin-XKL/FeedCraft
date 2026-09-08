@@ -67,11 +67,17 @@ You can deploy your own instance using Docker Compose. The minimal setup include
 
 ### minimal `docker-compose.yml`
 
+:::tip
+For production, pin a specific version (such as `v3.2.0`) so `latest` does not pull an incompatible update. Use `latest` only if you want to always run the newest image.
+:::
+
 ```yaml
 version: "3"
 services:
   app.feed-craft:
-    image: ghcr.io/colin-xkl/feed-craft
+    image: ghcr.io/colin-xkl/feed-craft:v3.2.0   # Pin a stable version to avoid incompatible automatic updates
+    # image: ghcr.io/colin-xkl/feed-craft:latest  # Or use latest to always pull the newest image
+    # image: colinxkl/feed-craft:v3.2.0            # Docker Hub mirror is also available
     container_name: feed-craft
     restart: always
     ports:
