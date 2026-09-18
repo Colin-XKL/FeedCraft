@@ -63,8 +63,8 @@
           </a-card>
         </a-col>
       </a-row>
-      <a-row :gutter="[20, 20]" class="welcome-main-row" align="stretch">
-        <a-col :xs="24" :lg="16">
+      <div class="welcome-main-grid">
+        <div class="welcome-main-grid__start">
           <a-card
             class="welcome-panel"
             :title="t('welcome.quickStart')"
@@ -147,8 +147,8 @@
               </div>
             </div>
           </a-card>
-        </a-col>
-        <a-col :xs="24" :lg="8">
+        </div>
+        <div class="welcome-main-grid__feedback">
           <a-card
             class="welcome-panel"
             hoverable
@@ -175,8 +175,8 @@
               </a-link>
             </a-space>
           </a-card>
-        </a-col>
-      </a-row>
+        </div>
+      </div>
       <a-row :gutter="[20, 20]" class="mt-5">
         <a-col :span="24">
           <a-card
@@ -324,14 +324,25 @@
     color: #0d9488;
   }
 
-  .welcome-link-row,
-  .welcome-main-row {
+  .welcome-link-row {
     min-width: 0;
   }
 
-  .welcome-link-row :deep(.arco-col),
-  .welcome-main-row :deep(.arco-col) {
+  .welcome-link-row :deep(.arco-col) {
     display: flex;
+  }
+
+  .welcome-main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 20px;
+    align-items: stretch;
+  }
+
+  .welcome-main-grid__start,
+  .welcome-main-grid__feedback {
+    display: flex;
+    min-width: 0;
   }
 
   .welcome-panel {
@@ -343,6 +354,12 @@
 
   .welcome-panel :deep(.arco-card-body) {
     flex: 1;
+  }
+
+  @media (max-width: 991px) {
+    .welcome-main-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
 
   .welcome-craft-grid {
