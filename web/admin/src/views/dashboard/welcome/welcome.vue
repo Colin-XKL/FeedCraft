@@ -368,7 +368,7 @@
     flex: 1;
   }
 
-  @media (max-width: 991px) {
+  @media (max-width: 720px) {
     .welcome-main-grid,
     .welcome-main-cell {
       display: block;
