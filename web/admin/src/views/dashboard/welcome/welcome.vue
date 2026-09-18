@@ -63,13 +63,31 @@
           </a-card>
         </a-col>
       </a-row>
-      <div class="welcome-main-grid">
-        <div class="welcome-main-cell welcome-main-cell--start">
+      <div
+        class="welcome-main-grid"
+        style="
+          display: table;
+          width: 100%;
+          table-layout: fixed;
+          border-collapse: separate;
+          border-spacing: 20px 0;
+        "
+      >
+        <div
+          class="welcome-main-cell welcome-main-cell--start"
+          style="
+            display: table-cell;
+            width: 66.666%;
+            height: 1px;
+            vertical-align: top;
+          "
+        >
           <a-card
             class="welcome-panel"
             :title="t('welcome.quickStart')"
             :bordered="false"
             hoverable
+            :style="{ height: '100%' }"
           >
             <p class="text-gray-600 mb-4">{{ t('welcome.quickStart.tip') }}</p>
             <div class="mb-4">
@@ -148,12 +166,21 @@
             </div>
           </a-card>
         </div>
-        <div class="welcome-main-cell welcome-main-cell--feedback">
+        <div
+          class="welcome-main-cell welcome-main-cell--feedback"
+          style="
+            display: table-cell;
+            width: 33.333%;
+            height: 1px;
+            vertical-align: top;
+          "
+        >
           <a-card
             class="welcome-panel"
             hoverable
             :title="t('welcome.feedback')"
             :bordered="false"
+            :style="{ height: '100%' }"
           >
             <p class="text-gray-600 mb-4">{{ t('welcome.feedback.tip') }}</p>
             <a-space direction="vertical" fill>
@@ -369,15 +396,15 @@
   }
 
   @media (max-width: 720px) {
-    .welcome-main-grid,
-    .welcome-main-cell {
-      display: block;
-      width: 100%;
-      height: auto;
+    .welcome-main-grid {
+      display: block !important;
+      border-spacing: 0 !important;
     }
 
-    .welcome-main-grid {
-      border-spacing: 0;
+    .welcome-main-cell {
+      display: block !important;
+      width: 100% !important;
+      height: auto !important;
     }
 
     .welcome-main-cell + .welcome-main-cell {
@@ -385,7 +412,7 @@
     }
 
     .welcome-main-cell .welcome-panel {
-      height: auto;
+      height: auto !important;
     }
   }
 
