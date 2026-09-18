@@ -34,4 +34,8 @@ export default {
   'welcome.craft.translateTitle': '翻译标题',
   'welcome.craft.translateContent': '翻译内容',
   'welcome.feedback': '问题反馈与建议',
+  'welcome.feedback.tip':
+    '使用中遇到问题，或有功能建议，欢迎到 GitHub 讨论或提交 Issue。',
+  'welcome.feedback.discussions': 'GitHub Discussions',
+  'welcome.feedback.issues': 'GitHub Issues',
 };

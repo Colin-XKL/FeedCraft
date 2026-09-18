@@ -35,4 +35,8 @@ export default {
   'welcome.craft.translateTitle': 'Translate title',
   'welcome.craft.translateContent': 'Translate content',
   'welcome.feedback': 'Feedback and suggestions',
+  'welcome.feedback.tip':
+    'If something is broken or you have an idea, open a GitHub discussion or issue.',
+  'welcome.feedback.discussions': 'GitHub Discussions',
+  'welcome.feedback.issues': 'GitHub Issues',
 };
