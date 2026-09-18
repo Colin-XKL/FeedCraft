@@ -10,9 +10,14 @@
         </span>
       </h1>
       <p class="text-xl">{{ t('welcome.subtitle') }}</p>
-      <a-row :gutter="20" class="my-8 welcome-link-row">
+      <a-row :gutter="[20, 20]" class="my-8 welcome-link-row" align="stretch">
         <a-col :span="8">
-          <a-card :title="t('welcome.card.home')" :bordered="false" hoverable>
+          <a-card
+            class="welcome-panel"
+            :title="t('welcome.card.home')"
+            :bordered="false"
+            hoverable
+          >
             <a-link
               href="https://github.com/Colin-XKL/FeedCraft"
               target="_blank"
@@ -25,6 +30,7 @@
         </a-col>
         <a-col :span="8">
           <a-card
+            class="welcome-panel"
             :title="t('welcome.card.moreRss')"
             :bordered="false"
             hoverable
@@ -41,6 +47,7 @@
         </a-col>
         <a-col :span="8">
           <a-card
+            class="welcome-panel"
             :title="t('welcome.card.learnRss')"
             :bordered="false"
             hoverable
@@ -56,9 +63,32 @@
           </a-card>
         </a-col>
       </a-row>
-      <a-row :gutter="20">
-        <a-col :xs="24" :lg="16">
-          <a-card :title="t('welcome.quickStart')" :bordered="false" hoverable>
+      <div
+        class="welcome-main-grid"
+        style="
+          display: table;
+          width: 100%;
+          table-layout: fixed;
+          border-collapse: separate;
+          border-spacing: 20px 0;
+        "
+      >
+        <div
+          class="welcome-main-cell welcome-main-cell--start"
+          style="
+            display: table-cell;
+            width: 66.666%;
+            height: 1px;
+            vertical-align: top;
+          "
+        >
+          <a-card
+            class="welcome-panel"
+            :title="t('welcome.quickStart')"
+            :bordered="false"
+            hoverable
+            :style="{ height: '100%' }"
+          >
             <p class="text-gray-600 mb-4">{{ t('welcome.quickStart.tip') }}</p>
             <div class="mb-4">
               <label class="block mb-2 font-medium" for="welcomeRssUrl">{{
@@ -134,11 +164,55 @@
                 </a-button>
               </div>
             </div>
-            <a-divider />
-            <p class="mb-2 font-medium">{{
-              t('welcome.quickStart.availableCrafts')
-            }}</p>
-            <div class="grid grid-cols-2 gap-2">
+          </a-card>
+        </div>
+        <div
+          class="welcome-main-cell welcome-main-cell--feedback"
+          style="
+            display: table-cell;
+            width: 33.333%;
+            height: 1px;
+            vertical-align: top;
+          "
+        >
+          <a-card
+            class="welcome-panel"
+            hoverable
+            :title="t('welcome.feedback')"
+            :bordered="false"
+            :style="{ height: '100%' }"
+          >
+            <p class="text-gray-600 mb-4">{{ t('welcome.feedback.tip') }}</p>
+            <a-space direction="vertical" fill>
+              <a-link
+                href="https://github.com/Colin-XKL/FeedCraft/discussions"
+                target="_blank"
+                rel="noopener noreferrer"
+                icon
+              >
+                {{ t('welcome.feedback.discussions') }}
+              </a-link>
+              <a-link
+                href="https://github.com/Colin-XKL/FeedCraft/issues"
+                target="_blank"
+                rel="noopener noreferrer"
+                icon
+              >
+                {{ t('welcome.feedback.issues') }}
+              </a-link>
+            </a-space>
+          </a-card>
+        </div>
+      </div>
+      <a-row :gutter="[20, 20]" class="mt-5">
+        <a-col :span="24">
+          <a-card
+            class="welcome-panel"
+            :title="t('welcome.quickStart.availableCrafts')"
+            :bordered="false"
+            hoverable
+          >
+            <div class="welcome-craft-grid">
               <div v-for="group in WELCOME_CRAFT_GROUPS" :key="group.id">
                 <h3 class="font-bold">{{ t(group.labelKey) }}</h3>
                 <ul>
@@ -151,23 +225,6 @@
                 </ul>
               </div>
             </div>
-          </a-card>
-        </a-col>
-        <a-col :xs="24" :lg="8">
-          <a-card
-            hoverable
-            :title="t('welcome.feedback')"
-            :bordered="false"
-            :style="{ width: '100%' }"
-          >
-            <a-link
-              href="https://github.com/Colin-XKL/FeedCraft/discussions"
-              target="_blank"
-              rel="noopener noreferrer"
-              icon
-            >
-              Github Discussion
-            </a-link>
           </a-card>
         </a-col>
       </a-row>
@@ -296,6 +353,73 @@
 
   .welcome-link-row {
     min-width: 0;
+  }
+
+  .welcome-link-row :deep(.arco-col) {
+    display: flex;
+  }
+
+  .welcome-main-grid {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 20px 0;
+  }
+
+  .welcome-main-cell {
+    display: table-cell;
+    height: 1px;
+    vertical-align: top;
+  }
+
+  .welcome-main-cell--start {
+    width: 66.666%;
+  }
+
+  .welcome-main-cell--feedback {
+    width: 33.333%;
+  }
+
+  .welcome-main-cell .welcome-panel {
+    height: 100%;
+  }
+
+  .welcome-panel {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .welcome-panel :deep(.arco-card-body) {
+    flex: 1;
+  }
+
+  @media (max-width: 720px) {
+    .welcome-main-grid {
+      display: block !important;
+      border-spacing: 0 !important;
+    }
+
+    .welcome-main-cell {
+      display: block !important;
+      width: 100% !important;
+      height: auto !important;
+    }
+
+    .welcome-main-cell + .welcome-main-cell {
+      margin-top: 20px;
+    }
+
+    .welcome-main-cell .welcome-panel {
+      height: auto !important;
+    }
+  }
+
+  .welcome-craft-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+    gap: 1rem 1.5rem;
   }
 
   .result-panel {
