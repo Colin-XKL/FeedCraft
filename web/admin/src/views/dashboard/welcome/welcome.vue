@@ -70,81 +70,81 @@
           :bordered="false"
           hoverable
         >
-            <p class="text-gray-600 mb-4">{{ t('welcome.quickStart.tip') }}</p>
-            <div class="mb-4">
-              <label class="block mb-2 font-medium" for="welcomeRssUrl">{{
-                t('welcome.quickStart.rssUrl')
-              }}</label>
-              <div class="flex flex-wrap gap-2">
-                <a-input
-                  id="welcomeRssUrl"
-                  v-model="inputUrl"
-                  class="flex-1 min-w-[16rem]"
-                  :placeholder="t('welcome.quickStart.rssPlaceholder')"
-                  allow-clear
-                  @keyup.enter="generateUrl"
+          <p class="text-gray-600 mb-4">{{ t('welcome.quickStart.tip') }}</p>
+          <div class="mb-4">
+            <label class="block mb-2 font-medium" for="welcomeRssUrl">{{
+              t('welcome.quickStart.rssUrl')
+            }}</label>
+            <div class="flex flex-wrap gap-2">
+              <a-input
+                id="welcomeRssUrl"
+                v-model="inputUrl"
+                class="flex-1 min-w-[16rem]"
+                :placeholder="t('welcome.quickStart.rssPlaceholder')"
+                allow-clear
+                @keyup.enter="generateUrl"
+              />
+              <a-button @click="fillExample">{{
+                t('welcome.quickStart.useExample')
+              }}</a-button>
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="block mb-2 font-medium">{{
+              t('welcome.quickStart.craft')
+            }}</label>
+            <a-select
+              v-model="selectedCraft"
+              :placeholder="t('welcome.quickStart.craft')"
+              allow-search
+            >
+              <a-optgroup
+                v-for="group in WELCOME_CRAFT_GROUPS"
+                :key="group.id"
+                :label="t(group.labelKey)"
+              >
+                <a-option
+                  v-for="craft in craftsInGroup(group.id)"
+                  :key="craft.value"
+                  :value="craft.value"
+                  :label="`${craft.value} - ${t(craft.labelKey)}`"
                 />
-                <a-button @click="fillExample">{{
-                  t('welcome.quickStart.useExample')
-                }}</a-button>
-              </div>
-            </div>
-            <div class="mb-4">
-              <label class="block mb-2 font-medium">{{
-                t('welcome.quickStart.craft')
-              }}</label>
-              <a-select
-                v-model="selectedCraft"
-                :placeholder="t('welcome.quickStart.craft')"
-                allow-search
-              >
-                <a-optgroup
-                  v-for="group in WELCOME_CRAFT_GROUPS"
-                  :key="group.id"
-                  :label="t(group.labelKey)"
-                >
-                  <a-option
-                    v-for="craft in craftsInGroup(group.id)"
-                    :key="craft.value"
-                    :value="craft.value"
-                    :label="`${craft.value} - ${t(craft.labelKey)}`"
-                  />
-                </a-optgroup>
-              </a-select>
-            </div>
-            <a-space wrap>
-              <a-button type="primary" @click="generateUrl">
-                {{ t('welcome.quickStart.generate') }}
+              </a-optgroup>
+            </a-select>
+          </div>
+          <a-space wrap>
+            <a-button type="primary" @click="generateUrl">
+              {{ t('welcome.quickStart.generate') }}
+            </a-button>
+            <router-link :to="{ name: 'QuickStartFeedCraftUrlGenerator' }">
+              <a-button type="text">
+                {{ t('welcome.quickStart.fullGenerator') }}
               </a-button>
-              <router-link :to="{ name: 'QuickStartFeedCraftUrlGenerator' }">
-                <a-button type="text">
-                  {{ t('welcome.quickStart.fullGenerator') }}
-                </a-button>
-              </router-link>
-            </a-space>
-            <div v-if="resultUrl" class="result-panel mt-6">
-              <div class="flex items-center justify-between gap-3 mb-3">
-                <span class="font-medium">{{
-                  t('welcome.quickStart.result')
-                }}</span>
-              </div>
-              <a
-                :href="resultUrl"
-                class="result-url"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                {{ resultUrl }}
-              </a>
-              <div class="mt-3 flex flex-wrap items-center gap-3">
-                <a-button type="primary" @click="copyUrl">
-                  {{ copyButtonText }}
-                </a-button>
-                <a-button @click="previewUrl">
-                  {{ t('welcome.quickStart.preview') }}
-                </a-button>
-              </div>
+            </router-link>
+          </a-space>
+          <div v-if="resultUrl" class="result-panel mt-6">
+            <div class="flex items-center justify-between gap-3 mb-3">
+              <span class="font-medium">{{
+                t('welcome.quickStart.result')
+              }}</span>
             </div>
+            <a
+              :href="resultUrl"
+              class="result-url"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {{ resultUrl }}
+            </a>
+            <div class="mt-3 flex flex-wrap items-center gap-3">
+              <a-button type="primary" @click="copyUrl">
+                {{ copyButtonText }}
+              </a-button>
+              <a-button @click="previewUrl">
+                {{ t('welcome.quickStart.preview') }}
+              </a-button>
+            </div>
+          </div>
         </a-card>
         <a-card
           class="welcome-panel"
@@ -152,24 +152,24 @@
           :title="t('welcome.feedback')"
           :bordered="false"
         >
-            <p class="text-gray-600 mb-4">{{ t('welcome.feedback.tip') }}</p>
-            <a-space direction="vertical" fill>
-              <a-link
-                href="https://github.com/Colin-XKL/FeedCraft/discussions"
-                target="_blank"
-                rel="noopener noreferrer"
-                icon
-              >
-                {{ t('welcome.feedback.discussions') }}
-              </a-link>
-              <a-link
-                href="https://github.com/Colin-XKL/FeedCraft/issues"
-                target="_blank"
-                rel="noopener noreferrer"
-                icon
-              >
-                {{ t('welcome.feedback.issues') }}
-              </a-link>
+          <p class="text-gray-600 mb-4">{{ t('welcome.feedback.tip') }}</p>
+          <a-space direction="vertical" fill>
+            <a-link
+              href="https://github.com/Colin-XKL/FeedCraft/discussions"
+              target="_blank"
+              rel="noopener noreferrer"
+              icon
+            >
+              {{ t('welcome.feedback.discussions') }}
+            </a-link>
+            <a-link
+              href="https://github.com/Colin-XKL/FeedCraft/issues"
+              target="_blank"
+              rel="noopener noreferrer"
+              icon
+            >
+              {{ t('welcome.feedback.issues') }}
+            </a-link>
           </a-space>
         </a-card>
       </div>
