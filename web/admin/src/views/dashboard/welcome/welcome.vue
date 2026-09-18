@@ -64,13 +64,12 @@
         </a-col>
       </a-row>
       <div class="welcome-main-grid">
-        <div class="welcome-main-grid__start">
-          <a-card
-            class="welcome-panel"
-            :title="t('welcome.quickStart')"
-            :bordered="false"
-            hoverable
-          >
+        <a-card
+          class="welcome-panel"
+          :title="t('welcome.quickStart')"
+          :bordered="false"
+          hoverable
+        >
             <p class="text-gray-600 mb-4">{{ t('welcome.quickStart.tip') }}</p>
             <div class="mb-4">
               <label class="block mb-2 font-medium" for="welcomeRssUrl">{{
@@ -146,15 +145,13 @@
                 </a-button>
               </div>
             </div>
-          </a-card>
-        </div>
-        <div class="welcome-main-grid__feedback">
-          <a-card
-            class="welcome-panel"
-            hoverable
-            :title="t('welcome.feedback')"
-            :bordered="false"
-          >
+        </a-card>
+        <a-card
+          class="welcome-panel"
+          hoverable
+          :title="t('welcome.feedback')"
+          :bordered="false"
+        >
             <p class="text-gray-600 mb-4">{{ t('welcome.feedback.tip') }}</p>
             <a-space direction="vertical" fill>
               <a-link
@@ -173,9 +170,8 @@
               >
                 {{ t('welcome.feedback.issues') }}
               </a-link>
-            </a-space>
-          </a-card>
-        </div>
+          </a-space>
+        </a-card>
       </div>
       <a-row :gutter="[20, 20]" class="mt-5">
         <a-col :span="24">
@@ -339,16 +335,13 @@
     align-items: stretch;
   }
 
-  .welcome-main-grid__start,
-  .welcome-main-grid__feedback {
-    display: flex;
-    min-width: 0;
+  .welcome-main-grid > .welcome-panel {
+    min-height: 0;
   }
 
   .welcome-panel {
     display: flex;
     width: 100%;
-    height: 100%;
     flex-direction: column;
   }
 
