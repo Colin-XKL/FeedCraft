@@ -1,23 +1,41 @@
 package admin
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/sirupsen/logrus"
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
 const tokenLifeSpanHour = 1
 
+var (
+	randomSignKey     string
+	randomSignKeyOnce sync.Once
+)
+
+// getJwtSignKey returns API_SECRET. When it is unset, a random key is
+// generated once per process instead of a public default, so tokens can't be
+// forged; they stop being valid when the server restarts.
 func getJwtSignKey() string {
-	defaultKey := "FeedCraft"
-	secretKey := os.Getenv("API_SECRET")
-	if secretKey == "" {
-		return defaultKey
+	if secretKey := os.Getenv("API_SECRET"); secretKey != "" {
+		return secretKey
 	}
-	return secretKey
+	randomSignKeyOnce.Do(func() {
+		buf := make([]byte, 32)
+		if _, err := rand.Read(buf); err != nil {
+			panic(fmt.Sprintf("generate JWT sign key: %v", err))
+		}
+		randomSignKey = hex.EncodeToString(buf)
+		logrus.Warn("API_SECRET is not set; using a random JWT sign key. Admin sessions will end when the server restarts. Set API_SECRET to keep them.")
+	})
+	return randomSignKey
 }
 
 func GenerateToken(username string) (string, error) {
