@@ -72,6 +72,7 @@ You can configure FeedCraft using environment variables in `docker-compose.yml`.
 - **FC_BROWSER_TIMEOUT**: (Optional) Timeout for a single browser render. Accepts Go duration (`60s`) or milliseconds (`60000`). Default: `60s`. Keep this at or below the browserless `CONNECTION_TIMEOUT`.
 - **FC_BROWSER_MAX_CONCURRENCY**: (Optional) Global max concurrent browser render jobs (default: `2`). Prevents `fulltext-plus` from opening too many Chrome sessions at once.
 - **FC_REDIS_URI**: Redis connection address. Used for caching to speed up processing and reduce AI token consumption.
+- **API_SECRET**: (Optional) Key used to sign admin login tokens. If unset, FeedCraft uses a random key that changes on every restart, so admins are logged out when the server restarts. Set it when you want sessions to survive restarts, and set the same value on every instance if you run more than one.
 - **FC_HTTP_USER_AGENT_FEED**: (Optional) Default `User-Agent` for feed-style outbound requests, such as fetching RSS/XML resources. Search provider requests are temporarily grouped into this same rule.
 - **FC_HTTP_USER_AGENT_HTML**: (Optional) Default `User-Agent` for HTML page fetches, such as fulltext extraction and the HTML-to-RSS tooling. **Note:** If the value contains spaces or parentheses, it must be enclosed in quotes.
 - **FC_LLM_API_KEY**: API Key for OpenAI or compatible services (like DeepSeek, Gemini, etc.).

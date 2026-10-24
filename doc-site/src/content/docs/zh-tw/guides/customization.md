@@ -72,6 +72,7 @@ related:
 - **FC_BROWSER_TIMEOUT**: （可選）單次瀏覽器渲染逾時。支援 Go duration（`60s`）或毫秒（`60000`），預設 `60s`。建議不超過 browserless 的 `CONNECTION_TIMEOUT`。
 - **FC_BROWSER_MAX_CONCURRENCY**: （可選）全域瀏覽器渲染最大併發數（預設：`2`）。避免 `fulltext-plus` 一次開啟過多 Chrome 工作階段。
 - **FC_REDIS_URI**: Redis 連線地址。用於快取，加快處理速度並減少 AI Token 消耗。
+- **API_SECRET**: （可選）用於簽發管理後台登入權杖的金鑰。未設定時會使用每次重新啟動都會變化的隨機金鑰，服務重新啟動後管理員需要重新登入。如果希望重新啟動後工作階段仍然有效，請設定該值；如果執行多個實例，所有實例必須設定相同的值。
 - **FC_HTTP_USER_AGENT_FEED**: （可選）feed 類外部請求的預設 `User-Agent`，例如抓取 RSS/XML 資源時使用。搜尋提供方請求目前也暫時歸入這一規則。
 - **FC_HTTP_USER_AGENT_HTML**: （可選）HTML 頁面抓取的預設 `User-Agent`，例如全文提取和 HTML 轉 RSS 工具使用。**注意：** 如果該值包含空格或括號，必須使用引號括起來。
 - **FC_LLM_API_KEY**: OpenAI 或相容服務（如 DeepSeek, Gemini 等）的 API Key。
