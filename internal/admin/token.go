@@ -22,7 +22,9 @@ var (
 
 // getJwtSignKey returns API_SECRET. When it is unset, a random key is
 // generated once per process instead of a public default, so tokens can't be
-// forged; they stop being valid when the server restarts.
+// forged; they stop being valid when the server restarts, and they aren't
+// accepted by other instances. Deployments with more than one instance must
+// set the same API_SECRET on all of them.
 func getJwtSignKey() string {
 	if secretKey := os.Getenv("API_SECRET"); secretKey != "" {
 		return secretKey
@@ -33,7 +35,7 @@ func getJwtSignKey() string {
 			panic(fmt.Sprintf("generate JWT sign key: %v", err))
 		}
 		randomSignKey = hex.EncodeToString(buf)
-		logrus.Warn("API_SECRET is not set; using a random JWT sign key. Admin sessions will end when the server restarts. Set API_SECRET to keep them.")
+		logrus.Warn("API_SECRET is not set; using a random JWT sign key. Admin sessions will end when the server restarts. Set API_SECRET to keep them, and set the same value on every instance when running more than one.")
 	})
 	return randomSignKey
 }
