@@ -142,6 +142,10 @@ services:
     restart: unless-stopped
 ```
 
+## 一键部署
+
+[![Deploy on RepoCloud](https://d16t0pc4846x52.cloudfront.net/deploylobe.svg)](https://repocloud.io/details/FeedCraft/)
+
 ## 关于 FeedCraft
 
 FeedCraft 的名称和 Logo 参考并致敬两款游戏: MineCraft 和塞尔达, 初衷和愿景是做一个简单易用、同时足够灵活, 能够有更多可能性的 RSS 工具.
