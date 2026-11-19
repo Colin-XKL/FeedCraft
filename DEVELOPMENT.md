@@ -142,6 +142,9 @@ PR → dev
        version bump + CHANGELOG.md + web/admin & doc-site package.json
   → human review
   → update RELEASES.md on that same PR (亮点 / 重要变更 / 升级注意)
+  → bump docker image tags in README.md and
+    doc-site/src/content/docs/{en,zh,zh-tw}/start/quick-start.md
+    to the new version (these markdown examples are not extra-files)
   → merge the release PR
   → tag + GitHub Release
 ```
