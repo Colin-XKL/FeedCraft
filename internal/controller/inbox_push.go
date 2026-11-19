@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -61,37 +63,65 @@ func PushInboxItems(c *gin.Context) {
 		return
 	}
 
-	var reqItems []InboxPushItem
+	var rawItems []json.RawMessage
 
-	if err := c.ShouldBindJSON(&reqItems); err != nil {
+	if err := c.ShouldBindJSON(&rawItems); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: "Invalid JSON array: " + err.Error()})
 		return
 	}
 
-	if len(reqItems) == 0 {
+	if len(rawItems) == 0 {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: "Array cannot be empty"})
 		return
 	}
 
-	if len(reqItems) > 100 {
+	if len(rawItems) > 100 {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: "Batch size exceeds maximum limit of 100"})
 		return
 	}
 
-	results := make([]InboxPushItemResult, len(reqItems))
-	validIndices := make([]int, 0, len(reqItems))
+	reqItems := make([]InboxPushItem, len(rawItems))
+	results := make([]InboxPushItemResult, len(rawItems))
+	validIndices := make([]int, 0, len(rawItems))
 	failedCount := 0
 	firstErrMsg := ""
 
-	for i, item := range reqItems {
-		trimmedID := strings.TrimSpace(item.ID)
-		contentBytes := len(item.Content)
+	for i, raw := range rawItems {
 		res := InboxPushItemResult{
-			Index:        i,
-			ID:           trimmedID,
-			Status:       "ok",
-			ContentBytes: contentBytes,
+			Index:  i,
+			Status: "ok",
 		}
+
+		trimmedRaw := bytes.TrimSpace(raw)
+		if len(trimmedRaw) == 0 || trimmedRaw[0] != '{' {
+			errMsg := fmt.Sprintf("Item at index %d must be a JSON object", i)
+			res.Status = "error"
+			res.Error = errMsg
+			failedCount++
+			if firstErrMsg == "" {
+				firstErrMsg = errMsg
+			}
+			results[i] = res
+			continue
+		}
+
+		var item InboxPushItem
+		if err := json.Unmarshal(trimmedRaw, &item); err != nil {
+			errMsg := fmt.Sprintf("Item at index %d has invalid JSON fields: %v", i, err)
+			res.Status = "error"
+			res.Error = errMsg
+			failedCount++
+			if firstErrMsg == "" {
+				firstErrMsg = errMsg
+			}
+			results[i] = res
+			continue
+		}
+
+		reqItems[i] = item
+		res.ID = strings.TrimSpace(item.ID)
+		res.ContentBytes = len(item.Content)
+		res.Warning = inboxPushContentWarning(item)
 
 		if errMsg := validateInboxPushItem(i, item, requireContent); errMsg != "" {
 			res.Status = "error"
@@ -101,7 +131,6 @@ func PushInboxItems(c *gin.Context) {
 				firstErrMsg = errMsg
 			}
 		} else {
-			res.Warning = inboxPushContentWarning(item)
 			validIndices = append(validIndices, i)
 		}
 		results[i] = res
@@ -111,7 +140,7 @@ func PushInboxItems(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, util.APIResponse[InboxPushResponse]{
 			Msg: firstErrMsg,
 			Data: InboxPushResponse{
-				Total:   len(reqItems),
+				Total:   len(rawItems),
 				Created: 0,
 				Updated: 0,
 				Failed:  failedCount,
@@ -133,7 +162,7 @@ func PushInboxItems(c *gin.Context) {
 		return
 	}
 
-	// Extract explicitly provided IDs from valid items to count updates
+	// Extract explicitly provided IDs from valid items to count updates inside the write transaction
 	var explicitIDs []string
 	for _, idx := range validIndices {
 		if trimmedID := strings.TrimSpace(reqItems[idx].ID); trimmedID != "" {
@@ -141,28 +170,15 @@ func PushInboxItems(c *gin.Context) {
 		}
 	}
 
-	existingIDs, err := dao.ListExistingInboxItemIDs(db, inboxID, explicitIDs)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: "Database error checking existing items"})
-		return
-	}
-	existingMap := make(map[string]bool)
-	for _, id := range existingIDs {
-		existingMap[id] = true
-	}
-
 	daoItems := make([]dao.InboxItem, 0, len(validIndices))
 	siteBaseURL := strings.TrimRight(util.GetEnvClient().GetString("SITE_BASE_URL"), "/")
 	now := time.Now()
 
-	updatedCount := 0
 	for _, idx := range validIndices {
 		req := reqItems[idx]
 		itemID := strings.TrimSpace(req.ID)
 		if itemID == "" {
 			itemID = uuid.New().String()
-		} else if existingMap[itemID] {
-			updatedCount++
 		}
 		results[idx].ID = itemID
 
@@ -199,7 +215,22 @@ func PushInboxItems(c *gin.Context) {
 		})
 	}
 
+	updatedCount := 0
 	err = db.Transaction(func(tx *gorm.DB) error {
+		existingIDs, err := dao.ListExistingInboxItemIDs(tx, inboxID, explicitIDs)
+		if err != nil {
+			return err
+		}
+		existingMap := make(map[string]bool, len(existingIDs))
+		for _, id := range existingIDs {
+			existingMap[id] = true
+		}
+		for _, item := range daoItems {
+			if existingMap[item.ItemID] {
+				updatedCount++
+			}
+		}
+
 		// Bulk Upsert
 		if err := tx.Clauses(clause.OnConflict{
 			Columns: []clause.Column{{Name: "inbox_id"}, {Name: "item_id"}},
@@ -223,7 +254,7 @@ func PushInboxItems(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, InboxPushResponse{
-		Total:   len(reqItems),
+		Total:   len(rawItems),
 		Created: len(validIndices) - updatedCount,
 		Updated: updatedCount,
 		Failed:  failedCount,

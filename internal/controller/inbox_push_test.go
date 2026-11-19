@@ -92,19 +92,24 @@ func TestPushInboxItemsBatchValidationReportsAllItemsWithoutSkipInvalid(t *testi
 	assert.Equal(t, 2, resp.Data.Failed)
 	require.Len(t, resp.Data.Results, 3)
 
+	assert.Equal(t, 0, resp.Data.Results[0].Index)
 	assert.Equal(t, "ok", resp.Data.Results[0].Status)
 	assert.Equal(t, 900, resp.Data.Results[0].ContentBytes)
 	assert.Empty(t, resp.Data.Results[0].Error)
 	assert.Empty(t, resp.Data.Results[0].Warning)
 
+	assert.Equal(t, 1, resp.Data.Results[1].Index)
 	assert.Equal(t, "error", resp.Data.Results[1].Status)
 	assert.Contains(t, resp.Data.Results[1].Error, `field "content"`)
 	assert.Contains(t, resp.Data.Results[1].Error, "U+0000")
 	assert.Contains(t, resp.Data.Results[1].Error, "character 4")
 	assert.Contains(t, resp.Data.Results[1].Error, "UTF-8 byte offset 3")
+	assert.Contains(t, resp.Data.Results[1].Warning, "short")
 
+	assert.Equal(t, 2, resp.Data.Results[2].Index)
 	assert.Equal(t, "error", resp.Data.Results[2].Status)
 	assert.Contains(t, resp.Data.Results[2].Error, "missing required 'title'")
+	assert.Empty(t, resp.Data.Results[2].Warning)
 
 	var count int64
 	require.NoError(t, db.Model(&dao.InboxItem{}).Count(&count).Error)
@@ -162,6 +167,10 @@ func TestPushInboxItemsSkipInvalidPersistsValidItems(t *testing.T) {
 	require.NoError(t, err)
 	assert.Len(t, items, 2)
 
+	createdItem, err := dao.GetInboxItemByItemID(db, "skip-invalid-inbox", resp.Results[0].ID)
+	require.NoError(t, err)
+	assert.Equal(t, "New Valid", createdItem.Title)
+
 	updatedItem, err := dao.GetInboxItemByItemID(db, "skip-invalid-inbox", "existing-1")
 	require.NoError(t, err)
 	assert.Equal(t, "Updated Valid", updatedItem.Title)
@@ -203,8 +212,12 @@ func TestPushInboxItemsContentBytesAndShortContentWarning(t *testing.T) {
 		MaxItems: 10,
 	}))
 
-	fullContent := strings.Repeat("x", inboxPushShortContentThresholdBytes)
-	shortContent := strings.Repeat("y", 120)
+	// 270 CJK characters = 810 UTF-8 bytes (>= 800-byte threshold, while rune count 270 < 800)
+	fullContent := strings.Repeat("中", 270)
+	// 40 CJK characters = 120 UTF-8 bytes (< 800-byte threshold)
+	shortContent := strings.Repeat("文", 40)
+	require.Equal(t, 810, len(fullContent))
+	require.Equal(t, 120, len(shortContent))
 
 	body, err := json.Marshal([]InboxPushItem{
 		{ID: "full", Title: "Full Report", Content: fullContent},
@@ -224,7 +237,7 @@ func TestPushInboxItemsContentBytesAndShortContentWarning(t *testing.T) {
 	assert.Equal(t, 0, resp.Failed)
 	require.Len(t, resp.Results, 4)
 
-	assert.Equal(t, inboxPushShortContentThresholdBytes, resp.Results[0].ContentBytes)
+	assert.Equal(t, 810, resp.Results[0].ContentBytes)
 	assert.Empty(t, resp.Results[0].Warning)
 
 	assert.Equal(t, 0, resp.Results[1].ContentBytes)
@@ -235,6 +248,62 @@ func TestPushInboxItemsContentBytesAndShortContentWarning(t *testing.T) {
 
 	assert.Equal(t, 0, resp.Results[3].ContentBytes)
 	assert.Empty(t, resp.Results[3].Warning)
+}
+
+func TestPushInboxItemsMalformedEntryHandledPerItem(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	db := inboxPushTestDatabase(t)
+	require.NoError(t, db.AutoMigrate(&dao.Inbox{}, &dao.InboxItem{}))
+	require.NoError(t, dao.CreateInbox(db, &dao.Inbox{
+		ID:       "malformed-entry-inbox",
+		MaxItems: 10,
+	}))
+
+	longContent := strings.Repeat("a", 900)
+	rawBody := []byte(`[
+		{"id":"valid-1","title":"Valid Title","content":"` + longContent + `"},
+		{"id":"bad-type","title":123,"content":"body"},
+		null
+	]`)
+
+	t.Run("reports per-item errors without skip_invalid", func(t *testing.T) {
+		recorder := performInboxPushRequest("/api/inbox/malformed-entry-inbox/items", rawBody)
+		assert.Equal(t, http.StatusBadRequest, recorder.Code)
+
+		var resp util.APIResponse[InboxPushResponse]
+		require.NoError(t, json.Unmarshal(recorder.Body.Bytes(), &resp))
+		assert.Equal(t, 3, resp.Data.Total)
+		assert.Equal(t, 2, resp.Data.Failed)
+		require.Len(t, resp.Data.Results, 3)
+
+		assert.Equal(t, 0, resp.Data.Results[0].Index)
+		assert.Equal(t, "ok", resp.Data.Results[0].Status)
+		assert.Equal(t, 1, resp.Data.Results[1].Index)
+		assert.Equal(t, "error", resp.Data.Results[1].Status)
+		assert.Contains(t, resp.Data.Results[1].Error, "invalid JSON fields")
+		assert.Equal(t, 2, resp.Data.Results[2].Index)
+		assert.Equal(t, "error", resp.Data.Results[2].Status)
+		assert.Contains(t, resp.Data.Results[2].Error, "must be a JSON object")
+	})
+
+	t.Run("skips malformed items when skip_invalid is true", func(t *testing.T) {
+		recorder := performInboxPushRequest("/api/inbox/malformed-entry-inbox/items?skip_invalid=true", rawBody)
+		assert.Equal(t, http.StatusCreated, recorder.Code)
+
+		var resp InboxPushResponse
+		require.NoError(t, json.Unmarshal(recorder.Body.Bytes(), &resp))
+		assert.Equal(t, 3, resp.Total)
+		assert.Equal(t, 1, resp.Created)
+		assert.Equal(t, 2, resp.Failed)
+		require.Len(t, resp.Results, 3)
+		assert.Equal(t, "ok", resp.Results[0].Status)
+		assert.Equal(t, "error", resp.Results[1].Status)
+		assert.Equal(t, "error", resp.Results[2].Status)
+
+		saved, err := dao.GetInboxItemByItemID(db, "malformed-entry-inbox", "valid-1")
+		require.NoError(t, err)
+		assert.Equal(t, "Valid Title", saved.Title)
+	})
 }
 
 func TestPushInboxItemsRequireContent(t *testing.T) {
