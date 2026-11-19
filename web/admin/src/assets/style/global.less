@@ -92,3 +92,35 @@ body {
     }
   }
 }
+
+// Horizontal Arco Steps keep overflow:hidden to clip the 5000px title connector.
+// Descriptions use a 140px max-width that can exceed the remaining column after
+// the icon, so the last character is clipped with no ellipsis. Constrain the
+// content box to the item and let descriptions wrap instead.
+.wizard-steps.arco-steps {
+  .arco-steps-item {
+    min-width: 0;
+  }
+
+  .arco-steps-item:last-child {
+    flex: 1;
+  }
+
+  .arco-steps-item-content {
+    max-width: calc(100% - 40px);
+    white-space: normal;
+    vertical-align: top;
+  }
+
+  .arco-steps-item-title {
+    white-space: nowrap;
+  }
+
+  .arco-steps-item-description {
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.4;
+  }
+}

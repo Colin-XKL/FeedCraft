@@ -7,7 +7,7 @@
         <a-steps
           :current="currentStep"
           changeable
-          class="mb-8"
+          class="wizard-steps mb-8"
           @change="onStepChange"
         >
           <a-step
