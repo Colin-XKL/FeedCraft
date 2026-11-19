@@ -111,17 +111,25 @@ Send a JSON array of article objects. Only `title` is required; all other fields
 | `title`     | ✅       | Article headline.                                                                                                              |
 | `id`        | Optional | Custom stable ID. If omitted, a UUID is auto-generated. If the same `id` is pushed again, the article is **updated** (upsert). |
 | `url`       | Optional | Canonical link. If omitted, FeedCraft generates a link pointing to the article's stored content.                               |
-| `content`   | Optional | Full HTML body.                                                                                                                |
+| `content`   | Optional | Full HTML body. If omitted or shorter than 800 bytes (and `is_notice` is not `true`), the response includes a `warning`.       |
 | `summary`   | Optional | Short description. Defaults to the first 200 **Unicode characters** (runes) of `content`.                                      |
 | `author`    | Optional | Author name.                                                                                                                   |
 | `timestamp` | Optional | Unix timestamp (seconds) for the publication date. Defaults to the current time.                                               |
+| `is_notice` | Optional | Set to `true` for notice-only items without a full body to suppress short-content warnings and bypass `require_content=true`.  |
 
 **Batch limit**: Maximum 100 items per request.
+
+### Query Parameters
+
+| Parameter         | Default | Description                                                                                                               |
+| ----------------- | ------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `skip_invalid`    | `false` | When `true`, invalid items are skipped and valid items in the batch are still persisted. Returns `400` if all items fail. |
+| `require_content` | `false` | When `true`, rejects items with empty `content` unless `is_notice` is set to `true`.                                      |
 
 ### cURL Example
 
 ```bash
-curl -X POST "https://YOUR_SERVER/api/inbox/my-inbox/items" \
+curl -X POST "https://YOUR_SERVER/api/inbox/my-inbox/items?skip_invalid=true" \
   -H "Authorization: Bearer YOUR_SYSTEM_AUTH_TOKEN" \
   -H "Content-Type: application/json" \
   -d '[{"title": "Hello World", "content": "<p>First article pushed!</p>"}]'
@@ -133,9 +141,21 @@ curl -X POST "https://YOUR_SERVER/api/inbox/my-inbox/items" \
 {
   "total": 1,
   "created": 1,
-  "updated": 0
+  "updated": 0,
+  "failed": 0,
+  "results": [
+    {
+      "index": 0,
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "ok",
+      "content_bytes": 28,
+      "warning": "content is short (28 bytes, below 800-byte threshold); verify full content was sent (set is_notice=true for notice-only items)"
+    }
+  ]
 }
 ```
+
+When validation fails with `skip_invalid=false` (default) or when all items fail, the endpoint returns `400 Bad Request` with `msg` set to the first error and `data.results` listing the per-item validation status (`ok` or `error` with details).
 
 ## Subscribing via RSS
 

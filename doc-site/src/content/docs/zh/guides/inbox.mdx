@@ -106,22 +106,30 @@ Content-Type: application/json
 ]
 ```
 
-| 字段        | 必填 | 说明                                                                                     |
-| ----------- | ---- | ---------------------------------------------------------------------------------------- |
-| `title`     | ✅   | 文章标题。                                                                               |
-| `id`        | 可选 | 自定义稳定 ID。省略时自动生成 UUID。若相同 `id` 再次推送，则**更新**（upsert）已有文章。 |
-| `url`       | 可选 | 文章原始链接。省略时 FeedCraft 自动生成指向存储内容的链接。                              |
-| `content`   | 可选 | 文章完整 HTML 正文。                                                                     |
-| `summary`   | 可选 | 简短描述，默认取 `content` 前 200 个 **Unicode 字符**（rune）。                          |
-| `author`    | 可选 | 作者名。                                                                                 |
-| `timestamp` | 可选 | 发布时间的 Unix 时间戳（秒）。默认为当前时间。                                           |
+| 字段        | 必填 | 说明                                                                                            |
+| ----------- | ---- | ----------------------------------------------------------------------------------------------- |
+| `title`     | ✅   | 文章标题。                                                                                      |
+| `id`        | 可选 | 自定义稳定 ID。省略时自动生成 UUID。若相同 `id` 再次推送，则**更新**（upsert）已有文章。        |
+| `url`       | 可选 | 文章原始链接。省略时 FeedCraft 自动生成指向存储内容的链接。                                     |
+| `content`   | 可选 | 文章完整 HTML 正文。若为空或少于 800 字节（且未设置 `is_notice: true`），响应会返回 `warning`。 |
+| `summary`   | 可选 | 简短描述，默认取 `content` 前 200 个 **Unicode 字符**（rune）。                                 |
+| `author`    | 可选 | 作者名。                                                                                        |
+| `timestamp` | 可选 | 发布时间的 Unix 时间戳（秒）。默认为当前时间。                                                  |
+| `is_notice` | 可选 | 设为 `true` 表示纯通知条目，无需完整正文，可抑制短正文告警并豁免 `require_content=true`。       |
 
 **批次限制**：每次请求最多 100 条。
+
+### 查询参数
+
+| 参数              | 默认值  | 说明                                                                                 |
+| ----------------- | ------- | ------------------------------------------------------------------------------------ |
+| `skip_invalid`    | `false` | 设为 `true` 时跳过校验失败的条目并继续写入其余合法条目；若整批全部失败仍返回 `400`。 |
+| `require_content` | `false` | 设为 `true` 时拒绝 `content` 为空的条目（`is_notice: true` 的纯通知条目除外）。      |
 
 ### cURL 示例
 
 ```bash
-curl -X POST "https://YOUR_SERVER/api/inbox/my-inbox/items" \
+curl -X POST "https://YOUR_SERVER/api/inbox/my-inbox/items?skip_invalid=true" \
   -H "Authorization: Bearer YOUR_SYSTEM_AUTH_TOKEN" \
   -H "Content-Type: application/json" \
   -d '[{"title": "Hello World", "content": "<p>第一篇推送文章！</p>"}]'
@@ -133,9 +141,21 @@ curl -X POST "https://YOUR_SERVER/api/inbox/my-inbox/items" \
 {
   "total": 1,
   "created": 1,
-  "updated": 0
+  "updated": 0,
+  "failed": 0,
+  "results": [
+    {
+      "index": 0,
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "status": "ok",
+      "content_bytes": 31,
+      "warning": "content is short (31 bytes, below 800-byte threshold); verify full content was sent (set is_notice=true for notice-only items)"
+    }
+  ]
 }
 ```
+
+当默认 `skip_invalid=false` 下存在校验失败条目（或全部条目均失败）时，接口返回 `400 Bad Request`，顶层 `msg` 为首条错误原因，`data.results` 会完整列出每条数据的校验状态（`ok` 或带详细原因的 `error`）。
 
 ## 通过 RSS 订阅
 

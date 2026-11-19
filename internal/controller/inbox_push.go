@@ -1,9 +1,12 @@
 package controller
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,6 +19,8 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+const inboxPushShortContentThresholdBytes = 800
+
 type InboxPushItem struct {
 	Title     string  `json:"title"`
 	URL       string  `json:"url,omitempty"`
@@ -24,51 +29,125 @@ type InboxPushItem struct {
 	ID        string  `json:"id,omitempty"`
 	Author    string  `json:"author,omitempty"`
 	Timestamp float64 `json:"timestamp,omitempty"`
+	IsNotice  bool    `json:"is_notice,omitempty"`
+}
+
+type InboxPushItemResult struct {
+	Index        int    `json:"index"`
+	ID           string `json:"id,omitempty"`
+	Status       string `json:"status"`
+	ContentBytes int    `json:"content_bytes"`
+	Error        string `json:"error,omitempty"`
+	Warning      string `json:"warning,omitempty"`
 }
 
 type InboxPushResponse struct {
-	Total   int `json:"total"`
-	Created int `json:"created"`
-	Updated int `json:"updated"`
+	Total   int                   `json:"total"`
+	Created int                   `json:"created"`
+	Updated int                   `json:"updated"`
+	Failed  int                   `json:"failed"`
+	Results []InboxPushItemResult `json:"results,omitempty"`
 }
 
 func PushInboxItems(c *gin.Context) {
 	inboxID := c.Param("inbox_id")
-	var reqItems []InboxPushItem
 
-	if err := c.ShouldBindJSON(&reqItems); err != nil {
+	skipInvalid, err := parseBoolQueryParam(c, "skip_invalid")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
+		return
+	}
+	requireContent, err := parseBoolQueryParam(c, "require_content")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: err.Error()})
+		return
+	}
+
+	var rawItems []json.RawMessage
+
+	if err := c.ShouldBindJSON(&rawItems); err != nil {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: "Invalid JSON array: " + err.Error()})
 		return
 	}
 
-	if len(reqItems) == 0 {
+	if len(rawItems) == 0 {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: "Array cannot be empty"})
 		return
 	}
 
-	if len(reqItems) > 100 {
+	if len(rawItems) > 100 {
 		c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: "Batch size exceeds maximum limit of 100"})
 		return
 	}
 
-	for i, item := range reqItems {
-		if strings.TrimSpace(item.Title) == "" {
-			c.JSON(http.StatusBadRequest, util.APIResponse[any]{Msg: fmt.Sprintf("Item at index %d is missing required 'title'", i)})
-			return
+	reqItems := make([]InboxPushItem, len(rawItems))
+	results := make([]InboxPushItemResult, len(rawItems))
+	validIndices := make([]int, 0, len(rawItems))
+	failedCount := 0
+	firstErrMsg := ""
+
+	for i, raw := range rawItems {
+		res := InboxPushItemResult{
+			Index:  i,
+			Status: "ok",
 		}
-		if field, invalidChar, characterPosition, byteOffset, ok := inboxPushInvalidXMLChar(item); ok {
-			c.JSON(http.StatusBadRequest, util.APIResponse[any]{
-				Msg: fmt.Sprintf(
-					"Item at index %d contains invalid XML 1.0 character U+%04X in field %q at character %d (UTF-8 byte offset %d)",
-					i,
-					invalidChar,
-					field,
-					characterPosition,
-					byteOffset,
-				),
-			})
-			return
+
+		trimmedRaw := bytes.TrimSpace(raw)
+		if len(trimmedRaw) == 0 || trimmedRaw[0] != '{' {
+			errMsg := fmt.Sprintf("Item at index %d must be a JSON object", i)
+			res.Status = "error"
+			res.Error = errMsg
+			failedCount++
+			if firstErrMsg == "" {
+				firstErrMsg = errMsg
+			}
+			results[i] = res
+			continue
 		}
+
+		var item InboxPushItem
+		if err := json.Unmarshal(trimmedRaw, &item); err != nil {
+			errMsg := fmt.Sprintf("Item at index %d has invalid JSON fields: %v", i, err)
+			res.Status = "error"
+			res.Error = errMsg
+			failedCount++
+			if firstErrMsg == "" {
+				firstErrMsg = errMsg
+			}
+			results[i] = res
+			continue
+		}
+
+		reqItems[i] = item
+		res.ID = strings.TrimSpace(item.ID)
+		res.ContentBytes = len(item.Content)
+		res.Warning = inboxPushContentWarning(item)
+
+		if errMsg := validateInboxPushItem(i, item, requireContent); errMsg != "" {
+			res.Status = "error"
+			res.Error = errMsg
+			failedCount++
+			if firstErrMsg == "" {
+				firstErrMsg = errMsg
+			}
+		} else {
+			validIndices = append(validIndices, i)
+		}
+		results[i] = res
+	}
+
+	if failedCount > 0 && (!skipInvalid || len(validIndices) == 0) {
+		c.JSON(http.StatusBadRequest, util.APIResponse[InboxPushResponse]{
+			Msg: firstErrMsg,
+			Data: InboxPushResponse{
+				Total:   len(rawItems),
+				Created: 0,
+				Updated: 0,
+				Failed:  failedCount,
+				Results: results,
+			},
+		})
+		return
 	}
 
 	db := util.GetDatabase()
@@ -83,36 +162,25 @@ func PushInboxItems(c *gin.Context) {
 		return
 	}
 
-	// Extract explicitly provided IDs to count updates
+	// Extract explicitly provided IDs from valid items to count updates inside the write transaction
 	var explicitIDs []string
-	for _, item := range reqItems {
-		if strings.TrimSpace(item.ID) != "" {
-			explicitIDs = append(explicitIDs, strings.TrimSpace(item.ID))
+	for _, idx := range validIndices {
+		if trimmedID := strings.TrimSpace(reqItems[idx].ID); trimmedID != "" {
+			explicitIDs = append(explicitIDs, trimmedID)
 		}
 	}
 
-	existingIDs, err := dao.ListExistingInboxItemIDs(db, inboxID, explicitIDs)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, util.APIResponse[any]{Msg: "Database error checking existing items"})
-		return
-	}
-	existingMap := make(map[string]bool)
-	for _, id := range existingIDs {
-		existingMap[id] = true
-	}
-
-	var daoItems []dao.InboxItem
+	daoItems := make([]dao.InboxItem, 0, len(validIndices))
 	siteBaseURL := strings.TrimRight(util.GetEnvClient().GetString("SITE_BASE_URL"), "/")
 	now := time.Now()
 
-	updatedCount := 0
-	for _, req := range reqItems {
+	for _, idx := range validIndices {
+		req := reqItems[idx]
 		itemID := strings.TrimSpace(req.ID)
 		if itemID == "" {
 			itemID = uuid.New().String()
-		} else if existingMap[itemID] {
-			updatedCount++
 		}
+		results[idx].ID = itemID
 
 		pubTime := now
 		if req.Timestamp > 0 {
@@ -147,7 +215,22 @@ func PushInboxItems(c *gin.Context) {
 		})
 	}
 
+	updatedCount := 0
 	err = db.Transaction(func(tx *gorm.DB) error {
+		existingIDs, err := dao.ListExistingInboxItemIDs(tx, inboxID, explicitIDs)
+		if err != nil {
+			return err
+		}
+		existingMap := make(map[string]bool, len(existingIDs))
+		for _, id := range existingIDs {
+			existingMap[id] = true
+		}
+		for _, item := range daoItems {
+			if existingMap[item.ItemID] {
+				updatedCount++
+			}
+		}
+
 		// Bulk Upsert
 		if err := tx.Clauses(clause.OnConflict{
 			Columns: []clause.Column{{Name: "inbox_id"}, {Name: "item_id"}},
@@ -171,10 +254,65 @@ func PushInboxItems(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, InboxPushResponse{
-		Total:   len(reqItems),
-		Created: len(reqItems) - updatedCount,
+		Total:   len(rawItems),
+		Created: len(validIndices) - updatedCount,
 		Updated: updatedCount,
+		Failed:  failedCount,
+		Results: results,
 	})
+}
+
+func parseBoolQueryParam(c *gin.Context, name string) (bool, error) {
+	raw := strings.TrimSpace(c.Query(name))
+	if raw == "" {
+		return false, nil
+	}
+	val, err := strconv.ParseBool(raw)
+	if err != nil {
+		return false, fmt.Errorf("invalid boolean query parameter %q: %q", name, raw)
+	}
+	return val, nil
+}
+
+func validateInboxPushItem(index int, item InboxPushItem, requireContent bool) string {
+	if strings.TrimSpace(item.Title) == "" {
+		return fmt.Sprintf("Item at index %d is missing required 'title'", index)
+	}
+	if field, invalidChar, characterPosition, byteOffset, ok := inboxPushInvalidXMLChar(item); ok {
+		return fmt.Sprintf(
+			"Item at index %d contains invalid XML 1.0 character U+%04X in field %q at character %d (UTF-8 byte offset %d)",
+			index,
+			invalidChar,
+			field,
+			characterPosition,
+			byteOffset,
+		)
+	}
+	if requireContent && !item.IsNotice && strings.TrimSpace(item.Content) == "" {
+		return fmt.Sprintf("Item at index %d is missing required 'content'", index)
+	}
+	return ""
+}
+
+func inboxPushContentWarning(item InboxPushItem) string {
+	if item.IsNotice {
+		return ""
+	}
+	contentBytes := len(item.Content)
+	if contentBytes == 0 {
+		return "content is empty (0 bytes); item may fall back to summary only (set is_notice=true for notice-only items)"
+	}
+	if strings.TrimSpace(item.Content) == "" {
+		return fmt.Sprintf("content is blank (%d bytes); item may fall back to summary only (set is_notice=true for notice-only items)", contentBytes)
+	}
+	if contentBytes < inboxPushShortContentThresholdBytes {
+		return fmt.Sprintf(
+			"content is short (%d bytes, below %d-byte threshold); verify full content was sent (set is_notice=true for notice-only items)",
+			contentBytes,
+			inboxPushShortContentThresholdBytes,
+		)
+	}
+	return ""
 }
 
 func inboxPushInvalidXMLChar(item InboxPushItem) (string, rune, int, int, bool) {
