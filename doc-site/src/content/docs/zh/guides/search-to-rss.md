@@ -57,4 +57,4 @@ FeedCraft 包含一个 **搜索转 RSS (Search to RSS)** 工具，允许你将�
 保存后，该配方将作为 **配方管理 (Recipes)** 中的配方存储。你可以在 **工作台 > Feed 源管理 > 配方管理** 中管理它。
 
 你的新订阅源将通过以下地址访问：
-\`http://your-feedcraft-instance/rss/custom/{recipe-unique-id}\`
+`http://your-feedcraft-instance/rss/custom/{recipe-unique-id}`
