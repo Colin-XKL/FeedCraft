@@ -71,8 +71,9 @@ description: Brief Content
 
 ### 5. Linking Conventions
 
-- **Relative Links**: Prefer relative links for pages in the same locale tree. Starlight publishes each page as a directory URL with a trailing slash, so resolve the link against that URL, not the source file. From `start/quick-start.md`, `../../guides/customization/` reaches `guides/customization`. A single `../guides/customization` resolves to `/{locale}/start/guides/customization/` and 404s.
-- **Section indexes**: A sibling link from a section index stays in that directory (e.g., `./html-to-rss/` from `guides/index.md`).
+- **Trailing slash**: `doc-site/vercel.json` sets `"trailingSlash": true`, so a slashless page URL such as `/en/start/quick-start` redirects to `/en/start/quick-start/` before the browser resolves links. Relative links are written for that trailing-slash URL. The same relative link from a slashless URL would drop the locale. Astro's `trailingSlash: "always"` is not set: in preview it returns 404 for slashless URLs instead of redirecting.
+- **Relative Links**: Prefer relative links for pages in the same locale tree, counted from the published directory URL rather than the source file. From `start/quick-start.md` (`/{locale}/start/quick-start/`), `../../guides/customization/` reaches `guides/customization`. A single `../guides/customization` resolves to `/{locale}/start/guides/customization/` and 404s.
+- **Section indexes**: A sibling link from a section index stays in that directory (e.g., `./html-to-rss/` from `/guides/`).
 - **Absolute Links**: Use a locale-absolute link with a trailing slash (e.g., `/zh-tw/start/quick-start/`) for the splash page or a cross-locale reference. The locale prefix must match the target language.
 - **Anchors**: Hash fragments must match the rendered heading id (`external-services`, `外部服务`, `外部服務`), not the source filename.
 
