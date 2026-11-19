@@ -21,10 +21,10 @@ URL 格式為：
 
 其中：
 
-- `{craft_atom}` 是你想要使用的處理步驟名稱（原子工藝）。你可以在 [系統內建 AtomCraft](/zh-tw/reference/system-craft-atoms/) 指南中查閱完整列表。
+- `{craft_atom}` 是你想要使用的處理步驟名稱（原子工藝）。你可以在 [系統內建 AtomCraft](../../reference/system-craft-atoms/) 指南中查閱完整列表。
 - `{input_rss_url}` 是原始的 RSS 訂閱源 URL。
 
-為了更深入地了解 FeedCraft 的工作原理，請參閱[核心概念](/zh-tw/concepts/concepts/)指南。
+為了更深入地了解 FeedCraft 的工作原理，請參閱[核心概念](../../concepts/concepts/)指南。
 
 **注意：** 如果你的 RSS 閱讀器不會自動處理 URL 編碼，你可能需要手動對 `{input_rss_url}` 進行 URL 編碼。
 
@@ -94,7 +94,7 @@ services:
     restart: always
 ```
 
-**關於瀏覽器提供方的說明：** 最小化部署不包含瀏覽器渲染提供方。依賴此服務的特性（如 **fulltext-plus** 原子工藝和 HTML 轉 RSS 中的**增強模式**）將無法運行。請參考[進階定制](/zh-tw/guides/customization/#外部服務)指南啟用 Browserless 或 CloakBrowser。
+**關於瀏覽器提供方的說明：** 最小化部署不包含瀏覽器渲染提供方。依賴此服務的特性（如 **fulltext-plus** 原子工藝和 HTML 轉 RSS 中的**增強模式**）將無法運行。請參考[進階定制](../../guides/customization/#外部服務)指南啟用 Browserless 或 CloakBrowser。
 
 保存為 `docker-compose.yml` 並執行 `docker-compose up -d`。
 訪問 `http://localhost:10088` 進入後台管理介面。

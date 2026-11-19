@@ -21,10 +21,10 @@ The URL format is:
 
 Where:
 
-- `{craft_atom}` is the name of the processing step you want to apply. You can find a full list of available atoms in the [System AtomCrafts](/en/reference/system-craft-atoms/) guide.
+- `{craft_atom}` is the name of the processing step you want to apply. You can find a full list of available atoms in the [System AtomCrafts](../../reference/system-craft-atoms/) guide.
 - `{input_rss_url}` is the original URL of the RSS feed you want to process.
 
-For a deeper understanding of how FeedCraft works, check out the [Core Concepts](/en/concepts/concepts/) guide.
+For a deeper understanding of how FeedCraft works, check out the [Core Concepts](../../concepts/concepts/) guide.
 
 **Note:** You may need to URL-encode the `{input_rss_url}` if your RSS reader does not handle it automatically.
 
@@ -94,7 +94,7 @@ services:
     restart: always
 ```
 
-**Note on browser providers:** The minimal deployment does not include a browser provider. Features that rely on it, such as the **fulltext-plus** AtomCraft and **Enhanced Mode** in HTML-to-RSS, will not function. Refer to the [Advanced Customization](/en/guides/customization/#external-services) guide to enable Browserless or CloakBrowser.
+**Note on browser providers:** The minimal deployment does not include a browser provider. Features that rely on it, such as the **fulltext-plus** AtomCraft and **Enhanced Mode** in HTML-to-RSS, will not function. Refer to the [Advanced Customization](../../guides/customization/#external-services) guide to enable Browserless or CloakBrowser.
 
 Save this as `docker-compose.yml` and run `docker-compose up -d`.
 Visit `http://localhost:10088` to access the dashboard.
