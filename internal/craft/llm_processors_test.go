@@ -245,3 +245,64 @@ func TestBeautifyArticleContent_CompactsAndRestoresBase64AndLongURLs(t *testing.
 	assert.Contains(t, outHTML, `href="`+longURL+`"`, "restored HTML must contain original long URL")
 	assert.NotContains(t, outHTML, "https://fc.local/")
 }
+
+func TestBeautifyContentProcessor_CachesCompactRepresentationWithoutBase64(t *testing.T) {
+	redisSrv := setupTestRedis(t)
+	origCaller := llmCaller
+	t.Cleanup(func() { llmCaller = origCaller })
+
+	var calls int
+	llmCaller = func(model string, promptInput string) (string, error) {
+		calls++
+		return "Beautified.\n\n![img](https://fc.local/m/1)", nil
+	}
+
+	imgA := "data:image/png;base64," + strings.Repeat("AAAA", 200)
+	imgB := "data:image/png;base64," + strings.Repeat("BBBB", 200)
+
+	processor := newBeautifyContentProcessor("beautify cache compact test")
+	feedA := &model.CraftFeed{Articles: []*model.CraftArticle{
+		{Title: "Same Title", Content: `<p>Same body</p><img src="` + imgA + `">`},
+	}}
+	feedB := &model.CraftFeed{Articles: []*model.CraftArticle{
+		{Title: "Same Title", Content: `<p>Same body</p><img src="` + imgB + `">`},
+	}}
+
+	outA, err := processor.Process(context.Background(), feedA)
+	require.NoError(t, err)
+	outB, err := processor.Process(context.Background(), feedB)
+	require.NoError(t, err)
+
+	assert.Equal(t, 1, calls, "second article with same compacted structure should hit craft cache")
+	assert.Contains(t, outA.Articles[0].Content, imgA)
+	assert.NotContains(t, outA.Articles[0].Content, imgB)
+	assert.Contains(t, outB.Articles[0].Content, imgB)
+	assert.NotContains(t, outB.Articles[0].Content, imgA)
+
+	// Verify Redis cache entry does not store raw base64 payload.
+	keys := redisSrv.server.Keys()
+	require.NotEmpty(t, keys)
+	for _, k := range keys {
+		val, getErr := redisSrv.server.Get(k)
+		require.NoError(t, getErr)
+		assert.NotContains(t, val, "base64", "craft cache must store compact HTML, not raw base64 media")
+		assert.Contains(t, val, "https://fc.local/m/1")
+	}
+}
+
+func TestBeautifyArticleContent_DoesNotCompactActiveDataHTMLLinks(t *testing.T) {
+	origCaller := llmCaller
+	t.Cleanup(func() { llmCaller = origCaller })
+
+	activeDataHTML := "data:text/html;base64," + strings.Repeat("PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==", 8)
+	var capturedPrompt string
+	llmCaller = func(model string, promptInput string) (string, error) {
+		capturedPrompt = promptInput
+		return "[click](https://fc.local/m/1)", nil
+	}
+
+	outHTML, err := beautifyArticleContent(`<a href="`+activeDataHTML+`">click</a>`, "Beautify")
+	require.NoError(t, err)
+	assert.NotContains(t, capturedPrompt, "https://fc.local/m/", "active data:text/html URI must not be rewritten to placeholder")
+	assert.NotContains(t, outHTML, "data:text/html", "Restore must not inject active data:text/html URI into rendered HTML")
+}

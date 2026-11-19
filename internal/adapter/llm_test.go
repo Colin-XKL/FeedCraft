@@ -227,3 +227,62 @@ func TestCallLLMUsingContextCacheRestoresDistinctPayloads(t *testing.T) {
 	require.Contains(t, resB, imgB)
 	require.NotContains(t, resB, imgA)
 }
+
+func TestCallLLMUsingContextRemoveImageDropsBase64MarkdownAndSourceBeforeCompaction(t *testing.T) {
+	setupAdapterMiniredis(t)
+	resetLLMClients(t)
+
+	imgData := "data:image/png;base64," + strings.Repeat("QUJD", 50)
+	var captured chatCompletionRequest
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		require.NoError(t, json.Unmarshal(body, &captured))
+		writeChatCompletion(w, "true")
+	}))
+	t.Cleanup(server.Close)
+
+	setOpenAILLMEnv(t, server.URL)
+	t.Setenv("FC_LLM_API_MODEL", "model-a")
+
+	prompt := uniquePrompt("check-remove-image")
+	context := fmt.Sprintf(
+		`<p>Body</p><picture><source srcset="%s"></picture><img src=%s> ![alt](%s)`,
+		imgData,
+		imgData,
+		imgData,
+	)
+
+	res, err := CallLLMUsingContext(prompt, context, util.ContentProcessOption{RemoveImage: true})
+	require.NoError(t, err)
+	require.Equal(t, "true", res)
+	require.Len(t, captured.Messages, 1)
+	sentPrompt := captured.Messages[0].Content
+	require.NotContains(t, sentPrompt, "base64")
+	require.NotContains(t, sentPrompt, "https://fc.local/m/", "被 RemoveImage 移除的图片不应以占位符形式发送给 LLM")
+}
+
+func TestCallLLMUsingContextReservesPromptPlaceholders(t *testing.T) {
+	setupAdapterMiniredis(t)
+	resetLLMClients(t)
+
+	imgData := "data:image/png;base64," + strings.Repeat("QUJD", 50)
+	var captured chatCompletionRequest
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		require.NoError(t, json.Unmarshal(body, &captured))
+		writeChatCompletion(w, `Keep https://fc.local/m/1 and <img src="https://fc.local/m/2">`)
+	}))
+	t.Cleanup(server.Close)
+
+	setOpenAILLMEnv(t, server.URL)
+	t.Setenv("FC_LLM_API_MODEL", "model-a")
+
+	prompt := uniquePrompt("Keep literal https://fc.local/m/1 in output")
+	res, err := CallLLMUsingContext(prompt, `<img src="`+imgData+`">`, util.ContentProcessOption{})
+	require.NoError(t, err)
+
+	require.Len(t, captured.Messages, 1)
+	require.Contains(t, captured.Messages[0].Content, `<img src="https://fc.local/m/2">`)
+	require.Contains(t, res, "Keep https://fc.local/m/1")
+	require.Contains(t, res, `<img src="`+imgData+`">`)
+}

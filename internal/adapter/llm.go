@@ -10,7 +10,12 @@ import (
 
 // CallLLMUsingContext using openai compatible api
 func CallLLMUsingContext(prompt, context string, option util.ContentProcessOption) (string, error) {
+	if option.RemoveImage {
+		context = util.RemoveBase64Images(context)
+	}
+
 	compactor := util.NewLLMContentCompactor()
+	compactor.Reserve(prompt)
 	compactedContext := compactor.Compact(context)
 
 	processedContext := util.ProcessContent(compactedContext, option)

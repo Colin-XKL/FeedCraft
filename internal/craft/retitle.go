@@ -51,9 +51,11 @@ func getFeedsItemContentForPrompt(item *feeds.Item, original string) string {
 		link = item.Link.Href
 	}
 	domain, _ := util.ParseDomainFromUrl(link)
-	cleaned := util.HTMLToMarkdown(original, domain)
+	compactor := util.NewLLMContentCompactor()
+	compacted := compactor.Compact(original)
+	cleaned := util.HTMLToMarkdown(compacted, domain)
 	if strings.TrimSpace(cleaned) != "" {
-		return cleaned
+		return compactor.Restore(cleaned)
 	}
 	return original
 }

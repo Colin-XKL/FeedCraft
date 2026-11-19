@@ -149,16 +149,72 @@ func TestLLMContentCompactor_JSONEscapedAndMultilineBase64(t *testing.T) {
 	assert.Equal(t, multilineHTML, compactor2.Restore(compactedMultiline))
 }
 
-func TestLLMContentCompactor_LongNonBase64DataURIAndWordBoundary(t *testing.T) {
-	longSVG := "data:image/svg+xml;utf8," + strings.Repeat("%3Crect%20width%3D%2210%22/%3E", 10)
-	input := fmt.Sprintf(`metadata:image/png;base64,%s <img src="%s">`, tinyBase64PNG, longSVG)
+func TestLLMContentCompactor_SkipsActiveDataURIsAndRespectsWordBoundary(t *testing.T) {
+	activeHTMLDataURI := "data:text/html;base64," + strings.Repeat("PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==", 10)
+	activeSVGDataURI := "data:image/svg+xml;utf8," + strings.Repeat("%3Crect%20width%3D%2210%22/%3E", 10)
+	safeFontDataURI := "data:font/woff2;base64," + tinyBase64PNG
+
+	input := fmt.Sprintf(
+		`metadata:image/png;base64,%s <a href="%s">bad</a> <img src="%s"> <link href="%s">`,
+		tinyBase64PNG,
+		activeHTMLDataURI,
+		activeSVGDataURI,
+		safeFontDataURI,
+	)
 
 	compactor := NewLLMContentCompactor()
 	compacted := compactor.Compact(input)
 
 	assert.Equal(t, 1, compactor.Count())
 	assert.Contains(t, compacted, "metadata:image/png;base64,"+tinyBase64PNG)
-	assert.Contains(t, compacted, `src="https://fc.local/m/1"`)
+	assert.Contains(t, compacted, activeHTMLDataURI, "active data:text/html URI must not be compacted")
+	assert.Contains(t, compacted, activeSVGDataURI, "active data:image/svg+xml URI must not be compacted")
+	assert.Contains(t, compacted, `href="https://fc.local/m/1"`)
+	assert.Equal(t, input, compactor.Restore(compacted))
+}
+
+func TestLLMContentCompactor_ReservePreventsPromptAndPrefixCollisions(t *testing.T) {
+	longURL := "https://example.com/path?" + strings.Repeat("k=v&", 40)
+	prompt := "Keep literal https://fc.local/u/12 untouched in output."
+	input := "Read more at " + longURL
+
+	compactor := NewLLMContentCompactor()
+	compactor.Reserve(prompt)
+	compacted := compactor.Compact(input)
+
+	// https://fc.local/u/12 reserves both u/1 (prefix) and u/12.
+	assert.Equal(t, "Read more at https://fc.local/u/2", compacted)
+
+	llmOutput := "Prompt said https://fc.local/u/12 and link is https://fc.local/u/2"
+	restored := compactor.Restore(llmOutput)
+	assert.Contains(t, restored, "Prompt said https://fc.local/u/12")
+	assert.Contains(t, restored, "link is "+longURL)
+}
+
+func TestLLMContentCompactor_JSONEscapedSlashes(t *testing.T) {
+	escapedDataURI := `data:image\/png;base64,iVBORw0KGgo\/AAAANSUhEUg` + strings.Repeat(`A\/B`, 40)
+	escapedLongURL := `https:\/\/cdn.example.com\/articles\/view?` + strings.Repeat(`a=1234567890&`, 12) + `end=1`
+	jsonInput := fmt.Sprintf(`{"img":"%s","url":"%s"}`, escapedDataURI, escapedLongURL)
+
+	compactor := NewLLMContentCompactor()
+	compacted := compactor.Compact(jsonInput)
+
+	assert.Equal(t, 2, compactor.Count())
+	assert.NotContains(t, compacted, "iVBORw0KGgo")
+	assert.NotContains(t, compacted, "cdn.example.com")
+	assert.Equal(t, `{"img":"https://fc.local/m/1","url":"https://fc.local/u/1"}`, compacted)
+	assert.Equal(t, jsonInput, compactor.Restore(compacted))
+}
+
+func TestLLMContentCompactor_QuotedHTMLAttributeWithUnmatchedParenthesis(t *testing.T) {
+	longURLWithParen := "https://example.com/path/foo)bar?" + strings.Repeat("token=abcdef0123&", 10) + "ok=1"
+	input := fmt.Sprintf(`<a href="%s">link</a> and [md](%s)`, longURLWithParen, "https://example.com/md?"+strings.Repeat("x=1234567890&", 10))
+
+	compactor := NewLLMContentCompactor()
+	compacted := compactor.Compact(input)
+
+	assert.Equal(t, 2, compactor.Count())
+	assert.Equal(t, `<a href="https://fc.local/u/1">link</a> and [md](https://fc.local/u/2)`, compacted)
 	assert.Equal(t, input, compactor.Restore(compacted))
 }
 

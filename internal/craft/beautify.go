@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/feeds"
+	"github.com/sirupsen/logrus"
 )
 
 // llmCaller is a variable to allow mocking in tests
@@ -24,6 +25,21 @@ Follow these rules:
 6. Return ONLY the Markdown content. Do not include any explanations or conversational text.
 `
 
+func beautifyCompactedArticleContent(compactedContent string, prompt string) (string, error) {
+	if strings.TrimSpace(compactedContent) == "" {
+		return "", fmt.Errorf("empty content")
+	}
+
+	finalPrompt := fmt.Sprintf("%s\n\n---\n\n%s", prompt, compactedContent)
+
+	beautifiedMd, err := llmCaller(adapter.UseDefaultModel, finalPrompt)
+	if err != nil {
+		return "", err
+	}
+
+	return util.MarkdownToHTML(beautifiedMd), nil
+}
+
 func beautifyArticleContent(content string, prompt string) (string, error) {
 	// 1. Prepare prompt with original HTML content
 	// Check if content is empty
@@ -32,32 +48,58 @@ func beautifyArticleContent(content string, prompt string) (string, error) {
 	}
 
 	compactor := util.NewLLMContentCompactor()
+	compactor.Reserve(prompt)
 	compactedContent := compactor.Compact(content)
 
-	finalPrompt := fmt.Sprintf("%s\n\n---\n\n%s", prompt, compactedContent)
-
 	// 2. Call LLM to beautify the content and convert to Markdown
-	beautifiedMd, err := llmCaller(adapter.UseDefaultModel, finalPrompt)
+	renderedHTML, err := beautifyCompactedArticleContent(compactedContent, prompt)
 	if err != nil {
 		return "", err
 	}
 
-	renderedHTML := util.MarkdownToHTML(beautifiedMd)
+	return compactor.Restore(renderedHTML), nil
+}
+
+func cachedBeautifyArticleContent(title string, content string, prompt string) (string, error) {
+	if strings.TrimSpace(content) == "" {
+		return "", nil
+	}
+
+	compactor := util.NewLLMContentCompactor()
+	compactor.Reserve(prompt)
+	compactedContent := compactor.Compact(content)
+
+	hashVal := util.GetTextContentHash(strings.Join([]string{
+		util.GetTextContentHash(prompt),
+		strings.TrimSpace(title),
+		strings.TrimSpace(compactedContent),
+	}, "|"))
+	cacheKey := getCraftCacheKey("beautify article content", hashVal)
+
+	renderedHTML, err := util.CachedFuncWithPreLog(cacheKey, func() (string, error) {
+		return beautifyCompactedArticleContent(compactedContent, prompt)
+	}, func(isCached bool) {
+		logrus.Infof("applying craft [beautify article content] to article [%s], cached: %v", title, isCached)
+	})
+	if err != nil {
+		return "", err
+	}
+
 	return compactor.Restore(renderedHTML), nil
 }
 
 // GetBeautifyContentCraftOptions returns the craft options for beautification
 func GetBeautifyContentCraftOptions(prompt string) []LegacyCraftOption {
-	transFunc := func(item *feeds.Item) (string, error) {
+	cachedTransformer := func(item *feeds.Item) (string, error) {
 		content := item.Content
 		if content == "" {
 			content = item.Description
 		}
-		return beautifyArticleContent(content, prompt)
+		if strings.TrimSpace(content) == "" {
+			return "", fmt.Errorf("empty content")
+		}
+		return cachedBeautifyArticleContent(item.Title, content, prompt)
 	}
-
-	cachedTransformer := GetCommonCachedTransformer(
-		cacheKeyForArticleContent, transFunc, "beautify article content")
 
 	craftOption := []LegacyCraftOption{
 		OptionTransformFeedItem(GetArticleContentProcessor(cachedTransformer)),
