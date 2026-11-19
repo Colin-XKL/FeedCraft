@@ -10,7 +10,15 @@ import (
 
 // CallLLMUsingContext using openai compatible api
 func CallLLMUsingContext(prompt, context string, option util.ContentProcessOption) (string, error) {
-	processedContext := util.ProcessContent(context, option)
+	if option.RemoveImage {
+		context = util.RemoveBase64Images(context)
+	}
+
+	compactor := util.NewLLMContentCompactor()
+	compactor.Reserve(prompt)
+	compactedContext := compactor.Compact(context)
+
+	processedContext := util.ProcessContent(compactedContext, option)
 	// Remove backticks to avoid breaking the markdown code block
 	processedContext = strings.ReplaceAll(processedContext, "`", "")
 
@@ -22,7 +30,11 @@ func CallLLMUsingContext(prompt, context string, option util.ContentProcessOptio
 		}
 		return SimpleLLMCall(UseDefaultModel, finalPrompt)
 	}
-	return util.CachedFunc(cacheKey, valFunc)
+	result, err := util.CachedFunc(cacheKey, valFunc)
+	if err != nil {
+		return "", err
+	}
+	return compactor.Restore(result), nil
 }
 
 func llmCallTemperatureCachePart(option util.ContentProcessOption) string {

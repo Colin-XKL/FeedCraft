@@ -6,7 +6,7 @@ import (
 
 var (
 	linkRegex = regexp.MustCompile(`<a\s+(?:[^>]*?\s+)?href="([^"]*)"[^>]*>.*?</a>`)
-	imgRegex  = regexp.MustCompile(`<img\s+(?:[^>]*?\s+)?src="([^"]*)"[^>]*>`)
+	imgRegex  = regexp.MustCompile(`(?i)<img\s+(?:[^>]*?\s+)?src=(?:"[^"]*"|'[^']*')[^>]*>`)
 
 	// base64ImgTagRegex matches <img>/<source> tags whose attributes embed a
 	// base64-encoded data URI (e.g. src="data:image/png;base64,....").

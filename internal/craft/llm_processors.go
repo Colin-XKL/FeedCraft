@@ -295,22 +295,15 @@ func newBeautifyContentProcessor(prompt string) *ArticleTextTransformProcessor {
 	if finalPrompt == "" {
 		finalPrompt = beautifyArticleContentPrompt
 	}
-	transformer := GetCommonCachedArticleTransformer(
-		newArticleTitleContentCacheKeyGenerator(finalPrompt),
-		func(ctx context.Context, article *model.CraftArticle) (string, error) {
-			content := getPrimaryArticleContent(article)
-			if strings.TrimSpace(content) == "" {
-				return "", nil
-			}
-			return beautifyArticleContent(content, finalPrompt)
-		},
-		"beautify article content",
-	)
 
 	return &ArticleTextTransformProcessor{
 		CraftName: "beautify article content",
 		Mutate: func(ctx context.Context, article *model.CraftArticle) error {
-			transformed, err := transformer(ctx, article)
+			content := getPrimaryArticleContent(article)
+			if strings.TrimSpace(content) == "" {
+				return nil
+			}
+			transformed, err := cachedBeautifyArticleContent(article.Title, content, finalPrompt)
 			if err != nil {
 				return err
 			}
@@ -453,9 +446,11 @@ func getArticleContentForPrompt(article *model.CraftArticle, original string) st
 	// for LLM processing but can dominate the token budget.
 	original = util.RemoveBase64Images(original)
 	domain, _ := util.ParseDomainFromUrl(article.Link)
-	cleaned := util.HTMLToMarkdown(original, domain)
+	compactor := util.NewLLMContentCompactor()
+	compacted := compactor.Compact(original)
+	cleaned := util.HTMLToMarkdown(compacted, domain)
 	if strings.TrimSpace(cleaned) != "" {
-		return cleaned
+		return compactor.Restore(cleaned)
 	}
 	return original
 }
