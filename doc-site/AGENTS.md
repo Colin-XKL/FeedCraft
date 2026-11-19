@@ -71,8 +71,9 @@ description: Brief Content
 
 ### 5. Linking Conventions
 
-- **Relative Links**: Prefer relative links (e.g., `../guides/customization`) when linking between documents within the same language tree.
-- **Absolute Links**: Use absolute links starting with the locale (e.g., `/zh-tw/start/quick-start/`) only when necessary, such as in the index page or cross-locale references. Ensure the locale prefix matches the target file's language.
+- **Absolute Links**: Prefer locale-absolute links with a trailing slash (e.g., `/zh-tw/start/quick-start/`). Starlight publishes each page as a directory URL, so a file-relative link such as `../guides/customization` from `start/quick-start.md` resolves to `/{locale}/start/guides/customization/` and 404s.
+- **Same-folder Links**: Links to a sibling page from a section index may stay relative (e.g., `./html-to-rss/` from `guides/index.md`).
+- **Anchors**: Hash fragments must match the rendered heading id (`external-services`, `外部服务`, `外部服務`), not the source filename.
 
 ### 6. Deployment Information
 

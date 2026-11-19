@@ -57,4 +57,4 @@ Customize how this feed appears in your RSS reader:
 Once saved, the recipe is stored as a **Custom Recipe**. You can manage it in the **Custom Recipes** dashboard.
 
 Your new feed will be available at:
-\`http://your-feedcraft-instance/rss/custom/{recipe-unique-id}\`
+`http://your-feedcraft-instance/rss/custom/{recipe-unique-id}`
