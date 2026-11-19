@@ -218,3 +218,30 @@ func TestArticlePredicateProcessor_Process_FailureKeepsArticleAndNilIsSkipped(t 
 	assert.Equal(t, "keep", processed.Articles[0].Title)
 	assert.Equal(t, "failed", processed.Articles[1].Title)
 }
+
+func TestBeautifyArticleContent_CompactsAndRestoresBase64AndLongURLs(t *testing.T) {
+	origCaller := llmCaller
+	t.Cleanup(func() { llmCaller = origCaller })
+
+	largeBase64 := "data:image/png;base64," + strings.Repeat("QUJDREVGR0hJSktMTU5PUA==", 500)
+	longURL := "https://cdn.example.com/articles/view?" + strings.Repeat("tracking=1234567890&", 10) + "ref=rss"
+
+	var capturedPrompt string
+	llmCaller = func(model string, promptInput string) (string, error) {
+		capturedPrompt = promptInput
+		return "Clean paragraph.\n\n![cover](https://fc.local/m/1)\n\n[Read more](https://fc.local/u/1)", nil
+	}
+
+	inputHTML := `<p>Messy   paragraph.</p><img src="` + largeBase64 + `" alt="cover"><a href="` + longURL + `">Read more</a>`
+	outHTML, err := beautifyArticleContent(inputHTML, "Beautify this article")
+	require.NoError(t, err)
+
+	assert.NotContains(t, capturedPrompt, "base64", "base64 media payload must not be sent to LLM")
+	assert.NotContains(t, capturedPrompt, longURL, "overly long URL must not be sent to LLM")
+	assert.Contains(t, capturedPrompt, "https://fc.local/m/1")
+	assert.Contains(t, capturedPrompt, "https://fc.local/u/1")
+
+	assert.Contains(t, outHTML, `src="`+largeBase64+`"`, "restored HTML must contain original base64 image")
+	assert.Contains(t, outHTML, `href="`+longURL+`"`, "restored HTML must contain original long URL")
+	assert.NotContains(t, outHTML, "https://fc.local/")
+}

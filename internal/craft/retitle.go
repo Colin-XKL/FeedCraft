@@ -45,6 +45,7 @@ func getFeedsItemContentForPrompt(item *feeds.Item, original string) string {
 	if item == nil {
 		return original
 	}
+	original = util.RemoveBase64Images(original)
 	link := ""
 	if item.Link != nil {
 		link = item.Link.Href

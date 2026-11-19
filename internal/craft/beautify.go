@@ -31,7 +31,10 @@ func beautifyArticleContent(content string, prompt string) (string, error) {
 		return "", fmt.Errorf("empty content")
 	}
 
-	finalPrompt := fmt.Sprintf("%s\n\n---\n\n%s", prompt, content)
+	compactor := util.NewLLMContentCompactor()
+	compactedContent := compactor.Compact(content)
+
+	finalPrompt := fmt.Sprintf("%s\n\n---\n\n%s", prompt, compactedContent)
 
 	// 2. Call LLM to beautify the content and convert to Markdown
 	beautifiedMd, err := llmCaller(adapter.UseDefaultModel, finalPrompt)
@@ -39,7 +42,8 @@ func beautifyArticleContent(content string, prompt string) (string, error) {
 		return "", err
 	}
 
-	return util.MarkdownToHTML(beautifiedMd), nil
+	renderedHTML := util.MarkdownToHTML(beautifiedMd)
+	return compactor.Restore(renderedHTML), nil
 }
 
 // GetBeautifyContentCraftOptions returns the craft options for beautification
