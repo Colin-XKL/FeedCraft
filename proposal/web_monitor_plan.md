@@ -425,6 +425,52 @@ GUID 的生成应满足：
 
 ---
 
+## 9.5 可选的 AI 判定（扩展能力）
+
+在核心“值驱动”模型之上，新增一个**可选的 AI 判定**步骤，用于把“原始文本变化”升级为“语义状态变化”。
+
+### 9.5.1 设计动机
+
+纯文本 key field 有时过于敏感：
+
+- 库存文案可能在 `Sold Out` / `Currently unavailable` / `缺货` 之间反复横跳，但语义上都还是“不可购买”。
+- 用户真正关心的是“能不能买”，而不是文案本身。
+
+因此引入一个 AI 判定步骤：让 LLM 根据提取到的字段值产出一个**简短、稳定的判定标签**（如 `available` / `unavailable`），再把这个标签当作派生变量参与模板与 GUID。
+
+### 9.5.2 配置模型
+
+在 `WebMonitorParserConfig` 中新增可选字段：
+
+```go
+type WebMonitorAIJudgeConfig struct {
+	Enabled     bool   `json:"enabled,omitempty"`
+	Prompt      string `json:"prompt,omitempty"`        // 判定指令，启用时必填
+	OutputField string `json:"output_field,omitempty"`  // 默认 "ai_verdict"
+	Model       string `json:"model,omitempty"`         // 可选模型覆盖
+}
+```
+
+### 9.5.3 运行流程
+
+1. 按 extractors 提取所有字段值。
+2. 若 `ai_judge.enabled`：
+   - 把字段值按 key 排序后拼成确定性上下文，调用 LLM（温度 0）。
+   - 结果做 `TrimSpace` 并仅保留首行，写入 `values[output_field]`。
+3. AI 判定**先于** key field 校验执行，因此判定结果本身可以被选为 key field。
+4. 用户通常把 `ai_verdict` 勾选为 key field：GUID 由语义判定驱动，仅当判定结果变化时 RSS Reader 才识别为新 item。
+
+### 9.5.4 稳定性要点
+
+- **必须复用 LLM 缓存**：判定调用复用 `adapter.CallLLMUsingContext`，按 prompt+context 哈希缓存。请求驱动模型下 RSS Reader 会反复轮询，缓存保证相同页面状态得到相同判定，避免 GUID 抖动造成通知风暴。
+- **温度固定为 0**：约束模型输出确定。
+- **prompt 约束输出**：要求只输出简短标签、相同输入必须给出相同结果。
+- **判定失败直接报错**：与现有“配置错误尽早失败”风格一致，不静默 fallback。
+
+### 9.5.5 前端入口
+
+在 Web Monitor 向导第 2 步新增可折叠的「AI 判定（可选）」卡片：开关启用、填写判定指令、可自定义输出变量名与模型、一键勾选“将判定结果用作关键字段”。预览结果中以标签形式展示 AI 判定值。
+
 ## 10. 最终建议
 
 建议这次实现优先完成：
