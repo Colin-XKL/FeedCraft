@@ -68,6 +68,8 @@
 
     <a-modal
       v-model:visible="showEditModal"
+      modal-class="craft-atom-edit-modal"
+      :body-style="craftAtomModalBodyStyle()"
       :title="
         isUpdating
           ? t('craftAtom.editModalTitle.edit')
@@ -253,6 +255,7 @@
 
 <script setup lang="ts">
   import CraftManagePage from '@/components/craft/CraftManagePage.vue';
+  import { craftAtomModalBodyStyle } from '@/views/dashboard/craft_atom/modalLayout';
   import ListEmptyGuide from '@/components/list-empty-guide/index.vue';
   import { computed, onBeforeMount, ref } from 'vue';
   import { buildDocsUrl } from '@/utils/docsUrl';
@@ -476,3 +479,19 @@
     name: 'CraftAtomManage',
   };
 </script>
+
+<style>
+  .craft-atom-edit-modal .arco-modal-body {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.35) transparent;
+  }
+
+  .craft-atom-edit-modal .arco-modal-body::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .craft-atom-edit-modal .arco-modal-body::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 4px;
+  }
+</style>
